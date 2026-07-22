@@ -15,3 +15,6 @@ graphify-out/
 
 # Claude Code local settings (machine-specific)
 .claude/settings.local.json
+
+# Scratch output from the Chronicle preview test (snapshots are the real record)
+chronicle-preview.txt
