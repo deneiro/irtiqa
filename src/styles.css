@@ -313,15 +313,42 @@ nav { display: flex; flex-direction: column; gap: 2px; }
 .banner-info { border-color: var(--accent); background: var(--accent-soft); }
 .empty { padding: 18px; text-align: center; color: var(--muted); background: var(--panel2); border-radius: var(--radius); border: 1px dashed var(--border); }
 
-/* align-items: start — without it, grid rows stretch and an empty card inflates
-   to match the tallest card in its row (the radar chart), leaving dead space. */
+/* ---- Dashboard packing ----
+   Grid gives you a choice of two bad options: rows that stretch (an empty card
+   inflates to match the radar chart beside it) or rows that don't (short cards
+   leave a ragged gap underneath). Neither packs.
+
+   Multi-column packs properly with no JS and no library: each card is an
+   unbreakable block and the browser balances the columns. The trade-off is flow
+   direction — cards run DOWN a column then across, not left-to-right. For a
+   dashboard that's the familiar masonry convention, and the lead card still
+   lands top-left, so the hierarchy survives. */
 .dash-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-  align-items: start;
-  gap: 16px;
+  column-width: 330px;
+  column-gap: 16px;
 }
 .dash-widget { display: contents; }
+.dash-grid .card {
+  /* Never split a card across a column boundary */
+  break-inside: avoid;
+  /* multicol has no row-gap; the card's own margin does the vertical spacing */
+  margin-bottom: 16px;
+}
+/* Chromium needs the legacy property to honour break-inside inside multicol */
+.dash-grid .card { -webkit-column-break-inside: avoid; page-break-inside: avoid; }
+
+/* Native masonry keeps row-major order AND packs — use it the moment a browser
+   ships it (Safari and Firefox are both moving on this). */
+@supports (grid-template-rows: masonry) {
+  .dash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+    grid-template-rows: masonry;
+    gap: 16px;
+    column-width: auto;
+  }
+  .dash-grid .card { margin-bottom: 0; }
+}
 
 .dash-customize-list { list-style: none; margin: 12px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .dash-customize-row {
