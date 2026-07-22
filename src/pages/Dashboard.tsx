@@ -95,7 +95,8 @@ export function Dashboard() {
 
   const widgetContent: Record<DashboardWidgetId, React.ReactNode> = {
     dailyContract: (
-      <section className="card contract-card">
+      // card-hero: the one card on this screen that gets to shout. Everything else recedes.
+      <section className="card card-hero contract-card">
         <div className="card-head">
           <h2>Daily Contract</h2>
           <span className="muted">{contractDone}/3</span>
@@ -304,13 +305,20 @@ export function Dashboard() {
                   className="check"
                   onClick={e => { s.completeQuickTask(t.id); spawnVFXAt(e, 'xp', 8); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 2); }}
                   title="Complete (+8 XP, +2 Gold)"
+                  aria-label={`Complete "${t.title}" (+8 XP, +2 Gold)`}
                 >
                   ○
                 </button>
                 <span className="list-title">{t.title}</span>
                 {t.dueDate && <span className="muted">{fmtDay(t.dueDate)}</span>}
                 <span className="tag tag-icon"><Icon name={t.attr} size={13} /></span>
-                <button className="btn btn-ghost btn-sm" onClick={() => s.deleteQuickTask(t.id)}>✕</button>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => s.deleteQuickTask(t.id)}
+                  aria-label={`Delete "${t.title}"`}
+                >
+                  ✕
+                </button>
               </li>
             ))}
           </ul>
@@ -400,7 +408,7 @@ export function Dashboard() {
           <Link className="btn btn-ghost" to="/habits">+ Habit</Link>
           <Link className="btn btn-ghost" to="/quests">+ Quest</Link>
           <Link className="btn btn-ghost" to="/journal">✍️ Journal</Link>
-          <button className="btn btn-ghost" onClick={() => setCustomizing(true)} title="Choose which cards show and reorder them">
+          <button className="btn btn-ghost btn-customize" onClick={() => setCustomizing(true)} title="Choose which cards show and reorder them">
             <Icon name="grip" size={14} /> Customize
           </button>
         </div>

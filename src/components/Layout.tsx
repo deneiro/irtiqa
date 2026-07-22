@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { CLASSES, COSMETICS } from '../game/constants';
 import { charLevelProgress, fmtMinutes, momentumMult, rankFor } from '../game/engine';
 import { useGame } from '../store';
@@ -22,6 +22,16 @@ const NAV: [string, IconName, string][] = [
   ['/settings', 'settings', 'Settings'],
 ];
 
+/** The four routes worth a permanent thumb slot; everything else lives behind "More". */
+const TAB_PRIMARY: [string, IconName, string][] = [
+  ['/', 'dashboard', 'Today'],
+  ['/habits', 'habits', 'Habits'],
+  ['/quests', 'quests', 'Quests'],
+  ['/journal', 'journal', 'Journal'],
+];
+const TAB_PRIMARY_PATHS = new Set(TAB_PRIMARY.map(([to]) => to));
+const TAB_MORE = NAV.filter(([to]) => !TAB_PRIMARY_PATHS.has(to));
+
 export function Layout() {
   const character = useGame(s => s.character);
   const momentum = useGame(s => s.momentum);
@@ -33,6 +43,8 @@ export function Layout() {
   const cls = CLASSES.find(c => c.id === character.classId);
   const title = COSMETICS.find(c => c.id === equipped.title);
   const momentumPct = Math.round((momentumMult(momentum.streak) - 1) * 100);
+  // Color the HP bar by what's left, so a full bar doesn't read as an alarm
+  const hpTone = character.hp <= 25 ? 'hp-crit' : character.hp <= 55 ? 'hp-warn' : '';
 
   return (
     <div className="layout">
@@ -72,7 +84,7 @@ export function Layout() {
           )}
           <div className="stat stat-hp">
             <span className="stat-label"><Icon name="health" size={14} /> HP</span>
-            <Bar value={character.hp} max={100} className="bar-hp" label={`${character.hp}/100 HP`} />
+            <Bar value={character.hp} max={100} className={`bar-hp ${hpTone}`} label={`${character.hp}/100 HP`} />
             <span className="stat-num">{character.hp}/100</span>
             {character.hp === 0 ? (
               <span title="Exhausted: XP gains halved, priority quests locked">💀</span>
@@ -88,10 +100,78 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
+      <TabBar />
       <SessionWidget />
       <CelebrationLayer />
       <VFXLayer />
     </div>
+  );
+}
+
+/**
+ * Mobile navigation. Fixed to the bottom so it's always under a thumb and never
+ * scrolls away — the old layout turned the sidebar into a horizontal strip that
+ * scrolled off with the page. Hidden on desktop by CSS; the sidebar takes over there.
+ */
+function TabBar() {
+  const [moreOpen, setMoreOpen] = useState(false);
+  const location = useLocation();
+  const classId = useGame(s => s.character?.classId);
+
+  // Any route change closes the sheet, including taps on its own items
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [location.pathname]);
+
+  // Escape closes the sheet, matching every other dismissible surface in the app
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setMoreOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [moreOpen]);
+
+  const moreActive = TAB_MORE.some(([to]) => location.pathname === to) || location.pathname === '/profile';
+
+  return (
+    <>
+      {moreOpen && (
+        <>
+          <div className="tabbar-sheet-overlay" onClick={() => setMoreOpen(false)} aria-hidden="true" />
+          <div className="tabbar-sheet" role="dialog" aria-label="More navigation">
+            <div className="tabbar-sheet-grab" aria-hidden="true" />
+            <nav>
+              {TAB_MORE.map(([to, iconName, label]) => (
+                <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                  <span className="nav-emoji"><Icon name={iconName} size={17} /></span> {label}
+                </NavLink>
+              ))}
+              <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <span className="nav-emoji"><Icon name={classId ?? 'warrior'} size={17} /></span> Profile
+              </NavLink>
+            </nav>
+          </div>
+        </>
+      )}
+      <nav className="tabbar" aria-label="Main">
+        {TAB_PRIMARY.map(([to, iconName, label]) => (
+          <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `tabbar-item ${isActive ? 'active' : ''}`}>
+            <span className="tabbar-icon"><Icon name={iconName} size={21} /></span>
+            {label}
+          </NavLink>
+        ))}
+        <button
+          type="button"
+          className={`tabbar-item ${moreActive || moreOpen ? 'active' : ''}`}
+          onClick={() => setMoreOpen(v => !v)}
+          aria-expanded={moreOpen}
+          aria-label="More navigation"
+        >
+          <span className="tabbar-icon"><Icon name="grip" size={21} /></span>
+          More
+        </button>
+      </nav>
+    </>
   );
 }
 

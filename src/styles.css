@@ -1,6 +1,23 @@
+/* ============ Type scale & spacing (theme-independent) ============ */
+:root {
+  /* One scale, used everywhere. Display sizes fluid so phones don't get desktop type. */
+  --fs-display: clamp(30px, 7vw, 44px);
+  --fs-h1: clamp(21px, 4.2vw, 27px);
+  --fs-h2: 17px;
+  --fs-body: 15px;
+  --fs-sm: 13px;
+  --fs-xs: 11.5px;
+
+  /* Game numbers get their own face: tabular so bars/counters don't jitter as they tick. */
+  --font-num: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, monospace;
+
+  --tabbar-h: 58px;
+}
+
 /* ============ Themes (CSS variables — add a new theme = add a block) ============ */
 :root,
 [data-theme='midnight'] {
+  color-scheme: dark;
   --bg: #0f1220;
   --bg2: #14182b;
   --panel: #1b2038;
@@ -23,6 +40,7 @@
 }
 
 [data-theme='parchment'] {
+  color-scheme: light;
   --bg: #efe3c8;
   --bg2: #e9dab9;
   --panel: #f8efd9;
@@ -44,6 +62,7 @@
 }
 
 [data-theme='neon'] {
+  color-scheme: dark;
   --bg: #04060d;
   --bg2: #070b16;
   --panel: #0b1122;
@@ -65,6 +84,7 @@
 }
 
 [data-theme='sakura'] {
+  color-scheme: light;
   --bg: #fdf2f6;
   --bg2: #fbe9f0;
   --panel: #ffffff;
@@ -93,19 +113,37 @@ body {
   margin: 0;
   background: var(--bg);
   background-image: radial-gradient(1200px 600px at 80% -10%, var(--accent-soft), transparent);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font);
-  font-size: 15px;
+  font-size: var(--fs-body);
   line-height: 1.5;
+  overflow-x: hidden;
+  /* Kills the 300ms double-tap zoom delay on every tap target in the app */
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-h1, h2, h3 { font-family: var(--font-head); margin: 0; }
+h1, h2, h3 { font-family: var(--font-head); margin: 0; text-wrap: balance; }
 .heading-icon { display: inline-flex; align-items: center; gap: 7px; }
-h1 { font-size: 26px; }
-h2 { font-size: 17px; }
-h3 { font-size: 15px; }
-.muted { color: var(--muted); font-size: 13px; }
+h1 { font-size: var(--fs-h1); letter-spacing: -0.02em; }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-body); }
+.muted { color: var(--muted); font-size: var(--fs-sm); }
+
+/* Every interactive element gets a visible keyboard ring — click never shows it. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Game numbers: tabular so counters and bar labels don't shift width as they tick. */
+.stat-num, .stat-big, .streak, .streak-big, .bar-label, .num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
 .center { text-align: center; }
 .neg { color: var(--danger); }
 .clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
@@ -160,7 +198,83 @@ nav { display: flex; flex-direction: column; gap: 2px; }
 .gold-coin { display: inline-block; animation: coin-idle 3s ease-in-out infinite; }
 @keyframes coin-idle { 0%, 100% { transform: none; } 50% { transform: translateY(-2px) rotate(-8deg); } }
 
-.content { padding: 24px 26px 80px; max-width: 1180px; width: 100%; margin: 0 auto; }
+.content {
+  padding: 24px 26px 80px;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ============ Mobile bottom tab bar (hidden on desktop) ============ */
+.tabbar { display: none; }
+.tabbar-sheet-overlay { display: none; }
+
+@media (max-width: 860px) {
+  .tabbar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 60;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    background: color-mix(in srgb, var(--bg2) 94%, transparent);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    /* Sits above the home indicator on notched phones */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .tabbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: var(--tabbar-h);
+    padding: 6px 2px;
+    color: var(--muted);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    background: none;
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .tabbar-item:hover { text-decoration: none; }
+  .tabbar-item.active { color: var(--accent); }
+  .tabbar-item.active .tabbar-icon { transform: translateY(-1px); }
+  .tabbar-icon {
+    display: inline-flex;
+    transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* "More" sheet: the nav items that don't fit in five slots */
+  .tabbar-sheet-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 61;
+    background: rgba(0, 0, 0, 0.5);
+    animation: fade-in 0.15s ease;
+  }
+  .tabbar-sheet {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 62;
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    border-radius: 18px 18px 0 0;
+    padding: 10px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+    overscroll-behavior: contain;
+    animation: sheet-up 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tabbar-sheet-grab {
+    width: 38px; height: 4px; border-radius: 999px;
+    background: var(--border); margin: 2px auto 12px;
+  }
+  .tabbar-sheet nav { flex-direction: column; gap: 2px; overflow: visible; }
+  .tabbar-sheet .nav-item { min-height: 46px; }
+}
+
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
 
 /* ============ Cards / page ============ */
 .page { display: flex; flex-direction: column; gap: 18px; }
@@ -173,14 +287,40 @@ nav { display: flex; flex-direction: column; gap: 2px; }
   box-shadow: var(--shadow);
 }
 .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+.card-head h2 { min-width: 0; }
 .card-danger { border-color: var(--danger); }
+
+/* Hierarchy: one card per screen is the primary one. Everything else recedes.
+   Without this every card reads at identical weight and the eye has nowhere to land. */
+.card-hero {
+  background: linear-gradient(160deg, var(--panel2), var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  padding: 20px;
+}
+.card-hero .card-head h2 { font-size: calc(var(--fs-h2) * 1.25); letter-spacing: -0.01em; }
+.card-hero::before {
+  content: '';
+  display: block;
+  height: 2px;
+  margin: -20px -20px 16px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), transparent);
+}
+.card-muted { background: color-mix(in srgb, var(--panel) 72%, transparent); box-shadow: none; }
 .section-title { margin: 8px 0 10px; }
 .banner { padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--panel); }
 .banner-danger { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 12%, var(--panel)); }
 .banner-info { border-color: var(--accent); background: var(--accent-soft); }
 .empty { padding: 18px; text-align: center; color: var(--muted); background: var(--panel2); border-radius: var(--radius); border: 1px dashed var(--border); }
 
-.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
+/* align-items: start — without it, grid rows stretch and an empty card inflates
+   to match the tallest card in its row (the radar chart), leaving dead space. */
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  align-items: start;
+  gap: 16px;
+}
 .dash-widget { display: contents; }
 
 .dash-customize-list { list-style: none; margin: 12px 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -269,7 +409,12 @@ textarea.input { resize: vertical; }
 .bar { flex: 1; height: 10px; background: var(--bg2); border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
 .bar-fill { height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
 .bar-xp .bar-fill { background: linear-gradient(90deg, var(--xp), var(--accent2)); }
-.bar-hp .bar-fill { background: linear-gradient(90deg, var(--hp), #f97316); }
+/* HP is colored by how much is left, not by the fact that it's HP. A full bar
+   rendered in red reads as "something is wrong" at a glance — it isn't. */
+.bar-hp .bar-fill { background: linear-gradient(90deg, var(--success), #4ade80); }
+.bar-hp.hp-warn .bar-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.bar-hp.hp-crit .bar-fill { background: linear-gradient(90deg, var(--hp), #f97316); }
+.bar-hp.hp-crit { border-color: color-mix(in srgb, var(--hp) 55%, var(--border)); }
 .bar-budget .bar-fill { background: var(--success); }
 .bar-over .bar-fill { background: var(--danger); animation: pulse-danger 1.2s infinite; }
 @keyframes pulse-danger { 50% { filter: brightness(1.35); } }
@@ -422,7 +567,9 @@ textarea.input { resize: vertical; }
 .mood-row { display: flex; gap: 8px; }
 .mood-btn {
   font-size: 26px; background: var(--bg2); border: 2px solid var(--border);
-  border-radius: 12px; padding: 6px 12px; cursor: pointer; filter: grayscale(0.7); transition: all 0.12s;
+  border-radius: 12px; padding: 6px 12px; cursor: pointer; filter: grayscale(0.7);
+  /* Explicit properties, not `all` — `all` also animates layout props and drops frames */
+  transition: filter 0.12s ease, transform 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
 }
 .mood-btn:hover { filter: none; }
 .mood-on { border-color: var(--accent); background: var(--accent-soft); filter: none; transform: scale(1.1); }
@@ -629,6 +776,8 @@ textarea.input { resize: vertical; }
 .modal-card {
   background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
   width: 100%; max-width: 460px; max-height: 88vh; overflow-y: auto;
+  /* Stops the page behind the modal from scrolling once the modal hits its end */
+  overscroll-behavior: contain;
   box-shadow: var(--shadow); animation: pop-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .modal-wide { max-width: 720px; }
@@ -1003,14 +1152,61 @@ textarea.input { resize: vertical; }
 /* ============ Responsive ============ */
 @media (max-width: 860px) {
   .layout { flex-direction: column; }
-  .sidebar {
-    width: 100%; height: auto; position: static;
-    flex-direction: column; padding: 10px;
-  }
-  nav { flex-direction: row; overflow-x: auto; gap: 4px; }
-  .nav-item { white-space: nowrap; padding: 7px 10px; }
+
+  /* The sidebar used to become a horizontally-scrolling strip that scrolled away
+     with the page — you couldn't switch tabs without scrolling back to the top.
+     On mobile it's gone entirely; .tabbar replaces it. */
+  .sidebar { display: none; }
+
   .quest-detail-grid, .fin-top, .form-grid-2 { grid-template-columns: 1fr; }
-  .content { padding: 16px 14px 90px; }
-  .topbar { flex-wrap: wrap; gap: 10px; padding: 10px 14px; }
-  .stat-level, .stat-hp { max-width: none; min-width: 45%; }
+
+  /* Bottom padding clears the fixed tab bar + the home indicator. */
+  .content {
+    padding: 14px 14px calc(var(--tabbar-h) + 28px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Compact HUD: stats stay pinned and readable, no wrapping into two rows. */
+  .topbar {
+    gap: 12px;
+    padding: 8px 14px calc(8px + env(safe-area-inset-top, 0px));
+  }
+  .topbar .stat-label { font-size: var(--fs-xs); }
+  .stat-level, .stat-hp { max-width: none; min-width: 0; flex: 1; }
+  .stat-num { font-size: var(--fs-xs); }
+  .stat-gold { font-size: var(--fs-body); }
+
+  /* Touch targets: 44px minimum. Anything smaller loses to a thumb. */
+  .btn { min-height: 44px; padding: 10px 16px; }
+  .btn-sm { min-height: 38px; padding: 8px 12px; }
+  .check { min-width: 44px; min-height: 44px; }
+  .chip { min-height: 38px; }
+
+  /* Header chrome used to eat ~380px before the first card. Tighten it. */
+  .page-head { gap: 8px; }
+  .page-head h1 { line-height: 1.15; }
+  .quick-actions { width: 100%; gap: 6px; flex-wrap: nowrap; }
+  .quick-actions .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 8px;
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* Dashboard reordering is a drag-and-drop list — not usable on touch, and it
+     costs a full row above the fold. Desktop keeps it. */
+  .quick-actions .btn-customize { display: none; }
+}
+
+/* ============ Reduced motion ============
+   20 keyframe animations ship in this file. Honor the OS switch for all of them. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .gold-coin, .session-pulse, .neon-scanline { animation: none !important; }
 }

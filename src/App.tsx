@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { CelebrationLayer } from './components/CelebrationLayer';
 import { Layout } from './components/Layout';
 import { Achievements } from './pages/Achievements';
@@ -50,6 +50,18 @@ function checkReminder() {
   st.markReminderFired(); // once per day, whether or not anything was pending
 }
 
+/**
+ * HashRouter keeps the window's scroll position across route changes, so clicking
+ * a nav item from a scrolled page lands you halfway down the next one. Reset it.
+ */
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   const character = useGame(s => s.character);
   const theme = useGame(s => s.theme);
@@ -98,6 +110,7 @@ export default function App() {
 
   return (
     <HashRouter>
+      <ScrollToTop />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
