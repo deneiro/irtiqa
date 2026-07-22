@@ -68,6 +68,7 @@ import type {
   HabitDayStatus,
   ItemId,
   JournalEntry,
+  PersonalityArchetype,
   Quest,
   QuestDuration,
   QuickTask,
@@ -199,6 +200,7 @@ export interface GameState {
   equipCosmetic: (slot: CosmeticSlot, id: string | null) => void;
   dismissRecap: () => void;
 
+  setProfile: (profile: PersonalityArchetype[]) => void;
   setSoundOn: (on: boolean) => void;
   setReminder: (patch: Partial<{ enabled: boolean; time: string }>) => void;
   markReminderFired: () => void;
@@ -1301,6 +1303,13 @@ export const useGame = create<GameState>()(
       dismissRecap: () =>
         set(d => {
           d.lastRecapDay = todayStr();
+        }),
+
+      setProfile: profile =>
+        set(d => {
+          if (!d.character) return;
+          // Empty clears it, which returns the library to unfiltered
+          d.character.profile = profile.length > 0 ? profile : undefined;
         }),
 
       setSoundOn: on =>

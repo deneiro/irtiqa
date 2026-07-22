@@ -35,6 +35,12 @@ export interface Character {
   hp: number; // 0..100
   gold: number;
   createdAt: string; // ISO
+  /**
+   * Radical profile, strongest first (Ponomarenko's 7 — the same vocabulary the
+   * Social hub uses for contacts). Optional and unset by default: when absent the
+   * template library is shown unfiltered rather than guessing at a fit.
+   */
+  profile?: PersonalityArchetype[];
 }
 
 export interface RankDef {

@@ -2,8 +2,9 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthPanel } from '../components/AuthPanel';
 import { Icon } from '../components/Icon';
-import { CLASSES, THEMES } from '../game/constants';
+import { ARCHETYPE_KEYS, ARCHETYPES, CLASSES, THEMES } from '../game/constants';
 import { charLevel, rankFor } from '../game/engine';
+import type { PersonalityArchetype } from '../game/types';
 import { playSound } from '../lib/sound';
 import { signOutUser, syncNow, useSync } from '../lib/sync';
 import { SAVE_KEY, useGame } from '../store';
@@ -111,6 +112,8 @@ export function Settings() {
           <span>Game sounds — coin chimes, level-up fanfares, damage thuds. Synthesized on the fly, nothing to download.</span>
         </label>
       </section>
+
+      <ProfileCard />
 
       <ReminderCard />
 
@@ -234,6 +237,78 @@ function AccountCard() {
             Without an account, everything lives in this browser only — and browsers forget.
           </p>
           <AuthPanel />
+        </>
+      )}
+    </section>
+  );
+}
+
+/**
+ * Optional radical profile. Drives which habit and quest templates get recommended
+ * on the attribute pages — a habit built on sustained willpower is a good habit for
+ * an epileptoid and a trap for someone without one.
+ *
+ * Deliberately opt-in and reorderable rather than a quiz: the app should not claim
+ * to have diagnosed you. Unset means the library shows unfiltered.
+ */
+function ProfileCard() {
+  const character = useGame(s => s.character!);
+  const setProfile = useGame(s => s.setProfile);
+  const profile = character.profile ?? [];
+
+  const toggle = (r: PersonalityArchetype) => {
+    setProfile(profile.includes(r) ? profile.filter(x => x !== r) : [...profile, r]);
+  };
+
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...profile];
+    const j = i + dir;
+    if (j < 0 || j >= next.length) return;
+    [next[i], next[j]] = [next[j], next[i]];
+    setProfile(next);
+  };
+
+  return (
+    <section className="card">
+      <div className="card-head">
+        <h2>🧭 Radical profile</h2>
+        {profile.length > 0 && (
+          <button className="btn btn-ghost btn-sm" onClick={() => setProfile([])}>Clear</button>
+        )}
+      </div>
+      <p className="muted">
+        Optional. Set it and the habit library on each{' '}
+        <Link to="/attributes">attribute page</Link> reorders to what actually fits you, hiding the
+        ones that reliably fail for your profile. Leave it empty and you get the full library,
+        unfiltered — the app won't guess.
+      </p>
+
+      <div className="profile-order">
+        {ARCHETYPE_KEYS.map(r => (
+          <button
+            key={r}
+            className={`chip ${profile.includes(r) ? 'chip-on' : ''}`}
+            onClick={() => toggle(r)}
+            style={profile.includes(r) ? { borderColor: ARCHETYPES[r].color, color: ARCHETYPES[r].color } : undefined}
+          >
+            {ARCHETYPES[r].label}
+          </button>
+        ))}
+      </div>
+
+      {profile.length > 0 && (
+        <>
+          <p className="muted" style={{ marginTop: 12 }}>Strongest first — order changes the ranking:</p>
+          <div className="profile-picker">
+            {profile.map((r, i) => (
+              <div key={r} className="profile-rank">
+                <span className="profile-rank-num">{i + 1}</span>
+                <span style={{ flex: 1, fontWeight: 600, color: ARCHETYPES[r].color }}>{ARCHETYPES[r].label}</span>
+                <button className="btn btn-ghost btn-sm" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${ARCHETYPES[r].label} up`}>↑</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => move(i, 1)} disabled={i === profile.length - 1} aria-label={`Move ${ARCHETYPES[r].label} down`}>↓</button>
+              </div>
+            ))}
+          </div>
         </>
       )}
     </section>

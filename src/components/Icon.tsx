@@ -21,6 +21,7 @@ import {
   type LucideProps,
   Music2,
   Pencil,
+  PieChart,
   Play,
   Plus,
   Repeat,
@@ -54,7 +55,7 @@ export type IconName =
   // actions / chrome
   | 'gold' | 'check' | 'close' | 'edit' | 'trash' | 'plus' | 'starFilled' | 'starOutline'
   | 'play' | 'stop' | 'flag' | 'lock' | 'trophy' | 'grip' | 'eye' | 'eyeOff'
-  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight' | 'chronicle';
+  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight' | 'chronicle' | 'wheel';
 
 const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   // modules
@@ -101,6 +102,7 @@ const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   trophy: Trophy,
   grip: GripVertical,
   chronicle: ScrollText,
+  wheel: PieChart,
   eye: Eye,
   eyeOff: EyeOff,
   cake: Cake,

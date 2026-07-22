@@ -15,6 +15,7 @@ const NAV: [string, IconName, string][] = [
   ['/quests', 'quests', 'Quests'],
   ['/journal', 'journal', 'Journal'],
   ['/chronicle', 'chronicle', 'Chronicle'],
+  ['/attributes', 'wheel', 'The Wheel'],
   ['/calendar', 'calendar', 'Calendar'],
   ['/social', 'social', 'Social'],
   ['/finances', 'finances', 'Finances'],

@@ -3,6 +3,8 @@ import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-d
 import { CelebrationLayer } from './components/CelebrationLayer';
 import { Layout } from './components/Layout';
 import { Achievements } from './pages/Achievements';
+import { AttributeDetail } from './pages/AttributeDetail';
+import { Attributes } from './pages/Attributes';
 import { Calendar } from './pages/Calendar';
 import { Chronicle } from './pages/Chronicle';
 import { Dashboard } from './pages/Dashboard';
@@ -123,6 +125,8 @@ export default function App() {
           <Route path="/quests/:id" element={<QuestDetail />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/chronicle" element={<Chronicle />} />
+          <Route path="/attributes" element={<Attributes />} />
+          <Route path="/attributes/:key" element={<AttributeDetail />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/social" element={<Social />} />
           <Route path="/finances" element={<Finances />} />
