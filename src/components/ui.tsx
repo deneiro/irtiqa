@@ -1,4 +1,5 @@
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import type { AttributeKey } from '../game/types';
 import { Icon } from './Icon';
@@ -48,15 +49,55 @@ export function AttrPicker({ value, onChange, single }: { value: AttributeKey[];
   );
 }
 
-export function AttrTags({ attrs }: { attrs: AttributeKey[] }) {
+/**
+ * Attribute tags.
+ *
+ * `linked` turns each tag into a route to that attribute's page. It is opt-in
+ * rather than the default because some call sites render these *inside* a card
+ * that is itself a <Link> (the quest list), and an anchor inside an anchor is
+ * invalid HTML with undefined click behaviour. Pass it only where nothing above
+ * is already a link.
+ */
+export function AttrTags({ attrs, linked }: { attrs: AttributeKey[]; linked?: boolean }) {
   return (
     <span className="attr-tags">
-      {attrs.map(a => (
-        <span key={a} className="tag tag-icon" title={ATTRIBUTES[a].label}>
-          <Icon name={a} size={13} />
-        </span>
-      ))}
+      {attrs.map(a =>
+        linked ? (
+          <Link
+            key={a}
+            to={`/attributes/${a}`}
+            className="tag tag-icon tag-link"
+            title={`${ATTRIBUTES[a].label} — open the sector`}
+            style={{ ['--attr-color' as string]: ATTRIBUTES[a].color }}
+          >
+            <Icon name={a} size={13} />
+          </Link>
+        ) : (
+          <span key={a} className="tag tag-icon" title={ATTRIBUTES[a].label}>
+            <Icon name={a} size={13} />
+          </span>
+        ),
+      )}
     </span>
+  );
+}
+
+/**
+ * An inline attribute mention — icon plus name — that routes to the sector page.
+ * For use in running text, where a bare icon would not read as a word.
+ */
+export function AttrLink({ attr, showLabel = true }: { attr: AttributeKey; showLabel?: boolean }) {
+  const meta = ATTRIBUTES[attr];
+  return (
+    <Link
+      to={`/attributes/${attr}`}
+      className="attr-link"
+      title={`${meta.label} — open the sector`}
+      style={{ ['--attr-color' as string]: meta.color }}
+    >
+      <Icon name={attr} size={13} />
+      {showLabel && <span>{meta.label}</span>}
+    </Link>
   );
 }
 

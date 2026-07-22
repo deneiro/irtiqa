@@ -88,7 +88,7 @@ export function Habits() {
                     </div>
                     <div className="habit-meta">
                       <span className="muted">{freqLabel(h)}</span>
-                      <AttrTags attrs={h.attrs} />
+                      <AttrTags attrs={h.attrs} linked />
                     </div>
                     <div className="habit-streak">
                       <span className="streak-big">🔥 {h.streak}</span>

@@ -554,8 +554,22 @@ textarea.input { resize: vertical; }
 
 /* ============ Quests ============ */
 .quest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
-.quest-card { display: block; color: var(--text); }
+.quest-card { display: block; color: var(--text); position: relative; }
 .quest-card:hover { text-decoration: none; border-color: var(--accent); }
+.quest-card h3 a { color: inherit; }
+.quest-card h3 a:hover { text-decoration: none; }
+
+/* Stretched link: the title's anchor covers the whole card, so the card stays a
+   single click target — but it's a sibling of the other content rather than a
+   parent, so interactive children can be raised above it and clicked. */
+.stretched-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.quest-card .attr-tags,
+.quest-card .status { position: relative; z-index: 1; }
 .quest-meta { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font-size: 13px; }
 .quest-detail-grid { display: grid; grid-template-columns: 380px 1fr; gap: 16px; align-items: start; }
 .session-card { display: flex; flex-direction: column; gap: 12px; }
@@ -1413,3 +1427,47 @@ textarea.input { resize: vertical; }
   .attr-essay p { max-width: none; }
   .attr-definition { font-size: 16px; }
 }
+
+/* ============ Attribute cross-links ============
+   Any attribute mention routes to its sector page. Tinted with that sector's own
+   colour so the destination is obvious before you click. */
+.tag-link {
+  color: var(--attr-color, var(--accent));
+  border-color: color-mix(in srgb, var(--attr-color, var(--accent)) 35%, var(--border));
+  transition: background-color 0.12s ease, border-color 0.12s ease, transform 0.08s ease;
+}
+.tag-link:hover {
+  text-decoration: none;
+  background: color-mix(in srgb, var(--attr-color, var(--accent)) 18%, transparent);
+  border-color: var(--attr-color, var(--accent));
+  transform: translateY(-1px);
+}
+
+.attr-link {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: var(--attr-color, var(--accent));
+  font-weight: 700;
+  border-bottom: 1px solid color-mix(in srgb, var(--attr-color, var(--accent)) 40%, transparent);
+  padding-bottom: 1px;
+}
+.attr-link:hover {
+  text-decoration: none;
+  border-bottom-color: var(--attr-color, var(--accent));
+}
+
+/* Progress rows become links without looking like links until hovered. Padding is
+   cancelled by an equal negative margin so adding a hit area shifts nothing. */
+a.attr-progress-row {
+  color: var(--text);
+  padding: 6px 8px;
+  margin: -6px -8px;
+  border-radius: 10px;
+  transition: background-color 0.12s ease;
+}
+a.attr-progress-row:hover { text-decoration: none; background: var(--panel2); }
+a.attr-progress-row:hover .attr-progress-name { color: var(--ac); }
+
+/* Radar labels */
+a.radar-label { cursor: pointer; }
+a.radar-label:hover { opacity: 1; }
+a.radar-label:hover .radar-label-lv { fill: var(--accent); font-weight: 800; }

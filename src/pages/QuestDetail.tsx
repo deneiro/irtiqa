@@ -42,7 +42,7 @@ export function QuestDetail() {
           <h1>{quest.priority && '⭐ '}{quest.title} {quest.completedAt && <span className="status status-done">🏁 completed</span>}</h1>
           {quest.description && <p className="muted">{quest.description}</p>}
           <p className="muted">
-            <AttrTags attrs={quest.attrs} /> ·{' '}
+            <AttrTags attrs={quest.attrs} linked /> ·{' '}
             {target ? `${QUEST_DURATIONS[quest.targetDuration].label} · target ${fmtDay(target)}` : 'No deadline'}
           </p>
         </div>

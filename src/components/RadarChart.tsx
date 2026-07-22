@@ -1,4 +1,4 @@
-import { ATTR_KEYS } from '../game/constants';
+import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import { attrLevel } from '../game/engine';
 import { useGame } from '../store';
 import { Icon } from './Icon';
@@ -35,10 +35,14 @@ export function RadarChart({ size = 300 }: { size?: number }) {
       {ATTR_KEYS.map((k, i) => {
         const [x, y] = pt(i, R + 26);
         return (
-          <g key={k} className="radar-label">
+          // A plain hash href rather than react-router's <Link>: the app uses
+          // HashRouter, and SVG anchors take href directly without needing the
+          // router's click handling.
+          <a key={k} href={`#/attributes/${k}`} className="radar-label">
+            <title>{ATTRIBUTES[k].label} — open the sector</title>
             <Icon name={k} x={x - 9} y={y - 21} size={18} />
             <text x={x} y={y + 11} textAnchor="middle" className="radar-label-lv">Lv {levels[i]}</text>
-          </g>
+          </a>
         );
       })}
     </svg>

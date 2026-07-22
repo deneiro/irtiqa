@@ -5,7 +5,7 @@ import { AttributeProgress } from '../components/AttributeProgress';
 import { Icon, type IconName } from '../components/Icon';
 import { RadarChart } from '../components/RadarChart';
 import { RelapseReflect } from '../components/RelapseReflect';
-import { AttrPicker, Bar, Empty, Modal } from '../components/ui';
+import { AttrLink, AttrPicker, AttrTags, Bar, Empty, Modal } from '../components/ui';
 import { BOSS_REWARD, BOSSES } from '../game/boss';
 import { buildChronicle, lastCompleteWeek } from '../game/chronicle';
 import { ATTRIBUTES, CLASSES, COSMETICS, DASHBOARD_WIDGETS, DEFAULT_DASHBOARD_ORDER, MOODS } from '../game/constants';
@@ -231,7 +231,7 @@ export function Dashboard() {
             ) : (
               <>
                 <p className="muted">
-                  It feeds on <Icon name={boss.attr} size={13} /> <strong>{ATTRIBUTES[boss.attr].label}</strong>, your thinnest attribute.
+                  It feeds on <AttrLink attr={boss.attr} />, your thinnest attribute.
                   Land {boss.required} {ATTRIBUTES[boss.attr].label}-tagged actions this week — habits, tasks, quests, anything real.
                   Claim it for <strong>+{BOSS_REWARD.xp} XP · +{BOSS_REWARD.gold} 🪙</strong>. Leave it and it just moves on.
                 </p>
@@ -370,7 +370,7 @@ export function Dashboard() {
                 </button>
                 <span className="list-title">{t.title}</span>
                 {t.dueDate && <span className="muted">{fmtDay(t.dueDate)}</span>}
-                <span className="tag tag-icon"><Icon name={t.attr} size={13} /></span>
+                <AttrTags attrs={[t.attr]} linked />
                 <button
                   className="btn btn-ghost btn-sm"
                   onClick={() => s.deleteQuickTask(t.id)}

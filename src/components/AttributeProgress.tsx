@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import { attrLevelProgress } from '../game/engine';
 import { useGame } from '../store';
@@ -15,7 +16,7 @@ export function AttributeProgress() {
         const pct = Math.round((into / need) * 100);
         const style = { '--ac': meta.color } as React.CSSProperties;
         return (
-          <div key={k} className="attr-progress-row" style={style}>
+          <Link key={k} to={`/attributes/${k}`} className="attr-progress-row" style={style} title={`${meta.label} — open the sector`}>
             <span className="attr-progress-icon"><Icon name={k} size={19} /></span>
             <div className="attr-progress-body">
               <div className="attr-progress-head">
@@ -28,7 +29,7 @@ export function AttributeProgress() {
                 <div className="attr-progress-fill" style={{ width: `${pct}%` }} />
               </div>
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>

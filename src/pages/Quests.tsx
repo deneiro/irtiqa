@@ -52,14 +52,22 @@ export function Quests() {
                 const target = questTargetDate(q);
                 const progress = questDeadlineProgress(q);
                 return (
-                  <Link to={`/quests/${q.id}`} key={q.id} className="card quest-card">
+                  // The card is a plain div, not a Link. The title's link is stretched
+                  // over the whole card in CSS, so clicking anywhere still opens the
+                  // quest — but interactive children (the attribute tags) can sit above
+                  // it and be clicked. Wrapping the card in an anchor would forbid that.
+                  <div key={q.id} className="card quest-card">
                     <div className="card-head">
-                      <h3>{q.priority && '⭐ '}{q.title}</h3>
+                      <h3>
+                        <Link to={`/quests/${q.id}`} className="stretched-link">
+                          {q.priority && '⭐ '}{q.title}
+                        </Link>
+                      </h3>
                       {s.activeSession?.questId === q.id && <span className="status status-live">● recording</span>}
                     </div>
                     {q.description && <p className="muted clamp2">{q.description}</p>}
                     <div className="quest-meta">
-                      <AttrTags attrs={q.attrs} />
+                      <AttrTags attrs={q.attrs} linked />
                       <span className="muted">{q.sessions.length} session{q.sessions.length === 1 ? '' : 's'}</span>
                     </div>
                     {progress !== null && target ? (
@@ -76,7 +84,7 @@ export function Quests() {
                         {target ? `${QUEST_DURATIONS[q.targetDuration].label} · by ${fmtDay(target)}` : 'No deadline'}
                       </span>
                     </div>
-                  </Link>
+                  </div>
                 );
               })}
             </div>
@@ -136,7 +144,7 @@ function GoalsSection() {
                   <div className="goal-title">{goal.title}</div>
                   {goal.why && <div className="muted goal-why">"{goal.why}"</div>}
                   <div className="quest-meta">
-                    <AttrTags attrs={goal.attrs} />
+                    <AttrTags attrs={goal.attrs} linked />
                     <span className={`muted ${daysLeft < 0 ? 'goal-overdue' : ''}`}>
                       {daysLeft >= 0 ? `${daysLeft} days left · by ${fmtDay(goal.targetDate)}` : `${-daysLeft} days past ${fmtDay(goal.targetDate)}`}
                     </span>
