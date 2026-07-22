@@ -3,9 +3,9 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { CLASSES, COSMETICS } from '../game/constants';
 import { charLevelProgress, fmtMinutes, momentumMult, rankFor } from '../game/engine';
 import { useGame } from '../store';
-import { Avatar } from './Avatar';
 import { CelebrationLayer } from './CelebrationLayer';
 import { Icon, type IconName } from './Icon';
+import { Sigil } from './Sigil';
 import { Bar } from './ui';
 import { VFXLayer } from './VFXLayer';
 
@@ -55,7 +55,9 @@ export function Layout() {
       <aside className="sidebar">
         <div className="logo">⚔️ IrtiQa</div>
         <Link to="/profile" className="side-char" title="Open profile">
-          <Avatar classId={character.classId} size={38} frameId={equipped.frame} />
+          {/* The sigil, not a flat class icon — the sidebar is the one place it's
+              seen every session, so it's where its growth is most likely noticed. */}
+          <span className="side-sigil"><Sigil size={42} /></span>
           <div className="side-char-text">
             <div className="side-char-name">
               {character.name}

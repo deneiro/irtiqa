@@ -1213,6 +1213,10 @@ textarea.input { resize: vertical; }
   }
   .topbar .stat-label { font-size: var(--fs-xs); }
   .stat-level, .stat-hp { max-width: none; min-width: 0; flex: 1; }
+  /* Four stats plus a streak badge crush the bars to a few pixels at 375px.
+     Hold a legible floor and let the numeric labels give way instead. */
+  .topbar .bar { min-width: 40px; }
+  .topbar .stat-num { flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .stat-num { font-size: var(--fs-xs); }
   .stat-gold { font-size: var(--fs-body); }
 
@@ -1471,3 +1475,67 @@ a.attr-progress-row:hover .attr-progress-name { color: var(--ac); }
 a.radar-label { cursor: pointer; }
 a.radar-label:hover { opacity: 1; }
 a.radar-label:hover .radar-label-lv { fill: var(--accent); font-weight: 800; }
+
+/* ============ The Sigil ============ */
+.sigil { display: block; overflow: visible; }
+.sigil-ring { fill: none; stroke: var(--accent); stroke-width: 1; }
+.sigil-facet { fill: none; stroke: var(--border); stroke-width: 0.6; opacity: 0.5; }
+.sigil-core { fill: var(--panel); stroke: var(--accent); stroke-width: 1.2; }
+.sigil-class { color: var(--accent); }
+/* Screen blending makes overlapping petals read as light rather than mud.
+   Only safe on the dark themes — the light ones wash out, so they get plain alpha. */
+.sigil-petals { mix-blend-mode: screen; }
+[data-theme='parchment'] .sigil-petals,
+[data-theme='sakura'] .sigil-petals { mix-blend-mode: multiply; }
+
+.sigil-petal-link { cursor: pointer; }
+.sigil-petal-link path { transition: fill-opacity 0.15s ease; }
+.sigil-petal-link:hover path { fill-opacity: 0.55; }
+
+/* ---- Hero panel ---- */
+.hero-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 26px;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(140deg, var(--panel2), var(--panel));
+  border-color: color-mix(in srgb, var(--accent) 32%, var(--border));
+}
+.hero-sigil { position: relative; display: flex; align-items: center; justify-content: center; }
+.hero-flame {
+  position: absolute; bottom: 4px; right: 4px;
+  background: var(--panel); border: 1px solid var(--gold); color: var(--gold);
+  border-radius: 999px; padding: 3px 10px;
+  font-weight: 800; font-size: var(--fs-sm); font-variant-numeric: tabular-nums;
+}
+.hero-body { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.hero-name { font-size: var(--fs-display); line-height: 1.05; letter-spacing: -0.03em; }
+.hero-sub { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; color: var(--muted); margin: 0 0 8px; }
+.hero-xp { margin: 0; font-size: var(--fs-xs); }
+.hero-read {
+  margin: 10px 0 0; padding-left: 12px;
+  border-left: 2px solid var(--accent);
+  font-size: var(--fs-body); line-height: 1.55; text-wrap: pretty;
+}
+.hero-perk { margin: 8px 0 0; }
+.hero-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid var(--border);
+}
+
+/* Sigil lit by a perfect-day streak */
+.sigil-lit .sigil-ring { stroke: var(--gold); }
+.sigil-lit .sigil-core { stroke: var(--gold); }
+
+/* Sidebar mini-sigil replaces the flat class icon */
+.side-char { display: flex; align-items: center; gap: 10px; }
+.side-sigil { flex-shrink: 0; line-height: 0; }
+
+@media (max-width: 860px) {
+  .hero-panel { grid-template-columns: 1fr; gap: 16px; justify-items: center; text-align: center; }
+  .hero-body { align-items: center; width: 100%; }
+  .hero-read { border-left: 0; border-top: 2px solid var(--accent); padding: 10px 0 0; }
+  .hero-meta { justify-content: center; }
+}

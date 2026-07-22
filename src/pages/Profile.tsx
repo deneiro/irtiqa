@@ -4,10 +4,12 @@ import { AttributeProgress } from '../components/AttributeProgress';
 import { Avatar } from '../components/Avatar';
 import { Icon } from '../components/Icon';
 import { RadarChart } from '../components/RadarChart';
+import { Sigil } from '../components/Sigil';
 import { Bar, Empty } from '../components/ui';
 import { ACHIEVEMENTS, CLASSES, COSMETIC_RARITY_META, COSMETICS, MOODS, TIER_LABEL } from '../game/constants';
 import { charLevelProgress, fmtDayFull, fmtMinutes, questPayout, rankFor, todayStr } from '../game/engine';
 import { buildInsights } from '../game/insights';
+import { sigilDescription, sigilSpec } from '../game/sigil';
 import type { CosmeticSlot, HabitDayStatus } from '../game/types';
 import { useGame } from '../store';
 
@@ -41,6 +43,60 @@ export function Profile() {
   const totalAch = ACHIEVEMENTS.length;
   const unlockedCount = Object.keys(s.unlocked).length;
   const equippedTitle = COSMETICS.find(c => c.id === s.equippedCosmetics.title);
+  const momentumStreak = s.momentum.streak;
+
+  const spec = useMemo(
+    () => sigilSpec({ attrs: s.attrs, xp: character.xp, classId: character.classId, momentumStreak }),
+    [s.attrs, character.xp, character.classId, momentumStreak],
+  );
+
+  /**
+   * Rasterizes the on-screen sigil to a PNG. Serializing the live SVG rather than
+   * re-drawing means the file is always exactly what the page shows — but CSS
+   * variables don't survive serialization, so the computed colours are inlined first.
+   */
+  const downloadSigil = () => {
+    const src = document.querySelector<SVGSVGElement>('.hero-sigil .sigil');
+    if (!src) return;
+
+    const svg = src.cloneNode(true) as SVGSVGElement;
+    const cs = getComputedStyle(document.documentElement);
+    const resolve = (v: string) => v.replace(/var\((--[\w-]+)\)/g, (_, name) => cs.getPropertyValue(name).trim() || '#888');
+    svg.querySelectorAll<SVGElement>('*').forEach(el => {
+      const own = getComputedStyle(el);
+      for (const prop of ['fill', 'stroke', 'stop-color'] as const) {
+        const val = own.getPropertyValue(prop);
+        if (val && val !== 'none') el.setAttribute(prop, resolve(val));
+      }
+    });
+
+    // Gradient <stop> keeps stop-color as a literal attribute that computed style
+    // doesn't resolve, so sweep the serialized string for anything left over.
+    // Without this the exported PNG loses the core's glow to a grey fallback.
+    const markup = resolve(new XMLSerializer().serializeToString(svg));
+
+    const SIZE = 1024; // fixed export size, independent of the rendered one
+    const blob = new Blob([markup], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = SIZE;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = cs.getPropertyValue('--bg').trim() || '#0f1220';
+        ctx.fillRect(0, 0, SIZE, SIZE);
+        ctx.drawImage(img, 0, 0, SIZE, SIZE);
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = `${character.name.toLowerCase().replace(/\s+/g, '-')}-sigil-lv${lp.level}.png`;
+        a.click();
+      }
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  };
 
   const insights = useMemo(
     () => buildInsights({ habits: s.habits, habitLog: s.habitLog, journal: s.journal, txs: s.txs, failures: s.failures }, todayStr()),
@@ -149,23 +205,42 @@ export function Profile() {
 
   return (
     <div className="page">
-      <div className="page-head">
-        <div className="profile-head">
-          <Avatar classId={character.classId} size={64} frameId={s.equippedCosmetics.frame} />
-          <div>
-            <h1>
-              {character.name}
-              {equippedTitle && <span className="char-title"> {equippedTitle.name}</span>}
-            </h1>
-            <p className="muted">{rank.emoji} {rank.name} · {cls?.name} · Level {lp.level}</p>
-            {cls && <p className="muted">★ {cls.perk}</p>}
+      {/* The hero panel. Everything here is derived from play — the sigil's shape
+          is the Wheel, so it cannot look earned unless it was. */}
+      <section className={`card hero-panel ${s.equippedCosmetics.banner ? `banner-${s.equippedCosmetics.banner}` : ''}`}>
+        <div className="hero-sigil">
+          <Sigil size={260} interactive />
+          {momentumStreak > 0 && (
+            <span className="hero-flame" title={`${momentumStreak}-day perfect streak — the sigil is lit`}>
+              🔥 {momentumStreak}
+            </span>
+          )}
+        </div>
+
+        <div className="hero-body">
+          <h1 className="hero-name">
+            {character.name}
+            {equippedTitle && <span className="char-title"> {equippedTitle.name}</span>}
+          </h1>
+          <p className="hero-sub">
+            {rank.emoji} {rank.name} · {cls && <Icon name={cls.id} size={14} />} {cls?.name} · Level {lp.level}
+          </p>
+
+          <Bar value={lp.into} max={lp.need} className="bar-xp" label={`${lp.into}/${lp.need} XP`} />
+          <p className="muted hero-xp">{lp.into}/{lp.need} XP to level {lp.level + 1}</p>
+
+          <p className="hero-read">{sigilDescription(spec)}</p>
+
+          {cls && <p className="muted hero-perk">★ {cls.perk}</p>}
+
+          <div className="hero-meta">
+            <span className="muted">
+              {spec.rings} rank ring{spec.rings === 1 ? '' : 's'} · {spec.facets} facet{spec.facets === 1 ? '' : 's'} ·{' '}
+              {Math.round(spec.balance * 100)}% round
+            </span>
+            <button className="btn btn-ghost btn-sm" onClick={downloadSigil}>⬇ Save sigil</button>
           </div>
         </div>
-      </div>
-
-      <section className="card">
-        <div className="card-head"><h2>Level progress</h2><span className="muted">{lp.into}/{lp.need} XP</span></div>
-        <Bar value={lp.into} max={lp.need} className="bar-xp" />
       </section>
 
       <div className="profile-stats">
