@@ -1,0 +1,17 @@
+node_modules/
+dist/
+graphify-out/
+
+# Local env / secrets
+.env
+.env.local
+.env.*.local
+
+# Editor / OS
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# Claude Code local settings (machine-specific)
+.claude/settings.local.json

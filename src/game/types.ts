@@ -1,0 +1,371 @@
+export type AttributeKey =
+  | 'health'
+  | 'friends'
+  | 'family'
+  | 'money'
+  | 'career'
+  | 'spirituality'
+  | 'development'
+  | 'brightness';
+
+export type ClassId =
+  | 'warrior'
+  | 'scholar'
+  | 'magician'
+  | 'guardian'
+  | 'merchant'
+  | 'strategist'
+  | 'bard';
+
+export interface ClassDef {
+  id: ClassId;
+  name: string;
+  emoji: string;
+  tagline: string;
+  /** attribute -> xp multiplier bonus, e.g. 0.1 = +10% */
+  boosts: Partial<Record<AttributeKey, number>>;
+  /** One real mechanical advantage, so the class choice matters beyond flavor. */
+  perk: string;
+}
+
+export interface Character {
+  name: string;
+  classId: ClassId;
+  xp: number;
+  hp: number; // 0..100
+  gold: number;
+  createdAt: string; // ISO
+}
+
+export interface RankDef {
+  minLevel: number;
+  name: string;
+  emoji: string;
+}
+
+// ---------- Habits ----------
+export type HabitKind = 'good' | 'bad';
+export type HabitFreq = 'daily' | 'weekly' | 'dates';
+export type HabitDayStatus = 'done' | 'failed' | 'pardoned' | 'shielded' | 'ghost' | 'indulged';
+
+export interface Habit {
+  id: string;
+  name: string;
+  kind: HabitKind;
+  freq: HabitFreq;
+  weekdays?: number[]; // 0 (Sun) .. 6 (Sat), for freq 'weekly'
+  dates?: string[]; // YYYY-MM-DD list, for freq 'dates'
+  attrs: AttributeKey[];
+  streak: number;
+  best: number;
+  createdAt: string; // YYYY-MM-DD
+  archived?: boolean;
+}
+
+export interface FailureRecord {
+  id: string;
+  habitId: string;
+  date: string; // YYYY-MM-DD
+  prevStreak: number;
+  damage: number;
+  pardoned?: boolean;
+  /** Optional one-line answer to "what triggered it?" — failure as information, not just punishment. */
+  trigger?: string;
+}
+
+// ---------- Quests ----------
+export interface QuestSession {
+  id: string;
+  date: string; // YYYY-MM-DD
+  minutes: number;
+  note: string;
+}
+
+export type QuestDuration = '1d' | '1w' | '2w' | '1m' | '3m' | '6m' | '1y' | 'none';
+
+export interface Quest {
+  id: string;
+  title: string;
+  description?: string;
+  targetDuration: QuestDuration;
+  attrs: AttributeKey[];
+  sessions: QuestSession[];
+  priority: boolean;
+  createdAt: string; // ISO
+  completedAt?: string; // ISO
+}
+
+/** A long-horizon goal sitting above quests: the "why" behind the daily grind. Links quests; pays out once, only if real linked work got finished. */
+export interface Goal {
+  id: string;
+  title: string;
+  why?: string;
+  targetDate: string; // YYYY-MM-DD
+  attrs: AttributeKey[];
+  questIds: string[];
+  createdAt: string; // ISO
+  completedAt?: string; // ISO
+}
+
+export interface QuickTask {
+  id: string;
+  title: string;
+  attr: AttributeKey;
+  createdAt: string;
+  doneAt?: string;
+  dueDate?: string; // YYYY-MM-DD, optional — lets the task appear on the Calendar
+}
+
+// ---------- Journal ----------
+export interface JournalEntry {
+  id: string;
+  date: string; // YYYY-MM-DD, one entry per day
+  createdAt: string; // ISO
+  mood: number; // 1..5
+  stress: number; // 1..10
+  answers: { q: string; a: string }[];
+  unlocked?: boolean; // Feather of Time applied
+}
+
+// ---------- Social ----------
+export type PersonalityArchetype =
+  | 'hysteroid'
+  | 'epileptoid'
+  | 'anxious'
+  | 'emotive'
+  | 'schizoid'
+  | 'paranoid'
+  | 'hyperthymic';
+
+export type PrimaryGroup = 'family' | 'relative' | 'colleague' | 'friend' | 'close';
+
+export interface ContactChannels {
+  instagram?: string;
+  whatsapp?: string;
+  telegram?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface Contact {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  city?: string;
+  birthday?: string; // YYYY-MM-DD
+  gender?: 'male' | 'female' | 'other';
+  archetypes: PersonalityArchetype[];
+  occupation?: string;
+  primaryGroup: PrimaryGroup;
+  channels: ContactChannels;
+  notes: string;
+  createdAt: string;
+}
+
+export interface DebtPayment {
+  id: string;
+  amount: number;
+  date: string; // YYYY-MM-DD
+  accountId?: string; // set when the payment was posted as a real transaction
+}
+
+export interface Debt {
+  id: string;
+  contactId: string;
+  direction: 'iOwe' | 'theyOwe';
+  amount: number; // original amount
+  note: string;
+  createdAt: string;
+  payments: DebtPayment[];
+  settledAt?: string; // set once payments cover the full amount
+}
+
+export interface SocialEvent {
+  id: string;
+  contactId?: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  createdAt: string;
+}
+
+// ---------- Finances ----------
+export interface Account {
+  id: string;
+  name: string;
+  initialBalance: number;
+}
+
+export interface Tx {
+  id: string;
+  accountId: string;
+  type: 'income' | 'expense';
+  amount: number;
+  category: string;
+  note: string;
+  date: string; // YYYY-MM-DD
+  subId?: string; // set when auto-posted by a subscription
+  transferId?: string; // links the two legs of one account-to-account transfer
+}
+
+export interface Subscription {
+  id: string;
+  name: string;
+  amount: number;
+  accountId: string;
+  category: string;
+  dayOfMonth: number; // 1..28
+  nextDue: string; // YYYY-MM-DD
+  active: boolean;
+}
+
+/** A player-created real-world reward — bought with Gold AND real money from a chosen account. */
+export interface WishlistItem {
+  id: string;
+  name: string;
+  goldCost: number;
+  moneyCost: number;
+  createdAt: string;
+  purchasedAt?: string;
+}
+
+// ---------- Market ----------
+export type ItemId =
+  | 'potion_s'
+  | 'potion_m'
+  | 'potion_l'
+  | 'streak_shield'
+  | 'habit_pardon'
+  | 'indulgence'
+  | 'ghost_day'
+  | 'feather'
+  | 'focus_unlock'
+  | 'attr_boost'
+  | 'identity_scroll'
+  | 'theme_parchment'
+  | 'theme_neon'
+  | 'theme_sakura';
+
+export interface ItemDef {
+  id: ItemId;
+  name: string;
+  emoji: string;
+  price: number;
+  desc: string;
+  kind: 'consumable' | 'permanent' | 'theme';
+  themeId?: string;
+  heal?: number;
+}
+
+// ---------- Achievements ----------
+export type Tier = 'bronze' | 'silver' | 'gold' | 'platinum';
+
+export interface Metrics {
+  level: number;
+  checkins: number;
+  bestStreak: number;
+  questsCompleted: number;
+  sessionHours: number;
+  journalCount: number;
+  contacts: number;
+  debtsSettled: number;
+  txs: number;
+  goldEarned: number;
+  itemsBought: number;
+  itemsUsed: number;
+  quickTasks: number;
+  minAttrLevel: number;
+  bossesDefeated: number;
+}
+
+export interface AchievementDef {
+  id: string;
+  family: string;
+  familyEmoji: string;
+  tier: Tier;
+  name: string;
+  desc: string;
+  cond: (m: Metrics) => boolean;
+}
+
+// ---------- Celebrations (animations queue) ----------
+export type CelebrationType =
+  | 'reward'
+  | 'damage'
+  | 'info'
+  | 'item'
+  | 'levelup'
+  | 'rankup'
+  | 'achievement';
+
+export interface Celebration {
+  id: string;
+  type: CelebrationType;
+  title: string;
+  subtitle?: string;
+  tier?: Tier;
+}
+
+// ---------- Stats (counters used by achievements) ----------
+export interface Stats {
+  checkins: number;
+  goldEarned: number;
+  questsCompleted: number;
+  sessionMinutes: number;
+  itemsBought: number;
+  itemsUsed: number;
+  quickTasksDone: number;
+  debtsSettled: number;
+  bestStreak: number;
+  bossesDefeated: number;
+}
+
+// ---------- Weekly boss ----------
+/** One boss per week, spawned from the weakest attribute. Slay it with tagged actions or eat the penalty at rollover. */
+export interface BossState {
+  week: string; // Monday of the boss week (YYYY-MM-DD)
+  attr: AttributeKey;
+  required: number;
+  progress: number;
+  defeatedAt?: string; // ISO
+}
+
+export interface Effects {
+  indulgence: number; // active charges: next bad-habit relapse forgiven
+  xpBoostCharges: number; // +50% XP for next N xp-earning actions
+  maxPriority: number; // 1, or 2 after Focus Unlock
+  ghostDays: string[]; // dates fully frozen
+  /** Set after a long absence: check in `remaining` habits before `expiresDay` to restore HP. */
+  comeback?: { remaining: number; expiresDay: string } | null;
+}
+
+export interface ThemeDef {
+  id: string;
+  name: string;
+  desc: string;
+  emoji: string;
+  free?: boolean;
+}
+
+// ---------- Dashboard customization ----------
+export type DashboardWidgetId =
+  | 'dailyContract'
+  | 'weeklyBoss'
+  | 'todayHabits'
+  | 'lifeBalance'
+  | 'attributes'
+  | 'quickTasks'
+  | 'quests'
+  | 'journal'
+  | 'calendar';
+
+// ---------- Cosmetics (chest loot: avatar frames, titles, dashboard banners) ----------
+export type CosmeticSlot = 'frame' | 'title' | 'banner';
+export type CosmeticRarity = 'common' | 'rare' | 'epic';
+
+export interface CosmeticDef {
+  id: string;
+  name: string;
+  slot: CosmeticSlot;
+  rarity: CosmeticRarity;
+  desc: string;
+}
