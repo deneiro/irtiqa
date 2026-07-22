@@ -14,7 +14,7 @@ import {
   TIER_REWARDS,
   TRANSFER_CATEGORY,
 } from './game/constants';
-import { BOSS_PENALTY, BOSS_REQUIRED, BOSS_REWARD, BOSSES } from './game/boss';
+import { BOSS_REQUIRED, BOSS_REWARD, BOSSES } from './game/boss';
 import { type ChestLoot, rollChest } from './game/chest';
 import { contractStatus } from './game/contract';
 import {
@@ -33,7 +33,6 @@ import {
   fmtDay,
   GRACE_HOUR,
   habitDueOn,
-  hpDebuff,
   itemPrice,
   journalEditable,
   journalXp,
@@ -247,7 +246,7 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
     boosted = true;
   }
 
-  const finalXp = Math.round(xp * mult * hpDebuff(d.character.hp));
+  const finalXp = Math.round(xp * mult);
   d.character.xp += finalXp;
 
   const attrUps: string[] = [];
@@ -632,12 +631,7 @@ export const useGame = create<GameState>()(
           // ---- Weekly boss lifecycle ----
           const wk = weekKey(today);
           if (d.boss && d.boss.week !== wk) {
-            if (!d.boss.defeatedAt) {
-              const bossDef = BOSSES[d.boss.attr];
-              const dmg = reduceDamage(BOSS_PENALTY, d.character.classId);
-              d.character.hp = clampHp(d.character.hp - dmg);
-              pushCeleb(d, { type: 'damage', title: `-${dmg} HP`, subtitle: `${bossDef.emoji} ${bossDef.name} went unchallenged last week.` });
-            }
+            // An unslain boss simply leaves. It used to bill you 15 HP on the way out.
             d.boss = null;
           }
           if (!d.boss) {
@@ -648,7 +642,7 @@ export const useGame = create<GameState>()(
             pushCeleb(d, {
               type: 'info',
               title: `${bossDef.emoji} A boss stalks your week: ${bossDef.name}`,
-              subtitle: `It feeds on ${ATTRIBUTES[weakest].label}, your weakest attribute. Land ${BOSS_REQUIRED} ${ATTRIBUTES[weakest].label}-tagged actions by Sunday or lose ${BOSS_PENALTY} HP.`,
+              subtitle: `It feeds on ${ATTRIBUTES[weakest].label}, your thinnest attribute. Land ${BOSS_REQUIRED} ${ATTRIBUTES[weakest].label}-tagged actions before Sunday to claim it.`,
             });
           }
 
@@ -675,7 +669,7 @@ export const useGame = create<GameState>()(
             }
           }
 
-          if (missed > 0) pushCeleb(d, { type: 'damage', title: `-${dmgTotal} HP`, subtitle: `${missed} missed habit${missed > 1 ? 's' : ''} caught up with you` });
+          if (missed > 0) pushCeleb(d, { type: 'damage', title: `-${dmgTotal} HP`, subtitle: `${missed} habit${missed > 1 ? 's' : ''} went unlogged. Today starts clean.` });
           if (shields > 0) pushCeleb(d, { type: 'item', title: '🛡️ Streak Shield activated', subtitle: `${shields} streak${shields > 1 ? 's' : ''} protected automatically` });
           if (indulged > 0) pushCeleb(d, { type: 'item', title: '🕯️ Indulgence consumed', subtitle: `${indulged} relapse${indulged > 1 ? 's' : ''} forgiven` });
           checkAchievementsD(d);
@@ -778,10 +772,8 @@ export const useGame = create<GameState>()(
         set(d => {
           const q = d.quests.find(x => x.id === id);
           if (!q || q.completedAt) return;
-          if (on && d.character?.hp === 0) {
-            pushCeleb(d, { type: 'info', title: 'Too exhausted to focus', subtitle: 'At 0 HP you cannot mark priority quests. Restore HP first.' });
-            return;
-          }
+          // Removed: priority quests used to lock at 0 HP. Being run down is exactly
+          // when choosing one thing to focus on matters most — locking it was backwards.
           if (on) {
             const count = d.quests.filter(x => x.priority && !x.completedAt).length;
             if (count >= d.effects.maxPriority) {
@@ -1285,7 +1277,7 @@ export const useGame = create<GameState>()(
           pushCeleb(d, {
             type: 'reward',
             title: `🎁 ${loot.crit ? 'CRITICAL CHEST! ' : ''}+${goldTotal} 🪙`,
-            subtitle: `Daily Contract fulfilled${bonusLabel}`,
+            subtitle: `Daily Three fulfilled${bonusLabel}`,
           });
           if (loot.bonus.kind === 'cosmetic') {
             pushCeleb(d, {

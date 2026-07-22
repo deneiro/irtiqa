@@ -71,7 +71,7 @@ describe('class perks (store)', () => {
     g().createCharacter('T', 'guardian');
     g().addHabit({ name: 'No smoking', kind: 'bad', freq: 'daily', attrs: ['health'], weekdays: [], dates: [] });
     g().relapseHabit(g().habits[0].id);
-    expect(g().character!.hp).toBe(92); // raw 10 → guardian 8
+    expect(g().character!.hp).toBe(95); // raw 6 → guardian round(6 * 0.75) = 5
   });
 
   it('bard earns +1 gold per check-in', () => {

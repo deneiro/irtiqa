@@ -22,7 +22,7 @@ const OUTCOME_LABEL: Record<HabitDayStatus, string> = {
   pardoned: 'pardoned',
   indulged: 'indulged',
   ghost: 'frozen',
-  failed: 'failed',
+  failed: 'missed',
 };
 
 /** Per-habit last-12-weeks progress grid — one habit's own history, not the aggregate. */
@@ -39,7 +39,7 @@ export function HabitHeatmap({ habit }: { habit: Habit }) {
       days.push({ day: d, cls: OUTCOME_CLASS[status], label: `${fmtDay(d)}: ${OUTCOME_LABEL[status]}` });
     } else if (habitDueOn(habit, d) && d < today) {
       // Due with no logged status and already in the past — reconciliation just hasn't run for it yet
-      days.push({ day: d, cls: OUTCOME_CLASS.failed, label: `${fmtDay(d)}: failed` });
+      days.push({ day: d, cls: OUTCOME_CLASS.failed, label: `${fmtDay(d)}: missed` });
     } else if (habitDueOn(habit, d)) {
       days.push({ day: d, cls: OUTCOME_CLASS.due, label: `${fmtDay(d)}: today, not yet logged` });
     } else {
@@ -62,7 +62,7 @@ export function HabitHeatmap({ habit }: { habit: Habit }) {
       </div>
       <div className="hi-legend">
         <span><i className="hi-cell hi-done" /> done</span>
-        <span><i className="hi-cell hi-failed" /> failed</span>
+        <span><i className="hi-cell hi-failed" /> missed</span>
         <span><i className="hi-cell hi-bonus" /> saved by item</span>
         <span><i className="hi-cell hi-ghost" /> frozen</span>
         <span><i className="hi-cell hi-none" /> not scheduled</span>

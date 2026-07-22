@@ -11,11 +11,13 @@ import { buildInsights } from '../game/insights';
 import type { CosmeticSlot, HabitDayStatus } from '../game/types';
 import { useGame } from '../store';
 
+// The stored status stays 'failed' (it's persisted save data), but nothing shown to
+// the player says "failed" — a missed day is a fact to read, not a verdict to wear.
 const HABIT_ICON: Record<HabitDayStatus, string> = {
-  done: '✅', failed: '✗', pardoned: '📜', shielded: '🛡️', ghost: '👻', indulged: '🕯️',
+  done: '✅', failed: '—', pardoned: '📜', shielded: '🛡️', ghost: '👻', indulged: '🕯️',
 };
 const HABIT_LABEL: Record<HabitDayStatus, string> = {
-  done: 'completed', failed: 'failed', pardoned: 'pardoned', shielded: 'streak shielded', ghost: 'frozen day', indulged: 'relapse forgiven',
+  done: 'completed', failed: 'missed', pardoned: 'pardoned', shielded: 'streak shielded', ghost: 'frozen day', indulged: 'relapse forgiven',
 };
 
 interface ActivityEntry {

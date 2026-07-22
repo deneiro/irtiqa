@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BOSS_PENALTY, BOSS_REQUIRED, BOSS_REWARD } from '../game/boss';
+import { BOSS_REQUIRED, BOSS_REWARD } from '../game/boss';
 import { addDaysStr, todayStr, weekKey } from '../game/engine';
 import { useGame } from '../store';
 
@@ -66,19 +66,19 @@ describe('weekly boss', () => {
     expect(g().boss!.progress).toBe(0);
   });
 
-  it('an unslain boss punishes at week rollover and a fresh one spawns', () => {
+  it('an unslain boss costs nothing at rollover and a fresh one spawns', () => {
     g().createCharacter('T', 'warrior');
     useGame.setState({
       boss: { week: addDaysStr(weekKey(today), -7), attr: 'health', required: BOSS_REQUIRED, progress: 1 },
       lastProcessedDay: today, // keep habit judging out of this test
     });
     g().reconcile();
-    expect(g().character!.hp).toBe(100 - BOSS_PENALTY);
+    expect(g().character!.hp).toBe(100); // the boss is pure upside — it just leaves
     expect(g().boss!.week).toBe(weekKey(today)); // new boss for the new week
     expect(g().boss!.progress).toBe(0);
   });
 
-  it('a slain boss expires quietly at rollover — no punishment', () => {
+  it('a slain boss expires quietly at rollover', () => {
     g().createCharacter('T', 'warrior');
     useGame.setState({
       boss: { week: addDaysStr(weekKey(today), -7), attr: 'health', required: BOSS_REQUIRED, progress: 3, defeatedAt: new Date().toISOString() },
@@ -89,13 +89,13 @@ describe('weekly boss', () => {
     expect(g().boss!.week).toBe(weekKey(today));
   });
 
-  it('guardian shrugs off part of the boss penalty', () => {
+  it('a missed boss week never damages any class', () => {
     g().createCharacter('T', 'guardian');
     useGame.setState({
       boss: { week: addDaysStr(weekKey(today), -7), attr: 'health', required: BOSS_REQUIRED, progress: 0 },
       lastProcessedDay: today,
     });
     g().reconcile();
-    expect(g().character!.hp).toBe(100 - Math.round(BOSS_PENALTY * 0.75));
+    expect(g().character!.hp).toBe(100);
   });
 });

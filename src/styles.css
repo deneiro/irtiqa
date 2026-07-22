@@ -1042,7 +1042,7 @@ textarea.input { resize: vertical; }
   50% { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--gold) 80%, transparent)); }
 }
 
-/* ============ Daily Contract & chest ============ */
+/* ============ Daily Three & chest ============ */
 .contract-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .contract-list li { display: flex; align-items: center; gap: 10px; color: var(--muted); }
 .contract-list li.contract-ok { color: var(--text); }

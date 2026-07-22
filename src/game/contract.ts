@@ -19,7 +19,7 @@ interface ContractSource {
 }
 
 /**
- * The Daily Contract: check every due habit, write the journal, and do one
+ * The Daily Three: check every due habit, write the journal, and do one
  * extra thing (a quick task or a quest session). All three → the chest unlocks.
  * Derived live from existing records — nothing to store, nothing to fake.
  */

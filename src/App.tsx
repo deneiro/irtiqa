@@ -35,15 +35,17 @@ function checkReminder() {
   const contractOpen = !contractStatus(st, today).complete;
   if (dueLeft > 0 || contractOpen) {
     try {
+      // Invitation, not a threat. "Streaks are on the line" makes the notification
+      // something to dismiss; naming what's left makes it something to act on.
       new Notification('IrtiQa ⚔️', {
         body: dueLeft > 0
-          ? `${dueLeft} habit${dueLeft > 1 ? 's' : ''} still waiting today — streaks are on the line.`
-          : 'The Daily Contract is still open. The chest goes unclaimed at midnight.',
+          ? `${dueLeft} habit${dueLeft > 1 ? 's' : ''} left today. Even one counts.`
+          : 'Two of the Daily Three are done. One more opens today’s chest.',
       });
     } catch {
       // Some platforms (e.g. Android Chrome) only allow notifications via a service worker
       void navigator.serviceWorker?.ready.then(reg =>
-        reg.showNotification('IrtiQa ⚔️', { body: 'Your habits are still waiting today.' }),
+        reg.showNotification('IrtiQa ⚔️', { body: 'Still time to log something today.' }),
       );
     }
   }

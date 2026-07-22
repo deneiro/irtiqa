@@ -110,10 +110,21 @@ export function habitDueOn(h: Habit, day: string): boolean {
   return (h.dates ?? []).includes(day);
 }
 
-/** HP damage for missing a habit. Longer broken streaks hurt more; bad-habit relapse hurts more than a skipped good habit. */
+/**
+ * HP cost of missing a habit.
+ *
+ * This used to scale UP with the streak you broke (6 → 16 HP), so the better you
+ * had been doing, the more a single bad day cost you. That is the mechanic that
+ * turns one slip into a reason to stop opening the app.
+ *
+ * It now scales DOWN: a long streak is credit you've banked, and it cushions the
+ * miss instead of amplifying it. Base costs are roughly halved too — the streak
+ * reset is the real signal; the HP is just a nudge.
+ */
 export function missDamage(kind: 'good' | 'bad', streak: number): number {
-  const base = kind === 'good' ? 6 : 10;
-  return base + Math.floor(Math.min(streak, 30) / 3);
+  const base = kind === 'good' ? 4 : 6;
+  const credit = Math.floor(Math.min(streak, 30) / 10);
+  return Math.max(2, base - credit);
 }
 
 // ---------- Class perks ----------
@@ -282,7 +293,10 @@ export const MAX_SESSION_MINUTES = 240;
 /** Yesterday's habits aren't judged until this hour, so a pre-midnight lapse in logging isn't a streak break. */
 export const GRACE_HOUR = 9;
 
-/** Low HP has teeth: XP gains shrink when you're run down. Gold is unaffected so potions stay affordable. */
-export function hpDebuff(hp: number): number {
-  return hp === 0 ? 0.5 : hp <= 25 ? 0.75 : 1;
-}
+/**
+ * Removed: low HP used to shrink XP gains (×0.75 at ≤25 HP, ×0.5 at 0).
+ *
+ * That paid you LESS exactly when you were struggling and had just come back —
+ * the moment the app most needs to be worth opening. Effort is now worth the
+ * same on your worst day as on your best. HP is a condition readout, not a tax.
+ */

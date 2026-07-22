@@ -173,7 +173,7 @@ function ReminderCard() {
         <>
           <label className="toggle-row">
             <input type="checkbox" checked={s.reminder.enabled} onChange={e => void enable(e.target.checked)} />
-            <span>Remind me if habits or the Daily Contract are still open</span>
+            <span>Remind me if habits or the Daily Three are still open</span>
           </label>
           {s.reminder.enabled && (
             <label className="field" style={{ maxWidth: 200 }}>

@@ -39,7 +39,7 @@ describe('habits', () => {
     g().addHabit({ name: 'No smoking', kind: 'bad', freq: 'daily', attrs: ['health'], weekdays: [], dates: [] });
     const id = g().habits[0].id;
     g().relapseHabit(id);
-    expect(g().character!.hp).toBe(90); // base 10 for a confessed relapse
+    expect(g().character!.hp).toBe(94); // base 6 for a confessed relapse
 
     g().resetGame();
     g().createCharacter('Tester', 'warrior');
@@ -110,23 +110,25 @@ describe('quests', () => {
     expect(g().stats.sessionMinutes).toBe(240);
   });
 
-  it('priority quests are locked at 0 HP', () => {
+  it('priority quests stay available at 0 HP', () => {
     const id = g().addQuest({ title: 'Q', targetDuration: 'none', attrs: ['career'] });
     useGame.setState({ character: { ...g().character!, hp: 0 } });
     g().setQuestPriority(id, true);
-    expect(g().quests.find(q => q.id === id)!.priority).toBe(false);
+    // Being run down is when focusing on one thing matters most — it used to lock here
+    expect(g().quests.find(q => q.id === id)!.priority).toBe(true);
   });
 });
 
-describe('HP debuff & boost charges', () => {
-  it('XP gains are halved at 0 HP', () => {
+describe('HP & boost charges', () => {
+  it('XP gains are not reduced at 0 HP', () => {
     g().addQuickTask('one', 'development');
     g().completeQuickTask(g().quickTasks[0].id); // 8 XP + first-task achievement
     const before = g().character!.xp;
     useGame.setState({ character: { ...g().character!, hp: 0 } });
     g().addQuickTask('two', 'development');
     g().completeQuickTask(g().quickTasks[1].id);
-    expect(g().character!.xp - before).toBe(4); // round(8 * 0.5), no new achievements
+    // Effort is worth the same on your worst day as your best
+    expect(g().character!.xp - before).toBe(8);
   });
 
   it('boost charges skip tiny actions and fire on real ones', () => {

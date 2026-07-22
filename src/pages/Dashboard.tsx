@@ -6,7 +6,7 @@ import { Icon, type IconName } from '../components/Icon';
 import { RadarChart } from '../components/RadarChart';
 import { RelapseReflect } from '../components/RelapseReflect';
 import { AttrPicker, Bar, Empty, Modal } from '../components/ui';
-import { BOSS_PENALTY, BOSS_REWARD, BOSSES } from '../game/boss';
+import { BOSS_REWARD, BOSSES } from '../game/boss';
 import { ATTRIBUTES, CLASSES, COSMETICS, DASHBOARD_WIDGETS, DEFAULT_DASHBOARD_ORDER, MOODS } from '../game/constants';
 import { contractStatus } from '../game/contract';
 import {
@@ -98,7 +98,7 @@ export function Dashboard() {
       // card-hero: the one card on this screen that gets to shout. Everything else recedes.
       <section className="card card-hero contract-card">
         <div className="card-head">
-          <h2>Daily Contract</h2>
+          <h2>Daily Three</h2>
           <span className="muted">{contractDone}/3</span>
         </div>
         <ul className="contract-list">
@@ -172,11 +172,11 @@ export function Dashboard() {
             ) : (
               <>
                 <p className="muted">
-                  It feeds on <Icon name={boss.attr} size={13} /> <strong>{ATTRIBUTES[boss.attr].label}</strong>, your weakest attribute.
+                  It feeds on <Icon name={boss.attr} size={13} /> <strong>{ATTRIBUTES[boss.attr].label}</strong>, your thinnest attribute.
                   Land {boss.required} {ATTRIBUTES[boss.attr].label}-tagged actions this week — habits, tasks, quests, anything real.
-                  Fail by Sunday: <strong>-{BOSS_PENALTY} HP</strong>.
+                  Claim it for <strong>+{BOSS_REWARD.xp} XP · +{BOSS_REWARD.gold} 🪙</strong>. Leave it and it just moves on.
                 </p>
-                <Bar value={boss.progress} max={boss.required} className="bar-hp" label={`${boss.progress}/${boss.required} strikes`} />
+                <Bar value={boss.progress} max={boss.required} className="bar-xp" label={`${boss.progress}/${boss.required} strikes`} />
                 <p className="muted center">{boss.progress}/{boss.required} strikes landed</p>
               </>
             )}
@@ -414,13 +414,17 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* Low HP is information, not a sentence. Nothing is locked, nothing pays less —
+          it just tells you the last stretch was rough and offers a way back. */}
       {character.hp === 0 ? (
-        <div className="banner banner-danger">
-          💀 Exhausted (0/100 HP) — XP gains are halved and priority quests are locked until you recover. Potions are in the <Link to="/market">Market</Link>.
+        <div className="banner banner-info">
+          🌑 Running on empty ({character.hp}/100 HP) — it's been a hard stretch. Everything still pays full;
+          today counts as much as any other day. Potions are in the <Link to="/market">Market</Link> when you want one.
         </div>
       ) : character.hp <= 25 ? (
-        <div className="banner banner-danger">
-          ⚠️ Weakened ({character.hp}/100 HP) — XP gains reduced by 25%. Heal up in the <Link to="/market">Market</Link> — or stop missing what you promised yourself.
+        <div className="banner banner-info">
+          🌘 Low reserves ({character.hp}/100 HP) — a few things slipped recently. One check-in today starts the climb back;
+          potions are in the <Link to="/market">Market</Link>.
         </div>
       ) : null}
       {ghostToday && (
@@ -526,7 +530,7 @@ function CustomizeDashboardModal({ order, onClose }: { order: DashboardWidgetId[
 function statusLabel(status: string) {
   switch (status) {
     case 'done': return '✓ done';
-    case 'failed': return '✗ failed';
+    case 'failed': return '— missed';
     case 'pardoned': return '📜 pardoned';
     case 'shielded': return '🛡️ shielded';
     case 'ghost': return '👻 frozen';

@@ -203,7 +203,7 @@ function freqLabel(h: Habit): string {
 function statusText(status: string) {
   switch (status) {
     case 'done': return '✓ Completed today';
-    case 'failed': return '✗ Failed today';
+    case 'failed': return '— Missed today';
     case 'pardoned': return '📜 Pardoned';
     case 'shielded': return '🛡️ Shielded';
     case 'ghost': return '👻 Frozen';

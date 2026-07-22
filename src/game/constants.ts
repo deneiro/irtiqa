@@ -96,8 +96,11 @@ export const CLASSES: ClassDef[] = [
   },
 ];
 
+// The ladder is named for where you're going, not what you're lacking. Rank 1 used
+// to be "Weak 🪱" — the app's first act was to insult the player, on a screen that
+// was otherwise empty. IrtiQa means "ascension"; the ladder should read like one.
 export const RANKS: RankDef[] = [
-  { minLevel: 1, name: 'Weak', emoji: '🪱' },
+  { minLevel: 1, name: 'Seeker', emoji: '🌘' },
   { minLevel: 3, name: 'Novice', emoji: '🌱' },
   { minLevel: 6, name: 'Apprentice', emoji: '🔰' },
   { minLevel: 10, name: 'Adept', emoji: '🗡️' },
@@ -272,7 +275,7 @@ export const PRIMARY_GROUPS: Record<PrimaryGroup, { label: string }> = {
 export const PRIMARY_GROUP_KEYS = Object.keys(PRIMARY_GROUPS) as PrimaryGroup[];
 
 export const DASHBOARD_WIDGETS: Record<DashboardWidgetId, { label: string }> = {
-  dailyContract: { label: 'Daily Contract' },
+  dailyContract: { label: 'Daily Three' },
   weeklyBoss: { label: 'Weekly boss' },
   todayHabits: { label: "Today's habits" },
   lifeBalance: { label: 'Life balance' },

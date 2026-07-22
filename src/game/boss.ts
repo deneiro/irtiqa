@@ -2,11 +2,13 @@ import type { AttributeKey } from './types';
 
 // The weekly boss turns the radar chart's diagnosis into gameplay: it always
 // spawns from whichever attribute you've fed the least, so slaying it IS
-// rebalancing your life. Numbers sit on the economy yardstick: the reward is
-// about a day's worth of gold, the penalty matches a couple of missed habits.
+// rebalancing your life. The reward is about a day's worth of gold.
+//
+// It is pure upside: an unslain boss costs nothing, it just leaves Monday.
+// It used to take 15 HP for going unchallenged — which meant a rough week
+// ended by billing you for it, on the attribute you were already worst at.
 export const BOSS_REQUIRED = 3; // meaningful tagged actions to slay it
 export const BOSS_REWARD = { xp: 60, gold: 30 };
-export const BOSS_PENALTY = 15; // HP lost if the week ends with the boss alive
 
 export const BOSSES: Record<AttributeKey, { name: string; emoji: string; taunt: string }> = {
   health: { name: 'The Sloth of Neglect', emoji: '🦥', taunt: 'Your body forgets what you refuse to remind it.' },

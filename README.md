@@ -17,10 +17,10 @@ The game is local-first: it always runs off the save in your browser, so it work
 
 | System | How it works |
 |---|---|
-| **Character** | Level + XP (steady curve), HP 0–100, Gold, rank titles from Weak → Legend. Low HP has teeth: at ≤25 HP XP gains drop 25% ("Weakened"); at 0 HP they're halved and priority quests lock ("Exhausted") |
+| **Character** | Level + XP (steady curve), HP 0–100, Gold, rank titles from Seeker → Legend. HP is a condition readout, not a tax: low HP never reduces a payout and never locks anything. Effort is worth the same on your worst day as your best |
 | **7 classes** | Chosen at creation; each gives a permanent +10% XP boost to its life areas (e.g. Magician boosts Spirituality & Family). Changeable only via the Identity Scroll item |
 | **8 attributes** | Health, Friends, Family, Money, Career, Spirituality, Development, Brightness — every action is tagged, XP flows to both character and attributes, imbalance shows on the dashboard radar |
-| **Habits** | Good (do it) / bad (avoid it), daily/weekly/specific dates. Missing a day is detected **automatically** — but yesterday isn't judged until 9am, so you can still log it the next morning. Unlogged days take the lighter miss damage; a confessed relapse takes the heavier hit. Damage scales with the streak you broke |
+| **Habits** | Good (do it) / bad (avoid it), daily/weekly/specific dates. Missing a day is detected **automatically** — but yesterday isn't judged until 9am, so you can still log it the next morning. Unlogged days cost a little HP; a confessed relapse costs a little more. Damage scales **down** with the streak you broke — a long run is credit that cushions the miss, not exposure that amplifies it |
 | **Quests** | Time-tracked work: Start Session → live timer → Finish → "what did you do?" note → dated work log. Sessions earn nothing; one big XP/Gold payout on completion, scaled by hours actually logged. Single sessions cap at 4h so a forgotten timer can't mint XP |
 | **Quick tasks** | Plain checkboxes for one-offs, small XP |
 | **Journal** | Mood, stress, rotating reflection questions. Entries seal after 72h — only a Feather of Time reopens one, once |
@@ -42,7 +42,12 @@ The game is local-first: it always runs off the save in your browser, so it work
 
 ## Design rules the code enforces
 
-- No reward without an action; no HP restoration except items bought with earned Gold
-- Missing a habit is recorded by the app, not confessed by the player
+- **Integrity lives in what you earn, not in what gets taken away.** No reward without
+  an action; no HP restoration except items bought with earned Gold. But nothing you
+  earn is ever reduced or locked because of a bad stretch
+- **A bad day never makes the app worse to open.** Low HP costs nothing mechanically;
+  a broken streak is cushioned by how long it ran; an unslain weekly boss just leaves
+- Missing a habit is recorded by the app, not confessed by the player — and it's
+  reported as *missed*, never as *failed*
 - Quest payouts are proportional to logged work — no partial credit, no dilution
 - The past is sealed (journal locks) unless you pay

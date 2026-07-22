@@ -6,7 +6,6 @@ import {
   charLevel,
   charLevelProgress,
   habitDueOn,
-  hpDebuff,
   journalEditable,
   missDamage,
   monthKey,
@@ -47,7 +46,7 @@ describe('leveling', () => {
   });
 
   it('ranks roll up from levels', () => {
-    expect(rankFor(1).name).toBe('Weak');
+    expect(rankFor(1).name).toBe('Seeker');
     expect(rankFor(5).name).toBe('Novice');
     expect(rankFor(10).name).toBe('Adept');
     expect(rankFor(99).name).toBe('Legend');
@@ -90,11 +89,16 @@ describe('habitDueOn', () => {
 });
 
 describe('damage & payouts', () => {
-  it('miss damage scales with streak, relapse hurts more', () => {
-    expect(missDamage('good', 0)).toBe(6);
-    expect(missDamage('bad', 0)).toBe(10);
-    expect(missDamage('good', 30)).toBe(16);
-    expect(missDamage('good', 300)).toBe(16); // capped
+  it('a long streak cushions a miss instead of amplifying it', () => {
+    expect(missDamage('good', 0)).toBe(4);
+    expect(missDamage('bad', 0)).toBe(6);
+    // The longer the streak you broke, the softer the landing
+    expect(missDamage('good', 10)).toBe(3);
+    expect(missDamage('good', 30)).toBe(2);
+    expect(missDamage('bad', 30)).toBe(3);
+    expect(missDamage('good', 300)).toBe(2); // credit capped at 30 days
+    // Never free, never punitive
+    expect(missDamage('good', 9999)).toBeGreaterThanOrEqual(2);
   });
 
   it('quest payout scales with logged hours, priority pays +25% XP', () => {
@@ -131,12 +135,6 @@ describe('damage & payouts', () => {
     expect(overspendDamage(0, 0, 500)).toBe(0); // no budget set
   });
 
-  it('hp debuff: weakened at <=25, exhausted at 0', () => {
-    expect(hpDebuff(100)).toBe(1);
-    expect(hpDebuff(26)).toBe(1);
-    expect(hpDebuff(25)).toBe(0.75);
-    expect(hpDebuff(0)).toBe(0.5);
-  });
 });
 
 describe('journal lock', () => {

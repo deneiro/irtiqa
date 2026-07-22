@@ -87,9 +87,9 @@ export function Layout() {
             <Bar value={character.hp} max={100} className={`bar-hp ${hpTone}`} label={`${character.hp}/100 HP`} />
             <span className="stat-num">{character.hp}/100</span>
             {character.hp === 0 ? (
-              <span title="Exhausted: XP gains halved, priority quests locked">💀</span>
+              <span title="Running on empty — nothing is locked and everything still pays full">🌑</span>
             ) : character.hp <= 25 ? (
-              <span title="Weakened: XP gains reduced by 25%">⚠️</span>
+              <span title="Low reserves — a few things slipped recently">🌘</span>
             ) : null}
           </div>
           <div className="stat stat-gold" title="Gold">
