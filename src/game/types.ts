@@ -348,6 +348,7 @@ export interface ThemeDef {
 
 // ---------- Dashboard customization ----------
 export type DashboardWidgetId =
+  | 'chronicle'
   | 'dailyContract'
   | 'weeklyBoss'
   | 'todayHabits'

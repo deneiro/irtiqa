@@ -275,6 +275,7 @@ export const PRIMARY_GROUPS: Record<PrimaryGroup, { label: string }> = {
 export const PRIMARY_GROUP_KEYS = Object.keys(PRIMARY_GROUPS) as PrimaryGroup[];
 
 export const DASHBOARD_WIDGETS: Record<DashboardWidgetId, { label: string }> = {
+  chronicle: { label: 'The Chronicle' },
   dailyContract: { label: 'Daily Three' },
   weeklyBoss: { label: 'Weekly boss' },
   todayHabits: { label: "Today's habits" },
@@ -286,8 +287,10 @@ export const DASHBOARD_WIDGETS: Record<DashboardWidgetId, { label: string }> = {
   calendar: { label: 'Calendar' },
 };
 
+// Chronicle sits first: on the day a new one lands it is the reason to have opened
+// the app at all. It renders as a slim teaser on the other six days.
 export const DEFAULT_DASHBOARD_ORDER: DashboardWidgetId[] = [
-  'dailyContract', 'weeklyBoss', 'todayHabits', 'lifeBalance', 'attributes', 'quickTasks', 'quests', 'journal', 'calendar',
+  'chronicle', 'dailyContract', 'weeklyBoss', 'todayHabits', 'lifeBalance', 'attributes', 'quickTasks', 'quests', 'journal', 'calendar',
 ];
 
 // ---------- Cosmetics ----------

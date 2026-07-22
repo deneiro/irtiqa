@@ -7,6 +7,7 @@ import { RadarChart } from '../components/RadarChart';
 import { RelapseReflect } from '../components/RelapseReflect';
 import { AttrPicker, Bar, Empty, Modal } from '../components/ui';
 import { BOSS_REWARD, BOSSES } from '../game/boss';
+import { buildChronicle, lastCompleteWeek } from '../game/chronicle';
 import { ATTRIBUTES, CLASSES, COSMETICS, DASHBOARD_WIDGETS, DEFAULT_DASHBOARD_ORDER, MOODS } from '../game/constants';
 import { contractStatus } from '../game/contract';
 import {
@@ -39,12 +40,33 @@ const CAL_TYPE_ICON: Record<CalendarItemType, IconName> = {
   questTarget: 'target',
 };
 
-/** Filters out widgets that no longer exist and appends any newly-added ones, so saved layouts never go stale. */
-function reconcileOrder(saved: DashboardWidgetId[]): DashboardWidgetId[] {
+/**
+ * Filters out widgets that no longer exist and slots newly-added ones into the
+ * position they hold in DEFAULT_DASHBOARD_ORDER, so saved layouts never go stale.
+ *
+ * Appending instead would bury every future widget at the bottom of the dashboard
+ * of everyone who already has a save — which is exactly where a new feature goes
+ * to be never seen. A widget defined before its neighbours lands before them here
+ * too, while any reordering the player actually did is preserved.
+ */
+export function reconcileOrder(saved: DashboardWidgetId[]): DashboardWidgetId[] {
   const known = new Set(DEFAULT_DASHBOARD_ORDER);
-  const filtered = saved.filter(id => known.has(id));
-  const missing = DEFAULT_DASHBOARD_ORDER.filter(id => !filtered.includes(id));
-  return [...filtered, ...missing];
+  const out = saved.filter(id => known.has(id));
+
+  for (const id of DEFAULT_DASHBOARD_ORDER) {
+    if (out.includes(id)) continue;
+    const defaultIdx = DEFAULT_DASHBOARD_ORDER.indexOf(id);
+    // Land just after the last widget that precedes this one by default
+    let insertAt = out.length;
+    for (let i = 0; i < out.length; i++) {
+      if (DEFAULT_DASHBOARD_ORDER.indexOf(out[i]) > defaultIdx) {
+        insertAt = i;
+        break;
+      }
+    }
+    out.splice(insertAt, 0, id);
+  }
+  return out;
 }
 
 export function Dashboard() {
@@ -88,15 +110,52 @@ export function Dashboard() {
   const bannerId = s.equippedCosmetics.banner;
   const showRecap = s.lastRecapDay < today && !!s.dayLog[yesterday];
 
+  // Last week's Chronicle. "Fresh" for the first three days of a new week — long
+  // enough that a Monday-through-Wednesday open still finds it waiting.
+  const chronicle = useMemo(
+    () => buildChronicle(
+      { habits: s.habits, habitLog: s.habitLog, journal: s.journal, quests: s.quests, quickTasks: s.quickTasks, dayLog: s.dayLog },
+      lastCompleteWeek(today),
+    ),
+    [s.habits, s.habitLog, s.journal, s.quests, s.quickTasks, s.dayLog, today],
+  );
+  const daysIntoWeek = Math.round((parseDay(today).getTime() - parseDay(weekKey(today)).getTime()) / 86400000);
+  const chronicleFresh = daysIntoWeek <= 2 && !chronicle.thin;
+
   const boss = s.boss;
   const bossDef = boss ? BOSSES[boss.attr] : null;
   // Days until Monday's rollover — the boss's remaining lifespan
   const bossDaysLeft = Math.max(1, Math.round((parseDay(addDaysStr(weekKey(today), 7)).getTime() - parseDay(today).getTime()) / 86400000));
 
   const widgetContent: Record<DashboardWidgetId, React.ReactNode> = {
+    chronicle: (
+      <section className={`card chron-widget ${chronicleFresh ? 'card-hero chron-fresh' : 'card-muted'}`}>
+        <div className="card-head">
+          <h2><span className="heading-icon"><Icon name="chronicle" size={16} /> The Chronicle</span></h2>
+          {chronicleFresh && <span className="chron-new">NEW</span>}
+        </div>
+        {chronicle.thin ? (
+          <p className="muted">
+            Last week was too quiet to write about. The Chronicle assembles itself from habits,
+            quest sessions and journal entries — give it something to work with.
+          </p>
+        ) : (
+          <>
+            <div className="chron-widget-title">{chronicle.title}</div>
+            <p className="muted chron-widget-range">{chronicle.range}</p>
+            <p className="chron-widget-lede">{chronicle.paragraphs[0].replace(/\*\*/g, '')}</p>
+            <Link to="/chronicle" className={chronicleFresh ? 'btn btn-primary' : 'btn btn-ghost btn-sm'}>
+              {chronicleFresh ? 'Read last week →' : 'Open the Chronicle →'}
+            </Link>
+          </>
+        )}
+      </section>
+    ),
+
     dailyContract: (
-      // card-hero: the one card on this screen that gets to shout. Everything else recedes.
-      <section className="card card-hero contract-card">
+      // Exactly one card per screen gets to shout. For the two days after a new
+      // Chronicle lands that card is the Chronicle; the rest of the week it's this.
+      <section className={`card contract-card ${chronicleFresh ? '' : 'card-hero'}`}>
         <div className="card-head">
           <h2>Daily Three</h2>
           <span className="muted">{contractDone}/3</span>

@@ -1210,3 +1210,78 @@ textarea.input { resize: vertical; }
   }
   .gold-coin, .session-pulse, .neon-scanline { animation: none !important; }
 }
+
+/* ============ The Chronicle ============
+   Deliberately reads like a page, not a dashboard: wider measure, larger type,
+   generous leading. This is the one surface in the app meant to be *read*. */
+.chron-card { padding: 22px; }
+.chron-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.chron-title { font-size: calc(var(--fs-h2) * 1.45); letter-spacing: -0.02em; line-height: 1.2; }
+
+.chron-stats {
+  display: flex; flex-wrap: wrap; gap: 18px;
+  padding: 12px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+.chron-stat { display: flex; flex-direction: column; gap: 1px; }
+.chron-stat-value {
+  font-size: 19px; font-weight: 800; color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.chron-stat-label { font-size: var(--fs-xs); color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+
+.chron-prose { max-width: 62ch; }
+.chron-para {
+  margin: 0 0 14px;
+  font-size: 16px;
+  line-height: 1.68;
+  text-wrap: pretty;
+}
+.chron-para:last-child { margin-bottom: 0; }
+.chron-para strong { color: var(--accent); font-weight: 700; }
+/* The closing line sits apart — it's a sign-off, not another beat. */
+.chron-para:last-child:not(:only-child) {
+  margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid var(--border);
+  color: var(--muted); font-style: italic;
+}
+
+.chron-archive { display: flex; flex-direction: column; gap: 8px; }
+.chron-entry { padding: 0; overflow: hidden; }
+.chron-entry-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  width: 100%; min-height: 52px; padding: 14px 16px;
+  background: none; border: 0; color: var(--text);
+  font-family: inherit; font-size: var(--fs-body); text-align: left; cursor: pointer;
+}
+.chron-entry-head:hover { background: var(--panel2); }
+.chron-entry-title { font-weight: 700; }
+.chron-open .chron-entry-head { border-bottom: 1px solid var(--border); }
+.chron-entry-body { padding: 16px; }
+.chron-filed { margin: 16px 0 0; font-size: var(--fs-xs); }
+
+/* Dashboard teaser */
+.chron-widget-title { font-size: var(--fs-h2); font-weight: 800; letter-spacing: -0.01em; }
+.chron-widget-range { margin: 2px 0 10px; }
+.chron-widget-lede {
+  margin: 0 0 14px;
+  line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.chron-new {
+  font-size: 10.5px; font-weight: 800; letter-spacing: 1.2px;
+  color: var(--bg); background: var(--accent);
+  padding: 3px 8px; border-radius: 999px;
+}
+.chron-fresh { animation: chron-arrive 0.5s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes chron-arrive {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 860px) {
+  .chron-card { padding: 16px; }
+  .chron-para { font-size: 15.5px; }
+  .chron-stats { gap: 14px; }
+}

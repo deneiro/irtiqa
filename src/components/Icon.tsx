@@ -24,6 +24,7 @@ import {
   Play,
   Plus,
   Repeat,
+  ScrollText,
   Settings,
   ShieldCheck,
   ShoppingBag,
@@ -53,7 +54,7 @@ export type IconName =
   // actions / chrome
   | 'gold' | 'check' | 'close' | 'edit' | 'trash' | 'plus' | 'starFilled' | 'starOutline'
   | 'play' | 'stop' | 'flag' | 'lock' | 'trophy' | 'grip' | 'eye' | 'eyeOff'
-  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight';
+  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight' | 'chronicle';
 
 const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   // modules
@@ -99,6 +100,7 @@ const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   lock: Lock,
   trophy: Trophy,
   grip: GripVertical,
+  chronicle: ScrollText,
   eye: Eye,
   eyeOff: EyeOff,
   cake: Cake,

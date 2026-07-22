@@ -24,6 +24,7 @@ The game is local-first: it always runs off the save in your browser, so it work
 | **Quests** | Time-tracked work: Start Session → live timer → Finish → "what did you do?" note → dated work log. Sessions earn nothing; one big XP/Gold payout on completion, scaled by hours actually logged. Single sessions cap at 4h so a forgotten timer can't mint XP |
 | **Quick tasks** | Plain checkboxes for one-offs, small XP |
 | **Journal** | Mood, stress, rotating reflection questions. Entries seal after 72h — only a Feather of Time reopens one, once |
+| **The Chronicle** | Every Monday, last week written back to you as prose — the strongest thread named, the one that slipped, your own journal and session notes quoted, where the week's weight landed. Assembled entirely from logged data (`src/game/chronicle.ts`), no AI and no network. Every beat self-suppresses when the data is too thin to say anything true, and a week with nothing in it is reported as empty rather than narrated. The one surface that gives instead of asks |
 | **Social Hub** | Contacts with groups/notes/birthdays, netted debts per person, events. All of it earns XP |
 | **Finances** | Accounts, transactions, categories, auto-posting subscriptions, live net worth. Blowing a monthly category budget deals HP damage scaled to the overshoot |
 | **Market** | 14 items, every one buyable **and** usable: potions, Streak Shield (auto-protects), Habit Pardon, Indulgence, Ghost Day, Feather of Time, Focus Unlock, Attribute Boost, Identity Scroll, and 3 purchasable UI themes |
@@ -47,6 +48,9 @@ The game is local-first: it always runs off the save in your browser, so it work
   earn is ever reduced or locked because of a bad stretch
 - **A bad day never makes the app worse to open.** Low HP costs nothing mechanically;
   a broken streak is cushioned by how long it ran; an unslain weekly boss just leaves
+- **The Chronicle never invents.** Every sentence traces to logged data. A thin week
+  says so rather than being padded into a story — a fabricated narrative would
+  destroy the only thing the feature is for
 - Missing a habit is recorded by the app, not confessed by the player — and it's
   reported as *missed*, never as *failed*
 - Quest payouts are proportional to logged work — no partial credit, no dilution

@@ -4,6 +4,7 @@ import { CelebrationLayer } from './components/CelebrationLayer';
 import { Layout } from './components/Layout';
 import { Achievements } from './pages/Achievements';
 import { Calendar } from './pages/Calendar';
+import { Chronicle } from './pages/Chronicle';
 import { Dashboard } from './pages/Dashboard';
 import { Finances } from './pages/Finances';
 import { Habits } from './pages/Habits';
@@ -121,6 +122,7 @@ export default function App() {
           <Route path="/quests" element={<Quests />} />
           <Route path="/quests/:id" element={<QuestDetail />} />
           <Route path="/journal" element={<Journal />} />
+          <Route path="/chronicle" element={<Chronicle />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/social" element={<Social />} />
           <Route path="/finances" element={<Finances />} />
