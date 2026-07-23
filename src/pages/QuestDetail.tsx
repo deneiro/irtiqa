@@ -29,7 +29,7 @@ export function QuestDetail() {
   const minutes = questMinutes(quest);
   const today = todayStr();
   const todayMinutes = quest.sessions.filter(x => x.date === today).reduce((a, x) => a + x.minutes, 0);
-  const payout = questPayout(quest, s.character?.classId);
+  const payout = questPayout(quest, s.character?.classes);
   const sessions = [...quest.sessions].reverse();
   const target = questTargetDate(quest);
   const progress = questDeadlineProgress(quest);

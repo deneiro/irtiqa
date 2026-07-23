@@ -56,6 +56,10 @@ describe('save migration v5 → v6', () => {
     expect(s.character?.name).toBe('Veteran');
     expect(s.character?.gold).toBe(310);
     expect(s.character?.hp).toBe(73);
+
+    // v7: the retired 'scholar' class migrates to its radical heir, as an ordered loadout
+    expect(s.character?.classId).toBe('magician');
+    expect(s.character?.classes).toEqual(['magician']);
     expect(s.habits[0].streak).toBe(21);
     expect(s.attrs.development).toBe(1100);
     expect(s.inventory.potion_s).toBe(2);

@@ -2,9 +2,11 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AuthPanel } from '../components/AuthPanel';
 import { Icon } from '../components/Icon';
+import { Modal } from '../components/ui';
+import { WheelSurvey } from '../components/WheelSurvey';
 import { ARCHETYPE_KEYS, ARCHETYPES, CLASSES, THEMES } from '../game/constants';
 import { charLevel, rankFor } from '../game/engine';
-import type { PersonalityArchetype } from '../game/types';
+import type { AttributeKey, PersonalityArchetype } from '../game/types';
 import { playSound } from '../lib/sound';
 import { signOutUser, syncNow, useSync } from '../lib/sync';
 import { SAVE_KEY, useGame } from '../store';
@@ -115,6 +117,8 @@ export function Settings() {
 
       <ProfileCard />
 
+      <WheelCard />
+
       <ReminderCard />
 
       <section className="card">
@@ -148,6 +152,42 @@ export function Settings() {
         </button>
       </section>
     </div>
+  );
+}
+
+/**
+ * The Wheel of Life audit, retaken. A later check never re-seeds attributes (those are earned by
+ * now) — it stores a fresh subjective snapshot so the arc of declared-vs-lived can be seen over time.
+ */
+function WheelCard() {
+  const snapshots = useGame(s => s.wheelSnapshots);
+  const recordWheelCheck = useGame(s => s.recordWheelCheck);
+  const [open, setOpen] = useState(false);
+  const last = snapshots[snapshots.length - 1];
+
+  return (
+    <section className="card">
+      <div className="card-head"><h2>🧭 Wheel of Life</h2></div>
+      <p className="muted">
+        A quick self-audit of your eight life sectors. The first one, at character creation, seeded
+        your starting wheel. Retaking it now records a snapshot — it won't touch the levels you've
+        earned, it just tracks how your own read of your life shifts over time.
+      </p>
+      {last
+        ? <p className="muted">Last taken {new Date(last.date).toLocaleDateString()} · {snapshots.length} on record.</p>
+        : <p className="muted">No audit on record yet — you started with a flat wheel.</p>}
+      <button className="btn btn-primary" onClick={() => setOpen(true)}>🧭 Retake the audit</button>
+
+      {open && (
+        <Modal title="🧭 Wheel Check" onClose={() => setOpen(false)} wide>
+          <WheelSurvey
+            initial={last?.scores}
+            submitLabel="Save this Wheel Check"
+            onSubmit={(scores: Record<AttributeKey, number>) => { recordWheelCheck(scores); setOpen(false); }}
+          />
+        </Modal>
+      )}
+    </section>
   );
 }
 

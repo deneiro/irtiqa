@@ -1539,3 +1539,18 @@ a.radar-label:hover .radar-label-lv { fill: var(--accent); font-weight: 800; }
   .hero-read { border-left: 0; border-top: 2px solid var(--accent); padding: 10px 0 0; }
   .hero-meta { justify-content: center; }
 }
+
+/* ---- Wheel of Life audit (onboarding + Settings retake) ---- */
+.wheel-survey { text-align: left; }
+.wheel-radar { display: block; margin: 0 auto; }
+.wheel-weakest { text-align: center; color: var(--muted); font-size: var(--fs-sm); margin: 4px 0 18px; }
+.wheel-weakest strong { color: var(--text); }
+.wheel-sectors { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 12px; }
+.wheel-sector { padding: 14px 16px; }
+.wheel-sector-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.wheel-sector-name { font-weight: 600; font-size: var(--fs-body); }
+.wheel-sector-lvl { font-weight: 600; font-size: var(--fs-sm); white-space: nowrap; }
+.wheel-statement { display: flex; gap: 10px; align-items: flex-start; font-size: var(--fs-sm); line-height: 1.5; padding: 4px 0; cursor: pointer; }
+.wheel-statement input { margin-top: 2px; flex: none; }
+.wheel-actions { display: flex; justify-content: center; gap: 12px; margin-top: 22px; }
+.wheel-actions .btn-lg { width: auto; }

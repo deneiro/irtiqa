@@ -9,7 +9,7 @@ const daysAgo = (n: number) => addDaysStr(today, -n);
 beforeEach(() => {
   g().resetGame();
   // Warrior boosts only Health XP; tests use non-health attrs so multipliers stay 1.
-  g().createCharacter('Tester', 'warrior');
+  g().createCharacter('Tester', ['healer']);
 });
 
 describe('habits', () => {
@@ -42,7 +42,7 @@ describe('habits', () => {
     expect(g().character!.hp).toBe(94); // base 6 for a confessed relapse
 
     g().resetGame();
-    g().createCharacter('Tester', 'warrior');
+    g().createCharacter('Tester', ['healer']);
     g().addHabit({ name: 'No smoking', kind: 'bad', freq: 'daily', attrs: ['health'], weekdays: [], dates: [] });
     const id2 = g().habits[0].id;
     useGame.setState({ effects: { ...g().effects, indulgence: 1 } });

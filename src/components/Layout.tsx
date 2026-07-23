@@ -151,7 +151,7 @@ function TabBar() {
                 </NavLink>
               ))}
               <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <span className="nav-emoji"><Icon name={classId ?? 'warrior'} size={17} /></span> Profile
+                <span className="nav-emoji"><Icon name={classId ?? 'magician'} size={17} /></span> Profile
               </NavLink>
             </nav>
           </div>

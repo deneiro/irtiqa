@@ -91,6 +91,27 @@ export function attrLevelProgress(xp: number): { level: number; into: number; ne
 
 export const attrLevel = (xp: number) => attrLevelProgress(xp).level;
 
+// Exact inverse of the attribute curve: cumulative XP to *reach* a given level.
+// Σ (60 + (k-1)·20) for k=1..L-1 = 10·(L-1)·(L+4). attrLevel(xpForAttrLevel(L)) === L.
+export function xpForAttrLevel(level: number): number {
+  const L = Math.max(1, Math.round(level));
+  return 10 * (L - 1) * (L + 4);
+}
+
+// ---------- Wheel of Life onboarding audit ----------
+// A sector's survey score (0–10, from ticked statements) maps to a *starting* level in a
+// compressed band: a full 10 lands at level 7 (headroom preserved), a 0 at level 1 (a spark,
+// never empty). These are calibration, not reward — they seed attribute XP only.
+export function wheelScoreToLevel(score: number): number {
+  const s = Math.max(0, Math.min(10, score));
+  return 1 + Math.round((s / 10) * 6);
+}
+
+/** Attribute XP to seed for a given Wheel survey score (start of the mapped level). */
+export function wheelSeedXp(score: number): number {
+  return xpForAttrLevel(wheelScoreToLevel(score));
+}
+
 export function rankFor(level: number): RankDef {
   let r = RANKS[0];
   for (const rank of RANKS) if (level >= rank.minLevel) r = rank;
@@ -127,26 +148,88 @@ export function missDamage(kind: 'good' | 'bad', streak: number): number {
   return Math.max(2, base - credit);
 }
 
-// ---------- Class perks ----------
-/** Guardian takes 25% less damage from every source. Applied where damage is COMPUTED (not in damageD) so failure records store the value actually lost — pardons then refund exactly that. */
-export function reduceDamage(raw: number, classId?: ClassId): number {
+// ---------- Class attunement (the 1–3 class loadout) ----------
+// A player picks 1–3 classes in ranked order. The attunement *budget* is always 100%,
+// split by how many were chosen — so picking fewer classes is a real trade (deep power +
+// mastery) against picking more (broad attribute coverage), never a strict downgrade.
+export const CLASS_SPLITS: Record<number, number[]> = {
+  1: [1.0],
+  2: [0.65, 0.35],
+  3: [0.5, 0.3, 0.2],
+};
+// Affinity XP each slot grants to its class's life areas. Fewer classes → stronger per area.
+export const CLASS_AFFINITY: Record<number, number[]> = {
+  1: [0.14],
+  2: [0.1, 0.06],
+  3: [0.08, 0.05, 0.03],
+};
+/** A class at or above this attunement is "mastered" — its Signature reads as unlocked. */
+export const MASTERY_THRESHOLD = 0.6;
+
+export interface Attunement {
+  id: ClassId;
+  weight: number; // 0..1 share of the perk budget
+  affinity: number; // 0..1 affinity-XP bonus this slot grants
+  mastered: boolean;
+}
+
+/** Resolve a loadout into its per-class weights. Empty/undefined → no attunements. */
+export function attunements(classes?: ClassId[]): Attunement[] {
+  const list = (classes ?? []).filter(Boolean).slice(0, 3);
+  const splits = CLASS_SPLITS[list.length] ?? [];
+  const aff = CLASS_AFFINITY[list.length] ?? [];
+  return list.map((id, i) => ({
+    id,
+    weight: splits[i] ?? 0,
+    affinity: aff[i] ?? 0,
+    mastered: (splits[i] ?? 0) >= MASTERY_THRESHOLD,
+  }));
+}
+
+/** This loadout's attunement weight for a given class (0 if not chosen). */
+export function classWeight(classes: ClassId[] | undefined, id: ClassId): number {
+  return attunements(classes).find(a => a.id === id)?.weight ?? 0;
+}
+
+// ---------- Class perks (all scaled by attunement weight) ----------
+/** Warden absorbs damage, up to −25% at full attunement. Applied where damage is COMPUTED (not in damageD) so failure records store the value actually lost — pardons then refund exactly that. */
+export function reduceDamage(raw: number, classes?: ClassId[]): number {
   if (raw <= 0) return 0;
-  return classId === 'guardian' ? Math.max(1, Math.round(raw * 0.75)) : raw;
+  const w = classWeight(classes, 'warden');
+  return w > 0 ? Math.max(1, Math.round(raw * (1 - 0.25 * w))) : raw;
 }
 
-/** Merchant buys everything at 10% off. */
-export function itemPrice(item: ItemDef, classId?: ClassId): number {
-  return classId === 'merchant' ? Math.round(item.price * 0.9) : item.price;
+export function itemPrice(item: ItemDef): number {
+  return item.price;
 }
 
-/** Scholar's journal habit pays +25%. */
-export function journalXp(classId?: ClassId): number {
-  return classId === 'scholar' ? 50 : 40;
+/** Magician's reflection pays up to +50% at full attunement. */
+export function journalXp(classes?: ClassId[]): number {
+  return Math.round(40 * (1 + 0.5 * classWeight(classes, 'magician')));
 }
 
-/** Magician squeezes extra charges out of every Attribute Boost. */
-export function boostCharges(classId?: ClassId): number {
-  return classId === 'magician' ? 7 : 5;
+export function boostCharges(): number {
+  return 5;
+}
+
+/** Bard's audience adds up to +2 Gold per habit check-in at full attunement. */
+export function bardGold(classes?: ClassId[]): number {
+  return Math.round(2 * classWeight(classes, 'bard'));
+}
+
+/** Herald's motion pays up to +25% XP on habit check-ins at full attunement. */
+export function heraldHabitMult(classes?: ClassId[]): number {
+  return 1 + 0.25 * classWeight(classes, 'herald');
+}
+
+/** Healer's care adds up to +40% XP on person-tied actions (debts, bonds) at full attunement. */
+export function healerBondMult(classes?: ClassId[]): number {
+  return 1 + 0.4 * classWeight(classes, 'healer');
+}
+
+/** Sentinel's caution adds up to +50% XP for staying inside budget at full attunement. */
+export function sentinelBudgetMult(classes?: ClassId[]): number {
+  return 1 + 0.5 * classWeight(classes, 'sentinel');
 }
 
 // ---------- Perfect-day momentum ----------
@@ -179,14 +262,14 @@ export function questMinutes(q: Quest): number {
   return q.sessions.reduce((a, s) => a + s.minutes, 0);
 }
 
-/** One big payout at the end, scaled by actual logged work. Strategist's priority bonus is deeper; Warrior takes +10% on everything. */
-export function questPayout(q: Quest, classId?: ClassId): { xp: number; gold: number; minutes: number } {
+/** One big payout at the end, scaled by actual logged work. A priority quest is the
+ *  "Great Work": the Sovereign's attunement deepens its bonus (up to +50% on top). */
+export function questPayout(q: Quest, classes?: ClassId[]): { xp: number; gold: number; minutes: number } {
   const minutes = questMinutes(q);
   const hours = minutes / 60;
-  const priorityMult = q.priority ? (classId === 'strategist' ? 1.4 : 1.25) : 1;
-  const warriorMult = classId === 'warrior' ? 1.1 : 1;
-  const xp = Math.round((80 + hours * 40) * priorityMult * warriorMult);
-  const gold = Math.round((30 + hours * 12) * warriorMult);
+  const priorityMult = q.priority ? 1.25 + 0.5 * classWeight(classes, 'sovereign') : 1;
+  const xp = Math.round((80 + hours * 40) * priorityMult);
+  const gold = Math.round(30 + hours * 12);
   return { xp, gold, minutes };
 }
 

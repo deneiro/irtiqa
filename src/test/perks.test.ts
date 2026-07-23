@@ -4,12 +4,18 @@ import { COSMETICS } from '../game/constants';
 import { contractStatus } from '../game/contract';
 import {
   addDaysStr,
+  attunements,
+  bardGold,
   boostCharges,
+  classWeight,
+  healerBondMult,
+  heraldHabitMult,
   itemPrice,
   journalXp,
   momentumMult,
   questPayout,
   reduceDamage,
+  sentinelBudgetMult,
   todayStr,
 } from '../game/engine';
 import type { Quest } from '../game/types';
@@ -36,70 +42,104 @@ beforeEach(() => {
   g().resetGame();
 });
 
+describe('attunement budget (engine)', () => {
+  it('splits a fixed 100% budget by how many classes are picked', () => {
+    expect(attunements(['magician']).map(a => a.weight)).toEqual([1]);
+    expect(attunements(['magician', 'herald']).map(a => a.weight)).toEqual([0.65, 0.35]);
+    expect(attunements(['magician', 'herald', 'bard']).map(a => a.weight)).toEqual([0.5, 0.3, 0.2]);
+    expect(attunements([])).toEqual([]);
+  });
+
+  it('marks a class mastered only at ≥60% attunement (Specialist or Duo-primary)', () => {
+    expect(attunements(['magician'])[0].mastered).toBe(true); // 100%
+    const duo = attunements(['magician', 'herald']);
+    expect(duo[0].mastered).toBe(true); // 65%
+    expect(duo[1].mastered).toBe(false); // 35%
+    expect(attunements(['magician', 'herald', 'bard']).every(a => a.mastered)).toBe(false); // 50/30/20
+  });
+
+  it('classWeight reports a class share, 0 when unchosen', () => {
+    expect(classWeight(['warden'], 'warden')).toBe(1);
+    expect(classWeight(['magician', 'warden'], 'warden')).toBe(0.35);
+    expect(classWeight(['magician'], 'warden')).toBe(0);
+  });
+});
+
 describe('class perk math (engine)', () => {
-  it('guardian takes 25% less damage, floored at 1', () => {
-    expect(reduceDamage(10, 'guardian')).toBe(8);
-    expect(reduceDamage(10, 'warrior')).toBe(10);
-    expect(reduceDamage(1, 'guardian')).toBe(1);
+  it('Warden absorbs damage scaled by attunement, floored at 1', () => {
+    expect(reduceDamage(10, ['warden'])).toBe(8); // solo: round(10 × 0.75)
+    expect(reduceDamage(10, ['magician', 'warden'])).toBe(9); // 35%: round(10 × (1 − 0.0875))
+    expect(reduceDamage(10, ['magician'])).toBe(10); // not a Warden
+    expect(reduceDamage(1, ['warden'])).toBe(1); // floor
   });
 
-  it('merchant pays 10% less for items', () => {
+  it('itemPrice is the flat listed price (no class discount)', () => {
     const potion = { id: 'potion_s', price: 25 } as Parameters<typeof itemPrice>[0];
-    expect(itemPrice(potion, 'merchant')).toBe(23);
-    expect(itemPrice(potion, 'bard')).toBe(25);
+    expect(itemPrice(potion)).toBe(25);
   });
 
-  it('scholar journals for +25% XP; magician gets 7 boost charges', () => {
-    expect(journalXp('scholar')).toBe(50);
-    expect(journalXp('warrior')).toBe(40);
-    expect(boostCharges('magician')).toBe(7);
-    expect(boostCharges('scholar')).toBe(5);
+  it('Magician journals for up to +50% XP; boost charges are flat 5', () => {
+    expect(journalXp(['magician'])).toBe(60); // solo: round(40 × 1.5)
+    expect(journalXp(['warden', 'magician'])).toBe(47); // 35%: round(40 × 1.175)
+    expect(journalXp(['warden'])).toBe(40);
+    expect(journalXp()).toBe(40);
+    expect(boostCharges()).toBe(5);
   });
 
-  it('warrior gets +10% quest payouts; strategist deepens the priority bonus', () => {
+  it('Sovereign deepens the Great Work (priority) quest bonus', () => {
     // 1h logged: base xp 80 + 40 = 120, gold 30 + 12 = 42
     expect(questPayout(mkQuest()).xp).toBe(120);
-    expect(questPayout(mkQuest(), 'warrior').xp).toBe(132);
-    expect(questPayout(mkQuest(), 'warrior').gold).toBe(46);
+    expect(questPayout(mkQuest()).gold).toBe(42);
     expect(questPayout(mkQuest({ priority: true })).xp).toBe(150); // ×1.25
-    expect(questPayout(mkQuest({ priority: true }), 'strategist').xp).toBe(168); // ×1.4
+    expect(questPayout(mkQuest({ priority: true }), ['sovereign']).xp).toBe(210); // ×(1.25 + 0.5)
+    expect(questPayout(mkQuest({ priority: true }), ['sovereign']).gold).toBe(42); // gold unaffected
+  });
+
+  it('scalable helpers scale with attunement weight', () => {
+    expect(bardGold(['bard'])).toBe(2);
+    expect(bardGold(['magician', 'bard'])).toBe(1); // round(2 × 0.35)
+    expect(heraldHabitMult(['herald'])).toBeCloseTo(1.25);
+    expect(healerBondMult(['healer'])).toBeCloseTo(1.4);
+    expect(sentinelBudgetMult(['sentinel'])).toBeCloseTo(1.5);
   });
 });
 
 describe('class perks (store)', () => {
-  it('guardian relapse damage is reduced', () => {
-    g().createCharacter('T', 'guardian');
+  it('Warden relapse damage is reduced', () => {
+    g().createCharacter('T', ['warden']);
     g().addHabit({ name: 'No smoking', kind: 'bad', freq: 'daily', attrs: ['health'], weekdays: [], dates: [] });
     g().relapseHabit(g().habits[0].id);
-    expect(g().character!.hp).toBe(95); // raw 6 → guardian round(6 * 0.75) = 5
+    expect(g().character!.hp).toBe(95); // raw 6 → round(6 × 0.75) = 5
   });
 
-  it('bard earns +1 gold per check-in', () => {
-    g().createCharacter('T', 'bard');
+  it('Bard earns bonus gold per check-in at full attunement', () => {
+    g().createCharacter('T', ['bard']);
     g().addHabit({ name: 'Read', kind: 'good', freq: 'daily', attrs: ['development'], weekdays: [], dates: [] });
     g().checkinHabit(g().habits[0].id);
-    expect(g().character!.gold).toBe(16); // 5 + 1 bard + 10 First Step achievement
+    expect(g().character!.gold).toBe(17); // 5 base + 2 Bard + 10 First Step achievement
   });
 
-  it('merchant discount is applied at purchase', () => {
-    g().createCharacter('T', 'merchant');
-    useGame.setState({ character: { ...g().character!, gold: 23 } });
-    g().buyItem('potion_s'); // listed 25, merchant pays 23
-    expect(g().inventory.potion_s).toBe(1);
-    expect(g().character!.gold).toBe(10); // 0 left + First Purchase achievement gold
-  });
+  it('a solo class grants deeper affinity XP than the same class in a trio', () => {
+    // Magician solo (affinity 0.14) vs Magician as a trio's primary (affinity 0.08) on a
+    // development check-in (12 base) — the gap is wide enough to survive rounding.
+    g().createCharacter('Solo', ['magician']);
+    g().addHabit({ name: 'Study', kind: 'good', freq: 'daily', attrs: ['development'], weekdays: [], dates: [] });
+    g().checkinHabit(g().habits[0].id); // round(12 × 1.14) = 14, + First Step achievement
+    const solo = g().character!.xp;
 
-  it('magician attribute boost grants 7 charges', () => {
-    g().createCharacter('T', 'magician');
-    useGame.setState({ inventory: { attr_boost: 1 } });
-    g().useItem('attr_boost');
-    expect(g().effects.xpBoostCharges).toBe(7);
+    g().resetGame();
+    g().createCharacter('Trio', ['magician', 'warden', 'bard']);
+    g().addHabit({ name: 'Study', kind: 'good', freq: 'daily', attrs: ['development'], weekdays: [], dates: [] });
+    g().checkinHabit(g().habits[0].id); // round(12 × 1.08) = 13, + same achievement
+    const trio = g().character!.xp;
+
+    expect(solo).toBeGreaterThan(trio);
   });
 });
 
 describe('comeback (the Long Sleep)', () => {
   it('short absences are judged normally with damage, no comeback', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().addHabit({ name: 'Read', kind: 'good', freq: 'daily', attrs: ['development'], weekdays: [], dates: [] });
     useGame.setState({
       habits: g().habits.map(h => ({ ...h, createdAt: daysAgo(10), streak: 5 })),
@@ -111,7 +151,7 @@ describe('comeback (the Long Sleep)', () => {
   });
 
   it('long absences skip the damage wall, reset streaks, and open a comeback quest', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     for (const n of ['A', 'B', 'C']) {
       g().addHabit({ name: n, kind: 'good', freq: 'daily', attrs: ['development'], weekdays: [], dates: [] });
     }
@@ -129,7 +169,7 @@ describe('comeback (the Long Sleep)', () => {
   });
 
   it('three check-ins after the Long Sleep restore HP', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     for (const n of ['A', 'B', 'C']) {
       g().addHabit({ name: n, kind: 'good', freq: 'daily', attrs: ['development'], weekdays: [], dates: [] });
     }
@@ -145,7 +185,7 @@ describe('comeback (the Long Sleep)', () => {
 
 describe('perfect-day momentum', () => {
   it('a fully-done day increments momentum and regenerates HP', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().addHabit({ name: 'One-off', kind: 'good', freq: 'dates', attrs: ['development'], weekdays: [], dates: [daysAgo(2)] });
     const id = g().habits[0].id;
     useGame.setState({
@@ -161,7 +201,7 @@ describe('perfect-day momentum', () => {
   });
 
   it('a failed day resets momentum to zero', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().addHabit({ name: 'One-off', kind: 'good', freq: 'dates', attrs: ['development'], weekdays: [], dates: [daysAgo(2)] });
     useGame.setState({
       habits: g().habits.map(h => ({ ...h, createdAt: daysAgo(10) })),
@@ -176,7 +216,7 @@ describe('perfect-day momentum', () => {
     expect(momentumMult(0)).toBe(1);
     expect(momentumMult(5)).toBeCloseTo(1.1);
     expect(momentumMult(25)).toBeCloseTo(1.2); // cap
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['healer']); // no development affinity — keeps the base number clean
     g().addQuickTask('warmup', 'development');
     g().completeQuickTask(g().quickTasks[0].id); // burns the first-task achievement
     const before = g().character!.xp;
@@ -189,7 +229,7 @@ describe('perfect-day momentum', () => {
 
 describe('daily contract & chest', () => {
   it('contractStatus tracks all three legs', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     let cs = contractStatus(g(), today);
     expect(cs.habitsOk).toBe(true); // nothing due — leg is free
     expect(cs.journalOk).toBe(false);
@@ -225,7 +265,7 @@ describe('daily contract & chest', () => {
   });
 
   it('openChest pays once per day and only when the contract is complete', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().openChest();
     expect(g().chestLastOpened).toBe(''); // contract not complete — nothing happened
 
@@ -246,7 +286,7 @@ describe('daily contract & chest', () => {
 
 describe('cosmetics', () => {
   it('only owned cosmetics can be equipped, and slots are enforced', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().equipCosmetic('frame', 'frame_gilded');
     expect(g().equippedCosmetics.frame).toBeNull(); // not owned
 

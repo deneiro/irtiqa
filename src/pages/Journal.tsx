@@ -32,7 +32,7 @@ export function Journal() {
 
       {!todayEntry ? (
         <section className="card">
-          <div className="card-head"><h2>Today's entry</h2><span className="muted">+{journalXp(s.character?.classId)} XP → 🔮 Spirituality &amp; 📚 Development</span></div>
+          <div className="card-head"><h2>Today's entry</h2><span className="muted">+{journalXp(s.character?.classes)} XP → 🔮 Spirituality &amp; 📚 Development</span></div>
           <EntryForm
             initial={null}
             onSave={(mood, stress, answers) => s.addJournalEntry(mood, stress, answers)}
@@ -125,7 +125,7 @@ function EntryForm({
   initial: JournalEntry | null;
   onSave: (mood: number, stress: number, answers: { q: string; a: string }[]) => void;
 }) {
-  const classId = useGame(x => x.character?.classId);
+  const classes = useGame(x => x.character?.classes);
   const questions = initial ? initial.answers.map(a => a.q) : questionsForDay(todayStr(), REFLECTION_QUESTIONS);
   const [mood, setMood] = useState(initial?.mood ?? 3);
   const [stress, setStress] = useState(initial?.stress ?? 5);
@@ -166,7 +166,7 @@ function EntryForm({
           disabled={!valid}
           onClick={() => onSave(mood, stress, questions.map((q, i) => ({ q, a: answers[i].trim() })))}
         >
-          {initial ? 'Save changes' : `Save entry (+${journalXp(classId)} XP)`}
+          {initial ? 'Save changes' : `Save entry (+${journalXp(classes)} XP)`}
         </button>
       </div>
     </div>

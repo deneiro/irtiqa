@@ -8,29 +8,39 @@ export type AttributeKey =
   | 'development'
   | 'brightness';
 
+// Each class is a Ponomarenko radical made playable — a *driver*, not an attribute.
 export type ClassId =
-  | 'warrior'
-  | 'scholar'
-  | 'magician'
-  | 'guardian'
-  | 'merchant'
-  | 'strategist'
-  | 'bard';
+  | 'bard' // R1 Performer
+  | 'warden' // R2 Systematizer
+  | 'sovereign' // R3 Founder
+  | 'healer' // R4 Empath
+  | 'magician' // R5 Inventor
+  | 'herald' // R6 Spark
+  | 'sentinel'; // R7 Anchor
 
 export interface ClassDef {
   id: ClassId;
   name: string;
   emoji: string;
   tagline: string;
-  /** attribute -> xp multiplier bonus, e.g. 0.1 = +10% */
-  boosts: Partial<Record<AttributeKey, number>>;
-  /** One real mechanical advantage, so the class choice matters beyond flavor. */
+  /** e.g. "R5 · The Inventor" — the radical this class embodies. */
+  radical: string;
+  /** The 1–2 life areas this class pours energy into. Its magnitude comes from
+   *  attunement (which slot it sits in), not a fixed number — see engine.attunements(). */
+  affinity: AttributeKey[];
+  /** The scalable perk, described for the player. Strength scales with the slot's attunement. */
   perk: string;
+  /** The Signature: a unique identity line that reads as "mastered" only at ≥60% attunement
+   *  (a Specialist, or the primary of a Duo). Deep mechanics land in a later pass. */
+  signature: string;
 }
 
 export interface Character {
   name: string;
+  /** Primary class = classes[0]. Kept in sync for every display component that shows one class. */
   classId: ClassId;
+  /** The full ordered loadout, 1–3 classes, strongest first. Slot order sets attunement. */
+  classes: ClassId[];
   xp: number;
   hp: number; // 0..100
   gold: number;
@@ -47,6 +57,19 @@ export interface RankDef {
   minLevel: number;
   name: string;
   emoji: string;
+}
+
+/** One Wheel of Life self-audit: the subjective 0–10 score per sector at a point in time.
+ *  The first seeds the starting wheel; later ones (quarterly Wheel Checks) build the arc. */
+export interface WheelSnapshot {
+  date: string; // YYYY-MM-DD
+  scores: Record<AttributeKey, number>; // 0–10 per sector
+}
+
+/** One life sector's tick-box statements for the Wheel of Life audit. */
+export interface WheelSectorDef {
+  key: AttributeKey;
+  statements: string[];
 }
 
 // ---------- Habits ----------

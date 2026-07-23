@@ -13,6 +13,7 @@ import type {
   RankDef,
   ThemeDef,
   Tier,
+  WheelSectorDef,
 } from './types';
 
 export const ATTR_KEYS: AttributeKey[] = [
@@ -37,62 +38,172 @@ export const ATTRIBUTES: Record<AttributeKey, { label: string; emoji: string; co
   brightness: { label: 'Brightness', emoji: '✨', color: '#ec4899' },
 };
 
+// The seven classes are the seven radicals of Ponomarenko's practical characterology,
+// each turned into a *driver* rather than an attribute. A player picks 1–3 in ranked
+// order; the order sets attunement (see engine.attunements) — slot 1 is full power, and
+// picking fewer classes concentrates the same 100% budget into deeper, mastered perks.
 export const CLASSES: ClassDef[] = [
   {
-    id: 'warrior',
-    name: 'Warrior',
-    emoji: '⚔️',
-    tagline: 'Forge the body, and the mind will follow.',
-    boosts: { health: 0.1 },
-    perk: '+10% XP and Gold from quest completions',
+    id: 'bard',
+    name: 'Bard',
+    emoji: '🎭',
+    tagline: 'I need to be seen — recognition matters more than gold.',
+    radical: 'R1 · The Performer',
+    affinity: ['brightness', 'friends'],
+    perk: 'Bonus Gold on every habit check-in — the audience keeps you going',
+    signature: 'The Stage — public, witnessed actions carry further; the first each day lifts you',
   },
   {
-    id: 'scholar',
-    name: 'Scholar',
-    emoji: '📜',
-    tagline: 'Every day you learn something is a day you win.',
-    boosts: { development: 0.1 },
-    perk: 'Journal entries give +25% XP',
+    id: 'warden',
+    name: 'Warden',
+    emoji: '⚖️',
+    tagline: 'There is a right way, and no exceptions.',
+    radical: 'R2 · The Systematizer',
+    affinity: ['health', 'money'],
+    perk: 'Reduces all HP damage you take — order absorbs the blow',
+    signature: 'Standing Order — every stretch of exception-free days mints a free Streak Shield',
+  },
+  {
+    id: 'sovereign',
+    name: 'Sovereign',
+    emoji: '👑',
+    tagline: 'One goal, and everything serves it.',
+    radical: 'R3 · The Founder',
+    affinity: ['career', 'money'],
+    perk: 'Priority quests — your Great Work — pay far more XP',
+    signature: "The Great Work — the campaign's streak cannot be broken by a single miss",
+  },
+  {
+    id: 'healer',
+    name: 'Healer',
+    emoji: '💚',
+    tagline: 'The person in front of me comes first.',
+    radical: 'R4 · The Empath',
+    affinity: ['family', 'friends'],
+    perk: 'Actions tied to a real person (settling debts, keeping bonds) pay more',
+    signature: 'Bonds — the Family and Friends bosses fall in fewer hits',
   },
   {
     id: 'magician',
     name: 'Magician',
     emoji: '🔮',
-    tagline: 'The unseen threads — spirit and kin — are the strongest.',
-    boosts: { spirituality: 0.1, family: 0.1 },
-    perk: 'Attribute Boost grants 7 charges instead of 5',
+    tagline: "Everyone's looking at it wrong.",
+    radical: 'R5 · The Inventor',
+    affinity: ['development', 'spirituality'],
+    perk: 'Journaling and reflection pay far more XP — thinking on the page is the work',
+    signature: 'Novelty — the first act in any new domain pays double; exploration counts as work',
   },
   {
-    id: 'guardian',
-    name: 'Guardian',
-    emoji: '🛡️',
-    tagline: 'No one fights alone. Keep your people close.',
-    boosts: { friends: 0.1 },
-    perk: 'All HP damage reduced by 25%',
+    id: 'herald',
+    name: 'Herald',
+    emoji: '🏹',
+    tagline: 'Move, connect, begin again.',
+    radical: 'R6 · The Spark',
+    affinity: ['health', 'friends'],
+    perk: 'Every habit check-in pays extra XP — motion is its own reward',
+    signature: 'Full Spectrum — deeper perfect-day momentum; a lighter road back from a lapse',
   },
   {
-    id: 'merchant',
-    name: 'Merchant',
-    emoji: '🪙',
-    tagline: 'Gold is stored freedom. Stack it wisely.',
-    boosts: { money: 0.1 },
-    perk: '10% discount on every Market item',
+    id: 'sentinel',
+    name: 'Sentinel',
+    emoji: '🗿',
+    tagline: 'Slow down. Is this safe?',
+    radical: 'R7 · The Anchor',
+    affinity: ['money', 'health'],
+    perk: 'Staying inside your budget pays extra XP — caution is rewarded',
+    signature: 'The Reserve — banked Gold builds a Ward that absorbs incoming HP damage',
+  },
+];
+
+/** The 1–2 life areas a class champions, as a display label. */
+export function classAffinityLabel(c: ClassDef): string {
+  return c.affinity.map(a => ATTRIBUTES[a].label).join(' · ');
+}
+
+// ---------- Wheel of Life audit (onboarding + quarterly retake) ----------
+// Five plain, factual statements per sector — tick what's true today, no introspection.
+// Each tick = 2 points → a 0–10 score, which seeds a starting level (see engine.wheelSeedXp).
+// One statement per sector = 2 points; order follows ATTR_KEYS so the wheel lines up.
+export const WHEEL_SURVEY: WheelSectorDef[] = [
+  {
+    key: 'health',
+    statements: [
+      'I move or exercise a few times a week',
+      'I sleep enough most nights',
+      "I don't have a health problem I'm ignoring",
+      'I eat in a way I feel okay about',
+      'I’m happy with my weight and energy',
+    ],
   },
   {
-    id: 'strategist',
-    name: 'Strategist',
-    emoji: '👑',
-    tagline: 'A career is a campaign. Plan your victories.',
-    boosts: { career: 0.1 },
-    perk: 'Priority quests pay +40% XP instead of +25%',
+    key: 'friends',
+    statements: [
+      'I have friends I see or talk to regularly',
+      'I’ve spent time with friends in the last week',
+      'I have someone I could call if I had a problem',
+      "I don't feel lonely",
+      'I’m happy with the people around me',
+    ],
   },
   {
-    id: 'bard',
-    name: 'Bard',
-    emoji: '🎭',
-    tagline: 'A life without joy is a quest not worth taking.',
-    boosts: { brightness: 0.1 },
-    perk: '+1 Gold on every habit check-in',
+    key: 'family',
+    statements: [
+      'I talk to my family regularly',
+      'I get along well with my family',
+      'I have a partner',
+      'I have no serious problems with my partner',
+      'I’m content with my relationship situation',
+    ],
+  },
+  {
+    key: 'money',
+    statements: [
+      'My income covers my monthly needs',
+      'I have no debts stressing me',
+      'I have some savings',
+      "I don't worry about money week to week",
+      'I can buy small things I want without thinking hard',
+    ],
+  },
+  {
+    key: 'career',
+    statements: [
+      'I have a job or business right now',
+      'I like the work I do',
+      'I’m moving forward, not stuck',
+      'I know what my next step is',
+      'I’m satisfied with my career right now',
+    ],
+  },
+  {
+    key: 'spirituality',
+    statements: [
+      'I have a faith or set of values I live by',
+      'I pray, meditate, or reflect regularly',
+      'I make something regularly (write, draw, music, build)',
+      'I make time for this side of life',
+      'I feel calm and centered more often than not',
+    ],
+  },
+  {
+    key: 'development',
+    statements: [
+      'I’ve learned something new recently',
+      'I’m reading a book or taking a course right now',
+      'I have goals I’m working toward',
+      'I’ve improved a skill in the last few months',
+      'I feel like I’m growing as a person',
+    ],
+  },
+  {
+    key: 'brightness',
+    statements: [
+      'I do things that are just fun, not useful',
+      'I’ve laughed a lot this week',
+      'I have hobbies I enjoy',
+      'My days feel varied, not repetitive',
+      'I’ve had a new or exciting experience recently',
+    ],
   },
 ];
 

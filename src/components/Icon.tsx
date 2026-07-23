@@ -11,7 +11,6 @@ import {
   Eye,
   EyeOff,
   Flag,
-  GraduationCap,
   GripVertical,
   Handshake,
   Heart,
@@ -28,7 +27,6 @@ import {
   ScrollText,
   Settings,
   ShieldCheck,
-  ShoppingBag,
   ShoppingCart,
   Sparkles,
   Square,
@@ -50,8 +48,8 @@ export type IconName =
   | 'dashboard' | 'habits' | 'quests' | 'journal' | 'social' | 'finances' | 'market' | 'achievements' | 'settings' | 'calendar'
   // attributes
   | 'health' | 'friends' | 'family' | 'money' | 'career' | 'spirituality' | 'development' | 'brightness'
-  // classes
-  | 'warrior' | 'scholar' | 'magician' | 'guardian' | 'merchant' | 'strategist' | 'bard'
+  // classes (the seven radicals)
+  | 'bard' | 'warden' | 'sovereign' | 'healer' | 'magician' | 'herald' | 'sentinel'
   // actions / chrome
   | 'gold' | 'check' | 'close' | 'edit' | 'trash' | 'plus' | 'starFilled' | 'starOutline'
   | 'play' | 'stop' | 'flag' | 'lock' | 'trophy' | 'grip' | 'eye' | 'eyeOff'
@@ -78,14 +76,14 @@ const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   spirituality: Sparkles,
   development: TrendingUp,
   brightness: Sun,
-  // classes
-  warrior: Swords,
-  scholar: GraduationCap,
-  magician: Wand2,
-  guardian: ShieldCheck,
-  merchant: ShoppingBag,
-  strategist: Crown,
+  // classes (the seven radicals)
   bard: Music2,
+  warden: ShieldCheck,
+  sovereign: Crown,
+  healer: Heart,
+  magician: Wand2,
+  herald: Sun,
+  sentinel: Eye,
   // actions / chrome
   gold: Coins,
   check: Check,

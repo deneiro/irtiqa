@@ -23,7 +23,7 @@ describe('weekKey', () => {
 
 describe('weekly boss', () => {
   it('spawns on reconcile from the weakest attribute', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     useGame.setState({ attrs: { ...g().attrs, health: 100, friends: 100, family: 100, money: 100, career: 5, spirituality: 100, development: 100, brightness: 100 } });
     g().reconcile();
     expect(g().boss).not.toBeNull();
@@ -33,7 +33,7 @@ describe('weekly boss', () => {
   });
 
   it('meaningful tagged actions strike it; the third strike slays it and pays out', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().reconcile();
     const attr = g().boss!.attr;
     const goldBefore = g().character!.gold;
@@ -57,7 +57,7 @@ describe('weekly boss', () => {
   });
 
   it('tiny actions (under 8 base XP) never count as strikes', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     g().reconcile();
     useGame.setState({ boss: { ...g().boss!, attr: 'money' } });
     g().addAccount('Cash', 0);
@@ -67,7 +67,7 @@ describe('weekly boss', () => {
   });
 
   it('an unslain boss costs nothing at rollover and a fresh one spawns', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     useGame.setState({
       boss: { week: addDaysStr(weekKey(today), -7), attr: 'health', required: BOSS_REQUIRED, progress: 1 },
       lastProcessedDay: today, // keep habit judging out of this test
@@ -79,7 +79,7 @@ describe('weekly boss', () => {
   });
 
   it('a slain boss expires quietly at rollover', () => {
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
     useGame.setState({
       boss: { week: addDaysStr(weekKey(today), -7), attr: 'health', required: BOSS_REQUIRED, progress: 3, defeatedAt: new Date().toISOString() },
       lastProcessedDay: today,
@@ -90,7 +90,7 @@ describe('weekly boss', () => {
   });
 
   it('a missed boss week never damages any class', () => {
-    g().createCharacter('T', 'guardian');
+    g().createCharacter('T', ['magician']);
     useGame.setState({
       boss: { week: addDaysStr(weekKey(today), -7), attr: 'health', required: BOSS_REQUIRED, progress: 0 },
       lastProcessedDay: today,

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Icon } from '../components/Icon';
 import { Empty, Modal } from '../components/ui';
-import { CLASSES, ITEMS, THEMES } from '../game/constants';
+import { CLASSES, classAffinityLabel, ITEMS, THEMES } from '../game/constants';
 import { accountBalance, addDaysStr, fmtDayFull, itemPrice, journalLocked, todayStr } from '../game/engine';
 import type { ClassId, ItemDef, ItemId, WishlistItem } from '../game/types';
 import { spawnVFXAt } from '../lib/vfx';
-import { boostText } from './Onboarding';
+import { slotLabels } from './Onboarding';
 import { useGame } from '../store';
 
 export function Market() {
@@ -103,7 +103,7 @@ function UseButton({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =
 function ItemCard({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () => void }) {
   const s = useGame();
   const gold = s.character?.gold ?? 0;
-  const price = itemPrice(item, s.character?.classId); // Merchant sees the discounted price
+  const price = itemPrice(item);
   const owned = item.id === 'focus_unlock' ? (s.effects.maxPriority >= 2 ? 1 : 0) : s.inventory[item.id] ?? 0;
   const soldOut = item.id === 'focus_unlock' && owned > 0;
 
@@ -130,7 +130,7 @@ function ItemCard({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =>
 function ThemeCard({ item }: { item: ItemDef }) {
   const s = useGame();
   const gold = s.character?.gold ?? 0;
-  const price = itemPrice(item, s.character?.classId);
+  const price = itemPrice(item);
   const theme = THEMES.find(t => t.id === item.themeId)!;
   const owned = s.ownedThemes.includes(theme.id);
   const active = s.theme === theme.id;
@@ -244,7 +244,10 @@ function FeatherModal({ onClose }: { onClose: () => void }) {
 function IdentityModal({ onClose }: { onClose: () => void }) {
   const s = useGame();
   const [name, setName] = useState(s.character?.name ?? '');
-  const [classId, setClassId] = useState<ClassId>(s.character?.classId ?? 'warrior');
+  const [classes, setClasses] = useState<ClassId[]>(s.character?.classes ?? []);
+  const toggleClass = (id: ClassId) =>
+    setClasses(prev => (prev.includes(id) ? prev.filter(c => c !== id) : prev.length < 3 ? [...prev, id] : prev));
+  const weights = slotLabels(classes.length);
   return (
     <Modal title="🎴 Identity Scroll — rewrite yourself" onClose={onClose} wide>
       <label className="field">
@@ -252,23 +255,30 @@ function IdentityModal({ onClose }: { onClose: () => void }) {
         <input className="input" value={name} onChange={e => setName(e.target.value)} maxLength={40} />
       </label>
       <div className="field">
-        <span>Class</span>
+        <span>Radicals — pick up to three, in order</span>
         <div className="class-grid class-grid-sm">
-          {CLASSES.map(c => (
-            <button key={c.id} className={`class-card ${classId === c.id ? 'class-selected' : ''}`} onClick={() => setClassId(c.id)}>
-              <div className="class-emoji"><Icon name={c.id} size={30} /></div>
-              <div className="class-name">{c.name}</div>
-              <div className="class-boost">{boostText(c.boosts)}</div>
-            </button>
-          ))}
+          {CLASSES.map(c => {
+            const rank = classes.indexOf(c.id);
+            const on = rank >= 0;
+            return (
+              <button key={c.id} className={`class-card ${on ? 'class-selected' : ''}`} onClick={() => toggleClass(c.id)}>
+                <div className="class-emoji"><Icon name={c.id} size={30} /></div>
+                <div className="class-name">
+                  {on ? `${rank + 1}. ` : ''}{c.name}
+                  {on && weights[rank] ? <span className="muted"> · {weights[rank]}</span> : null}
+                </div>
+                <div className="class-boost">{classAffinityLabel(c)}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
         <button
           className="btn btn-primary"
-          disabled={!name.trim()}
-          onClick={() => { s.useItem('identity_scroll', { name, classId }); onClose(); }}
+          disabled={!name.trim() || !classes.length}
+          onClick={() => { s.useItem('identity_scroll', { name, classes }); onClose(); }}
         >
           Consume scroll
         </button>

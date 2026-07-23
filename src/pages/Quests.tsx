@@ -100,7 +100,7 @@ export function Quests() {
               <li key={q.id} className="list-row">
                 <span>🏁</span>
                 <Link to={`/quests/${q.id}`} className="list-title">{q.title}</Link>
-                <span className="muted">{fmtMinutes(questMinutes(q))} total · paid {questPayout(q, s.character?.classId).xp} XP</span>
+                <span className="muted">{fmtMinutes(questMinutes(q))} total · paid {questPayout(q, s.character?.classes).xp} XP</span>
               </li>
             ))}
           </ul>

@@ -22,6 +22,8 @@ import {
   addDaysStr,
   addMonthsClamp,
   attrLevel,
+  attunements,
+  bardGold,
   boostCharges,
   charLevel,
   clampHp,
@@ -33,6 +35,8 @@ import {
   fmtDay,
   GRACE_HOUR,
   habitDueOn,
+  healerBondMult,
+  heraldHabitMult,
   itemPrice,
   journalEditable,
   journalXp,
@@ -46,9 +50,11 @@ import {
   questPayout,
   rankFor,
   reduceDamage,
+  sentinelBudgetMult,
   todayStr,
   uid,
   weekKey,
+  wheelSeedXp,
 } from './game/engine';
 import type {
   Account,
@@ -76,6 +82,7 @@ import type {
   Stats,
   Subscription,
   Tx,
+  WheelSnapshot,
   WishlistItem,
 } from './game/types';
 
@@ -133,8 +140,12 @@ export interface GameState {
   reminder: { enabled: boolean; time: string }; // HH:MM, fires while a tab is open
   lastReminderDay: string;
 
+  /** Wheel of Life self-audits over time — [0] seeds the start, later ones track the arc. */
+  wheelSnapshots: WheelSnapshot[];
+
   // ---- actions ----
-  createCharacter: (name: string, classId: ClassId) => void;
+  createCharacter: (name: string, classes: ClassId[], wheel?: Record<AttributeKey, number>) => void;
+  recordWheelCheck: (scores: Record<AttributeKey, number>) => void;
   resetGame: () => void;
   reconcile: () => void;
   dismissCelebration: (id: string) => void;
@@ -211,7 +222,7 @@ export interface UseItemPayload {
   entryId?: string;
   date?: string;
   name?: string;
-  classId?: ClassId;
+  classes?: ClassId[];
 }
 
 type D = GameState; // immer draft of GameState
@@ -232,9 +243,13 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
   const beforeRank = rankFor(beforeLevel).name;
 
   let mult = 1;
-  const cls = CLASSES.find(c => c.id === d.character!.classId);
+  // Affinity XP: every attuned class whose life areas overlap the tagged attrs adds its
+  // slot's affinity bonus. Coverage stacks across the loadout — the reward for going wide.
   let clsBoost = 0;
-  for (const a of attrs) clsBoost = Math.max(clsBoost, cls?.boosts[a] ?? 0);
+  for (const a of attunements(d.character.classes)) {
+    const cdef = CLASSES.find(c => c.id === a.id);
+    if (cdef && cdef.affinity.some(x => attrs.includes(x))) clsBoost += a.affinity;
+  }
   mult += clsBoost;
 
   // Perfect-day momentum: +2% per consecutive perfect day, capped at +20%
@@ -367,13 +382,13 @@ function postTxD(d: D, tx: Omit<Tx, 'id'>, reward: boolean) {
         .filter(t => t.type === 'expense' && t.category === tx.category && monthKey(t.date) === mk)
         .reduce((a, t) => a + t.amount, 0);
       const spentBefore = spentAfter - tx.amount;
-      const dmg = reduceDamage(overspendDamage(budget, spentBefore, spentAfter), d.character?.classId);
+      const dmg = reduceDamage(overspendDamage(budget, spentBefore, spentAfter), d.character?.classes);
       if (dmg > 0) {
         damageD(d, dmg, `Over budget: ${tx.category}`);
         return;
       }
     }
-    if (reward) grantD(d, 3, 0, ['money'], 'Expense logged in budget');
+    if (reward) grantD(d, Math.round(3 * sentinelBudgetMult(d.character?.classes)), 0, ['money'], 'Expense logged in budget');
   } else if (reward) {
     grantD(d, 6, 0, ['money'], 'Income logged');
   }
@@ -398,9 +413,9 @@ function payDebtD(d: D, debt: Debt, amount: number, accountId?: string) {
   if (debtRemaining(debt) <= 0) {
     debt.settledAt = new Date().toISOString();
     d.stats.debtsSettled++;
-    grantD(d, 15, 0, ['money'], 'Debt settled');
+    grantD(d, Math.round(15 * healerBondMult(d.character?.classes)), 0, ['money'], 'Debt settled');
   } else {
-    grantD(d, 5, 0, ['money'], 'Partial debt payment');
+    grantD(d, Math.round(5 * healerBondMult(d.character?.classes)), 0, ['money'], 'Partial debt payment');
   }
   checkAchievementsD(d);
 }
@@ -453,6 +468,32 @@ function normalizeQuest(q: Record<string, unknown>): Quest {
   return { ...(rest as unknown as Quest), targetDuration: 'none' };
 }
 
+// Retired class names → the radical heir that inherited their role (v7 class rework).
+const LEGACY_CLASS_MAP: Record<string, ClassId> = {
+  warrior: 'warden', // epileptoid discipline
+  scholar: 'magician', // development / learning
+  guardian: 'warden', // the damage-absorbing role
+  merchant: 'sovereign', // money / drive
+  strategist: 'sovereign', // career / campaign
+  magician: 'magician',
+  bard: 'bard',
+  warden: 'warden',
+  sovereign: 'sovereign',
+  healer: 'healer',
+  herald: 'herald',
+  sentinel: 'sentinel',
+};
+
+function normalizeCharacterClasses(ch: Record<string, unknown>): Character {
+  const raw = Array.isArray(ch.classes) && ch.classes.length
+    ? (ch.classes as string[])
+    : typeof ch.classId === 'string'
+      ? [ch.classId]
+      : ['magician'];
+  const list = raw.map(c => LEGACY_CLASS_MAP[c] ?? 'magician').slice(0, 3);
+  return { ...(ch as unknown as Character), classes: list, classId: list[0] };
+}
+
 const initialData = () => ({
   character: null as Character | null,
   attrs: {
@@ -499,6 +540,7 @@ const initialData = () => ({
   boss: null as BossState | null,
   soundOn: true,
   reminder: { enabled: false, time: '20:00' },
+  wheelSnapshots: [] as WheelSnapshot[],
   lastReminderDay: '',
 });
 
@@ -509,16 +551,32 @@ export const useGame = create<GameState>()(
     immer((set, get) => ({
       ...initialData(),
 
-      createCharacter: (name, classId) =>
+      createCharacter: (name, classes, wheel) =>
         set(d => {
-          d.character = { name: name.trim(), classId, xp: 0, hp: 100, gold: 0, createdAt: new Date().toISOString() };
+          const list = classes.filter(Boolean).slice(0, 3);
+          if (!list.length) return;
+          d.character = { name: name.trim(), classId: list[0], classes: list, xp: 0, hp: 100, gold: 0, createdAt: new Date().toISOString() };
           d.lastProcessedDay = addDaysStr(todayStr(), -1);
-          const cls = CLASSES.find(c => c.id === classId);
+          // Wheel of Life audit seeds the *starting shape* — attribute XP only, never character
+          // level / gold / HP / achievements. Calibration, not reward; "nothing is free" holds.
+          if (wheel) {
+            for (const a of ATTR_KEYS) d.attrs[a] = wheelSeedXp(wheel[a] ?? 0);
+            d.wheelSnapshots.push({ date: todayStr(), scores: { ...wheel } });
+          }
+          const cls = CLASSES.find(c => c.id === list[0]);
           pushCeleb(d, {
             type: 'info',
             title: `Welcome, ${d.character.name} the ${cls?.name ?? ''}`,
             subtitle: 'Your journey begins. Everything you earn here, you earn for real.',
           });
+        }),
+
+      // A later Wheel Check records a fresh self-audit for the arc — it never re-seeds attrs,
+      // because by now those levels are earned. Declared (survey) vs lived (attrs) stay distinct.
+      recordWheelCheck: scores =>
+        set(d => {
+          d.wheelSnapshots.push({ date: todayStr(), scores: { ...scores } });
+          pushCeleb(d, { type: 'info', title: '🧭 Wheel Check saved', subtitle: 'Your self-audit is recorded. Compare it against how you actually played.' });
         }),
 
       resetGame: () => set(() => ({ ...initialData() })),
@@ -594,7 +652,7 @@ export const useGame = create<GameState>()(
               }
               // An unlogged day is not a confessed relapse: both habit kinds take the lighter miss damage here.
               // The heavier bad-habit damage applies only to explicit relapses (relapseHabit).
-              const dmg = reduceDamage(missDamage('good', h.streak), d.character.classId);
+              const dmg = reduceDamage(missDamage('good', h.streak), d.character.classes);
               d.failures.push({ id: uid(), habitId: h.id, date: day, prevStreak: h.streak, damage: dmg });
               h.streak = 0;
               log[day] = 'failed';
@@ -719,9 +777,10 @@ export const useGame = create<GameState>()(
           d.stats.checkins++;
           d.stats.bestStreak = Math.max(d.stats.bestStreak, h.best);
           const late = target !== today ? ' (late)' : '';
-          const bard = d.character?.classId === 'bard' ? 1 : 0; // Bard perk: +1 Gold per check-in
-          if (h.kind === 'good') grantD(d, 12, 5 + bard, h.attrs, `${h.name}${late} · 🔥 ${h.streak}`);
-          else grantD(d, 8, 3 + bard, h.attrs, `Resisted: ${h.name}${late} · 🔥 ${h.streak}`);
+          const gold = bardGold(d.character?.classes); // Bard perk: bonus Gold per check-in
+          const hm = heraldHabitMult(d.character?.classes); // Herald perk: motion pays extra XP
+          if (h.kind === 'good') grantD(d, Math.round(12 * hm), 5 + gold, h.attrs, `${h.name}${late} · 🔥 ${h.streak}`);
+          else grantD(d, Math.round(8 * hm), 3 + gold, h.attrs, `Resisted: ${h.name}${late} · 🔥 ${h.streak}`);
 
           // Comeback quest: each check-in after the Long Sleep counts toward the HP restore
           if (d.effects.comeback && d.character) {
@@ -748,7 +807,7 @@ export const useGame = create<GameState>()(
             pushCeleb(d, { type: 'item', title: '🕯️ Indulgence consumed', subtitle: `${h.name}: relapse forgiven, no damage.` });
             return;
           }
-          const dmg = reduceDamage(missDamage('bad', h.streak), d.character?.classId);
+          const dmg = reduceDamage(missDamage('bad', h.streak), d.character?.classes);
           d.failures.push({ id: uid(), habitId: h.id, date: t, prevStreak: h.streak, damage: dmg });
           h.streak = 0;
           log[t] = 'failed';
@@ -832,7 +891,7 @@ export const useGame = create<GameState>()(
             pushCeleb(d, { type: 'info', title: 'Finish your session first', subtitle: 'Stop the running timer before completing the quest.' });
             return;
           }
-          const payout = questPayout(q, d.character?.classId);
+          const payout = questPayout(q, d.character?.classes);
           q.completedAt = new Date().toISOString();
           q.priority = false;
           d.stats.questsCompleted++;
@@ -910,7 +969,7 @@ export const useGame = create<GameState>()(
           const t = todayStr();
           if (d.journal.some(e => e.date === t)) return;
           d.journal.push({ id: uid(), date: t, createdAt: new Date().toISOString(), mood, stress, answers });
-          grantD(d, journalXp(d.character?.classId), 8, ['spirituality', 'development'], 'Journal entry written');
+          grantD(d, journalXp(d.character?.classes), 8, ['spirituality', 'development'], 'Journal entry written');
           checkAchievementsD(d);
         }),
 
@@ -1103,7 +1162,7 @@ export const useGame = create<GameState>()(
           if (!item || !d.character) return;
           if (item.kind === 'theme' && d.ownedThemes.includes(item.themeId!)) return;
           if (item.id === 'focus_unlock' && d.effects.maxPriority >= 2) return;
-          const price = itemPrice(item, d.character.classId); // Merchant perk: 10% off
+          const price = itemPrice(item);
           if (d.character.gold < price) {
             pushCeleb(d, { type: 'info', title: 'Not enough Gold', subtitle: `${item.name} costs ${price} 🪙. Earn it — no cheat codes.` });
             return;
@@ -1152,7 +1211,7 @@ export const useGame = create<GameState>()(
             }
             case 'attr_boost': {
               if (!consumeD(d, id)) return;
-              const charges = boostCharges(d.character.classId); // Magician perk: 7 instead of 5
+              const charges = boostCharges();
               d.effects.xpBoostCharges += charges;
               pushCeleb(d, { type: 'item', title: '⚡ Attribute Boost active', subtitle: `+50% XP on your next ${charges} actions.` });
               break;
@@ -1204,11 +1263,13 @@ export const useGame = create<GameState>()(
               break;
             }
             case 'identity_scroll': {
-              if (!payload?.name || !payload.classId) return;
+              const list = payload?.classes?.filter(Boolean).slice(0, 3) ?? [];
+              if (!payload?.name || !list.length) return;
               if (!consumeD(d, id)) return;
               d.character.name = payload.name.trim();
-              d.character.classId = payload.classId;
-              const cls = CLASSES.find(c => c.id === payload.classId);
+              d.character.classes = list;
+              d.character.classId = list[0];
+              const cls = CLASSES.find(c => c.id === list[0]);
               pushCeleb(d, { type: 'item', title: '🎴 Identity rewritten', subtitle: `You are now ${d.character.name} the ${cls?.name}.` });
               break;
             }
@@ -1329,7 +1390,7 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 6,
+      version: 7,
       // Older saves get new fields filled with defaults instead of being discarded
       migrate: persisted => {
         const merged = { ...initialData(), ...(persisted as Partial<GameState>) } as GameState;
@@ -1339,6 +1400,10 @@ export const useGame = create<GameState>()(
         // Nested objects come wholesale from the persisted save — backfill counters added later (e.g. bossesDefeated)
         merged.stats = { ...initialData().stats, ...merged.stats };
         merged.effects = { ...initialData().effects, ...merged.effects };
+        // v7: single classId → ordered classes[]; retired class names map to their radical heir.
+        if (merged.character) {
+          merged.character = normalizeCharacterClasses(merged.character as unknown as Record<string, unknown>);
+        }
         return merged;
       },
       partialize: state => {

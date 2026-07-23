@@ -82,7 +82,7 @@ describe('insights engine', () => {
 describe('long-term goals', () => {
   beforeEach(() => {
     g().resetGame();
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
   });
 
   it('cannot be claimed until a linked quest is actually finished', () => {
@@ -122,7 +122,7 @@ describe('long-term goals', () => {
 describe('relapse triggers', () => {
   beforeEach(() => {
     g().resetGame();
-    g().createCharacter('T', 'warrior');
+    g().createCharacter('T', ['magician']);
   });
 
   it('a relapse can be annotated with what triggered it', () => {

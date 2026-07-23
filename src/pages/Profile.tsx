@@ -132,7 +132,7 @@ export function Profile() {
         });
       }
       if (q.completedAt) {
-        const payout = questPayout(q, s.character?.classId);
+        const payout = questPayout(q, s.character?.classes);
         entries.push({
           id: `qc-${q.id}`, day: q.completedAt.slice(0, 10), icon: '🏁',
           title: `Completed quest: ${q.title}`, subtitle: `+${payout.xp} XP · +${payout.gold} 🪙`,
