@@ -1372,6 +1372,15 @@ textarea.input { resize: vertical; }
 [data-theme='skeuo'] .btn-primary { background: linear-gradient(#5a8bc4, #3a6ea5); border-color: #2c567f; color: #ffffff; }
 [data-theme='skeuo'] .btn-gold { background: linear-gradient(#f0c14b, #d4a017); border-color: #b8860b; }
 [data-theme='skeuo'] .btn:active:not(:disabled) { box-shadow: inset 0 2px 4px rgba(60, 40, 15, 0.4); }
+/* The page title sits on raw leather where dark text loses contrast — mount it on a
+   paper plaque (skip the dashboard banner variant, which brings its own background). */
+[data-theme='skeuo'] .page-head:not(.dash-banner) {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  box-shadow: var(--shadow);
+}
 
 /* ============ Calendar ============ */
 .cal-month-label { display: inline-flex; align-items: center; padding: 0 6px; font-weight: 700; min-width: 140px; justify-content: center; }
