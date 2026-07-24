@@ -228,6 +228,32 @@ export function motionForTheme(themeId: string): string {
   return MOTION_BY_ID[themeId] ?? 'none';
 }
 
+/**
+ * CSS variables the in-app colour picker is allowed to override, with UI labels.
+ * Deliberately limited to accent/secondary/background so text and surface tokens
+ * keep their contrast — recolouring can restyle a theme but not make it unreadable.
+ */
+export const CUSTOM_THEME_TOKENS: { token: string; label: string }[] = [
+  { token: '--accent', label: 'Accent' },
+  { token: '--accent2', label: 'Secondary' },
+  { token: '--bg', label: 'Background' },
+];
+
+/**
+ * Apply a theme's colour overrides as inline CSS vars on the root element, clearing any
+ * stale ones. Inline vars win over the theme's [data-theme] block, so this recolours live.
+ * Recolouring the accent also re-derives --accent-soft so active states stay coherent.
+ */
+export function applyThemeOverrides(root: HTMLElement, overrides: Record<string, string> | undefined): void {
+  const ov = overrides ?? {};
+  for (const { token } of CUSTOM_THEME_TOKENS) {
+    if (ov[token]) root.style.setProperty(token, ov[token]);
+    else root.style.removeProperty(token);
+  }
+  if (ov['--accent']) root.style.setProperty('--accent-soft', `color-mix(in srgb, ${ov['--accent']} 18%, transparent)`);
+  else root.style.removeProperty('--accent-soft');
+}
+
 /** Magician's reflection pays up to +50% at full attunement. */
 export function journalXp(classes?: ClassId[]): number {
   return Math.round(40 * (1 + 0.5 * classWeight(classes, 'magician')));

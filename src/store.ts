@@ -103,6 +103,12 @@ export interface GameState {
    * This is the "MONETIZATION_ENABLED" switch from the spec, inverted into an owner unlock.
    */
   adminUnlockAll: boolean;
+  /**
+   * Per-theme colour customizations: themeId → { cssVar: hex }. Applied as inline CSS
+   * variables over the theme's own tokens (see App.tsx). Only accent/secondary/background
+   * are customizable so text and surfaces keep their legibility.
+   */
+  themeOverrides: Record<string, Record<string, string>>;
 
   habits: Habit[];
   habitLog: Record<string, Record<string, HabitDayStatus>>; // habitId -> day -> status
@@ -211,6 +217,8 @@ export interface GameState {
   useItem: (id: ItemId, payload?: UseItemPayload) => void;
   setTheme: (themeId: string) => void;
   setAdminUnlockAll: (on: boolean) => void;
+  setThemeColor: (themeId: string, token: string, value: string) => void;
+  resetThemeColors: (themeId: string) => void;
 
   setDashboardOrder: (order: DashboardWidgetId[]) => void;
   toggleDashboardWidget: (id: DashboardWidgetId) => void;
@@ -514,6 +522,7 @@ const initialData = () => ({
   ownedThemes: ['midnight'],
   theme: 'midnight',
   adminUnlockAll: true, // owner mode on by default — everything free to test
+  themeOverrides: {} as Record<string, Record<string, string>>,
 
   habits: [] as Habit[],
   habitLog: {} as Record<string, Record<string, HabitDayStatus>>,
@@ -1326,6 +1335,16 @@ export const useGame = create<GameState>()(
           }
         }),
 
+      setThemeColor: (themeId, token, value) =>
+        set(d => {
+          (d.themeOverrides[themeId] ??= {})[token] = value;
+        }),
+
+      resetThemeColors: themeId =>
+        set(d => {
+          delete d.themeOverrides[themeId];
+        }),
+
       setDashboardOrder: order =>
         set(d => {
           d.dashboardOrder = order;
@@ -1428,7 +1447,7 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 8,
+      version: 9, // v9: themeOverrides (per-theme color customization)
       // Older saves get new fields filled with defaults instead of being discarded
       migrate: persisted => {
         const merged = { ...initialData(), ...(persisted as Partial<GameState>) } as GameState;

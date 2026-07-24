@@ -245,6 +245,28 @@ export const THEMES: ThemeDef[] = [
   { id: 'neu', name: 'Neumorphism', desc: 'Soft monochrome extrusion. Everything gently embossed.', emoji: '◽', price: THEME_PRICE, motion: 'emboss' },
 ];
 
+/**
+ * Each theme's default --bg/--accent/--accent2, mirrored from the [data-theme] blocks in
+ * styles.css. This is the color picker's source of truth: reading getComputedStyle instead
+ * would race the theme-apply effect in App.tsx (child components render before that effect
+ * runs), so the picker needs these values available synchronously in JS. Keep in sync with
+ * styles.css when a theme's palette changes.
+ */
+export const THEME_BASE_COLORS: Record<string, { '--bg': string; '--accent': string; '--accent2': string }> = {
+  midnight: { '--bg': '#0f1220', '--accent': '#8b5cf6', '--accent2': '#22d3ee' },
+  parchment: { '--bg': '#efe3c8', '--accent': '#8b5e34', '--accent2': '#a44a3f' },
+  neon: { '--bg': '#04060d', '--accent': '#00e5ff', '--accent2': '#ff2fd6' },
+  sakura: { '--bg': '#fdf2f6', '--accent': '#f472b6', '--accent2': '#a78bfa' },
+  glass: { '--bg': '#34196a', '--accent': '#8b5cf6', '--accent2': '#34d3ee' },
+  clay: { '--bg': '#e7eaff', '--accent': '#7b83ff', '--accent2': '#ff9ec4' },
+  minimal: { '--bg': '#ffffff', '--accent': '#2b6bff', '--accent2': '#2b6bff' },
+  maximal: { '--bg': '#ffe14d', '--accent': '#ff2e88', '--accent2': '#00b6d4' },
+  brutal: { '--bg': '#f2f0e9', '--accent': '#2b32ff', '--accent2': '#2b32ff' },
+  liquid: { '--bg': '#0f1630', '--accent': '#3aa0ff', '--accent2': '#a78bfa' },
+  skeuo: { '--bg': '#6b4a2f', '--accent': '#3a6ea5', '--accent2': '#b8742f' },
+  neu: { '--bg': '#e6ebf3', '--accent': '#6d7bf5', '--accent2': '#6d7bf5' },
+};
+
 // ---------- Economy yardstick ----------
 // One unit of measure keeps every number honest: a SOLID DAY of play
 // (5 habits ≈ 25g, journal 8g, a couple of quick tasks ≈ 4g) earns ~35-40 Gold,

@@ -19,7 +19,7 @@ import { Quests } from './pages/Quests';
 import { Settings } from './pages/Settings';
 import { Social } from './pages/Social';
 import { contractStatus } from './game/contract';
-import { habitDueOn, todayStr } from './game/engine';
+import { applyThemeOverrides, habitDueOn, todayStr } from './game/engine';
 import { initSync } from './lib/sync';
 import { useGame } from './store';
 
@@ -70,11 +70,13 @@ function ScrollToTop() {
 export default function App() {
   const character = useGame(s => s.character);
   const theme = useGame(s => s.theme);
+  const themeOverrides = useGame(s => s.themeOverrides);
   const reconcile = useGame(s => s.reconcile);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-  }, [theme]);
+    applyThemeOverrides(document.documentElement, themeOverrides[theme]);
+  }, [theme, themeOverrides]);
 
   // Cloud sync: auth listener + debounced push on every store change (no-op until signed in)
   useEffect(() => {

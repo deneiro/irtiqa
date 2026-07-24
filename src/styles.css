@@ -971,6 +971,19 @@ textarea.input { resize: vertical; }
 .theme-active { border-color: var(--accent); background: var(--accent-soft); }
 .theme-pick-emoji { font-size: 26px; }
 
+.theme-color-picker { margin-top: 4px; }
+.theme-color-row { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 4px; }
+.theme-color-field {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+}
+.theme-color-field input[type='color'] {
+  width: 36px; height: 36px; padding: 0; border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; background: none;
+}
+.theme-color-field input[type='color']::-webkit-color-swatch-wrapper { padding: 2px; }
+.theme-color-field input[type='color']::-webkit-color-swatch { border: none; border-radius: 6px; }
+
 /* ============ Finances ============ */
 .fin-top { display: grid; grid-template-columns: 1fr 1.4fr; gap: 16px; align-items: start; }
 .networth-card { text-align: center; }

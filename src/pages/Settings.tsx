@@ -4,8 +4,8 @@ import { AuthPanel } from '../components/AuthPanel';
 import { Icon } from '../components/Icon';
 import { Modal } from '../components/ui';
 import { WheelSurvey } from '../components/WheelSurvey';
-import { ARCHETYPE_KEYS, ARCHETYPES, CLASSES, THEMES } from '../game/constants';
-import { charLevel, isThemeUnlocked, rankFor } from '../game/engine';
+import { ARCHETYPE_KEYS, ARCHETYPES, CLASSES, THEME_BASE_COLORS, THEMES } from '../game/constants';
+import { CUSTOM_THEME_TOKENS, charLevel, isThemeUnlocked, rankFor } from '../game/engine';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
 import { playSound } from '../lib/sound';
 import { signOutUser, syncNow, useSync } from '../lib/sync';
@@ -108,6 +108,8 @@ export function Settings() {
           })}
         </div>
         <p className="muted">Free while you're testing. Later, premium styles will cost a small one-time price — no payment is wired up yet. Browse them all in the <Link to="/market">Market</Link>.</p>
+
+        <ThemeColorPicker />
       </section>
 
       <section className="card">
@@ -161,6 +163,50 @@ export function Settings() {
           💀 Erase everything
         </button>
       </section>
+    </div>
+  );
+}
+
+/**
+ * Recolour the active theme live. Deliberately limited to accent/secondary/background
+ * (CUSTOM_THEME_TOKENS) so text and surface tokens keep their contrast — this restyles
+ * a theme's mood, it can't make it unreadable. Overrides persist per theme id, so
+ * switching themes and back keeps each one's tweak.
+ */
+function ThemeColorPicker() {
+  const s = useGame();
+  const activeTheme = THEMES.find(t => t.id === s.theme)!;
+  const overrides = s.themeOverrides[s.theme] ?? {};
+  const hasOverrides = Object.keys(overrides).length > 0;
+  const base = THEME_BASE_COLORS[s.theme];
+
+  // Overrides win, otherwise the theme's authored default — never the DOM's computed
+  // style, which can still reflect the previous theme for a render or two (see the
+  // comment on THEME_BASE_COLORS for why).
+  const currentValue = (token: string) =>
+    overrides[token] || base?.[token as keyof typeof base] || '#000000';
+
+  return (
+    <div className="theme-color-picker">
+      <div className="card-head" style={{ marginTop: 14 }}>
+        <h3 style={{ fontSize: 'var(--fs-body)' }}>🎨 Recolor "{activeTheme.name}"</h3>
+        {hasOverrides && (
+          <button className="btn btn-ghost btn-sm" onClick={() => s.resetThemeColors(s.theme)}>Reset to default</button>
+        )}
+      </div>
+      <p className="muted">Tweak this theme's key colors live. Saved per theme — switch away and back and it's still yours.</p>
+      <div className="theme-color-row">
+        {CUSTOM_THEME_TOKENS.map(({ token, label }) => (
+          <label key={token} className="theme-color-field">
+            <input
+              type="color"
+              value={currentValue(token)}
+              onChange={e => s.setThemeColor(s.theme, token, e.target.value)}
+            />
+            <span>{label}</span>
+          </label>
+        ))}
+      </div>
     </div>
   );
 }
