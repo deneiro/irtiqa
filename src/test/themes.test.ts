@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { THEMES } from '../game/constants';
-import { isThemeUnlocked } from '../game/engine';
+import { isThemeUnlocked, motionForTheme } from '../game/engine';
 
 const free = THEMES.find(t => t.free)!;              // midnight
 const premium = THEMES.find(t => t.id === 'liquid')!; // a paid theme
@@ -29,6 +29,25 @@ describe('isThemeUnlocked — the owner-mode gate', () => {
     for (const t of THEMES) {
       const hasPriceOrFree = t.free === true || typeof t.price === 'number';
       expect(hasPriceOrFree).toBe(true);
+    }
+  });
+});
+
+describe('motionForTheme — the Phase 2 juice-layer signature', () => {
+  it('returns each theme its declared motion key', () => {
+    expect(motionForTheme('brutal')).toBe('stamp');
+    expect(motionForTheme('clay')).toBe('squish');
+    expect(motionForTheme('liquid')).toBe('specular');
+    expect(motionForTheme('maximal')).toBe('confetti');
+  });
+
+  it('falls back to "none" for an unknown theme id', () => {
+    expect(motionForTheme('does-not-exist')).toBe('none');
+  });
+
+  it('gives every registered theme a non-empty motion key', () => {
+    for (const t of THEMES) {
+      expect(motionForTheme(t.id).length).toBeGreaterThan(0);
     }
   });
 });

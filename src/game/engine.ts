@@ -1,4 +1,4 @@
-import { ATTR_KEYS, QUEST_DURATIONS, RANKS } from './constants';
+import { ATTR_KEYS, QUEST_DURATIONS, RANKS, THEMES } from './constants';
 import type { AttributeKey, ClassId, Debt, Habit, ItemDef, JournalEntry, Metrics, Quest, RankDef, ThemeDef, Tx } from './types';
 
 // ---------- Dates (local timezone, YYYY-MM-DD strings) ----------
@@ -214,6 +214,18 @@ export function isThemeUnlocked(
   opts: { adminUnlockAll: boolean; ownedThemes: string[] },
 ): boolean {
   return opts.adminUnlockAll || theme.free === true || opts.ownedThemes.includes(theme.id);
+}
+
+const MOTION_BY_ID: Record<string, string> = Object.fromEntries(
+  THEMES.map(t => [t.id, t.motion ?? 'none']),
+);
+
+/**
+ * The motion-signature key for a theme id (e.g. 'stamp', 'squish', 'specular').
+ * The juice layer reads this to pick a per-theme celebration variant. Unknown → 'none'.
+ */
+export function motionForTheme(themeId: string): string {
+  return MOTION_BY_ID[themeId] ?? 'none';
 }
 
 /** Magician's reflection pays up to +50% at full attunement. */

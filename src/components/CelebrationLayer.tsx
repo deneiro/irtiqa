@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { playSound, type SoundId } from '../lib/sound';
+import { motionForTheme } from '../game/engine';
 import { useGame } from '../store';
 import type { Celebration, CelebrationType } from '../game/types';
 
@@ -21,6 +22,7 @@ export function CelebrationLayer() {
   const celebrations = useGame(s => s.celebrations);
   const dismiss = useGame(s => s.dismissCelebration);
   const soundOn = useGame(s => s.soundOn);
+  const motion = motionForTheme(useGame(s => s.theme)); // per-theme celebration signature
   const timers = useRef<Set<string>>(new Set());
 
   const toasts = celebrations.filter(c => TOAST_TYPES.includes(c.type)).slice(0, 5);
@@ -50,23 +52,23 @@ export function CelebrationLayer() {
     <>
       <div className="toast-stack">
         {toasts.map(t => (
-          <div key={t.id} className={`toast toast-${t.type}`} onClick={() => dismiss(t.id)}>
+          <div key={t.id} className={`toast toast-${t.type} celeb-${motion}`} onClick={() => dismiss(t.id)}>
             <div className="toast-title">{t.title}</div>
             {t.subtitle && <div className="toast-sub">{t.subtitle}</div>}
           </div>
         ))}
       </div>
-      {popup && <Popup c={popup} onClose={() => dismiss(popup.id)} />}
+      {popup && <Popup c={popup} motion={motion} onClose={() => dismiss(popup.id)} />}
     </>
   );
 }
 
-function Popup({ c, onClose }: { c: Celebration; onClose: () => void }) {
+function Popup({ c, motion, onClose }: { c: Celebration; motion: string; onClose: () => void }) {
   const emoji = c.type === 'levelup' ? '🎉' : c.type === 'rankup' ? '👑' : '🏆';
   const heading = c.type === 'levelup' ? 'LEVEL UP!' : c.type === 'rankup' ? 'RANK UP!' : 'ACHIEVEMENT UNLOCKED';
   return (
     <div className="popup-overlay" onClick={onClose}>
-      <div className={`popup-card popup-${c.type} ${c.tier ? `tier-${c.tier}` : ''}`}>
+      <div className={`popup-card popup-${c.type} celeb-${motion} ${c.tier ? `tier-${c.tier}` : ''}`}>
         <div className="popup-burst" aria-hidden>
           {Array.from({ length: 10 }).map((_, i) => (
             <span key={i} className="spark" style={{ ['--i' as string]: i }} />
