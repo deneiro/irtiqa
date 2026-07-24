@@ -1,9 +1,10 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { Empty, Modal } from '../components/ui';
 import { CLASSES, classAffinityLabel, ITEMS, THEMES } from '../game/constants';
-import { accountBalance, addDaysStr, fmtDayFull, itemPrice, journalLocked, todayStr } from '../game/engine';
-import type { ClassId, ItemDef, ItemId, WishlistItem } from '../game/types';
+import { accountBalance, addDaysStr, fmtDayFull, isThemeUnlocked, itemPrice, journalLocked, todayStr } from '../game/engine';
+import type { ClassId, ItemDef, ItemId, ThemeDef, WishlistItem } from '../game/types';
 import { spawnVFXAt } from '../lib/vfx';
 import { slotLabels } from './Onboarding';
 import { useGame } from '../store';
@@ -12,7 +13,6 @@ export function Market() {
   const s = useGame();
   const gold = s.character?.gold ?? 0;
   const consumables = ITEMS.filter(i => i.kind === 'consumable');
-  const themes = ITEMS.filter(i => i.kind === 'theme');
   const permanents = ITEMS.filter(i => i.kind === 'permanent');
   const [using, setUsing] = useState<ItemId | null>(null);
 
@@ -60,8 +60,9 @@ export function Market() {
 
       <section>
         <h2 className="section-title">Themes</h2>
+        {s.adminUnlockAll && <p className="muted">🔑 Owner mode is on — every theme is unlocked. Toggle it in <Link to="/settings">Settings</Link> to preview the priced view.</p>}
         <div className="market-grid">
-          {themes.map(i => <ThemeCard key={i.id} item={i} />)}
+          {THEMES.map(t => <ThemeCard key={t.id} theme={t} />)}
         </div>
       </section>
 
@@ -127,13 +128,10 @@ function ItemCard({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =>
   );
 }
 
-function ThemeCard({ item }: { item: ItemDef }) {
+function ThemeCard({ theme }: { theme: ThemeDef }) {
   const s = useGame();
-  const gold = s.character?.gold ?? 0;
-  const price = itemPrice(item);
-  const theme = THEMES.find(t => t.id === item.themeId)!;
-  const owned = s.ownedThemes.includes(theme.id);
   const active = s.theme === theme.id;
+  const unlocked = isThemeUnlocked(theme, { adminUnlockAll: s.adminUnlockAll, ownedThemes: s.ownedThemes });
 
   return (
     <div className={`card item-card theme-card theme-preview-${theme.id}`}>
@@ -146,12 +144,11 @@ function ThemeCard({ item }: { item: ItemDef }) {
       <div className="item-footer">
         {active ? (
           <span className="status status-done">✓ Applied</span>
-        ) : owned ? (
+        ) : unlocked ? (
           <button className="btn btn-primary btn-sm" onClick={() => s.setTheme(theme.id)}>Apply</button>
         ) : (
-          <button className="btn btn-gold btn-sm" disabled={gold < price} onClick={() => s.buyItem(item.id)}>
-            Buy · {price < item.price && <s className="muted">{item.price}</s>} {price} <Icon name="gold" size={13} />
-          </button>
+          // Symbolic price, display-only — no purchase path yet (owner mode is the only unlock today).
+          <span className="status status-locked" title="Locked — owner mode is off">🔒 ${theme.price?.toFixed(2)}</span>
         )}
       </div>
     </div>

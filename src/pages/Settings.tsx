@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon';
 import { Modal } from '../components/ui';
 import { WheelSurvey } from '../components/WheelSurvey';
 import { ARCHETYPE_KEYS, ARCHETYPES, CLASSES, THEMES } from '../game/constants';
-import { charLevel, rankFor } from '../game/engine';
+import { charLevel, isThemeUnlocked, rankFor } from '../game/engine';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
 import { playSound } from '../lib/sound';
 import { signOutUser, syncNow, useSync } from '../lib/sync';
@@ -78,26 +78,36 @@ export function Settings() {
 
       <section className="card">
         <div className="card-head"><h2>Theme</h2></div>
+        <label className="toggle-row">
+          <input
+            type="checkbox"
+            checked={s.adminUnlockAll}
+            onChange={e => s.setAdminUnlockAll(e.target.checked)}
+          />
+          <span>🔑 <strong>Owner mode</strong> — unlock every theme so you can test them all. Turn it off to preview what a normal user sees: locked themes show their price.</span>
+        </label>
         <div className="theme-row">
           {THEMES.map(t => {
-            const owned = s.ownedThemes.includes(t.id);
+            const unlocked = isThemeUnlocked(t, { adminUnlockAll: s.adminUnlockAll, ownedThemes: s.ownedThemes });
             const active = s.theme === t.id;
             return (
               <button
                 key={t.id}
                 className={`theme-pick theme-preview-${t.id} ${active ? 'theme-active' : ''}`}
-                disabled={!owned}
+                disabled={!unlocked}
                 onClick={() => s.setTheme(t.id)}
-                title={owned ? t.desc : 'Locked — buy it in the Market'}
+                title={unlocked ? t.desc : `Locked — $${t.price?.toFixed(2)}`}
               >
                 <span className="theme-pick-emoji">{t.emoji}</span>
                 <span>{t.name}</span>
-                {active ? <span className="status status-done">✓ active</span> : !owned ? <span className="status status-locked">🔒 Market</span> : null}
+                {active
+                  ? <span className="status status-done">✓ active</span>
+                  : !unlocked ? <span className="status status-locked">🔒 ${t.price?.toFixed(2)}</span> : null}
               </button>
             );
           })}
         </div>
-        <p className="muted">New themes are bought with Gold in the <Link to="/market">Market</Link>. More coming.</p>
+        <p className="muted">Free while you're testing. Later, premium styles will cost a small one-time price — no payment is wired up yet. Browse them all in the <Link to="/market">Market</Link>.</p>
       </section>
 
       <section className="card">

@@ -269,10 +269,7 @@ export type ItemId =
   | 'feather'
   | 'focus_unlock'
   | 'attr_boost'
-  | 'identity_scroll'
-  | 'theme_parchment'
-  | 'theme_neon'
-  | 'theme_sakura';
+  | 'identity_scroll';
 
 export interface ItemDef {
   id: ItemId;
@@ -280,8 +277,7 @@ export interface ItemDef {
   emoji: string;
   price: number;
   desc: string;
-  kind: 'consumable' | 'permanent' | 'theme';
-  themeId?: string;
+  kind: 'consumable' | 'permanent';
   heal?: number;
 }
 
@@ -372,7 +368,15 @@ export interface ThemeDef {
   name: string;
   desc: string;
   emoji: string;
+  /** The one always-unlocked default. Free themes never show a price and never lock. */
   free?: boolean;
+  /** Symbolic real-money price shown on non-free themes. Display-only — no payment path yet. */
+  price?: number;
+  /**
+   * Motion-signature key the juice layer reads in Phase 2 (e.g. 'specular', 'squish').
+   * Stored now so themes are complete; ambient CSS motion in Phase 1 keys off `id` in styles.css.
+   */
+  motion?: string;
 }
 
 // ---------- Dashboard customization ----------

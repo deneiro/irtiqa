@@ -1,5 +1,5 @@
 import { ATTR_KEYS, QUEST_DURATIONS, RANKS } from './constants';
-import type { AttributeKey, ClassId, Debt, Habit, ItemDef, JournalEntry, Metrics, Quest, RankDef, Tx } from './types';
+import type { AttributeKey, ClassId, Debt, Habit, ItemDef, JournalEntry, Metrics, Quest, RankDef, ThemeDef, Tx } from './types';
 
 // ---------- Dates (local timezone, YYYY-MM-DD strings) ----------
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -201,6 +201,19 @@ export function reduceDamage(raw: number, classes?: ClassId[]): number {
 
 export function itemPrice(item: ItemDef): number {
   return item.price;
+}
+
+/**
+ * Whether a theme can be selected. One helper drives every picker and the load-time fallback.
+ * A theme is unlocked when owner mode is on (the default — everything free for the owner),
+ * OR it is the free default, OR it was already owned (e.g. a legacy Gold purchase).
+ * The symbolic `price` is display-only and never gates here — that waits for a real payment path.
+ */
+export function isThemeUnlocked(
+  theme: ThemeDef,
+  opts: { adminUnlockAll: boolean; ownedThemes: string[] },
+): boolean {
+  return opts.adminUnlockAll || theme.free === true || opts.ownedThemes.includes(theme.id);
 }
 
 /** Magician's reflection pays up to +50% at full attunement. */

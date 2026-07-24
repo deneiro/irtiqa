@@ -223,11 +223,26 @@ export const RANKS: RankDef[] = [
   { minLevel: 55, name: 'Legend', emoji: '🌟' },
 ];
 
+// One symbolic price for every non-free theme. Display-only for now — no payment path.
+// Owner mode (store.adminUnlockAll, default on) unlocks everything regardless.
+export const THEME_PRICE = 4.99;
+
 export const THEMES: ThemeDef[] = [
-  { id: 'midnight', name: 'Midnight', desc: 'The default: deep space blues and violet arcana.', emoji: '🌌', free: true },
-  { id: 'parchment', name: 'Parchment', desc: 'Aged paper, ink and candlelight. Classic fantasy.', emoji: '🏰' },
-  { id: 'neon', name: 'Neon Grid', desc: 'Cyberpunk terminal glow. Jack in.', emoji: '🌆' },
-  { id: 'sakura', name: 'Sakura', desc: 'Soft petals and pastel skies. Anime vibes.', emoji: '🌸' },
+  // Midnight is the one free default — the safe fallback when a theme is locked.
+  { id: 'midnight', name: 'Midnight', desc: 'The default: deep space blues and violet arcana.', emoji: '🌌', free: true, motion: 'aurora' },
+  { id: 'parchment', name: 'Parchment', desc: 'Aged paper, ink and candlelight. Classic fantasy.', emoji: '🏰', price: THEME_PRICE, motion: 'none' },
+  { id: 'neon', name: 'Neon Grid', desc: 'Cyberpunk terminal glow. Jack in.', emoji: '🌆', price: THEME_PRICE, motion: 'pulse' },
+  { id: 'sakura', name: 'Sakura', desc: 'Soft petals and pastel skies. Anime vibes.', emoji: '🌸', price: THEME_PRICE, motion: 'petals' },
+
+  // --- The eight new full re-themes (Phase 1) ---
+  { id: 'glass', name: 'Glassmorphism', desc: 'Frosted translucent panels floating over a vivid gradient.', emoji: '🧊', price: THEME_PRICE, motion: 'focus-pull' },
+  { id: 'clay', name: 'Claymorphism', desc: 'Puffy pastel 3D. Soft, bouncy, tactile.', emoji: '🫧', price: THEME_PRICE, motion: 'squish' },
+  { id: 'minimal', name: 'Minimalism', desc: 'White space, hairlines, one quiet accent.', emoji: '⚪', price: THEME_PRICE, motion: 'none' },
+  { id: 'maximal', name: 'Maximalism', desc: 'Loud, clashing, sticker-stacked. Turn it up.', emoji: '🎪', price: THEME_PRICE, motion: 'confetti' },
+  { id: 'brutal', name: 'Brutalism', desc: 'Raw paper, hard edges, monospace, offset shadow.', emoji: '🧱', price: THEME_PRICE, motion: 'stamp' },
+  { id: 'liquid', name: 'Liquid Glass', desc: 'Glossier glass with a live specular sweep of light.', emoji: '💧', price: THEME_PRICE, motion: 'specular' },
+  { id: 'skeuo', name: 'Skeuomorphism', desc: 'Leather, stitching and beveled buttons. Real materials.', emoji: '📔', price: THEME_PRICE, motion: 'bevel' },
+  { id: 'neu', name: 'Neumorphism', desc: 'Soft monochrome extrusion. Everything gently embossed.', emoji: '◽', price: THEME_PRICE, motion: 'emboss' },
 ];
 
 // ---------- Economy yardstick ----------
@@ -253,9 +268,8 @@ export const ITEMS: ItemDef[] = [
   { id: 'focus_unlock', name: 'Focus Unlock', emoji: '🎯', price: 200, kind: 'permanent', desc: 'Permanently allows marking TWO priority quests at once instead of one.' },
   { id: 'attr_boost', name: 'Attribute Boost', emoji: '⚡', price: 75, kind: 'consumable', desc: '+50% XP on your next 5 XP-earning actions.' },
   { id: 'identity_scroll', name: 'Identity Scroll', emoji: '🎴', price: 150, kind: 'consumable', desc: 'Rewrite yourself: change your character name and/or class.' },
-  { id: 'theme_parchment', name: 'Theme: Parchment', emoji: '🏰', price: 120, kind: 'theme', themeId: 'parchment', desc: 'Unlock the Parchment fantasy theme.' },
-  { id: 'theme_neon', name: 'Theme: Neon Grid', emoji: '🌆', price: 120, kind: 'theme', themeId: 'neon', desc: 'Unlock the Neon Grid cyberpunk theme.' },
-  { id: 'theme_sakura', name: 'Theme: Sakura', emoji: '🌸', price: 120, kind: 'theme', themeId: 'sakura', desc: 'Unlock the Sakura anime theme.' },
+  // Themes are no longer bought with Gold — they live in one unified system priced
+  // symbolically in real money (see THEMES / THEME_PRICE) and unlocked by owner mode.
 ];
 
 export const TIER_REWARDS: Record<Tier, { xp: number; gold: number }> = {

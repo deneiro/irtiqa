@@ -11,6 +11,7 @@ import {
   DEFAULT_DASHBOARD_ORDER,
   ITEMS,
   PRIMARY_GROUP_KEYS,
+  THEMES,
   TIER_REWARDS,
   TRANSFER_CATEGORY,
 } from './game/constants';
@@ -37,6 +38,7 @@ import {
   habitDueOn,
   healerBondMult,
   heraldHabitMult,
+  isThemeUnlocked,
   itemPrice,
   journalEditable,
   journalXp,
@@ -95,6 +97,12 @@ export interface GameState {
   effects: Effects;
   ownedThemes: string[];
   theme: string;
+  /**
+   * Owner/admin mode. On (the default) → every theme is unlocked for the owner to test.
+   * Off → only free + already-owned themes apply, and locked themes show their symbolic price.
+   * This is the "MONETIZATION_ENABLED" switch from the spec, inverted into an owner unlock.
+   */
+  adminUnlockAll: boolean;
 
   habits: Habit[];
   habitLog: Record<string, Record<string, HabitDayStatus>>; // habitId -> day -> status
@@ -202,6 +210,7 @@ export interface GameState {
   buyItem: (id: ItemId) => void;
   useItem: (id: ItemId, payload?: UseItemPayload) => void;
   setTheme: (themeId: string) => void;
+  setAdminUnlockAll: (on: boolean) => void;
 
   setDashboardOrder: (order: DashboardWidgetId[]) => void;
   toggleDashboardWidget: (id: DashboardWidgetId) => void;
@@ -504,6 +513,8 @@ const initialData = () => ({
   effects: { indulgence: 0, xpBoostCharges: 0, maxPriority: 1, ghostDays: [] as string[] },
   ownedThemes: ['midnight'],
   theme: 'midnight',
+  adminUnlockAll: true, // owner mode on by default — everything free to test
+
   habits: [] as Habit[],
   habitLog: {} as Record<string, Record<string, HabitDayStatus>>,
   failures: [] as FailureRecord[],
@@ -589,6 +600,18 @@ export const useGame = create<GameState>()(
       // ------- End-of-day reconciliation: auto-fail missed habits, post subscriptions -------
       reconcile: () =>
         set(d => {
+          // Load-time safety: never leave the app stuck on a theme the user can't use
+          // (e.g. a save with owner mode off and a since-locked active theme).
+          const activeTheme = THEMES.find(t => t.id === d.theme);
+          if (activeTheme && !isThemeUnlocked(activeTheme, { adminUnlockAll: d.adminUnlockAll, ownedThemes: d.ownedThemes })) {
+            d.theme = 'midnight';
+            pushCeleb(d, {
+              type: 'info',
+              title: '🌌 Switched to Midnight',
+              subtitle: `${activeTheme.name} is locked right now — reapply it once it's unlocked.`,
+            });
+          }
+
           if (!d.character) return;
           const today = todayStr();
           // Grace window: yesterday isn't judged until GRACE_HOUR, so "did it but fell asleep before logging" is recoverable
@@ -1160,7 +1183,6 @@ export const useGame = create<GameState>()(
         set(d => {
           const item = ITEMS.find(i => i.id === id);
           if (!item || !d.character) return;
-          if (item.kind === 'theme' && d.ownedThemes.includes(item.themeId!)) return;
           if (item.id === 'focus_unlock' && d.effects.maxPriority >= 2) return;
           const price = itemPrice(item);
           if (d.character.gold < price) {
@@ -1169,11 +1191,7 @@ export const useGame = create<GameState>()(
           }
           d.character.gold -= price;
           d.stats.itemsBought++;
-          if (item.kind === 'theme') {
-            d.ownedThemes.push(item.themeId!);
-            d.theme = item.themeId!;
-            pushCeleb(d, { type: 'item', title: `${item.emoji} Theme unlocked & applied`, subtitle: item.name });
-          } else if (item.id === 'focus_unlock') {
+          if (item.id === 'focus_unlock') {
             d.effects.maxPriority = 2;
             pushCeleb(d, { type: 'item', title: '🎯 Focus Unlock active', subtitle: 'You can now mark two priority quests at once.' });
           } else {
@@ -1285,7 +1303,27 @@ export const useGame = create<GameState>()(
 
       setTheme: themeId =>
         set(d => {
-          if (d.ownedThemes.includes(themeId)) d.theme = themeId;
+          const theme = THEMES.find(t => t.id === themeId);
+          if (!theme) return;
+          if (isThemeUnlocked(theme, { adminUnlockAll: d.adminUnlockAll, ownedThemes: d.ownedThemes })) {
+            d.theme = themeId;
+          }
+        }),
+
+      setAdminUnlockAll: on =>
+        set(d => {
+          d.adminUnlockAll = on;
+          // Turning owner mode OFF can strand the active theme behind its price.
+          // Don't trap the user on a now-locked theme — fall back to the free default.
+          const active = THEMES.find(t => t.id === d.theme);
+          if (active && !isThemeUnlocked(active, { adminUnlockAll: on, ownedThemes: d.ownedThemes })) {
+            d.theme = 'midnight';
+            pushCeleb(d, {
+              type: 'info',
+              title: '🌌 Switched to Midnight',
+              subtitle: `${active.name} is locked with owner mode off. Reapply it anytime.`,
+            });
+          }
         }),
 
       setDashboardOrder: order =>
@@ -1390,7 +1428,7 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 7,
+      version: 8,
       // Older saves get new fields filled with defaults instead of being discarded
       migrate: persisted => {
         const merged = { ...initialData(), ...(persisted as Partial<GameState>) } as GameState;
