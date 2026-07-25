@@ -1333,6 +1333,14 @@ export const useGame = create<GameState>()(
               subtitle: `${active.name} is locked with owner mode off. Reapply it anytime.`,
             });
           }
+          // Same trap-avoidance for the Wardrobe: an owner-mode-previewed cosmetic that
+          // was never actually earned unequips itself rather than staying stuck equipped.
+          if (!on) {
+            for (const slot of Object.keys(d.equippedCosmetics) as CosmeticSlot[]) {
+              const id = d.equippedCosmetics[slot];
+              if (id && !d.ownedCosmetics.includes(id)) d.equippedCosmetics[slot] = null;
+            }
+          }
         }),
 
       setThemeColor: (themeId, token, value) =>
@@ -1413,7 +1421,8 @@ export const useGame = create<GameState>()(
         set(d => {
           if (id !== null) {
             const c = COSMETICS.find(x => x.id === id);
-            if (!c || c.slot !== slot || !d.ownedCosmetics.includes(id)) return;
+            // Owner mode previews any cosmetic, same as it does themes — doesn't grant real ownership.
+            if (!c || c.slot !== slot || (!d.adminUnlockAll && !d.ownedCosmetics.includes(id))) return;
           }
           d.equippedCosmetics[slot] = id;
         }),

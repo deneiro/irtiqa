@@ -311,6 +311,9 @@ export function Profile() {
           <h2>👘 Wardrobe</h2>
           <span className="muted">{s.ownedCosmetics.length} / {COSMETICS.length} collected — drops from daily chests</span>
         </div>
+        {s.adminUnlockAll && (
+          <p className="muted">🔑 Owner mode is on — every cosmetic previews and equips freely. It doesn't count toward your real collection above.</p>
+        )}
         {(['frame', 'title', 'banner'] as CosmeticSlot[]).map(slot => (
           <div key={slot} className="wardrobe-slot">
             <h3 className="wardrobe-slot-title">
@@ -319,23 +322,24 @@ export function Profile() {
             <div className="wardrobe-grid">
               {COSMETICS.filter(c => c.slot === slot).map(c => {
                 const owned = s.ownedCosmetics.includes(c.id);
+                const unlocked = owned || s.adminUnlockAll;
                 const equipped = s.equippedCosmetics[slot] === c.id;
                 return (
-                  <div key={c.id} className={`wardrobe-card rarity-${c.rarity} ${owned ? '' : 'wardrobe-locked'}`}>
+                  <div key={c.id} className={`wardrobe-card rarity-${c.rarity} ${unlocked ? '' : 'wardrobe-locked'}`}>
                     <div className="wardrobe-preview">
                       {slot === 'frame' ? (
-                        <Avatar classId={character.classId} size={40} frameId={owned ? c.id : null} />
+                        <Avatar classId={character.classId} size={40} frameId={unlocked ? c.id : null} />
                       ) : slot === 'banner' ? (
                         <span className={`banner-swatch banner-${c.id}`} />
                       ) : (
-                        <span className="title-preview">{owned ? c.name : '???'}</span>
+                        <span className="title-preview">{unlocked ? c.name : '???'}</span>
                       )}
                     </div>
-                    <div className="wardrobe-name">{owned ? c.name : '???'}</div>
+                    <div className="wardrobe-name">{unlocked ? c.name : '???'}</div>
                     <div className="wardrobe-rarity" style={{ color: COSMETIC_RARITY_META[c.rarity].color }}>
                       {COSMETIC_RARITY_META[c.rarity].label}
                     </div>
-                    {owned ? (
+                    {unlocked ? (
                       equipped ? (
                         <button className="btn btn-ghost btn-sm" onClick={() => s.equipCosmetic(slot, null)}>Unequip</button>
                       ) : (

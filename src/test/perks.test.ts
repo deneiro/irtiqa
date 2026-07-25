@@ -287,6 +287,7 @@ describe('daily contract & chest', () => {
 describe('cosmetics', () => {
   it('only owned cosmetics can be equipped, and slots are enforced', () => {
     g().createCharacter('T', ['magician']);
+    useGame.setState({ adminUnlockAll: false }); // real ownership gate, not the owner-mode preview
     g().equipCosmetic('frame', 'frame_gilded');
     expect(g().equippedCosmetics.frame).toBeNull(); // not owned
 
@@ -299,5 +300,28 @@ describe('cosmetics', () => {
 
     g().equipCosmetic('frame', null); // unequip
     expect(g().equippedCosmetics.frame).toBeNull();
+  });
+
+  it('owner mode previews any cosmetic, without granting real ownership', () => {
+    g().createCharacter('T', ['magician']);
+    useGame.setState({ adminUnlockAll: true, ownedCosmetics: [] });
+
+    g().equipCosmetic('frame', 'frame_gilded');
+    expect(g().equippedCosmetics.frame).toBe('frame_gilded');
+    expect(g().ownedCosmetics).toEqual([]); // preview only — the real collection is untouched
+
+    // Turning owner mode off unequips anything that was never actually earned,
+    // same trap-avoidance as the theme fallback to Midnight.
+    g().setAdminUnlockAll(false);
+    expect(g().equippedCosmetics.frame).toBeNull();
+  });
+
+  it('an owner-mode-off toggle leaves genuinely owned equipped cosmetics alone', () => {
+    g().createCharacter('T', ['magician']);
+    useGame.setState({ adminUnlockAll: true, ownedCosmetics: ['frame_gilded'] });
+    g().equipCosmetic('frame', 'frame_gilded');
+
+    g().setAdminUnlockAll(false);
+    expect(g().equippedCosmetics.frame).toBe('frame_gilded');
   });
 });
