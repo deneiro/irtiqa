@@ -53,7 +53,7 @@ export function Layout() {
       {/* Purely decorative; only visible when the Neon theme is active (see styles.css) */}
       <div className="neon-scanline" aria-hidden="true" />
       <aside className="sidebar">
-        <div className="logo">⚔️ IrtiQa</div>
+        <div className="logo"><img src="/logo-sigil.png" alt="" className="logo-mark" width={26} height={26} /> IrtiQa</div>
         <Link to="/profile" className="side-char" title="Open profile">
           {/* The sigil, not a flat class icon — the sidebar is the one place it's
               seen every session, so it's where its growth is most likely noticed. */}

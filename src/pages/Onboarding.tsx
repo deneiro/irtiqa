@@ -29,7 +29,7 @@ export function Onboarding() {
   return (
     <div className="onboarding">
       <div className="onboarding-inner">
-        <h1 className="onb-logo">⚔️ IrtiQa</h1>
+        <h1 className="onb-logo"><img src="/logo-sigil.png" alt="" width={48} height={48} /> IrtiQa</h1>
         <p className="onb-tag">Your real life, played as an RPG. Every action counts. Nothing is free.</p>
 
         {step === 0 && (

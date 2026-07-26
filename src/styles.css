@@ -395,7 +395,8 @@ h3 { font-size: var(--fs-body); }
   flex-direction: column;
   gap: 14px;
 }
-.logo { font-size: 20px; font-weight: 800; letter-spacing: 0.5px; padding: 0 8px; }
+.logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; letter-spacing: 0.5px; padding: 0 8px; }
+.logo-mark { border-radius: 6px; flex-shrink: 0; }
 .side-char {
   display: block; padding: 10px; background: var(--panel); border: 1px solid var(--border);
   border-radius: var(--radius); color: var(--text); transition: border-color 0.12s ease;
@@ -703,7 +704,11 @@ textarea.input { resize: vertical; }
 /* ============ Onboarding ============ */
 .onboarding { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 30px; }
 .onboarding-inner { max-width: 900px; width: 100%; text-align: center; }
-.onb-logo { font-size: 44px; margin-bottom: 4px; animation: pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.onb-logo {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  font-size: 44px; margin-bottom: 4px; animation: pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.onb-logo img { border-radius: 10px; }
 .onb-tag { color: var(--muted); margin-bottom: 34px; }
 .onb-step h2 { font-size: 24px; margin-bottom: 4px; }
 .onb-step .input-lg { max-width: 420px; margin: 18px auto; display: block; text-align: center; }
