@@ -23,6 +23,10 @@ function weakestTwo(scores: Record<AttributeKey, number>): AttributeKey[] {
   return [...ATTR_KEYS].sort((a, b) => (scores[a] ?? 0) - (scores[b] ?? 0)).slice(0, 2);
 }
 
+/** Suggestions shown on the last onboarding screen. Four is enough to choose from
+ *  and few enough to read; the full library is one click away from the Habits page. */
+const KIT_LIMIT = 4;
+
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 /**
@@ -49,7 +53,6 @@ export function Onboarding() {
   // never destroys an answer and the wheel + kit land in a single createCharacter call.
   const [wheel, setWheel] = useState<Record<AttributeKey, number> | null>(null);
   const [habitPicks, setHabitPicks] = useState<string[]>([]);
-  const [questPicks, setQuestPicks] = useState<string[]>([]);
 
   const toggleClass = (id: ClassId) =>
     setClasses(prev => (prev.includes(id) ? prev.filter(c => c !== id) : prev.length < 3 ? [...prev, id] : prev));
@@ -65,7 +68,7 @@ export function Onboarding() {
   const toggleId = (setPicks: typeof setHabitPicks) => (t: AnyTemplate) =>
     setPicks(prev => (prev.includes(t.id) ? prev.filter(x => x !== t.id) : [...prev, t.id]));
 
-  const begin = () => createCharacter(name, classes, wheel ?? undefined, [...habitPicks, ...questPicks]);
+  const begin = () => createCharacter(name, classes, wheel ?? undefined, habitPicks);
   // Skipping the kit must not also throw away the audit they just filled in.
   const beginEmpty = () => createCharacter(name, classes, wheel ?? undefined);
 
@@ -207,54 +210,45 @@ export function Onboarding() {
                 </strong>{' '}and{' '}
                 <strong className="dayone-focus" style={{ color: ATTRIBUTES[focus[1]].color }}>
                   <Icon name={focus[1]} size={14} /> {ATTRIBUTES[focus[1]].label}
-                </strong>, so those are floated to the top. Around three habits and one quest is a
+                </strong>, so those are floated to the top. Around three is a
                 good first day — enough that tomorrow morning has something real on it. Add, swap or
                 drop any of it later.
               </p>
             ) : (
               <p className="muted">
-                Start with things you could genuinely do today. Around three habits and one quest is
-                a good first day — enough that tomorrow morning has something real on it. Add, swap
+                Start with things you could genuinely do today. Around three is a good first day — enough that tomorrow morning has something real on it. Add, swap
                 or drop any of it later.
               </p>
             )}
 
+            {/* One browser, capped. Forty cards on the last screen before the app opens is
+                a decision-making tax at the exact moment the player wants to be finished —
+                and the quest picker on top of it asked them to commit to a project before
+                they had seen a session timer. Quests move into the tour, where the timer
+                gets explained first. */}
             <div className="dayone-section">
-              <div className="section-label">Daily habits</div>
+              <div className="section-label">Pick a few habits</div>
               <TemplateBrowser
                 kind="habit"
                 mode="select"
+                limit={KIT_LIMIT}
                 focusAttrs={focus}
                 profile={profile}
                 selectedIds={habitPicks}
                 onPick={toggleId(setHabitPicks)}
                 emptyHint="Nothing matches that. Clear a filter — or start with none and write your own on the Habits page."
               />
-            </div>
-
-            <div className="dayone-section dayone-quests">
-              <div className="section-label">One quest to aim at</div>
               <p className="muted dayone-hint">
-                A quest is a bigger thing you work at in sessions, not a daily tick. One is plenty.
+                Your first quest comes later — the tutorial introduces it once you have seen how
+                the session timer works.
               </p>
-              <TemplateBrowser
-                kind="quest"
-                mode="select"
-                focusAttrs={focus}
-                profile={profile}
-                selectedIds={questPicks}
-                onPick={toggleId(setQuestPicks)}
-                emptyHint="Nothing matches that. Clear a filter — or start with none and write your own on the Quests page."
-              />
             </div>
 
             {/* The library is long enough to scroll past the fold, so the way out travels
                 with the player instead of waiting at the bottom of forty cards. */}
             <div className="dayone-bar">
               <span className="dayone-count">
-                {habitPicks.length + questPicks.length === 0
-                  ? 'Nothing picked yet'
-                  : `${plural(habitPicks.length, 'habit')} · ${plural(questPicks.length, 'quest')}`}
+                {habitPicks.length === 0 ? 'Nothing picked yet' : plural(habitPicks.length, 'habit')}
               </span>
               <div className="onb-actions">
                 <button className="btn btn-ghost" onClick={() => setStep(2)}>← Back</button>

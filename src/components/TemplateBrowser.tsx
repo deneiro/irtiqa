@@ -141,6 +141,7 @@ export function TemplateBrowser({
   addedTitles,
   onPick,
   emptyHint,
+  limit,
 }: {
   kind: 'habit' | 'quest';
   focusAttrs?: AttributeKey[];
@@ -150,6 +151,9 @@ export function TemplateBrowser({
   addedTitles?: Set<string>;
   onPick: (t: AnyTemplate, e: React.MouseEvent) => void;
   emptyHint?: string;
+  /** Cap the grid to the best N. Used on the last onboarding screen, where forty
+   *  cards is a decision-making tax at the moment the player wants to be done. */
+  limit?: number;
 }) {
   const [search, setSearch] = useState('');
   const [attrFilter, setAttrFilter] = useState<AttributeKey | null>(null);
@@ -176,8 +180,11 @@ export function TemplateBrowser({
       const score = (t: AnyTemplate) => (t.attrs.some(a => focusAttrs.includes(a)) ? 0 : 1);
       out = [...out].sort((a, b) => score(a) - score(b));
     }
+    // The cap applies after ranking, so a limited grid still shows the best fits
+    // — and it lifts the moment the player narrows things down themselves.
+    if (limit && !attrFilter && !effortFilter && !q) out = out.slice(0, limit);
     return out;
-  }, [pool, attrFilter, effortFilter, search, profile, showAll, focusAttrs]);
+  }, [pool, attrFilter, effortFilter, search, profile, showAll, focusAttrs, limit]);
 
   const hiddenByProfile = profile?.length && !showAll ? pool.length - recommendedFor([...pool], profile).length : 0;
 

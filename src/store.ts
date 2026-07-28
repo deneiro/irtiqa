@@ -19,6 +19,7 @@ import {
 } from './game/constants';
 import { CURRENCIES, DEFAULT_CURRENCY } from './game/money';
 import { HABIT_TEMPLATES, QUEST_TEMPLATES } from './game/templates';
+import { TUTORIAL_STEP_COUNT } from './game/tutorial';
 import { BOSS_REQUIRED, BOSS_REWARD, BOSSES } from './game/boss';
 import { type ChestLoot, rollChest } from './game/chest';
 import { contractStatus } from './game/contract';
@@ -162,6 +163,17 @@ export interface GameState {
   /** Wheel of Life self-audits over time — [0] seeds the start, later ones track the arc. */
   wheelSnapshots: WheelSnapshot[];
 
+  /**
+   * Guided-tour position.
+   *   null → finished (or never started: existing saves default here, so an update
+   *          never drops a veteran back into onboarding)
+   *   -1   → skipped; the overlay is gone but per-page coach tips still fire
+   *   0..N → currently on that step of TUTORIAL_STEPS
+   */
+  tutorialStep: number | null;
+  /** Routes already visited, so a coach tip fires once and never again. */
+  seenPages: string[];
+
   // ---- actions ----
   createCharacter: (name: string, classes: ClassId[], wheel?: Record<AttributeKey, number>, starterTemplateIds?: string[]) => void;
   recordWheelCheck: (scores: Record<AttributeKey, number>) => void;
@@ -234,6 +246,13 @@ export interface GameState {
   dismissRecap: () => void;
 
   setProfile: (profile: PersonalityArchetype[]) => void;
+  advanceTutorial: () => void;
+  skipTutorial: () => void;
+  completeTutorial: () => void;
+  goToTutorialStep: (step: number) => void;
+  markPageSeen: (path: string) => void;
+  replayTutorial: () => void;
+
   setSoundOn: (on: boolean) => void;
   setReminder: (patch: Partial<{ enabled: boolean; time: string }>) => void;
   markReminderFired: () => void;
@@ -567,6 +586,10 @@ const initialData = () => ({
   reminder: { enabled: false, time: '20:00' },
   wheelSnapshots: [] as WheelSnapshot[],
   lastReminderDay: '',
+  // null, not 0: this is also what every pre-tutorial save migrates to, and an
+  // existing player must never be dropped into a first-run tour on update.
+  tutorialStep: null as number | null,
+  seenPages: [] as string[],
 });
 
 // ---------------- Store ----------------
@@ -620,6 +643,10 @@ export const useGame = create<GameState>()(
               });
             }
           }
+
+          // A brand-new character starts the guided tour; a restored save never does.
+          d.tutorialStep = 0;
+          d.seenPages = [];
 
           const cls = CLASSES.find(c => c.id === list[0]);
           pushCeleb(d, {
@@ -1477,6 +1504,42 @@ export const useGame = create<GameState>()(
           d.character.profile = profile.length > 0 ? profile : undefined;
         }),
 
+      advanceTutorial: () =>
+        set(d => {
+          if (d.tutorialStep === null || d.tutorialStep < 0) return;
+          const next = d.tutorialStep + 1;
+          d.tutorialStep = next >= TUTORIAL_STEP_COUNT ? null : next;
+        }),
+
+      goToTutorialStep: step =>
+        set(d => {
+          if (step < 0 || step >= TUTORIAL_STEP_COUNT) return;
+          d.tutorialStep = step;
+        }),
+
+      // -1, not null: the overlay stops, but the player still gets a one-line tip the
+      // first time they open a page nobody ever explained to them.
+      skipTutorial: () =>
+        set(d => {
+          d.tutorialStep = -1;
+        }),
+
+      completeTutorial: () =>
+        set(d => {
+          d.tutorialStep = null;
+        }),
+
+      markPageSeen: path =>
+        set(d => {
+          if (!d.seenPages.includes(path)) d.seenPages.push(path);
+        }),
+
+      replayTutorial: () =>
+        set(d => {
+          d.tutorialStep = 0;
+          d.seenPages = [];
+        }),
+
       setSoundOn: on =>
         set(d => {
           d.soundOn = on;
@@ -1494,7 +1557,8 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 10, // v10: currency, retired themes, wishlist removed, one identity
+      version: 11, // v11: guided tour (tutorialStep, seenPages)
+      // v10: currency, retired themes, wishlist removed, one identity
       // Older saves get new fields filled with defaults instead of being discarded
       migrate: persisted => {
         const merged = { ...initialData(), ...(persisted as Partial<GameState>) } as GameState;

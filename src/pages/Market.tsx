@@ -75,7 +75,7 @@ export function Market() {
       )}
 
       <section>
-        <h2 className="section-title">Consumables</h2>
+        <h2 className="section-title" data-tour="market-consumables">Consumables</h2>
         <p className="muted market-note">Cheapest first — everyday relief, then the insurance, then the rare things.</p>
         <div className="market-grid">
           {consumables.map(i => <ItemCard key={i.id} item={i} onNeedPayload={() => setUsing(i.id)} />)}
@@ -83,7 +83,7 @@ export function Market() {
       </section>
 
       <section>
-        <h2 className="section-title">Permanent upgrades</h2>
+        <h2 className="section-title" data-tour="market-permanent">Permanent upgrades</h2>
         <div className="market-grid">
           {permanents.map(i => <ItemCard key={i.id} item={i} onNeedPayload={() => setUsing(i.id)} />)}
         </div>

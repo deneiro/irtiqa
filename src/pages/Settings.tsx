@@ -150,6 +150,8 @@ export function Settings() {
 
       <ReminderCard />
 
+      <TutorialCard />
+
       <CurrencyCard />
 
       <section className="card">
@@ -270,6 +272,30 @@ function ThemeColorPicker() {
         ))}
       </div>
     </div>
+  );
+}
+
+/** Replay the guided tour. Kept next to the Wheel Check because both are
+ *  "run the first-session thing again" — neither destroys anything you earned. */
+function TutorialCard() {
+  const tutorialStep = useGame(s => s.tutorialStep);
+  const replayTutorial = useGame(s => s.replayTutorial);
+  const running = tutorialStep !== null && tutorialStep >= 0;
+
+  return (
+    <section className="card">
+      <div className="card-head">
+        <h2 className="heading-icon"><Icon name="learn" size={18} /> Tutorial</h2>
+      </div>
+      <p className="muted">
+        The guided first session — every screen, and every core action done once for real.
+        Replaying it changes nothing you have earned; it only walks you through again.
+        {tutorialStep === -1 && ' You skipped it last time.'}
+      </p>
+      <button className="btn btn-primary" disabled={running} onClick={replayTutorial}>
+        {running ? 'Tour in progress' : 'Replay the tutorial'}
+      </button>
+    </section>
   );
 }
 

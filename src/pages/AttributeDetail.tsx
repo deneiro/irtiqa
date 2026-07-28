@@ -76,7 +76,7 @@ export function AttributeDetail() {
         </div>
       </div>
 
-      <section className="card attr-hero">
+      <section className="card attr-hero" data-tour="attr-bar">
         <p className="attr-definition">{content.definition}</p>
         <Bar value={lp.into} max={lp.need} className="bar-attr" label={`${lp.into}/${lp.need} XP`} />
         <p className="muted center attr-hero-xp">{lp.into}/{lp.need} XP to level {lp.level + 1}</p>

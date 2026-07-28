@@ -4,6 +4,8 @@ import { CLASSES, COSMETICS } from '../game/constants';
 import { charLevelProgress, fmtMinutes, momentumMult, rankFor } from '../game/engine';
 import { useGame } from '../store';
 import { CelebrationLayer } from './CelebrationLayer';
+import { CoachTip } from './CoachTip';
+import { TutorialOverlay } from './TutorialOverlay';
 import { Icon, type IconName } from './Icon';
 import { Sigil } from './Sigil';
 import { Bar } from './ui';
@@ -121,7 +123,7 @@ export function Layout() {
       </aside>
       <div className="main-col">
         <header className="topbar">
-          <div className="stat stat-level">
+          <div className="stat stat-level" data-tour="xp">
             <span className="stat-label">Lv {lp.level}</span>
             <Bar value={lp.into} max={lp.need} className="bar-xp" label={`${lp.into}/${lp.need} XP to level ${lp.level + 1}`} />
             <span className="stat-num">{lp.into}/{lp.need}</span>
@@ -131,12 +133,12 @@ export function Layout() {
               <Icon name="flame" size={14} /> {momentum.streak}
             </span>
           )}
-          <div className="stat stat-hp" title={hpNote}>
+          <div className="stat stat-hp" title={hpNote} data-tour="hp">
             <span className="stat-label"><Icon name="health" size={14} /> HP</span>
             <Bar value={character.hp} max={100} className={`bar-hp ${hpTone}`} label={`${character.hp}/100 HP`} />
             <span className="stat-num">{character.hp}/100</span>
           </div>
-          <div className="stat stat-gold" title="Gold">
+          <div className="stat stat-gold" title="Gold" data-tour="gold">
             <Icon name="gold" size={20} className="gold-coin" /> {character.gold}
           </div>
         </header>
@@ -148,6 +150,8 @@ export function Layout() {
       <SessionWidget />
       <CelebrationLayer />
       <VFXLayer />
+      <TutorialOverlay />
+      <CoachTip />
     </div>
   );
 }
@@ -301,7 +305,7 @@ function SessionWidget() {
   const p = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <Link to={`/quests/${quest.id}`} className="session-widget" title="Session running — click to open quest">
+    <Link to={`/quests/${quest.id}`} className="session-widget" data-tour="session-widget" title="Session running — click to open quest">
       <span className="session-pulse" />
       <span className="session-time">{hh > 0 ? `${hh}:` : ''}{p(mm)}:{p(ss)}</span>
       <span className="session-quest">{quest.title}</span>

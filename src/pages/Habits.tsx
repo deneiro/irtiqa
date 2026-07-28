@@ -57,7 +57,7 @@ export function Habits() {
           <h1>Habits</h1>
           <p className="muted">The daily discipline engine. Miss a day and the app notices — automatically.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setEditing('new')}><Icon name="plus" size={14} /> New habit</button>
+        <button className="btn btn-primary" data-tour="new-habit" onClick={() => setEditing('new')}><Icon name="plus" size={14} /> New habit</button>
       </div>
 
       {showHeatmap && (
@@ -118,7 +118,7 @@ export function Habits() {
                       <span className="muted">{freqLabel(h)}</span>
                       <AttrTags attrs={h.attrs} linked />
                     </div>
-                    <div className="habit-streak">
+                    <div className="habit-streak" data-tour="habit-streak">
                       <span className="streak-big"><Icon name="flame" size={20} /> {h.streak}</span>
                       <span className="muted">best {h.best}</span>
                     </div>
@@ -132,6 +132,7 @@ export function Habits() {
                       ) : h.kind === 'good' ? (
                         <button
                           className="btn btn-primary"
+                          data-tour="habit-checkin"
                           onClick={e => { s.checkinHabit(h.id); spawnVFXAt(e, 'xp', 12); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 5); }}
                         >
                           <Icon name="check" size={14} /> Done today · +12 XP · +5 <Icon name="gold" size={14} />
@@ -287,7 +288,7 @@ function HabitModal({ habit, onClose }: { habit: Habit | null; onClose: () => vo
     // under the cursor when you switch tabs is unpleasant.
     <Modal title={isNew ? 'New habit' : 'Edit habit'} onClose={onClose} wide={isNew}>
       {isNew && (
-        <div className="seg" style={{ marginBottom: 14 }}>
+        <div className="seg" data-tour="habit-tabs" style={{ marginBottom: 14 }}>
           <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>Browse library</button>
           <button type="button" className={tab === 'own' ? 'seg-on' : ''} onClick={() => setTab('own')}>Write my own</button>
         </div>
@@ -350,13 +351,13 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
     <>
       <label className="field">
         <span>Name</span>
-        <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder={kind === 'good' ? 'Read for 20 minutes' : 'No smoking'} autoFocus />
+        <input className="input" data-tour="habit-name" value={name} onChange={e => setName(e.target.value)} placeholder={kind === 'good' ? 'Read for 20 minutes' : 'No smoking'} autoFocus />
       </label>
 
       <label className="field">
         <span>Type</span>
         {/* The same good/bad dot the habit cards use, so the colour means one thing app-wide. */}
-        <div className="seg">
+        <div className="seg" data-tour="habit-kind">
           <button type="button" className={kind === 'good' ? 'seg-on' : ''} onClick={() => setKind('good')}>
             <span className="habit-kind good" /> Good — do it
           </button>
@@ -368,7 +369,7 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
 
       <label className="field">
         <span>Frequency</span>
-        <div className="seg">
+        <div className="seg" data-tour="habit-freq">
           <button type="button" className={freq === 'daily' ? 'seg-on' : ''} onClick={() => setFreq('daily')}>Daily</button>
           <button type="button" className={freq === 'weekly' ? 'seg-on' : ''} onClick={() => setFreq('weekly')}>Days of week</button>
           <button type="button" className={freq === 'dates' ? 'seg-on' : ''} onClick={() => setFreq('dates')}>Specific dates</button>
@@ -418,12 +419,12 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
 
       <div className="field">
         <span>Life attributes it feeds</span>
-        <AttrPicker value={attrs} onChange={setAttrs} />
+        <span data-tour="habit-attrs"><AttrPicker value={attrs} onChange={setAttrs} /></span>
       </div>
 
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-        <button className="btn btn-primary" disabled={!valid} onClick={save}>{habit ? 'Save' : 'Create habit'}</button>
+        <button className="btn btn-primary" data-tour="habit-save" disabled={!valid} onClick={save}>{habit ? 'Save' : 'Create habit'}</button>
       </div>
     </>
   );

@@ -162,7 +162,7 @@ function EntryForm({
   const valid = answers.some(a => a.trim().length > 0);
 
   return (
-    <div className="entry-form">
+    <div className="entry-form" data-tour="journal-form">
       <div className="field">
         <span>Mood</span>
         <div className="mood-row">

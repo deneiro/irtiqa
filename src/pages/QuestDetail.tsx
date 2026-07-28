@@ -99,7 +99,7 @@ export function QuestDetail() {
                 Start the timer, do the real work, then finish and write down what you did.
                 Sessions earn nothing by themselves — the single big payout lands when the quest is completed.
               </p>
-              <button className="btn btn-primary btn-lg" disabled={otherRunning} onClick={() => s.startSession(quest.id)}>
+              <button className="btn btn-primary btn-lg" data-tour="start-session" disabled={otherRunning} onClick={() => s.startSession(quest.id)}>
                 <Icon name="play" size={15} /> Start session
               </button>
               {/* The payout scales with logged hours, so hours that never met the timer used to
@@ -132,7 +132,7 @@ export function QuestDetail() {
           )}
         </section>
 
-        <section className="card">
+        <section className="card" data-tour="session-log">
           <div className="card-head"><h2>Work log</h2></div>
           {sessions.length === 0 ? (
             <Empty>

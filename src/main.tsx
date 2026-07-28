@@ -15,6 +15,7 @@ import './styles/social.css';
 import './styles/calendar.css';
 import './styles/achievements.css';
 import './styles/market.css';
+import './styles/tutorial.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

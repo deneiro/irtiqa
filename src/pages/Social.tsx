@@ -160,7 +160,7 @@ export function Social() {
           <h1>Social Hub</h1>
           <p className="muted">Your people, remembered properly. Private — nothing leaves this app.</p>
         </div>
-        <button className="btn btn-primary soc-btn-ico" onClick={() => setEditing('new')}>
+        <button className="btn btn-primary soc-btn-ico" data-tour="new-contact" onClick={() => setEditing('new')}>
           <Icon name="plus" size={15} /> Add contact
         </button>
       </div>
@@ -287,7 +287,7 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
   const channels = CHANNEL_META.filter(m => contact.channels?.[m.key]);
 
   return (
-    <div className="card contact-card">
+    <div className="card contact-card" data-tour="contact-card">
       <div className="card-head">
         <div className="contact-identity">
           {contact.avatarUrl ? (

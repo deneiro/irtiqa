@@ -32,7 +32,7 @@ export function Quests() {
             Time-tracked work. Sessions log the grind; the single big payout comes only when the whole quest is done.
           </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setCreating(true)}>+ New quest</button>
+        <button className="btn btn-primary" data-tour="new-quest" onClick={() => setCreating(true)}>+ New quest</button>
       </div>
 
       <GoalsSection />
@@ -336,6 +336,7 @@ function QuestForm({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="New quest" onClose={onClose} wide>
+      <span data-tour="quest-form" hidden />
       <div className="field">
         <div className="seg">
           <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>Browse library</button>
@@ -409,7 +410,7 @@ function QuestFields({
     <>
       <label className="field">
         <span>What is the quest?</span>
-        <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="Launch my portfolio site" autoFocus />
+        <input className="input" data-tour="quest-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Launch my portfolio site" autoFocus />
       </label>
       <label className="field">
         <span>Details (optional)</span>

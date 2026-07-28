@@ -93,14 +93,14 @@ export function Finances() {
               ))}
             </select>
           </label>
-          <button className="btn btn-ghost" onClick={() => setAddingAccount(true)}><Icon name="plus" size={14} /> Account</button>
-          <button className="btn btn-primary" disabled={s.accounts.length === 0} onClick={() => setAddingTx(true)}>
+          <button className="btn btn-ghost" data-tour="new-account" onClick={() => setAddingAccount(true)}><Icon name="plus" size={14} /> Account</button>
+          <button className="btn btn-primary" data-tour="new-tx" disabled={s.accounts.length === 0} onClick={() => setAddingTx(true)}>
             <Icon name="plus" size={14} /> Transaction
           </button>
         </div>
       </div>
 
-      <section className="card networth-card">
+      <section className="card networth-card" data-tour="networth">
         <div className="networth-split">
           <div className="networth-block">
             <div className="muted">Cash on hand</div>
@@ -267,7 +267,7 @@ export function Finances() {
 
       {/* Budgets and transfers are real features that most days you don't need. Folding them
           away keeps the page to the four things you open it for: money, debts, subs, entries. */}
-      <details className="fin-advanced">
+      <details className="fin-advanced" data-tour="advanced">
         <summary className="fin-advanced-summary">
           <Icon name="chevronRight" size={14} className="fin-caret" />
           <span>Advanced</span>

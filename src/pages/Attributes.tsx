@@ -40,7 +40,7 @@ export function Attributes() {
           <h2>Your wheel right now</h2>
           <span className="muted">level per sector</span>
         </div>
-        <RadarChart />
+        <div data-tour="radar"><RadarChart /></div>
         <p className="muted center">
           Shortest spoke: <Link to={`/attributes/${lowest.key}`}>{ATTRIBUTES[lowest.key].label}</Link>,
           level {lowest.level}. Tap any spoke to open its sector.
@@ -65,6 +65,7 @@ export function Attributes() {
               key={key}
               to={`/attributes/${key}`}
               className={`card attr-card ${isLowest ? 'attr-card-low' : ''}`}
+              data-tour={key === WHEEL_ORDER[0] ? 'attr-card' : undefined}
               style={{ ['--attr-color' as string]: meta.color }}
             >
               <div className="attr-card-head">
