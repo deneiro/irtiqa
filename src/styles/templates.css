@@ -1,1 +1,120 @@
-/* templates — owned by one feature. Imported from main.tsx after styles.css. */
+/* templates — the starter library browser (TemplateBrowser.tsx).
+   Base .tpl-card / .tpl-grid rules live in styles.css; this file owns the browser
+   chrome and the Day One select mode. */
+
+.tpl-browser {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tpl-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 4px 0 8px;
+  background: linear-gradient(to bottom, var(--panel) 78%, transparent);
+}
+
+.tpl-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.tpl-search .input {
+  flex: 1;
+}
+
+.tpl-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* A sector the player's own Wheel audit just flagged as thin. Marked, not preselected —
+   the app points, it doesn't choose. */
+.chip-focus {
+  border-color: var(--attr-color, var(--accent));
+  box-shadow: 0 0 0 1px var(--attr-color, var(--accent)) inset;
+}
+
+.chip-ghost {
+  opacity: 0.75;
+}
+
+.tpl-filter-note,
+.tpl-empty {
+  font-size: var(--fs-sm);
+  margin: 0;
+}
+
+.tpl-attrs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0 0;
+}
+
+.tpl-technique {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-xs);
+  color: var(--muted);
+  margin: 0;
+  /* The source lives in title=; cue that there's more to read without a visible byline. */
+  cursor: help;
+}
+
+/* ---- Select mode (Day One) ---- */
+.tpl-card[role='checkbox'] {
+  cursor: pointer;
+  transition: border-color 0.12s ease, transform 0.12s ease;
+}
+.tpl-card[role='checkbox']:hover {
+  transform: translateY(-1px);
+}
+.tpl-card[role='checkbox']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tpl-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tpl-tick {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  flex: none;
+}
+.tpl-selected .tpl-tick {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.tpl-added-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-sm);
+  color: var(--success);
+}
+
+@media (max-width: 700px) {
+  .tpl-filters {
+    position: static;
+    background: none;
+  }
+}
