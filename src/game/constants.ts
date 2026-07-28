@@ -2,9 +2,11 @@ import type {
   AchievementDef,
   AttributeKey,
   ClassDef,
+  ClassId,
   CosmeticDef,
   CosmeticRarity,
   DashboardWidgetId,
+  IconName,
   ItemDef,
   Metrics,
   PersonalityArchetype,
@@ -27,15 +29,17 @@ export const ATTR_KEYS: AttributeKey[] = [
   'brightness',
 ];
 
-export const ATTRIBUTES: Record<AttributeKey, { label: string; emoji: string; color: string }> = {
-  health: { label: 'Health', emoji: '❤️‍🔥', color: '#ef4444' },
-  friends: { label: 'Friends', emoji: '🤝', color: '#f97316' },
-  family: { label: 'Family', emoji: '🏡', color: '#eab308' },
-  money: { label: 'Money', emoji: '💰', color: '#22c55e' },
-  career: { label: 'Career', emoji: '💼', color: '#10b981' },
-  spirituality: { label: 'Spirituality', emoji: '🔮', color: '#a855f7' },
-  development: { label: 'Development', emoji: '📚', color: '#3b82f6' },
-  brightness: { label: 'Brightness', emoji: '✨', color: '#ec4899' },
+// The icon name always equals the attribute key, so `<Icon name={attrKey} />` is
+// valid anywhere an attribute is in hand — no lookup table needed at the call site.
+export const ATTRIBUTES: Record<AttributeKey, { label: string; short: string; color: string }> = {
+  health: { label: 'Health', short: 'HLT', color: '#ef4444' },
+  friends: { label: 'Friends', short: 'FRD', color: '#f97316' },
+  family: { label: 'Family', short: 'FAM', color: '#eab308' },
+  money: { label: 'Money', short: 'MON', color: '#22c55e' },
+  career: { label: 'Career', short: 'CAR', color: '#10b981' },
+  spirituality: { label: 'Spirituality', short: 'SPI', color: '#a855f7' },
+  development: { label: 'Development', short: 'DEV', color: '#3b82f6' },
+  brightness: { label: 'Brightness', short: 'BRT', color: '#ec4899' },
 };
 
 // The seven classes are the seven radicals of Ponomarenko's practical characterology,
@@ -46,7 +50,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'bard',
     name: 'Bard',
-    emoji: '🎭',
     tagline: 'I need to be seen — recognition matters more than gold.',
     radical: 'R1 · The Performer',
     affinity: ['brightness', 'friends'],
@@ -56,7 +59,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'warden',
     name: 'Warden',
-    emoji: '⚖️',
     tagline: 'There is a right way, and no exceptions.',
     radical: 'R2 · The Systematizer',
     affinity: ['health', 'money'],
@@ -66,7 +68,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'sovereign',
     name: 'Sovereign',
-    emoji: '👑',
     tagline: 'One goal, and everything serves it.',
     radical: 'R3 · The Founder',
     affinity: ['career', 'money'],
@@ -76,7 +77,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'healer',
     name: 'Healer',
-    emoji: '💚',
     tagline: 'The person in front of me comes first.',
     radical: 'R4 · The Empath',
     affinity: ['family', 'friends'],
@@ -86,7 +86,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'magician',
     name: 'Magician',
-    emoji: '🔮',
     tagline: "Everyone's looking at it wrong.",
     radical: 'R5 · The Inventor',
     affinity: ['development', 'spirituality'],
@@ -96,7 +95,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'herald',
     name: 'Herald',
-    emoji: '🏹',
     tagline: 'Move, connect, begin again.',
     radical: 'R6 · The Spark',
     affinity: ['health', 'friends'],
@@ -106,7 +104,6 @@ export const CLASSES: ClassDef[] = [
   {
     id: 'sentinel',
     name: 'Sentinel',
-    emoji: '🗿',
     tagline: 'Slow down. Is this safe?',
     radical: 'R7 · The Anchor',
     affinity: ['money', 'health'],
@@ -119,6 +116,33 @@ export const CLASSES: ClassDef[] = [
 export function classAffinityLabel(c: ClassDef): string {
   return c.affinity.map(a => ATTRIBUTES[a].label).join(' · ');
 }
+
+/**
+ * Class → the radical it *is*.
+ *
+ * These were two separate questions in two vocabularies: onboarding asked for
+ * 1–3 classes (Bard, Warden, …) and Settings asked, separately, for a "radical
+ * profile" (hysteroid, epileptoid, …). They are the same seven drivers, so a
+ * player could — and did — answer them inconsistently and get a template library
+ * filtered against an identity they never meant to claim.
+ *
+ * One identity now: picking the loadout sets the profile. Settings still exposes
+ * the profile for reordering or correction, but nothing is ever asked twice.
+ */
+export const CLASS_RADICAL: Record<ClassId, PersonalityArchetype> = {
+  bard: 'hysteroid',
+  warden: 'epileptoid',
+  sovereign: 'paranoid',
+  healer: 'emotive',
+  magician: 'schizoid',
+  herald: 'hyperthymic',
+  sentinel: 'anxious',
+};
+
+/** The inverse: which class embodies a given radical. */
+export const RADICAL_CLASS = Object.fromEntries(
+  (Object.entries(CLASS_RADICAL) as [ClassId, PersonalityArchetype][]).map(([c, r]) => [r, c]),
+) as Record<PersonalityArchetype, ClassId>;
 
 // ---------- Wheel of Life audit (onboarding + quarterly retake) ----------
 // Five plain, factual statements per sector — tick what's true today, no introspection.
@@ -211,39 +235,45 @@ export const WHEEL_SURVEY: WheelSectorDef[] = [
 // to be "Weak 🪱" — the app's first act was to insult the player, on a screen that
 // was otherwise empty. IrtiQa means "ascension"; the ladder should read like one.
 export const RANKS: RankDef[] = [
-  { minLevel: 1, name: 'Seeker', emoji: '🌘' },
-  { minLevel: 3, name: 'Novice', emoji: '🌱' },
-  { minLevel: 6, name: 'Apprentice', emoji: '🔰' },
-  { minLevel: 10, name: 'Adept', emoji: '🗡️' },
-  { minLevel: 15, name: 'Journeyman', emoji: '🧭' },
-  { minLevel: 21, name: 'Expert', emoji: '⚜️' },
-  { minLevel: 28, name: 'Veteran', emoji: '🦾' },
-  { minLevel: 36, name: 'Master', emoji: '🏵️' },
-  { minLevel: 45, name: 'Grandmaster', emoji: '💠' },
-  { minLevel: 55, name: 'Legend', emoji: '🌟' },
+  { minLevel: 1, name: 'Seeker', icon: 'rankSeeker' },
+  { minLevel: 3, name: 'Novice', icon: 'rankNovice' },
+  { minLevel: 6, name: 'Apprentice', icon: 'rankApprentice' },
+  { minLevel: 10, name: 'Adept', icon: 'rankAdept' },
+  { minLevel: 15, name: 'Journeyman', icon: 'rankJourneyman' },
+  { minLevel: 21, name: 'Expert', icon: 'rankExpert' },
+  { minLevel: 28, name: 'Veteran', icon: 'rankVeteran' },
+  { minLevel: 36, name: 'Master', icon: 'rankMaster' },
+  { minLevel: 45, name: 'Grandmaster', icon: 'rankGrandmaster' },
+  { minLevel: 55, name: 'Legend', icon: 'rankLegend' },
 ];
 
 // One symbolic price for every non-free theme. Display-only for now — no payment path.
 // Owner mode (store.adminUnlockAll, default on) unlocks everything regardless.
 export const THEME_PRICE = 4.99;
 
+/**
+ * Four themes, each finished.
+ *
+ * There were twelve. Twelve variations on the same layout does not read as
+ * "customisable" — it reads as undecided, because no single one of them can have
+ * had enough attention. The four kept here are deliberately far apart (deep dark,
+ * warm light, high-contrast neon, tactile material) so the choice is a real one,
+ * and each carries a distinct motion signature rather than just a palette swap.
+ *
+ * Removing a theme is safe for existing saves: store.setTheme and the load-time
+ * fallback both resolve an unknown id back to Midnight.
+ */
 export const THEMES: ThemeDef[] = [
   // Midnight is the one free default — the safe fallback when a theme is locked.
-  { id: 'midnight', name: 'Midnight', desc: 'The default: deep space blues and violet arcana.', emoji: '🌌', free: true, motion: 'aurora' },
-  { id: 'parchment', name: 'Parchment', desc: 'Aged paper, ink and candlelight. Classic fantasy.', emoji: '🏰', price: THEME_PRICE, motion: 'none' },
-  { id: 'neon', name: 'Neon Grid', desc: 'Cyberpunk terminal glow. Jack in.', emoji: '🌆', price: THEME_PRICE, motion: 'pulse' },
-  { id: 'sakura', name: 'Sakura', desc: 'Soft petals and pastel skies. Anime vibes.', emoji: '🌸', price: THEME_PRICE, motion: 'petals' },
-
-  // --- The eight new full re-themes (Phase 1) ---
-  { id: 'glass', name: 'Glassmorphism', desc: 'Frosted translucent panels floating over a vivid gradient.', emoji: '🧊', price: THEME_PRICE, motion: 'focus-pull' },
-  { id: 'clay', name: 'Claymorphism', desc: 'Puffy pastel 3D. Soft, bouncy, tactile.', emoji: '🫧', price: THEME_PRICE, motion: 'squish' },
-  { id: 'minimal', name: 'Minimalism', desc: 'White space, hairlines, one quiet accent.', emoji: '⚪', price: THEME_PRICE, motion: 'none' },
-  { id: 'maximal', name: 'Maximalism', desc: 'Loud, clashing, sticker-stacked. Turn it up.', emoji: '🎪', price: THEME_PRICE, motion: 'confetti' },
-  { id: 'brutal', name: 'Brutalism', desc: 'Raw paper, hard edges, monospace, offset shadow.', emoji: '🧱', price: THEME_PRICE, motion: 'stamp' },
-  { id: 'liquid', name: 'Liquid Glass', desc: 'Glossier glass with a live specular sweep of light.', emoji: '💧', price: THEME_PRICE, motion: 'specular' },
-  { id: 'skeuo', name: 'Skeuomorphism', desc: 'Leather, stitching and beveled buttons. Real materials.', emoji: '📔', price: THEME_PRICE, motion: 'bevel' },
-  { id: 'neu', name: 'Neumorphism', desc: 'Soft monochrome extrusion. Everything gently embossed.', emoji: '◽', price: THEME_PRICE, motion: 'emboss' },
+  { id: 'midnight', name: 'Midnight', desc: 'The default: deep space blues and violet arcana.', icon: 'themeMidnight', free: true, motion: 'aurora' },
+  { id: 'skeuo', name: 'Skeuomorphism', desc: 'Leather, stitching and beveled buttons. Real materials.', icon: 'themeSkeuo', price: THEME_PRICE, motion: 'bevel' },
+  { id: 'parchment', name: 'Parchment', desc: 'Aged paper, ink and candlelight. Classic fantasy.', icon: 'themeParchment', price: THEME_PRICE, motion: 'none' },
+  { id: 'neon', name: 'Neon Grid', desc: 'Cyberpunk terminal glow. Jack in.', icon: 'themeNeon', price: THEME_PRICE, motion: 'pulse' },
 ];
+
+/** Themes that once existed and were removed. Any save still pointing at one of
+ *  these is migrated to Midnight on load rather than rendering an unstyled app. */
+export const RETIRED_THEME_IDS = ['sakura', 'glass', 'clay', 'minimal', 'maximal', 'brutal', 'liquid', 'neu'];
 
 /**
  * Each theme's default --bg/--accent/--accent2, mirrored from the [data-theme] blocks in
@@ -254,17 +284,9 @@ export const THEMES: ThemeDef[] = [
  */
 export const THEME_BASE_COLORS: Record<string, { '--bg': string; '--accent': string; '--accent2': string }> = {
   midnight: { '--bg': '#0f1220', '--accent': '#8b5cf6', '--accent2': '#22d3ee' },
+  skeuo: { '--bg': '#6b4a2f', '--accent': '#3a6ea5', '--accent2': '#b8742f' },
   parchment: { '--bg': '#efe3c8', '--accent': '#8b5e34', '--accent2': '#a44a3f' },
   neon: { '--bg': '#04060d', '--accent': '#00e5ff', '--accent2': '#ff2fd6' },
-  sakura: { '--bg': '#fdf2f6', '--accent': '#f472b6', '--accent2': '#a78bfa' },
-  glass: { '--bg': '#34196a', '--accent': '#8b5cf6', '--accent2': '#34d3ee' },
-  clay: { '--bg': '#e7eaff', '--accent': '#7b83ff', '--accent2': '#ff9ec4' },
-  minimal: { '--bg': '#ffffff', '--accent': '#2b6bff', '--accent2': '#2b6bff' },
-  maximal: { '--bg': '#ffe14d', '--accent': '#ff2e88', '--accent2': '#00b6d4' },
-  brutal: { '--bg': '#f2f0e9', '--accent': '#2b32ff', '--accent2': '#2b32ff' },
-  liquid: { '--bg': '#0f1630', '--accent': '#3aa0ff', '--accent2': '#a78bfa' },
-  skeuo: { '--bg': '#6b4a2f', '--accent': '#3a6ea5', '--accent2': '#b8742f' },
-  neu: { '--bg': '#e6ebf3', '--accent': '#6d7bf5', '--accent2': '#6d7bf5' },
 };
 
 // ---------- Economy yardstick ----------
@@ -279,17 +301,17 @@ export const THEME_BASE_COLORS: Record<string, { '--bg': string; '--accent': str
 // Cosmetics are NOT sold here — they drop only from daily chests, so the
 // chest stays the reason to finish the day and gold keeps a real exchange rate.
 export const ITEMS: ItemDef[] = [
-  { id: 'potion_s', name: 'Small Health Potion', emoji: '🧪', price: 25, kind: 'consumable', heal: 15, desc: 'Restores 15 HP. A sip of courage.' },
-  { id: 'potion_m', name: 'Medium Health Potion', emoji: '⚗️', price: 55, kind: 'consumable', heal: 35, desc: 'Restores 35 HP. Brewed for rough weeks.' },
-  { id: 'potion_l', name: 'Large Health Potion', emoji: '🍶', price: 110, kind: 'consumable', heal: 75, desc: 'Restores 75 HP. Emergency reserves.' },
-  { id: 'streak_shield', name: 'Streak Shield', emoji: '🛡️', price: 60, kind: 'consumable', desc: 'Automatically protects your longest streak (3+ days) the next time you miss a day. No HP damage, streak survives.' },
-  { id: 'habit_pardon', name: 'Habit Pardon', emoji: '📜', price: 80, kind: 'consumable', desc: 'Retroactively forgive one missed habit: heals the damage and reconnects the broken streak.' },
-  { id: 'indulgence', name: 'Indulgence', emoji: '🕯️', price: 70, kind: 'consumable', desc: 'Activate to forgive your next bad-habit relapse — no damage, streak survives.' },
-  { id: 'ghost_day', name: 'Ghost Day', emoji: '👻', price: 120, kind: 'consumable', desc: 'Freeze a whole day — today, tomorrow, or any future date. No penalties, streaks paused. For real sick days and trips.' },
-  { id: 'feather', name: 'Feather of Time', emoji: '🪶', price: 50, kind: 'consumable', desc: 'Unlock one locked journal entry for a single edit.' },
-  { id: 'focus_unlock', name: 'Focus Unlock', emoji: '🎯', price: 200, kind: 'permanent', desc: 'Permanently allows marking TWO priority quests at once instead of one.' },
-  { id: 'attr_boost', name: 'Attribute Boost', emoji: '⚡', price: 75, kind: 'consumable', desc: '+50% XP on your next 5 XP-earning actions.' },
-  { id: 'identity_scroll', name: 'Identity Scroll', emoji: '🎴', price: 150, kind: 'consumable', desc: 'Rewrite yourself: change your character name and/or class.' },
+  { id: 'potion_s', name: 'Small Health Potion', icon: 'potionSmall', price: 25, kind: 'consumable', heal: 15, desc: 'Restores 15 HP. A sip of courage.' },
+  { id: 'potion_m', name: 'Medium Health Potion', icon: 'potionMedium', price: 55, kind: 'consumable', heal: 35, desc: 'Restores 35 HP. Brewed for rough weeks.' },
+  { id: 'potion_l', name: 'Large Health Potion', icon: 'potionLarge', price: 110, kind: 'consumable', heal: 75, desc: 'Restores 75 HP. Emergency reserves.' },
+  { id: 'streak_shield', name: 'Streak Shield', icon: 'shield', price: 60, kind: 'consumable', desc: 'Automatically protects your longest streak (3+ days) the next time you miss a day. No HP damage, streak survives.' },
+  { id: 'habit_pardon', name: 'Habit Pardon', icon: 'pardon', price: 80, kind: 'consumable', desc: 'Retroactively forgive one missed habit: heals the damage and reconnects the broken streak.' },
+  { id: 'indulgence', name: 'Indulgence', icon: 'indulgence', price: 70, kind: 'consumable', desc: 'Activate to forgive your next bad-habit relapse — no damage, streak survives.' },
+  { id: 'ghost_day', name: 'Ghost Day', icon: 'ghost', price: 120, kind: 'consumable', desc: 'Freeze a whole day — today, tomorrow, or any future date. No penalties, streaks paused. For real sick days and trips.' },
+  { id: 'feather', name: 'Feather of Time', icon: 'feather', price: 50, kind: 'consumable', desc: 'Unlock one locked journal entry for a single edit.' },
+  { id: 'focus_unlock', name: 'Focus Unlock', icon: 'focus', price: 200, kind: 'permanent', desc: 'Permanently allows marking TWO priority quests at once instead of one.' },
+  { id: 'attr_boost', name: 'Attribute Boost', icon: 'boost', price: 75, kind: 'consumable', desc: '+50% XP on your next 5 XP-earning actions.' },
+  { id: 'identity_scroll', name: 'Identity Scroll', icon: 'identity', price: 150, kind: 'consumable', desc: 'Rewrite yourself: change your character name and/or class.' },
   // Themes are no longer bought with Gold — they live in one unified system priced
   // symbolically in real money (see THEMES / THEME_PRICE) and unlocked by owner mode.
 ];
@@ -311,28 +333,28 @@ export const TIER_LABEL: Record<Tier, string> = {
 interface AchFamily {
   key: keyof Metrics;
   family: string;
-  emoji: string;
+  icon: IconName;
   names: [string, string, string, string];
   thresholds: [number, number, number, number];
   desc: (n: number) => string;
 }
 
 const FAMILIES: AchFamily[] = [
-  { key: 'level', family: 'Leveling', emoji: '🚀', names: ['First Spark', 'Rising Star', 'Force of Nature', 'Apex Being'], thresholds: [2, 5, 15, 30], desc: n => `Reach level ${n}` },
-  { key: 'checkins', family: 'Discipline', emoji: '✅', names: ['First Step', 'Habit Former', 'Iron Routine', 'Unbreakable'], thresholds: [1, 25, 100, 500], desc: n => `Complete ${n} habit check-in${n > 1 ? 's' : ''}` },
-  { key: 'bestStreak', family: 'Streaks', emoji: '🔥', names: ['Kindling', 'On Fire', 'Inferno', 'Eternal Flame'], thresholds: [3, 7, 30, 100], desc: n => `Reach a ${n}-day streak` },
-  { key: 'questsCompleted', family: 'Questing', emoji: '⚔️', names: ['First Blood', 'Adventurer', 'Quest Hunter', 'Dragon Slayer'], thresholds: [1, 5, 20, 50], desc: n => `Complete ${n} quest${n > 1 ? 's' : ''}` },
-  { key: 'sessionHours', family: 'Deep Work', emoji: '⏳', names: ['Clocked In', 'Grinder', 'Machine', 'Time Lord'], thresholds: [1, 10, 50, 200], desc: n => `Log ${n} hour${n > 1 ? 's' : ''} of quest sessions` },
-  { key: 'journalCount', family: 'Reflection', emoji: '📖', names: ['Dear Diary', 'Chronicler', 'Sage', 'Oracle'], thresholds: [1, 7, 30, 100], desc: n => `Write ${n} journal entr${n > 1 ? 'ies' : 'y'}` },
-  { key: 'contacts', family: 'Connections', emoji: '🤝', names: ['Not Alone', 'Circle', 'Community', 'Nexus'], thresholds: [1, 5, 15, 40], desc: n => `Add ${n} contact${n > 1 ? 's' : ''}` },
-  { key: 'debtsSettled', family: 'Clean Slate', emoji: '🧾', names: ['Squared Up', 'Trustworthy', 'Honest Soul', 'Debt-Free Legend'], thresholds: [1, 5, 15, 50], desc: n => `Settle ${n} debt${n > 1 ? 's' : ''}` },
-  { key: 'txs', family: 'Bookkeeping', emoji: '💳', names: ['Penny Tracked', 'Ledger Keeper', 'Accountant', 'Master of Coin'], thresholds: [1, 20, 100, 500], desc: n => `Log ${n} transaction${n > 1 ? 's' : ''}` },
-  { key: 'goldEarned', family: 'Fortune', emoji: '🪙', names: ['First Coins', 'Full Pouch', 'Treasure Chest', 'Dragon Hoard'], thresholds: [50, 500, 2500, 10000], desc: n => `Earn ${n} Gold lifetime` },
-  { key: 'itemsBought', family: 'Shopping', emoji: '🛒', names: ['First Purchase', 'Regular', 'Patron', 'Whale'], thresholds: [1, 5, 15, 40], desc: n => `Buy ${n} item${n > 1 ? 's' : ''} from the Market` },
-  { key: 'itemsUsed', family: 'Alchemy', emoji: '⚗️', names: ['Bottoms Up', 'Practitioner', 'Alchemist', 'Archmage'], thresholds: [1, 5, 15, 40], desc: n => `Use ${n} item${n > 1 ? 's' : ''}` },
-  { key: 'quickTasks', family: 'Errands', emoji: '📌', names: ['Checked Off', 'Doer', 'Taskmaster', 'Executor'], thresholds: [1, 10, 50, 200], desc: n => `Finish ${n} quick task${n > 1 ? 's' : ''}` },
-  { key: 'minAttrLevel', family: 'Balance', emoji: '☯️', names: ['Awakening', 'Harmony', 'Equilibrium', 'Enlightenment'], thresholds: [2, 3, 5, 10], desc: n => `Get every attribute to level ${n}` },
-  { key: 'bossesDefeated', family: 'Boss Hunter', emoji: '🐲', names: ['First Strike', 'Slayer', 'Nemesis', 'Godslayer'], thresholds: [1, 5, 15, 40], desc: n => `Defeat ${n} weekly boss${n > 1 ? 'es' : ''}` },
+  { key: 'level', family: 'Leveling', icon: 'famLeveling', names: ['First Spark', 'Rising Star', 'Force of Nature', 'Apex Being'], thresholds: [2, 5, 15, 30], desc: n => `Reach level ${n}` },
+  { key: 'checkins', family: 'Discipline', icon: 'famDiscipline', names: ['First Step', 'Habit Former', 'Iron Routine', 'Unbreakable'], thresholds: [1, 25, 100, 500], desc: n => `Complete ${n} habit check-in${n > 1 ? 's' : ''}` },
+  { key: 'bestStreak', family: 'Streaks', icon: 'famStreaks', names: ['Kindling', 'On Fire', 'Inferno', 'Eternal Flame'], thresholds: [3, 7, 30, 100], desc: n => `Reach a ${n}-day streak` },
+  { key: 'questsCompleted', family: 'Questing', icon: 'famQuesting', names: ['First Blood', 'Adventurer', 'Quest Hunter', 'Dragon Slayer'], thresholds: [1, 5, 20, 50], desc: n => `Complete ${n} quest${n > 1 ? 's' : ''}` },
+  { key: 'sessionHours', family: 'Deep Work', icon: 'famDeepWork', names: ['Clocked In', 'Grinder', 'Machine', 'Time Lord'], thresholds: [1, 10, 50, 200], desc: n => `Log ${n} hour${n > 1 ? 's' : ''} of quest sessions` },
+  { key: 'journalCount', family: 'Reflection', icon: 'famReflection', names: ['Dear Diary', 'Chronicler', 'Sage', 'Oracle'], thresholds: [1, 7, 30, 100], desc: n => `Write ${n} journal entr${n > 1 ? 'ies' : 'y'}` },
+  { key: 'contacts', family: 'Connections', icon: 'famConnections', names: ['Not Alone', 'Circle', 'Community', 'Nexus'], thresholds: [1, 5, 15, 40], desc: n => `Add ${n} contact${n > 1 ? 's' : ''}` },
+  { key: 'debtsSettled', family: 'Clean Slate', icon: 'famCleanSlate', names: ['Squared Up', 'Trustworthy', 'Honest Soul', 'Debt-Free Legend'], thresholds: [1, 5, 15, 50], desc: n => `Settle ${n} debt${n > 1 ? 's' : ''}` },
+  { key: 'txs', family: 'Bookkeeping', icon: 'famBookkeeping', names: ['Penny Tracked', 'Ledger Keeper', 'Accountant', 'Master of Coin'], thresholds: [1, 20, 100, 500], desc: n => `Log ${n} transaction${n > 1 ? 's' : ''}` },
+  { key: 'goldEarned', family: 'Fortune', icon: 'famFortune', names: ['First Coins', 'Full Pouch', 'Treasure Chest', 'Dragon Hoard'], thresholds: [50, 500, 2500, 10000], desc: n => `Earn ${n} Gold lifetime` },
+  { key: 'itemsBought', family: 'Shopping', icon: 'famShopping', names: ['First Purchase', 'Regular', 'Patron', 'Whale'], thresholds: [1, 5, 15, 40], desc: n => `Buy ${n} item${n > 1 ? 's' : ''} from the Market` },
+  { key: 'itemsUsed', family: 'Alchemy', icon: 'famAlchemy', names: ['Bottoms Up', 'Practitioner', 'Alchemist', 'Archmage'], thresholds: [1, 5, 15, 40], desc: n => `Use ${n} item${n > 1 ? 's' : ''}` },
+  { key: 'quickTasks', family: 'Errands', icon: 'famErrands', names: ['Checked Off', 'Doer', 'Taskmaster', 'Executor'], thresholds: [1, 10, 50, 200], desc: n => `Finish ${n} quick task${n > 1 ? 's' : ''}` },
+  { key: 'minAttrLevel', family: 'Balance', icon: 'famBalance', names: ['Awakening', 'Harmony', 'Equilibrium', 'Enlightenment'], thresholds: [2, 3, 5, 10], desc: n => `Get every attribute to level ${n}` },
+  { key: 'bossesDefeated', family: 'Boss Hunter', icon: 'famBossHunter', names: ['First Strike', 'Slayer', 'Nemesis', 'Godslayer'], thresholds: [1, 5, 15, 40], desc: n => `Defeat ${n} weekly boss${n > 1 ? 'es' : ''}` },
 ];
 
 const TIERS: Tier[] = ['bronze', 'silver', 'gold', 'platinum'];
@@ -341,7 +363,7 @@ export const ACHIEVEMENTS: AchievementDef[] = FAMILIES.flatMap(f =>
   f.thresholds.map((t, i) => ({
     id: `${f.key}_${t}`,
     family: f.family,
-    familyEmoji: f.emoji,
+    familyIcon: f.icon,
     tier: TIERS[i],
     name: f.names[i],
     desc: f.desc(t),
@@ -359,7 +381,6 @@ export const EXPENSE_CATEGORIES = [
   'Subscriptions',
   'Education',
   'Debt',
-  'Wishlist',
   'Other',
 ];
 
@@ -394,11 +415,11 @@ export const REFLECTION_QUESTIONS = [
   'If today repeated forever, what would you change first?',
 ];
 
+/** The five mood faces. The one place emoji survive: a face carries an
+ *  expression no line icon can, and here the glyph IS the datum. */
 export const MOODS = ['😞', '😕', '😐', '🙂', '😄'];
 
-export const GOLD_ICON = '🪙';
-
-// ---------- Social Hub: intel-dossier contact fields ----------
+// ---------- Social Hub: contact fields ----------
 export const ARCHETYPES: Record<PersonalityArchetype, { label: string; color: string }> = {
   hysteroid: { label: 'Hysteroid', color: '#ec4899' },
   epileptoid: { label: 'Epileptoid', color: '#3b82f6' },

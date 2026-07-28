@@ -1,3 +1,48 @@
+/**
+ * The app's icon vocabulary.
+ *
+ * Declared here, in the data layer, rather than next to the glyph map in
+ * components/Icon.tsx: the data tables below (items, ranks, bosses, themes,
+ * achievement families) are what *choose* an icon, so they must be able to name
+ * one without importing a component. Icon.tsx imports this and supplies the
+ * Lucide component for each name.
+ */
+export type IconName =
+  // modules / nav
+  | 'dashboard' | 'habits' | 'quests' | 'journal' | 'social' | 'finances' | 'market' | 'achievements' | 'settings' | 'calendar'
+  | 'life' | 'people' | 'more'
+  // attributes
+  | 'health' | 'friends' | 'family' | 'money' | 'career' | 'spirituality' | 'development' | 'brightness'
+  // classes (the seven radicals)
+  | 'bard' | 'warden' | 'sovereign' | 'healer' | 'magician' | 'herald' | 'sentinel'
+  // market items
+  | 'potionSmall' | 'potionMedium' | 'potionLarge' | 'shield' | 'pardon' | 'indulgence'
+  | 'ghost' | 'feather' | 'focus' | 'boost' | 'identity'
+  // weekly bosses, one per sector
+  | 'bossHealth' | 'bossFriends' | 'bossFamily' | 'bossMoney'
+  | 'bossCareer' | 'bossSpirituality' | 'bossDevelopment' | 'bossBrightness'
+  // rank ladder
+  | 'rankSeeker' | 'rankNovice' | 'rankApprentice' | 'rankAdept' | 'rankJourneyman'
+  | 'rankExpert' | 'rankVeteran' | 'rankMaster' | 'rankGrandmaster' | 'rankLegend'
+  // achievement families
+  | 'famLeveling' | 'famDiscipline' | 'famStreaks' | 'famQuesting' | 'famDeepWork'
+  | 'famReflection' | 'famConnections' | 'famCleanSlate' | 'famBookkeeping' | 'famFortune'
+  | 'famShopping' | 'famAlchemy' | 'famErrands' | 'famBalance' | 'famBossHunter'
+  // contact channels
+  | 'instagram' | 'whatsapp' | 'telegram' | 'phone' | 'email'
+  // cosmetics
+  | 'frame' | 'title' | 'banner'
+  // themes
+  | 'themeMidnight' | 'themeParchment' | 'themeNeon' | 'themeSkeuo'
+  // actions / chrome
+  | 'gold' | 'check' | 'close' | 'edit' | 'trash' | 'plus' | 'minus' | 'starFilled' | 'starOutline'
+  | 'play' | 'stop' | 'flag' | 'lock' | 'unlock' | 'trophy' | 'grip' | 'eye' | 'eyeOff'
+  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight' | 'chevronUp' | 'chevronDown'
+  | 'chronicle' | 'wheel' | 'subscription' | 'chest' | 'flame' | 'sparkles'
+  | 'upload' | 'download' | 'image' | 'camera' | 'search' | 'filter' | 'info' | 'warning'
+  | 'arrowUp' | 'arrowDown' | 'bell' | 'palette' | 'sound' | 'logout' | 'link' | 'external'
+  | 'book' | 'brain' | 'learn' | 'write' | 'quote' | 'receipt' | 'card' | 'banknote' | 'tasks';
+
 export type AttributeKey =
   | 'health'
   | 'friends'
@@ -21,7 +66,6 @@ export type ClassId =
 export interface ClassDef {
   id: ClassId;
   name: string;
-  emoji: string;
   tagline: string;
   /** e.g. "R5 · The Inventor" — the radical this class embodies. */
   radical: string;
@@ -56,7 +100,7 @@ export interface Character {
 export interface RankDef {
   minLevel: number;
   name: string;
-  emoji: string;
+  icon: IconName;
 }
 
 /** One Wheel of Life self-audit: the subjective 0–10 score per sector at a point in time.
@@ -215,6 +259,8 @@ export interface SocialEvent {
   title: string;
   date: string; // YYYY-MM-DD
   createdAt: string;
+  /** Set when the meeting actually happened — the moment that earns, not the scheduling. */
+  doneAt?: string;
 }
 
 // ---------- Finances ----------
@@ -274,7 +320,7 @@ export type ItemId =
 export interface ItemDef {
   id: ItemId;
   name: string;
-  emoji: string;
+  icon: IconName;
   price: number;
   desc: string;
   kind: 'consumable' | 'permanent';
@@ -305,7 +351,7 @@ export interface Metrics {
 export interface AchievementDef {
   id: string;
   family: string;
-  familyEmoji: string;
+  familyIcon: IconName;
   tier: Tier;
   name: string;
   desc: string;
@@ -367,7 +413,7 @@ export interface ThemeDef {
   id: string;
   name: string;
   desc: string;
-  emoji: string;
+  icon: IconName;
   /** The one always-unlocked default. Free themes never show a price and never lock. */
   free?: boolean;
   /** Symbolic real-money price shown on non-free themes. Display-only — no payment path yet. */

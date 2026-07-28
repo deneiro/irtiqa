@@ -5,16 +5,20 @@ import {
   ACHIEVEMENTS,
   ATTR_KEYS,
   ATTRIBUTES,
+  CLASS_RADICAL,
   CLASSES,
   COSMETIC_RARITY_META,
   COSMETICS,
   DEFAULT_DASHBOARD_ORDER,
   ITEMS,
   PRIMARY_GROUP_KEYS,
+  RETIRED_THEME_IDS,
   THEMES,
   TIER_REWARDS,
   TRANSFER_CATEGORY,
 } from './game/constants';
+import { CURRENCIES, DEFAULT_CURRENCY } from './game/money';
+import { HABIT_TEMPLATES, QUEST_TEMPLATES } from './game/templates';
 import { BOSS_REQUIRED, BOSS_REWARD, BOSSES } from './game/boss';
 import { type ChestLoot, rollChest } from './game/chest';
 import { contractStatus } from './game/contract';
@@ -34,6 +38,7 @@ import {
   computeMetrics,
   debtRemaining,
   fmtDay,
+  fmtMinutes,
   GRACE_HOUR,
   habitDueOn,
   healerBondMult,
@@ -85,7 +90,6 @@ import type {
   Subscription,
   Tx,
   WheelSnapshot,
-  WishlistItem,
 } from './game/types';
 
 // ---------------- State shape ----------------
@@ -129,7 +133,8 @@ export interface GameState {
   txs: Tx[];
   budgets: Record<string, number>;
   subs: Subscription[];
-  wishlist: WishlistItem[];
+  /** ISO 4217 code for REAL money (see game/money.ts). Never applies to Gold. */
+  currency: string;
 
   unlocked: Record<string, string>; // achievementId -> ISO unlock time
   stats: Stats;
@@ -158,7 +163,7 @@ export interface GameState {
   wheelSnapshots: WheelSnapshot[];
 
   // ---- actions ----
-  createCharacter: (name: string, classes: ClassId[], wheel?: Record<AttributeKey, number>) => void;
+  createCharacter: (name: string, classes: ClassId[], wheel?: Record<AttributeKey, number>, starterTemplateIds?: string[]) => void;
   recordWheelCheck: (scores: Record<AttributeKey, number>) => void;
   resetGame: () => void;
   reconcile: () => void;
@@ -176,6 +181,7 @@ export interface GameState {
   setQuestPriority: (id: string, on: boolean) => void;
   startSession: (questId: string) => void;
   finishSession: (note: string) => void;
+  logManualSession: (questId: string, minutes: number, note: string, date: string) => void;
   completeQuest: (id: string) => void;
 
   addQuickTask: (title: string, attr: AttributeKey, dueDate?: string) => void;
@@ -199,6 +205,7 @@ export interface GameState {
   payDebt: (id: string, amount: number, accountId?: string) => void;
   deleteDebt: (id: string) => void;
   addEvent: (e: Omit<SocialEvent, 'id' | 'createdAt'>) => void;
+  completeEvent: (id: string) => void;
   deleteEvent: (id: string) => void;
 
   addAccount: (name: string, initialBalance: number) => void;
@@ -209,9 +216,7 @@ export interface GameState {
   setBudget: (category: string, amount: number) => void;
   addSubscription: (s: Omit<Subscription, 'id' | 'nextDue' | 'active'>) => void;
   cancelSubscription: (id: string) => void;
-  addWishlistItem: (name: string, goldCost: number, moneyCost: number) => void;
-  deleteWishlistItem: (id: string) => void;
-  buyWishlistItem: (id: string, accountId: string) => void;
+  setCurrency: (code: string) => void;
 
   buyItem: (id: ItemId) => void;
   useItem: (id: ItemId, payload?: UseItemPayload) => void;
@@ -288,7 +293,7 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
     const before = attrLevel(d.attrs[a]);
     d.attrs[a] += finalXp;
     const after = attrLevel(d.attrs[a]);
-    if (after > before) attrUps.push(`${ATTRIBUTES[a].emoji} ${ATTRIBUTES[a].label} reached level ${after}`);
+    if (after > before) attrUps.push(`${ATTRIBUTES[a].label} reached level ${after}`);
   }
 
   if (gold > 0) {
@@ -337,7 +342,7 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
     pushCeleb(d, { type: 'levelup', title: `Level ${afterLevel}!`, subtitle: `You leveled up. Keep going.` });
     const afterRank = rankFor(afterLevel);
     if (afterRank.name !== beforeRank) {
-      pushCeleb(d, { type: 'rankup', title: `${afterRank.emoji} New Rank: ${afterRank.name}`, subtitle: 'Your title has grown with you.' });
+      pushCeleb(d, { type: 'rankup', title: `New Rank: ${afterRank.name}`, subtitle: 'Your title has grown with you.' });
     }
   }
   for (const up of attrUps) pushCeleb(d, { type: 'info', title: 'Attribute Level Up', subtitle: up });
@@ -383,7 +388,7 @@ function checkAchievementsD(d: D) {
     const beforeRank = rankFor(beforeLevel).name;
     const afterRank = rankFor(afterLevel);
     if (afterRank.name !== beforeRank) {
-      pushCeleb(d, { type: 'rankup', title: `${afterRank.emoji} New Rank: ${afterRank.name}`, subtitle: 'Your title has grown with you.' });
+      pushCeleb(d, { type: 'rankup', title: `New Rank: ${afterRank.name}`, subtitle: 'Your title has grown with you.' });
     }
   }
 }
@@ -539,7 +544,7 @@ const initialData = () => ({
   txs: [] as Tx[],
   budgets: {} as Record<string, number>,
   subs: [] as Subscription[],
-  wishlist: [] as WishlistItem[],
+  currency: DEFAULT_CURRENCY,
   unlocked: {} as Record<string, string>,
   stats: {
     checkins: 0, goldEarned: 0, questsCompleted: 0, sessionMinutes: 0,
@@ -571,18 +576,51 @@ export const useGame = create<GameState>()(
     immer((set, get) => ({
       ...initialData(),
 
-      createCharacter: (name, classes, wheel) =>
+      createCharacter: (name, classes, wheel, starterTemplateIds) =>
         set(d => {
           const list = classes.filter(Boolean).slice(0, 3);
           if (!list.length) return;
           d.character = { name: name.trim(), classId: list[0], classes: list, xp: 0, hp: 100, gold: 0, createdAt: new Date().toISOString() };
           d.lastProcessedDay = addDaysStr(todayStr(), -1);
+          // The character starts today, so the recap has no "yesterday" to replay and the
+          // Chronicle has no prior week. Without this, a brand-new player's first screen is
+          // an empty recap modal over a dashboard apologising for a week they weren't here for.
+          d.lastRecapDay = todayStr();
+          // The radical loadout IS the radical profile — one identity, asked once.
+          // Settings still lets it be reordered, but nothing has to be entered twice.
+          d.character.profile = list.map(id => CLASS_RADICAL[id]);
+
           // Wheel of Life audit seeds the *starting shape* — attribute XP only, never character
           // level / gold / HP / achievements. Calibration, not reward; "nothing is free" holds.
           if (wheel) {
             for (const a of ATTR_KEYS) d.attrs[a] = wheelSeedXp(wheel[a] ?? 0);
             d.wheelSnapshots.push({ date: todayStr(), scores: { ...wheel } });
           }
+
+          // Day One: seed whatever the player picked from the starter library. Creating the
+          // records earns nothing — they still have to be *done* — but it means the first
+          // dashboard has a real Daily Three on it instead of nine empty states.
+          const day = todayStr();
+          for (const tid of starterTemplateIds ?? []) {
+            const h = HABIT_TEMPLATES.find(t => t.id === tid);
+            if (h) {
+              d.habits.push({
+                id: uid(), name: h.name, kind: h.kind, freq: h.freq,
+                weekdays: h.freq === 'weekly' ? h.weekdays ?? [1, 3, 5] : undefined,
+                attrs: [...h.attrs], streak: 0, best: 0, createdAt: day,
+              });
+              continue;
+            }
+            const q = QUEST_TEMPLATES.find(t => t.id === tid);
+            if (q) {
+              d.quests.push({
+                id: uid(), title: q.title, description: q.description,
+                targetDuration: q.targetDuration, attrs: [...q.attrs],
+                sessions: [], priority: false, createdAt: new Date().toISOString(),
+              });
+            }
+          }
+
           const cls = CLASSES.find(c => c.id === list[0]);
           pushCeleb(d, {
             type: 'info',
@@ -596,7 +634,7 @@ export const useGame = create<GameState>()(
       recordWheelCheck: scores =>
         set(d => {
           d.wheelSnapshots.push({ date: todayStr(), scores: { ...scores } });
-          pushCeleb(d, { type: 'info', title: '🧭 Wheel Check saved', subtitle: 'Your self-audit is recorded. Compare it against how you actually played.' });
+          pushCeleb(d, { type: 'info', title: 'Wheel Check saved', subtitle: 'Your self-audit is recorded. Compare it against how you actually played.' });
         }),
 
       resetGame: () => set(() => ({ ...initialData() })),
@@ -733,7 +771,7 @@ export const useGame = create<GameState>()(
             const bossDef = BOSSES[weakest];
             pushCeleb(d, {
               type: 'info',
-              title: `${bossDef.emoji} A boss stalks your week: ${bossDef.name}`,
+              title: `A boss stalks your week: ${bossDef.name}`,
               subtitle: `It feeds on ${ATTRIBUTES[weakest].label}, your thinnest attribute. Land ${BOSS_REQUIRED} ${ATTRIBUTES[weakest].label}-tagged actions before Sunday to claim it.`,
             });
           }
@@ -915,6 +953,30 @@ export const useGame = create<GameState>()(
           checkAchievementsD(d);
         }),
 
+      /**
+       * Log work that happened away from the timer.
+       *
+       * Quest payout scales entirely with logged hours, but the only way to log an
+       * hour used to be having remembered to press Start in this tab — so real work
+       * done on paper, on a phone, or with the tab closed was worth nothing. The
+       * same 4h single-sitting cap applies, and the date can't be in the future.
+       */
+      logManualSession: (questId, minutes, note, date) =>
+        set(d => {
+          const q = d.quests.find(x => x.id === questId);
+          if (!q || q.completedAt) return;
+          const mins = Math.max(1, Math.min(Math.round(minutes), MAX_SESSION_MINUTES));
+          const day = date > todayStr() ? todayStr() : date;
+          q.sessions.push({ id: uid(), date: day, minutes: mins, note: note.trim() });
+          d.stats.sessionMinutes += mins;
+          pushCeleb(d, {
+            type: 'info',
+            title: 'Session logged',
+            subtitle: `${fmtMinutes(mins)} on ${fmtDay(day)}. The payout comes when the quest is done.`,
+          });
+          checkAchievementsD(d);
+        }),
+
       completeQuest: id =>
         set(d => {
           const q = d.quests.find(x => x.id === id);
@@ -1022,7 +1084,9 @@ export const useGame = create<GameState>()(
       addContact: c =>
         set(d => {
           d.contacts.push({ ...c, id: uid(), createdAt: new Date().toISOString() });
-          grantD(d, 6, 0, ['friends'], `New contact: ${c.name}`);
+          // No XP for typing a name in. Filling an address book is not a life change,
+          // and paying for it made add→delete→add an infinite XP faucet. The
+          // Connections achievement family still marks the milestone, exactly once.
           checkAchievementsD(d);
         }),
 
@@ -1042,7 +1106,7 @@ export const useGame = create<GameState>()(
       addDebt: debt =>
         set(d => {
           d.debts.push({ ...debt, id: uid(), createdAt: new Date().toISOString(), payments: [] });
-          grantD(d, 4, 0, ['money'], 'Debt logged');
+          // Recording a debt is bookkeeping, not progress — payDebtD pays for shrinking it.
           checkAchievementsD(d);
         }),
 
@@ -1068,7 +1132,19 @@ export const useGame = create<GameState>()(
       addEvent: e =>
         set(d => {
           d.events.push({ ...e, id: uid(), createdAt: new Date().toISOString() });
-          grantD(d, 2, 0, ['friends'], `Event added: ${e.title}`);
+          // Planning to see someone earns nothing. completeEvent pays when it happened.
+        }),
+
+      /** The event actually took place. This is the payable moment, not the scheduling. */
+      completeEvent: id =>
+        set(d => {
+          const ev = d.events.find(x => x.id === id);
+          if (!ev || ev.doneAt) return;
+          ev.doneAt = new Date().toISOString();
+          const contact = d.contacts.find(c => c.id === ev.contactId);
+          const attr: AttributeKey = contact?.primaryGroup === 'family' || contact?.primaryGroup === 'relative' ? 'family' : 'friends';
+          grantD(d, Math.round(15 * healerBondMult(d.character?.classes)), 4, [attr], `Saw it through: ${ev.title}`);
+          checkAchievementsD(d);
         }),
 
       deleteEvent: id =>
@@ -1144,47 +1220,9 @@ export const useGame = create<GameState>()(
           if (s) s.active = false;
         }),
 
-      addWishlistItem: (name, goldCost, moneyCost) =>
+      setCurrency: code =>
         set(d => {
-          if (!name.trim() || goldCost < 0 || moneyCost < 0) return;
-          d.wishlist.push({ id: uid(), name: name.trim(), goldCost, moneyCost, createdAt: new Date().toISOString() });
-        }),
-
-      deleteWishlistItem: id =>
-        set(d => {
-          d.wishlist = d.wishlist.filter(w => w.id !== id);
-        }),
-
-      buyWishlistItem: (id, accountId) =>
-        set(d => {
-          const item = d.wishlist.find(w => w.id === id);
-          if (!item || item.purchasedAt || !d.character) return;
-          if (d.character.gold < item.goldCost) {
-            pushCeleb(d, { type: 'info', title: 'Not enough Gold', subtitle: `${item.name} needs ${item.goldCost} 🪙.` });
-            return;
-          }
-          // Gold-only wishes need no account at all — only look one up when real money is involved.
-          if (item.moneyCost > 0) {
-            const account = d.accounts.find(a => a.id === accountId);
-            if (!account) return;
-            const balance = accountBalance(d.txs, accountId, account.initialBalance);
-            if (balance < item.moneyCost) {
-              pushCeleb(d, { type: 'info', title: 'Not enough money', subtitle: `${account.name} doesn't cover the ${item.moneyCost} needed.` });
-              return;
-            }
-            // Real spending, real consequences: this still respects a Wishlist budget if one is set.
-            postTxD(d, {
-              accountId, type: 'expense', amount: item.moneyCost, category: 'Wishlist',
-              note: `Wishlist: ${item.name}`, date: todayStr(),
-            }, false);
-          }
-          d.character.gold -= item.goldCost;
-          item.purchasedAt = new Date().toISOString();
-          pushCeleb(d, {
-            type: 'item',
-            title: `🎁 Claimed: ${item.name}`,
-            subtitle: `Paid ${item.goldCost} 🪙${item.moneyCost > 0 ? ` + ${item.moneyCost}` : ''} — earned the real way.`,
-          });
+          if (CURRENCIES.some(c => c.code === code)) d.currency = code;
         }),
 
       // ------- Market -------
@@ -1195,7 +1233,7 @@ export const useGame = create<GameState>()(
           if (item.id === 'focus_unlock' && d.effects.maxPriority >= 2) return;
           const price = itemPrice(item);
           if (d.character.gold < price) {
-            pushCeleb(d, { type: 'info', title: 'Not enough Gold', subtitle: `${item.name} costs ${price} 🪙. Earn it — no cheat codes.` });
+            pushCeleb(d, { type: 'info', title: 'Not enough Gold', subtitle: `${item.name} costs ${price} Gold. Earn it — no cheat codes.` });
             return;
           }
           d.character.gold -= price;
@@ -1205,7 +1243,7 @@ export const useGame = create<GameState>()(
             pushCeleb(d, { type: 'item', title: '🎯 Focus Unlock active', subtitle: 'You can now mark two priority quests at once.' });
           } else {
             d.inventory[item.id] = (d.inventory[item.id] ?? 0) + 1;
-            pushCeleb(d, { type: 'item', title: `${item.emoji} Purchased: ${item.name}`, subtitle: 'Find it in your inventory below.' });
+            pushCeleb(d, { type: 'item', title: `Purchased: ${item.name}`, subtitle: 'Find it in your inventory below.' });
           }
           checkAchievementsD(d);
         }),
@@ -1227,7 +1265,7 @@ export const useGame = create<GameState>()(
               if (!consumeD(d, id)) return;
               const healed = Math.min(100 - d.character.hp, item.heal!);
               d.character.hp = clampHp(d.character.hp + item.heal!);
-              pushCeleb(d, { type: 'item', title: `${item.emoji} +${healed} HP`, subtitle: `${item.name} restored your health.` });
+              pushCeleb(d, { type: 'item', title: `+${healed} HP`, subtitle: `${item.name} restored your health.` });
               break;
             }
             case 'indulgence': {
@@ -1456,7 +1494,7 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 9, // v9: themeOverrides (per-theme color customization)
+      version: 10, // v10: currency, retired themes, wishlist removed, one identity
       // Older saves get new fields filled with defaults instead of being discarded
       migrate: persisted => {
         const merged = { ...initialData(), ...(persisted as Partial<GameState>) } as GameState;
@@ -1469,7 +1507,17 @@ export const useGame = create<GameState>()(
         // v7: single classId → ordered classes[]; retired class names map to their radical heir.
         if (merged.character) {
           merged.character = normalizeCharacterClasses(merged.character as unknown as Record<string, unknown>);
+          // v10: the loadout is the identity. A save that never set a profile gets one
+          // derived from its classes rather than being asked the same question twice.
+          if (!merged.character.profile?.length) {
+            merged.character.profile = merged.character.classes.map(id => CLASS_RADICAL[id]);
+          }
         }
+        // v10: eight themes were retired. A save pointing at one would otherwise render
+        // with no [data-theme] block at all — an unstyled app, not a fallback.
+        if (RETIRED_THEME_IDS.includes(merged.theme)) merged.theme = 'midnight';
+        merged.ownedThemes = (merged.ownedThemes ?? []).filter(t => !RETIRED_THEME_IDS.includes(t));
+        for (const id of RETIRED_THEME_IDS) delete merged.themeOverrides?.[id];
         return merged;
       },
       partialize: state => {
