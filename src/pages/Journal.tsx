@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Icon } from '../components/Icon';
 import { Empty, Modal } from '../components/ui';
 import { MOODS, REFLECTION_QUESTIONS } from '../game/constants';
 import { fmtDayFull, journalEditable, journalXp, questionsForDay, todayStr } from '../game/engine';
@@ -32,7 +33,14 @@ export function Journal() {
 
       {!todayEntry ? (
         <section className="card">
-          <div className="card-head"><h2>Today's entry</h2><span className="muted">+{journalXp(s.character?.classes)} XP → 🔮 Spirituality &amp; 📚 Development</span></div>
+          <div className="card-head">
+            <h2>Today's entry</h2>
+            <span className="muted heading-icon">
+              +{journalXp(s.character?.classes)} XP →
+              <Icon name="spirituality" size={13} /> Spirituality
+              <Icon name="development" size={13} /> Development
+            </span>
+          </div>
           <EntryForm
             initial={null}
             onSave={(mood, stress, answers) => s.addJournalEntry(mood, stress, answers)}
@@ -41,8 +49,12 @@ export function Journal() {
       ) : (
         <section className="card">
           <div className="card-head">
-            <h2>Today's entry ✓</h2>
-            {journalEditable(todayEntry) && <button className="btn btn-ghost btn-sm" onClick={() => setEditing(todayEntry)}>✎ Edit</button>}
+            <h2 className="heading-icon">Today's entry <Icon name="check" size={16} /></h2>
+            {journalEditable(todayEntry) && (
+              <button className="btn btn-ghost btn-sm heading-icon" onClick={() => setEditing(todayEntry)}>
+                <Icon name="edit" size={13} /> Edit
+              </button>
+            )}
           </div>
           <EntryView entry={todayEntry} />
         </section>
@@ -54,7 +66,11 @@ export function Journal() {
           <input className="input input-sm" placeholder="Search entries…" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         {archive.length === 0 ? (
-          <Empty>No entries {search ? 'match your search' : 'yet — tonight is a good night to start'}.</Empty>
+          <Empty>
+            {search
+              ? 'No entries match that search. Try a single word — a name, a place, a feeling.'
+              : "The archive fills itself as you write. Today's entry is at the top of this page — one answer is enough to start it."}
+          </Empty>
         ) : (
           <div className="journal-archive">
             {archive.filter(e => e.date !== today).map(e => {
@@ -67,18 +83,22 @@ export function Journal() {
                     <span className="muted">stress {e.stress}/10</span>
                     {editable ? (
                       e.unlocked
-                        ? <span className="status status-live">🪶 unlocked</span>
-                        : <span className="status">✎ editable</span>
+                        ? <span className="status status-live heading-icon"><Icon name="feather" size={12} /> unlocked</span>
+                        : <span className="status heading-icon"><Icon name="edit" size={12} /> editable</span>
                     ) : (
-                      <span className="status status-locked">🔒 sealed</span>
+                      <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> sealed</span>
                     )}
                   </summary>
                   <EntryView entry={e} />
                   <div className="journal-item-actions">
-                    {editable && <button className="btn btn-ghost btn-sm" onClick={() => setEditing(e)}>✎ Edit</button>}
+                    {editable && (
+                      <button className="btn btn-ghost btn-sm heading-icon" onClick={() => setEditing(e)}>
+                        <Icon name="edit" size={13} /> Edit
+                      </button>
+                    )}
                     {!editable && feathers > 0 && (
-                      <button className="btn btn-ghost btn-sm" onClick={() => s.useItem('feather', { entryId: e.id })}>
-                        🪶 Unseal with Feather of Time ({feathers} owned)
+                      <button className="btn btn-ghost btn-sm heading-icon" onClick={() => s.useItem('feather', { entryId: e.id })}>
+                        <Icon name="feather" size={13} /> Unseal with Feather of Time ({feathers} owned)
                       </button>
                     )}
                     {!editable && feathers === 0 && (
@@ -109,7 +129,8 @@ function EntryView({ entry }: { entry: JournalEntry }) {
     <div className="entry-view">
       <p><span className="mood">{MOODS[entry.mood - 1]}</span> mood {entry.mood}/5 · stress {entry.stress}/10</p>
       {entry.answers.map((a, i) => (
-        <div key={i} className="entry-qa">
+        // Same measure as the writing box, so an entry reads back the way it was written.
+        <div key={i} className="entry-qa" style={{ maxWidth: '66ch' }}>
           <div className="entry-q">{a.q}</div>
           <div className="entry-a">{a.a || '—'}</div>
         </div>
@@ -126,11 +147,18 @@ function EntryForm({
   onSave: (mood: number, stress: number, answers: { q: string; a: string }[]) => void;
 }) {
   const classes = useGame(x => x.character?.classes);
+  // Today's form and the edit modal can be mounted at once, so the hint's id has to be
+  // per-instance or aria-describedby would point at whichever one rendered first.
+  const hintId = useId();
   const questions = initial ? initial.answers.map(a => a.q) : questionsForDay(todayStr(), REFLECTION_QUESTIONS);
   const [mood, setMood] = useState(initial?.mood ?? 3);
   const [stress, setStress] = useState(initial?.stress ?? 5);
   const [answers, setAnswers] = useState<string[]>(initial ? initial.answers.map(a => a.a) : questions.map(() => ''));
 
+  // Mood and stress are two taps and they are not a reflection. Without this, an entry
+  // of "3/5, stress 5" would mint the full journal XP — the cheapest XP in the app, and
+  // the one that teaches the player the journal is a button rather than a page. One
+  // written line is the whole bar: kind, but not free.
   const valid = answers.some(a => a.trim().length > 0);
 
   return (
@@ -150,20 +178,29 @@ function EntryForm({
         <input type="range" min={1} max={10} value={stress} onChange={e => setStress(Number(e.target.value))} />
       </label>
       {questions.map((q, i) => (
-        <label className="field" key={i}>
+        // Capped at 66ch. A textarea stretched to the full page width gives ~140-character
+        // lines, which is a form field; prose is comfortable to read and to write at the
+        // measure a book uses, and the box's shape is what tells you which one this is.
+        <label className="field" key={i} style={{ maxWidth: '66ch' }}>
           <span>{q}</span>
           <textarea
             className="input"
-            rows={2}
+            rows={3}
             value={answers[i]}
             onChange={e => setAnswers(v => v.map((x, j) => (j === i ? e.target.value : x)))}
           />
         </label>
       ))}
-      <div className="modal-actions">
+      <div className="modal-actions" style={{ maxWidth: '66ch', alignItems: 'center', flexWrap: 'wrap' }}>
+        {!valid && (
+          <span className="muted" id={hintId}>
+            Answer at least one question — a mood and a stress number aren't an entry yet.
+          </span>
+        )}
         <button
           className="btn btn-primary"
           disabled={!valid}
+          aria-describedby={!valid ? hintId : undefined}
           onClick={() => onSave(mood, stress, questions.map((q, i) => ({ q, a: answers[i].trim() })))}
         >
           {initial ? 'Save changes' : `Save entry (+${journalXp(classes)} XP)`}

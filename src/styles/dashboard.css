@@ -20,6 +20,12 @@
 .contract-check svg { display: block; }
 /* A leg whose copy carries a link needs the line to breathe around it. */
 .contract-list li { line-height: 1.45; }
+/* The base rule makes each row a flex container, which is right when the row is
+   [tick][one text node]. The cold-start row carries a sentence with an inline
+   <Link> in it, and flex promotes every text node and the anchor to separate
+   flex items — the sentence breaks into three columns. Wrapping the prose in its
+   own block restores normal inline flow inside the row. */
+.contract-list li > .contract-text { flex: 1; min-width: 0; }
 /* A leg that isn't in play today (nothing scheduled) is neither done nor pending.
    Dashing the ring separates "not required" from "not yet done" without borrowing
    the failure colour for a day where nothing failed. */

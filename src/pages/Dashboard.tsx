@@ -43,6 +43,7 @@ const CAL_TYPE_ICON: Record<CalendarItemType, IconName> = {
   journal: 'journal',
   questTarget: 'target',
   subscription: 'subscription',
+  habit: 'habits',
 };
 
 /**
@@ -204,7 +205,9 @@ export function Dashboard() {
       <section className={`card contract-card ${chronicleFresh || coldStart ? '' : 'card-hero'}`}>
         <div className="card-head">
           <h2>Daily Three</h2>
-          <span className="muted">{legsDone}/{legsTotal}</span>
+          {/* "Daily Three" over "0/2" reads as an off-by-one. Naming the count as
+              today's makes the shortened contract deliberate rather than broken. */}
+          <span className="muted">{legsDone}/{legsTotal}{legsTotal < 3 ? ' today' : ''}</span>
         </div>
         <ul className="contract-list">
           {/* Three rows over a "/2" counter needs the third row to look like what it is.
@@ -212,21 +215,23 @@ export function Dashboard() {
               as a leg you simply haven't done — one is waiting on you, the other isn't. */}
           <li className={habitsLegOk ? 'contract-ok' : habitsLegLive ? '' : 'contract-idle'}>
             <ContractCheck ok={habitsLegOk} />
-            {habitsLegLive ? (
-              <>All due habits done ({contract.habitsDone}/{contract.habitsDue})</>
-            ) : s.habits.length === 0 ? (
-              <>No habits yet — <Link to="/habits">add your first one</Link> and this becomes the daily anchor.</>
-            ) : (
-              <>Nothing scheduled today — the chest rests on the other two.</>
-            )}
+            <span className="contract-text">
+              {habitsLegLive ? (
+                <>All due habits done ({contract.habitsDone}/{contract.habitsDue})</>
+              ) : s.habits.length === 0 ? (
+                <>No habits yet — <Link to="/habits">add your first one</Link> and this becomes the daily anchor.</>
+              ) : (
+                <>Nothing scheduled today — the chest rests on the other two.</>
+              )}
+            </span>
           </li>
           <li className={contract.journalOk ? 'contract-ok' : ''}>
             <ContractCheck ok={contract.journalOk} />
-            Journal written
+            <span className="contract-text">Journal written</span>
           </li>
           <li className={contract.extraOk ? 'contract-ok' : ''}>
             <ContractCheck ok={contract.extraOk} />
-            One extra push — a quick task or a quest session
+            <span className="contract-text">One extra push — a quick task or a quest session</span>
           </li>
         </ul>
         {chestOpenedToday ? (

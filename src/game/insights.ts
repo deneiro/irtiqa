@@ -1,5 +1,5 @@
 import { addDaysStr, habitDueOn, parseDay } from './engine';
-import type { FailureRecord, Habit, HabitDayStatus, JournalEntry, Tx } from './types';
+import type { FailureRecord, Habit, HabitDayStatus, IconName, JournalEntry, Tx } from './types';
 
 // The insights engine: honest correlations computed from data the player
 // already generated. No AI, no guesses — just their own numbers held up as a
@@ -8,7 +8,7 @@ import type { FailureRecord, Habit, HabitDayStatus, JournalEntry, Tx } from './t
 
 export interface Insight {
   id: string;
-  icon: string;
+  icon: IconName;
   text: string;
 }
 
@@ -73,7 +73,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
     if (Math.abs(a - b) >= 0.3) {
       insights.push({
         id: 'mood_habits',
-        icon: a >= b ? '🔥' : '🤔',
+        icon: a >= b ? 'flame' : 'brain',
         text:
           a >= b
             ? `On days you complete every habit, your mood averages ${r1(a)}/5 — versus ${r1(b)}/5 on days something slips. The discipline is literally making you happier.`
@@ -92,7 +92,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
     if (hi > lo * 1.5 && hi - lo >= 5) {
       insights.push({
         id: 'stress_spend',
-        icon: '💸',
+        icon: 'banknote',
         text: `High-stress days cost you real money: you spend ${r1(hi)} on average when stress is 6+, versus ${r1(lo)} on calm days. The budget leak is emotional.`,
       });
     }
@@ -120,7 +120,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
         const name = (wd: number) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][wd];
         insights.push({
           id: 'weekday',
-          icon: '📅',
+          icon: 'calendar',
           text: `${name(best.wd)}s are your strongest day (${Math.round(best.rate * 100)}% of habits done); ${name(worst.wd)}s are where streaks go to die (${Math.round(worst.rate * 100)}%). Guard your ${name(worst.wd)}s.`,
         });
       }
@@ -136,7 +136,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
     if (Math.abs(a - b) >= 0.5) {
       insights.push({
         id: 'mood_trend',
-        icon: a > b ? '📈' : '📉',
+        icon: a > b ? 'arrowUp' : 'arrowDown',
         text:
           a > b
             ? `Mood is climbing: ${r1(a)}/5 this week, up from ${r1(b)}/5 last week. Whatever changed — keep it.`
@@ -153,7 +153,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
   if (triggers.length >= 2) {
     insights.push({
       id: 'triggers',
-      icon: '🕯️',
+      icon: 'indulgence',
       text: `Your recent relapse triggers, in your own words: ${triggers.map(f => `"${f.trigger!.trim()}"`).join(' · ')}. Name the pattern, then starve it.`,
     });
   }

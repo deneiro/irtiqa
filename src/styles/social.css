@@ -1,1 +1,94 @@
 /* social — owned by one feature. Imported from main.tsx after styles.css. */
+
+/* ---- Glyphs beside words ----
+   .btn is deliberately not a flex container in styles.css (its text handling on mobile
+   depends on that), so a button that pairs an icon with a label opts in here. Also used
+   on the <label> that fronts the hidden file input, which needs the same treatment. */
+.soc-btn-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* An <svg> in a flex row still carries its intrinsic size; without this it is the first
+   thing to be squeezed when a long title shares the row. */
+.soc-row-ico { flex-shrink: 0; color: var(--muted); }
+.soc-row-ico-done { color: var(--success); }
+
+/* A kept plan reads as struck-through rather than disappearing: seeing the thing you did
+   is the reward, and a row that vanishes on click feels like an undo. */
+.soc-done { text-decoration: line-through; color: var(--muted); font-weight: 600; }
+
+/* Direction colour, repeated from the arrow's shape: owed to you vs owed by you. */
+.soc-in { color: var(--success); }
+.soc-out { color: var(--danger); }
+
+/* .debt-net is a plain block in styles.css; the settled state now leads with a tick. */
+.debt-net { display: flex; align-items: center; gap: 6px; }
+
+/* .tag is inline-block, so a glyph inside one sits on the baseline and lifts the text. */
+.tag-ico { display: inline-flex; align-items: center; gap: 5px; }
+
+/* Channel rows: the glyph replaces what used to be an emoji at the head of the line. */
+.soc-channel { display: inline-flex; align-items: center; gap: 6px; }
+.soc-channel svg { flex-shrink: 0; }
+
+/* The lede under a card head, above its list. */
+.soc-lede { margin: -4px 0 10px; font-size: 13px; }
+
+/* A one-line explanation under a form section label. Sits tight to the label it explains
+   and clear of the control below. */
+.soc-hint { margin: -2px 0 10px; font-size: 12.5px; line-height: 1.45; }
+
+/* ---- Form field glyphs ----
+   .icon-field-ico was sized for an emoji character. An SVG needs to be a flex box or it
+   inherits the line box and rides high against the input's placeholder. */
+.icon-field-ico {
+  display: flex;
+  align-items: center;
+  opacity: 1;
+  color: var(--muted);
+}
+
+/* ---- Photo picker ---- */
+.soc-photo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+/* Bigger than the 36px the card draws, so what you chose is actually inspectable. */
+.soc-photo-preview { width: 56px; height: 56px; font-size: 18px; }
+.soc-photo-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* The real <input type=file> is unstylable, so a label fronts it. The input stays in the
+   DOM and focusable (keyboard users tab to it) rather than display:none, which would take
+   it out of the tab order entirely — hence the ring on the label instead. */
+.soc-photo-pick { position: relative; overflow: hidden; }
+.soc-photo-pick input[type='file'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.soc-photo-pick:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Rejected file, unreadable image, or "resizing…". Never alarming — you just pick again. */
+.soc-photo-note { margin: -6px 0 12px; font-size: 12.5px; }
+
+/* ---- Empty states ---- */
+.soc-empty-line { margin: 0 0 8px; }
+.soc-empty-line:last-of-type { margin-bottom: 12px; }
+.soc-empty-ico { vertical-align: -0.18em; }
+
+@media (max-width: 640px) {
+  /* Event rows carry a title, a date and up to two buttons. At 375px that cannot stay on
+     one line, so the row wraps and the title takes the first line on its own. Scoped to
+     this page: .list-row is shared with every other surface in the app. */
+  .soc-page .list-row { flex-wrap: wrap; }
+  .soc-page .list-title { min-width: 0; flex: 1 1 60%; }
+}

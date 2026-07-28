@@ -1,1 +1,86 @@
 /* calendar — owned by one feature. Imported from main.tsx after styles.css. */
+
+/* ---- Month cells ----------------------------------------------------------
+   styles.css sizes a cell by aspect-ratio, which on a wide screen inflated every
+   cell to ~140px tall to hold two dots. Height is driven by content instead: a
+   floor tall enough to be a comfortable tap target, and room for two title rows
+   once the viewport is wide enough to print them. */
+.cal-cell {
+  aspect-ratio: auto;
+  min-height: 48px;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 5px 3px;
+  overflow: hidden;
+}
+
+/* Today has to survive being the selected cell, the hovered cell, or an
+   out-of-month cell, so it is marked twice: a tinted field plus a filled pill on
+   the number. Border colour alone read as "maybe selected" at a glance. */
+.cal-cell.today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.cal-cell.today .cal-daynum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--panel);
+}
+
+/* ---- Two views of a day ---------------------------------------------------
+   Dots are the phone view: a 45px-wide cell can carry colour and nothing else.
+   Titles are the desktop view. Both are rendered; width decides which shows. */
+.cal-titles {
+  display: none;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+.cal-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+.cal-title-text {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cal-more {
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+  color: var(--muted);
+}
+
+@media (min-width: 761px) {
+  .cal-cell {
+    min-height: 88px;
+    align-items: flex-start;
+    text-align: left;
+    padding: 6px 7px;
+  }
+  .cal-titles { display: flex; }
+  .cal-dots { display: none; }
+}
+
+/* ---- Habits ---------------------------------------------------------------
+   Every other type already owns one of the theme's accent colours, and the four
+   themes leave no seventh hue that stays distinct in all of them. Habits get the
+   text colour and a squared-off shape instead — the daily loop reads as the
+   anchor item on a day, which is what it is. */
+.cal-dot-habit {
+  background: var(--text);
+  border-radius: 3px;
+}

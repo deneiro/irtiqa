@@ -1,7 +1,7 @@
-import { addMonthsClamp, questTargetDate } from '../game/engine';
-import type { Contact, JournalEntry, Quest, QuickTask, SocialEvent, Subscription } from '../game/types';
+import { addDaysStr, addMonthsClamp, habitDueOn, questTargetDate, todayStr } from '../game/engine';
+import type { Contact, Habit, HabitDayStatus, JournalEntry, Quest, QuickTask, SocialEvent, Subscription } from '../game/types';
 
-export type CalendarItemType = 'event' | 'birthday' | 'quickTask' | 'journal' | 'questTarget' | 'subscription';
+export type CalendarItemType = 'event' | 'birthday' | 'quickTask' | 'journal' | 'questTarget' | 'subscription' | 'habit';
 
 export interface CalendarItem {
   id: string;
@@ -19,6 +19,11 @@ interface CalendarSource {
   journal: JournalEntry[];
   quests: Quest[];
   subs?: Subscription[];
+  /** Optional: callers that don't care about the daily loop (e.g. a short "what's coming up" strip) can omit both. */
+  habits?: Habit[];
+  habitLog?: Record<string, Record<string, HabitDayStatus>>;
+  /** Injectable "now" so habit past/future phrasing is deterministic in tests. Defaults to the real today. */
+  today?: string;
 }
 
 /** All yearly occurrences of a birthday's month/day that fall within [rangeStart, rangeEnd] (inclusive). */
@@ -49,9 +54,56 @@ function subscriptionOccurrencesInRange(sub: Subscription, rangeStart: string, r
   return out;
 }
 
-/** Unifies every date-bearing thing in the app — events, birthdays, due quick tasks, journal entries, quest targets, subscription charges — into one list for a range. */
+/**
+ * One aggregate habit row per day — never one row per habit.
+ *
+ * A single daily habit would otherwise emit ~30 identical entries into a month view and
+ * bury every event, birthday and quest target under itself. At month scale the count is
+ * the whole signal; the per-habit detail already lives on /habits.
+ *
+ * Days with nothing due emit nothing, so an untracked stretch stays visibly empty rather
+ * than filling up with "0 due".
+ */
+function habitItemsInRange(src: CalendarSource, rangeStart: string, rangeEnd: string, today: string): CalendarItem[] {
+  const habits = src.habits ?? [];
+  if (habits.length === 0) return [];
+  const log = src.habitLog ?? {};
+  const out: CalendarItem[] = [];
+
+  for (let day = rangeStart; day <= rangeEnd; day = addDaysStr(day, 1)) {
+    const due = habits.filter(h => habitDueOn(h, day));
+    if (due.length === 0) continue;
+    const plural = due.length === 1 ? 'habit' : 'habits';
+
+    // A future day has no log to read, so it states the plan. Today and the past state the
+    // result — and today counts as "result" on purpose: the day's progress is the useful read
+    // while it is still in play.
+    if (day > today) {
+      out.push({ id: `habits-${day}`, date: day, type: 'habit', title: `${due.length} ${plural} due`, link: '/habits' });
+      continue;
+    }
+
+    // Only an explicit 'done' counts. A pardon, shield or ghost day stops the damage but it
+    // isn't a rep, and reporting it as one would make the history lie back to the player.
+    const done = due.filter(h => log[h.id]?.[day] === 'done').length;
+    out.push({
+      id: `habits-${day}`,
+      date: day,
+      type: 'habit',
+      title: `${done} of ${due.length} ${plural} done`,
+      link: '/habits',
+      done: done === due.length,
+    });
+  }
+
+  return out;
+}
+
+/** Unifies every date-bearing thing in the app — habits due, events, birthdays, due quick tasks, journal entries, quest targets, subscription charges — into one list for a range. */
 export function buildCalendarItems(src: CalendarSource, rangeStart: string, rangeEnd: string): CalendarItem[] {
-  const items: CalendarItem[] = [];
+  // Habits lead every day they appear on: the sort below is by date alone and is stable, so
+  // pushing them first is what keeps the daily loop at the top of each day's stack.
+  const items: CalendarItem[] = habitItemsInRange(src, rangeStart, rangeEnd, src.today ?? todayStr());
 
   for (const e of src.events) {
     if (e.date < rangeStart || e.date > rangeEnd) continue;

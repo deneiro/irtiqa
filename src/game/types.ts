@@ -374,6 +374,9 @@ export interface Celebration {
   title: string;
   subtitle?: string;
   tier?: Tier;
+  /** Rendered by CelebrationLayer. Titles used to carry a literal emoji, which meant
+   *  the app's loudest, most-seen surface was the one place the icon system didn't reach. */
+  icon?: IconName;
 }
 
 // ---------- Stats (counters used by achievements) ----------

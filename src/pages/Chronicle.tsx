@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Icon } from '../components/Icon';
 import { Empty } from '../components/ui';
 import {
   buildChronicle,
@@ -104,8 +106,9 @@ export function Chronicle() {
 
         {current.thin ? (
           <Empty>
-            Not enough happened last week to write about honestly. Log habits, work a quest, or write
-            a journal entry — the Chronicle builds itself from those.
+            Not enough happened last week to write about honestly. The Chronicle builds itself from
+            what you log: <Link to="/habits">check in on a habit</Link>,{' '}
+            <Link to="/quests">work a quest</Link>, or <Link to="/journal">write tonight's entry</Link>.
           </Empty>
         ) : (
           <ChronicleBody chronicle={current} />
@@ -114,7 +117,11 @@ export function Chronicle() {
 
       <h2 className="section-title">Earlier weeks</h2>
       {archive.length === 0 ? (
-        <Empty>No earlier weeks on record yet. They accumulate as you go.</Empty>
+        <Empty>
+          No earlier weeks on record yet — they accumulate on their own as you go. Meanwhile,{' '}
+          <Link to="/journal">tonight's journal entry</Link> gives next week's chronicle something to
+          quote.
+        </Empty>
       ) : (
         <div className="chron-archive">
           {archive.map(c => {
@@ -160,7 +167,7 @@ function CopyButton({ onCopy }: { onCopy: () => Promise<void> }) {
       }}
       aria-live="polite"
     >
-      {copied ? '✓ Copied' : 'Copy'}
+      {copied ? <span className="heading-icon"><Icon name="check" size={13} /> Copied</span> : 'Copy'}
     </button>
   );
 }

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AttributeProgress } from '../components/AttributeProgress';
 import { Avatar } from '../components/Avatar';
-import { Icon } from '../components/Icon';
+import { Icon, type IconName } from '../components/Icon';
 import { RadarChart } from '../components/RadarChart';
 import { Sigil } from '../components/Sigil';
 import { Bar, Empty } from '../components/ui';
@@ -15,8 +15,8 @@ import { useGame } from '../store';
 
 // The stored status stays 'failed' (it's persisted save data), but nothing shown to
 // the player says "failed" — a missed day is a fact to read, not a verdict to wear.
-const HABIT_ICON: Record<HabitDayStatus, string> = {
-  done: '✅', failed: '—', pardoned: '📜', shielded: '🛡️', ghost: '👻', indulged: '🕯️',
+const HABIT_ICON: Record<HabitDayStatus, IconName> = {
+  done: 'check', failed: 'minus', pardoned: 'pardon', shielded: 'shield', ghost: 'ghost', indulged: 'indulgence',
 };
 const HABIT_LABEL: Record<HabitDayStatus, string> = {
   done: 'completed', failed: 'missed', pardoned: 'pardoned', shielded: 'streak shielded', ghost: 'frozen day', indulged: 'relapse forgiven',
@@ -25,7 +25,7 @@ const HABIT_LABEL: Record<HabitDayStatus, string> = {
 interface ActivityEntry {
   id: string;
   day: string; // YYYY-MM-DD
-  icon: string;
+  icon: IconName;
   title: string;
   subtitle?: string;
 }
@@ -126,7 +126,7 @@ export function Profile() {
     for (const q of s.quests) {
       for (const sess of q.sessions) {
         entries.push({
-          id: `qs-${sess.id}`, day: sess.date, icon: '⏱️',
+          id: `qs-${sess.id}`, day: sess.date, icon: 'play',
           title: `Worked on: ${q.title}`,
           subtitle: `${fmtMinutes(sess.minutes)}${sess.note ? ` — "${sess.note}"` : ''}`,
         });
@@ -134,36 +134,36 @@ export function Profile() {
       if (q.completedAt) {
         const payout = questPayout(q, s.character?.classes);
         entries.push({
-          id: `qc-${q.id}`, day: q.completedAt.slice(0, 10), icon: '🏁',
-          title: `Completed quest: ${q.title}`, subtitle: `+${payout.xp} XP · +${payout.gold} 🪙`,
+          id: `qc-${q.id}`, day: q.completedAt.slice(0, 10), icon: 'flag',
+          title: `Completed quest: ${q.title}`, subtitle: `+${payout.xp} XP · +${payout.gold} Gold`,
         });
       }
     }
 
     for (const t of s.quickTasks) {
-      if (t.doneAt) entries.push({ id: `qt-${t.id}`, day: t.doneAt.slice(0, 10), icon: '☑️', title: `Quick task: ${t.title}` });
+      if (t.doneAt) entries.push({ id: `qt-${t.id}`, day: t.doneAt.slice(0, 10), icon: 'check', title: `Quick task: ${t.title}` });
     }
 
     for (const e of s.journal) {
       entries.push({
-        id: `j-${e.id}`, day: e.date, icon: '📖',
+        id: `j-${e.id}`, day: e.date, icon: 'journal',
         title: 'Wrote a journal entry', subtitle: `${MOODS[e.mood - 1]} mood ${e.mood}/5 · stress ${e.stress}/10`,
       });
     }
 
     for (const c of s.contacts) {
-      entries.push({ id: `c-${c.id}`, day: c.createdAt.slice(0, 10), icon: '🤝', title: `Added contact: ${c.name}` });
+      entries.push({ id: `c-${c.id}`, day: c.createdAt.slice(0, 10), icon: 'friends', title: `Added contact: ${c.name}` });
     }
 
     for (const d of s.debts) {
       const name = s.contacts.find(c => c.id === d.contactId)?.name ?? 'someone';
       entries.push({
-        id: `d-${d.id}`, day: d.createdAt.slice(0, 10), icon: '💳',
+        id: `d-${d.id}`, day: d.createdAt.slice(0, 10), icon: 'card',
         title: `Logged debt with ${name}`, subtitle: `${d.direction === 'theyOwe' ? 'they owe you' : 'you owe'} ${d.amount}`,
       });
       for (const p of d.payments) {
         entries.push({
-          id: `dp-${p.id}`, day: p.date, icon: '💰',
+          id: `dp-${p.id}`, day: p.date, icon: 'banknote',
           title: `${d.direction === 'theyOwe' ? 'Collected from' : 'Paid'} ${name}`, subtitle: `${p.amount}`,
         });
       }
@@ -172,25 +172,16 @@ export function Profile() {
     for (const t of s.txs) {
       entries.push({
         id: `tx-${t.id}`, day: t.date,
-        icon: t.transferId ? '🔁' : t.type === 'income' ? '🟢' : '🔴',
+        icon: t.transferId ? 'subscription' : t.type === 'income' ? 'arrowUp' : 'arrowDown',
         title: t.note || t.category,
         subtitle: `${t.type === 'income' ? '+' : '−'}${t.amount.toLocaleString()} · ${t.category}`,
       });
     }
 
-    for (const w of s.wishlist) {
-      if (w.purchasedAt) {
-        entries.push({
-          id: `w-${w.id}`, day: w.purchasedAt.slice(0, 10), icon: '🎁',
-          title: `Claimed: ${w.name}`, subtitle: `${w.goldCost} 🪙${w.moneyCost > 0 ? ` + ${w.moneyCost.toLocaleString()}` : ''}`,
-        });
-      }
-    }
-
     for (const [id, at] of Object.entries(s.unlocked)) {
       const def = ACHIEVEMENTS.find(a => a.id === id);
       if (!def) continue;
-      entries.push({ id: `ach-${id}`, day: at.slice(0, 10), icon: '🏆', title: `Achievement: ${def.name}`, subtitle: `${TIER_LABEL[def.tier]} · ${def.desc}` });
+      entries.push({ id: `ach-${id}`, day: at.slice(0, 10), icon: 'trophy', title: `Achievement: ${def.name}`, subtitle: `${TIER_LABEL[def.tier]} · ${def.desc}` });
     }
 
     const grouped = new Map<string, ActivityEntry[]>();
@@ -212,7 +203,7 @@ export function Profile() {
           <Sigil size={260} interactive />
           {momentumStreak > 0 && (
             <span className="hero-flame" title={`${momentumStreak}-day perfect streak — the sigil is lit`}>
-              🔥 {momentumStreak}
+              <Icon name="flame" size={14} /> {momentumStreak}
             </span>
           )}
         </div>
@@ -223,7 +214,7 @@ export function Profile() {
             {equippedTitle && <span className="char-title"> {equippedTitle.name}</span>}
           </h1>
           <p className="hero-sub">
-            {rank.emoji} {rank.name} · {cls && <Icon name={cls.id} size={14} />} {cls?.name} · Level {lp.level}
+            <Icon name={rank.icon} size={14} /> {rank.name} · {cls && <Icon name={cls.id} size={14} />} {cls?.name} · Level {lp.level}
           </p>
 
           <Bar value={lp.into} max={lp.need} className="bar-xp" label={`${lp.into}/${lp.need} XP`} />
@@ -231,14 +222,14 @@ export function Profile() {
 
           <p className="hero-read">{sigilDescription(spec)}</p>
 
-          {cls && <p className="muted hero-perk">★ {cls.perk}</p>}
+          {cls && <p className="muted hero-perk"><Icon name="starFilled" size={12} /> {cls.perk}</p>}
 
           <div className="hero-meta">
             <span className="muted">
               {spec.rings} rank ring{spec.rings === 1 ? '' : 's'} · {spec.facets} facet{spec.facets === 1 ? '' : 's'} ·{' '}
               {Math.round(spec.balance * 100)}% round
             </span>
-            <button className="btn btn-ghost btn-sm" onClick={downloadSigil}>⬇ Save sigil</button>
+            <button className="btn btn-ghost btn-sm" onClick={downloadSigil}><Icon name="download" size={13} /> Save sigil</button>
           </div>
         </div>
       </section>
@@ -286,7 +277,7 @@ export function Profile() {
 
       <section className="card">
         <div className="card-head">
-          <h2>🔍 Insights</h2>
+          <h2><Icon name="search" size={16} /> Insights</h2>
           <span className="muted">your own data, held up as a mirror</span>
         </div>
         {insights.length === 0 ? (
@@ -308,11 +299,11 @@ export function Profile() {
 
       <section className="card">
         <div className="card-head">
-          <h2>👘 Wardrobe</h2>
+          <h2><Icon name="sparkles" size={16} /> Wardrobe</h2>
           <span className="muted">{s.ownedCosmetics.length} / {COSMETICS.length} collected — drops from daily chests</span>
         </div>
         {s.adminUnlockAll && (
-          <p className="muted">🔑 Owner mode is on — every cosmetic previews and equips freely. It doesn't count toward your real collection above.</p>
+          <p className="muted"><Icon name="unlock" size={13} /> Owner mode is on — every cosmetic previews and equips freely. It doesn't count toward your real collection above.</p>
         )}
         {(['frame', 'title', 'banner'] as CosmeticSlot[]).map(slot => (
           <div key={slot} className="wardrobe-slot">
@@ -346,7 +337,7 @@ export function Profile() {
                         <button className="btn btn-primary btn-sm" onClick={() => s.equipCosmetic(slot, c.id)}>Equip</button>
                       )
                     ) : (
-                      <span className="muted wardrobe-hint">🎁 chest drop</span>
+                      <span className="muted wardrobe-hint"><Icon name="chest" size={12} /> chest drop</span>
                     )}
                   </div>
                 );
@@ -369,7 +360,7 @@ export function Profile() {
                   <ul className="list list-tight">
                     {entries.map(e => (
                       <li key={e.id} className="list-row">
-                        <span>{e.icon}</span>
+                        <span className="tl-icon"><Icon name={e.icon} size={14} /></span>
                         <span className="list-title">{e.title}</span>
                         {e.subtitle && <span className="muted">{e.subtitle}</span>}
                       </li>

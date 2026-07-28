@@ -1,1 +1,44 @@
-/* achievements — owned by one feature. Imported from main.tsx after styles.css. */
+/* achievements — the "what's next" view and its full-ladder toggle. */
+
+.ach-head-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ach-family-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ach-family-count {
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.ach-family-done {
+  color: var(--success);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* The rung actually in play. A padlock says "denied"; a target says "this one is
+   yours to take" — which is the only honest read when it's the very next one. */
+.ach-next {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.ach-next .ach-emoji {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.ach-gold {
+  vertical-align: -2px;
+  color: var(--gold);
+}

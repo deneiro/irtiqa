@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
     return (
       <div className="onboarding">
         <div className="onboarding-inner">
-          <h1 className="onb-logo">💥</h1>
+          <h1 className="onb-logo">Something broke</h1>
           <h2>Something broke — but your save is safe</h2>
           <p className="muted">
             The app hit an unexpected error. Your progress lives in this browser's storage and was not touched.

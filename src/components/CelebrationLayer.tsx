@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
+import { Icon } from './Icon';
 import { playSound, type SoundId } from '../lib/sound';
 import { motionForTheme } from '../game/engine';
 import { useGame } from '../store';
-import type { Celebration, CelebrationType } from '../game/types';
+import type { Celebration, CelebrationType, IconName } from '../game/types';
 
 const TOAST_TYPES = ['reward', 'damage', 'info', 'item'];
 const TOAST_MS = 4200;
@@ -53,7 +54,10 @@ export function CelebrationLayer() {
       <div className="toast-stack">
         {toasts.map(t => (
           <div key={t.id} className={`toast toast-${t.type} celeb-${motion}`} onClick={() => dismiss(t.id)}>
-            <div className="toast-title">{t.title}</div>
+            <div className="toast-title">
+              {t.icon && <Icon name={t.icon} size={15} className="toast-icon" />}
+              {t.title}
+            </div>
             {t.subtitle && <div className="toast-sub">{t.subtitle}</div>}
           </div>
         ))}
@@ -64,7 +68,8 @@ export function CelebrationLayer() {
 }
 
 function Popup({ c, motion, onClose }: { c: Celebration; motion: string; onClose: () => void }) {
-  const emoji = c.type === 'levelup' ? '🎉' : c.type === 'rankup' ? '👑' : '🏆';
+  // The popup's own glyph is fixed by type; a celebration's optional `icon` is for toasts.
+  const icon: IconName = c.type === 'levelup' ? 'sparkles' : c.type === 'rankup' ? 'sovereign' : 'trophy';
   const heading = c.type === 'levelup' ? 'LEVEL UP!' : c.type === 'rankup' ? 'RANK UP!' : 'ACHIEVEMENT UNLOCKED';
   return (
     <div className="popup-overlay" onClick={onClose}>
@@ -74,7 +79,7 @@ function Popup({ c, motion, onClose }: { c: Celebration; motion: string; onClose
             <span key={i} className="spark" style={{ ['--i' as string]: i }} />
           ))}
         </div>
-        <div className="popup-emoji">{emoji}</div>
+        <div className="popup-emoji"><Icon name={icon} size={54} /></div>
         <div className="popup-heading">{heading}</div>
         <div className="popup-title">{c.title}</div>
         {c.subtitle && <div className="popup-sub">{c.subtitle}</div>}

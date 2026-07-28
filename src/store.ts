@@ -307,7 +307,7 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
     dl.gold += gold;
     pushCeleb(d, {
       type: 'reward',
-      title: `+${finalXp} XP${gold > 0 ? ` · +${gold} 🪙` : ''}${boosted ? ' ⚡' : ''}`,
+      title: `+${finalXp} XP${gold > 0 ? ` · +${gold} Gold` : ''}`, icon: boosted ? 'boost' : 'sparkles',
       subtitle: label,
     });
   }
@@ -331,8 +331,8 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
       const bossDef = BOSSES[d.boss.attr];
       pushCeleb(d, {
         type: 'reward',
-        title: `⚔️ ${bossDef.name} defeated!`,
-        subtitle: `+${BOSS_REWARD.xp} XP · +${BOSS_REWARD.gold} 🪙 — your weakest front just got stronger.`,
+        title: `${bossDef.name} defeated!`, icon: 'quests',
+        subtitle: `+${BOSS_REWARD.xp} XP · +${BOSS_REWARD.gold} Gold — your weakest front just got stronger.`,
       });
     }
   }
@@ -374,7 +374,7 @@ function checkAchievementsD(d: D) {
         pushCeleb(d, {
           type: 'achievement',
           title: a.name,
-          subtitle: `${a.desc} · +${r.xp} XP · +${r.gold} 🪙`,
+          subtitle: `${a.desc} · +${r.xp} XP · +${r.gold} Gold`,
           tier: a.tier,
         });
         any = true;
@@ -654,7 +654,7 @@ export const useGame = create<GameState>()(
             d.theme = 'midnight';
             pushCeleb(d, {
               type: 'info',
-              title: '🌌 Switched to Midnight',
+              title: 'Switched to Midnight', icon: 'themeMidnight',
               subtitle: `${activeTheme.name} is locked right now — reapply it once it's unlocked.`,
             });
           }
@@ -688,7 +688,7 @@ export const useGame = create<GameState>()(
             d.effects.comeback = { remaining: COMEBACK_CHECKINS, expiresDay: addDaysStr(today, COMEBACK_WINDOW_DAYS) };
             pushCeleb(d, {
               type: 'info',
-              title: '🌙 The Long Sleep',
+              title: 'The Long Sleep', icon: 'rankSeeker',
               subtitle: `You were away ${gap} days. Streaks faded — no damage taken. Check in ${COMEBACK_CHECKINS} habits by ${fmtDay(d.effects.comeback.expiresDay)} to restore ${COMEBACK_HP} HP.`,
             });
             day = cutoff; // the sleep itself is not judged
@@ -780,7 +780,7 @@ export const useGame = create<GameState>()(
             const pct = Math.round((momentumMult(d.momentum.streak) - 1) * 100);
             pushCeleb(d, {
               type: 'reward',
-              title: `🔥 Perfect day${perfectDays > 1 ? 's' : ''}!`,
+              title: `Perfect day${perfectDays > 1 ? 's' : ''}!`, icon: 'flame',
               subtitle: `Every habit done. Momentum ${d.momentum.streak} (+${pct}% XP)${regen > 0 ? ` · +${regen} HP` : ''}`,
             });
           }
@@ -800,8 +800,8 @@ export const useGame = create<GameState>()(
           }
 
           if (missed > 0) pushCeleb(d, { type: 'damage', title: `-${dmgTotal} HP`, subtitle: `${missed} habit${missed > 1 ? 's' : ''} went unlogged. Today starts clean.` });
-          if (shields > 0) pushCeleb(d, { type: 'item', title: '🛡️ Streak Shield activated', subtitle: `${shields} streak${shields > 1 ? 's' : ''} protected automatically` });
-          if (indulged > 0) pushCeleb(d, { type: 'item', title: '🕯️ Indulgence consumed', subtitle: `${indulged} relapse${indulged > 1 ? 's' : ''} forgiven` });
+          if (shields > 0) pushCeleb(d, { type: 'item', title: 'Streak Shield activated', icon: 'shield', subtitle: `${shields} streak${shields > 1 ? 's' : ''} protected automatically` });
+          if (indulged > 0) pushCeleb(d, { type: 'item', title: 'Indulgence consumed', icon: 'indulgence', subtitle: `${indulged} relapse${indulged > 1 ? 's' : ''} forgiven` });
           checkAchievementsD(d);
         }),
 
@@ -849,8 +849,8 @@ export const useGame = create<GameState>()(
           const late = target !== today ? ' (late)' : '';
           const gold = bardGold(d.character?.classes); // Bard perk: bonus Gold per check-in
           const hm = heraldHabitMult(d.character?.classes); // Herald perk: motion pays extra XP
-          if (h.kind === 'good') grantD(d, Math.round(12 * hm), 5 + gold, h.attrs, `${h.name}${late} · 🔥 ${h.streak}`);
-          else grantD(d, Math.round(8 * hm), 3 + gold, h.attrs, `Resisted: ${h.name}${late} · 🔥 ${h.streak}`);
+          if (h.kind === 'good') grantD(d, Math.round(12 * hm), 5 + gold, h.attrs, `${h.name}${late} · ${h.streak}`);
+          else grantD(d, Math.round(8 * hm), 3 + gold, h.attrs, `Resisted: ${h.name}${late} · ${h.streak}`);
 
           // Comeback quest: each check-in after the Long Sleep counts toward the HP restore
           if (d.effects.comeback && d.character) {
@@ -858,7 +858,7 @@ export const useGame = create<GameState>()(
             if (d.effects.comeback.remaining <= 0) {
               d.character.hp = clampHp(d.character.hp + COMEBACK_HP);
               d.effects.comeback = null;
-              pushCeleb(d, { type: 'reward', title: '🌅 The Hero Returns', subtitle: `+${COMEBACK_HP} HP restored. The road continues.` });
+              pushCeleb(d, { type: 'reward', title: 'The Hero Returns', icon: 'rankNovice', subtitle: `+${COMEBACK_HP} HP restored. The road continues.` });
             }
           }
           checkAchievementsD(d);
@@ -874,7 +874,7 @@ export const useGame = create<GameState>()(
           if (d.effects.indulgence > 0) {
             d.effects.indulgence--;
             log[t] = 'indulged';
-            pushCeleb(d, { type: 'item', title: '🕯️ Indulgence consumed', subtitle: `${h.name}: relapse forgiven, no damage.` });
+            pushCeleb(d, { type: 'item', title: 'Indulgence consumed', icon: 'indulgence', subtitle: `${h.name}: relapse forgiven, no damage.` });
             return;
           }
           const dmg = reduceDamage(missDamage('bad', h.streak), d.character?.classes);
@@ -1240,7 +1240,7 @@ export const useGame = create<GameState>()(
           d.stats.itemsBought++;
           if (item.id === 'focus_unlock') {
             d.effects.maxPriority = 2;
-            pushCeleb(d, { type: 'item', title: '🎯 Focus Unlock active', subtitle: 'You can now mark two priority quests at once.' });
+            pushCeleb(d, { type: 'item', title: 'Focus Unlock active', icon: 'focus', subtitle: 'You can now mark two priority quests at once.' });
           } else {
             d.inventory[item.id] = (d.inventory[item.id] ?? 0) + 1;
             pushCeleb(d, { type: 'item', title: `Purchased: ${item.name}`, subtitle: 'Find it in your inventory below.' });
@@ -1271,14 +1271,14 @@ export const useGame = create<GameState>()(
             case 'indulgence': {
               if (!consumeD(d, id)) return;
               d.effects.indulgence++;
-              pushCeleb(d, { type: 'item', title: '🕯️ Indulgence active', subtitle: 'Your next bad-habit relapse will be forgiven.' });
+              pushCeleb(d, { type: 'item', title: 'Indulgence active', icon: 'indulgence', subtitle: 'Your next bad-habit relapse will be forgiven.' });
               break;
             }
             case 'attr_boost': {
               if (!consumeD(d, id)) return;
               const charges = boostCharges();
               d.effects.xpBoostCharges += charges;
-              pushCeleb(d, { type: 'item', title: '⚡ Attribute Boost active', subtitle: `+50% XP on your next ${charges} actions.` });
+              pushCeleb(d, { type: 'item', title: 'Attribute Boost active', icon: 'boost', subtitle: `+50% XP on your next ${charges} actions.` });
               break;
             }
             case 'ghost_day': {
@@ -1296,7 +1296,7 @@ export const useGame = create<GameState>()(
                   if (log && log[day] === 'failed') log[day] = 'ghost';
                 }
               }
-              pushCeleb(d, { type: 'item', title: '👻 Ghost Day set', subtitle: `${day} is frozen: no penalties, streaks paused.` });
+              pushCeleb(d, { type: 'item', title: 'Ghost Day set', icon: 'ghost', subtitle: `${day} is frozen: no penalties, streaks paused.` });
               break;
             }
             case 'habit_pardon': {
@@ -1316,7 +1316,7 @@ export const useGame = create<GameState>()(
                   d.stats.bestStreak = Math.max(d.stats.bestStreak, h.best);
                 }
               }
-              pushCeleb(d, { type: 'item', title: '📜 Habit pardoned', subtitle: `+${f.damage} HP restored, streak reconnected.` });
+              pushCeleb(d, { type: 'item', title: 'Habit pardoned', icon: 'pardon', subtitle: `+${f.damage} HP restored, streak reconnected.` });
               break;
             }
             case 'feather': {
@@ -1324,7 +1324,7 @@ export const useGame = create<GameState>()(
               if (!e || e.unlocked) return;
               if (!consumeD(d, id)) return;
               e.unlocked = true;
-              pushCeleb(d, { type: 'item', title: '🪶 Entry unlocked', subtitle: `The ${e.date} entry can be edited once.` });
+              pushCeleb(d, { type: 'item', title: 'Entry unlocked', icon: 'feather', subtitle: `The ${e.date} entry can be edited once.` });
               break;
             }
             case 'identity_scroll': {
@@ -1335,11 +1335,11 @@ export const useGame = create<GameState>()(
               d.character.classes = list;
               d.character.classId = list[0];
               const cls = CLASSES.find(c => c.id === list[0]);
-              pushCeleb(d, { type: 'item', title: '🎴 Identity rewritten', subtitle: `You are now ${d.character.name} the ${cls?.name}.` });
+              pushCeleb(d, { type: 'item', title: 'Identity rewritten', icon: 'identity', subtitle: `You are now ${d.character.name} the ${cls?.name}.` });
               break;
             }
             case 'streak_shield': {
-              pushCeleb(d, { type: 'info', title: '🛡️ Shields are automatic', subtitle: 'A shield activates by itself the moment a streak would break.' });
+              pushCeleb(d, { type: 'info', title: 'Shields are automatic', icon: 'shield', subtitle: 'A shield activates by itself the moment a streak would break.' });
               return;
             }
             default:
@@ -1367,7 +1367,7 @@ export const useGame = create<GameState>()(
             d.theme = 'midnight';
             pushCeleb(d, {
               type: 'info',
-              title: '🌌 Switched to Midnight',
+              title: 'Switched to Midnight', icon: 'themeMidnight',
               subtitle: `${active.name} is locked with owner mode off. Reapply it anytime.`,
             });
           }
@@ -1428,11 +1428,11 @@ export const useGame = create<GameState>()(
           switch (loot.bonus.kind) {
             case 'boost':
               d.effects.xpBoostCharges += loot.bonus.charges;
-              bonusLabel = ` · ⚡ +${loot.bonus.charges} boost charges`;
+              bonusLabel = ` · +${loot.bonus.charges} boost charges`;
               break;
             case 'shield':
               d.inventory.streak_shield = (d.inventory.streak_shield ?? 0) + 1;
-              bonusLabel = ' · 🛡️ Streak Shield';
+              bonusLabel = ' · Streak Shield';
               break;
             case 'cosmetic':
               if (!d.ownedCosmetics.includes(loot.bonus.cosmetic.id)) d.ownedCosmetics.push(loot.bonus.cosmetic.id);
@@ -1442,13 +1442,13 @@ export const useGame = create<GameState>()(
 
           pushCeleb(d, {
             type: 'reward',
-            title: `🎁 ${loot.crit ? 'CRITICAL CHEST! ' : ''}+${goldTotal} 🪙`,
+            title: `${loot.crit ? 'CRITICAL CHEST! ' : ''}+${goldTotal} Gold`, icon: 'chest',
             subtitle: `Daily Three fulfilled${bonusLabel}`,
           });
           if (loot.bonus.kind === 'cosmetic') {
             pushCeleb(d, {
               type: 'item',
-              title: `✨ ${COSMETIC_RARITY_META[loot.bonus.cosmetic.rarity].label} drop: ${loot.bonus.cosmetic.name}`,
+              title: `${COSMETIC_RARITY_META[loot.bonus.cosmetic.rarity].label} drop: ${loot.bonus.cosmetic.name}`, icon: 'sparkles',
               subtitle: 'New cosmetic! Equip it in your Profile wardrobe.',
             });
           }
