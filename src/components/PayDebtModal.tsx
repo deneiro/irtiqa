@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { debtRemaining } from '../game/engine';
+import { fmtMoney } from '../game/money';
 import type { Debt } from '../game/types';
 import { useGame } from '../store';
 import { Modal } from './ui';
@@ -12,16 +13,19 @@ export function PayDebtModal({ debt, contactName, onClose }: { debt: Debt; conta
   const [accountId, setAccountId] = useState('');
 
   const iOwe = debt.direction === 'iOwe';
+  // Every figure here is real money, so it carries the currency symbol. Reached from the
+  // Social Hub too, where nothing else on screen is money — the symbol is what says so.
+  const money = (n: number) => fmtMoney(n, s.currency);
 
   return (
     <Modal title={`Pay ${contactName}`} onClose={onClose}>
       <p>
-        {iOwe ? 'You owe' : `${contactName} owes you`} <strong>{remaining}</strong>
-        {remaining < debt.amount && <span className="muted"> (of {debt.amount} originally)</span>}
+        {iOwe ? 'You owe' : `${contactName} owes you`} <strong>{money(remaining)}</strong>
+        {remaining < debt.amount && <span className="muted"> (of {money(debt.amount)} originally)</span>}
         {debt.note && <span className="muted"> · {debt.note}</span>}
       </p>
       <label className="field">
-        <span>Payment amount</span>
+        <span>Payment amount ({s.currency})</span>
         <input
           className="input"
           type="number"
@@ -50,7 +54,7 @@ export function PayDebtModal({ debt, contactName, onClose }: { debt: Debt; conta
           disabled={amount <= 0}
           onClick={() => { s.payDebt(debt.id, amount, accountId || undefined); onClose(); }}
         >
-          {amount >= remaining ? 'Pay in full' : `Log payment of ${amount}`}
+          {amount >= remaining ? 'Pay in full' : `Log payment of ${money(amount)}`}
         </button>
       </div>
     </Modal>

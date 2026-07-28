@@ -310,51 +310,159 @@ describe('market', () => {
   });
 });
 
-describe('wishlist', () => {
-  it('a gold-only wish needs no account at all', () => {
-    useGame.setState({ character: { ...g().character!, gold: 200 } });
-    g().addWishlistItem('Skin', 150, 0);
-    const id = g().wishlist[0].id;
-    g().buyWishlistItem(id, '');
-    expect(g().wishlist[0].purchasedAt).toBeDefined();
-    expect(g().character!.gold).toBe(50);
-    expect(g().txs).toHaveLength(0); // nothing posted to Finances
+
+describe('one identity — the loadout is the radical profile', () => {
+  it('derives the profile from the chosen classes, in the same order', () => {
+    g().resetGame();
+    g().createCharacter('Tester', ['magician', 'bard', 'herald']);
+    // magician=schizoid, bard=hysteroid, herald=hyperthymic (see CLASS_RADICAL)
+    expect(g().character!.profile).toEqual(['schizoid', 'hysteroid', 'hyperthymic']);
   });
 
-  it('a real-money wish requires both enough Gold and enough balance in the chosen account, and posts a transaction', () => {
-    useGame.setState({ character: { ...g().character!, gold: 200 } });
-    g().addAccount('Savings', 1200);
-    const accountId = g().accounts[0].id;
-    g().addWishlistItem('New phone', 150, 1000);
-    const id = g().wishlist[0].id;
+  it('a single-class loadout still yields a one-radical profile, not an empty one', () => {
+    g().resetGame();
+    g().createCharacter('Solo', ['warden']);
+    expect(g().character!.profile).toEqual(['epileptoid']);
+  });
+});
 
-    // insufficient gold
-    useGame.setState({ character: { ...g().character!, gold: 100 } });
-    g().buyWishlistItem(id, accountId);
-    expect(g().wishlist[0].purchasedAt).toBeUndefined();
-
-    // insufficient account balance
-    useGame.setState({ character: { ...g().character!, gold: 200 } });
-    g().addAccount('Empty', 10);
-    const emptyId = g().accounts[1].id;
-    g().buyWishlistItem(id, emptyId);
-    expect(g().wishlist[0].purchasedAt).toBeUndefined();
-
-    // enough of both
-    g().buyWishlistItem(id, accountId);
-    expect(g().wishlist[0].purchasedAt).toBeDefined();
-    expect(g().character!.gold).toBe(50);
-    expect(g().txs).toHaveLength(1);
-    expect(g().txs[0]).toMatchObject({ accountId, type: 'expense', amount: 1000, category: 'Wishlist' });
+describe('Day One starter kit', () => {
+  it('seeds the picked templates as real habits and quests, dated today', () => {
+    g().resetGame();
+    g().createCharacter('Tester', ['healer'], undefined, ['h_pushups', 'q_declutter']);
+    expect(g().habits).toHaveLength(1);
+    expect(g().habits[0].name).toBe('Ten push-ups');
+    expect(g().habits[0].createdAt).toBe(today);
+    expect(g().quests).toHaveLength(1);
+    expect(g().quests[0].title).toBe('Clear the space');
   });
 
-  it('cannot be bought twice', () => {
-    useGame.setState({ character: { ...g().character!, gold: 500 } });
-    g().addWishlistItem('Cheap thing', 50, 0);
-    const id = g().wishlist[0].id;
-    g().buyWishlistItem(id, '');
-    const goldAfterFirst = g().character!.gold;
-    g().buyWishlistItem(id, '');
-    expect(g().character!.gold).toBe(goldAfterFirst);
+  it('grants nothing for seeding them — the kit is a starting point, not a payout', () => {
+    g().resetGame();
+    g().createCharacter('Tester', ['healer'], undefined, ['h_pushups', 'h_water', 'q_declutter']);
+    expect(g().character!.xp).toBe(0);
+    expect(g().character!.gold).toBe(0);
+  });
+
+  it('ignores unknown template ids rather than creating empty records', () => {
+    g().resetGame();
+    g().createCharacter('Tester', ['healer'], undefined, ['nope_not_a_template']);
+    expect(g().habits).toHaveLength(0);
+    expect(g().quests).toHaveLength(0);
+  });
+
+  it('does not open the previous-day recap for a character that did not exist yesterday', () => {
+    g().resetGame();
+    g().createCharacter('Tester', ['healer']);
+    expect(g().lastRecapDay).toBe(today);
+  });
+});
+
+describe('the data-entry XP faucet is closed', () => {
+  const contact = { name: 'Alim', archetypes: [], primaryGroup: 'friend' as const, channels: {}, notes: '' };
+
+  it('creating a contact pays nothing, so add-delete-repeat mints nothing', () => {
+    const before = g().character!.xp;
+    for (let i = 0; i < 5; i++) {
+      g().addContact(contact);
+      g().deleteContact(g().contacts[0].id);
+    }
+    expect(g().contacts).toHaveLength(0);
+    // The one-time "Not Alone" achievement may fire on the first add; nothing may accrue after it.
+    const afterFirstCycle = g().character!.xp;
+    for (let i = 0; i < 5; i++) {
+      g().addContact(contact);
+      g().deleteContact(g().contacts[0].id);
+    }
+    expect(g().character!.xp).toBe(afterFirstCycle);
+    expect(afterFirstCycle - before).toBeLessThanOrEqual(20); // at most the single bronze achievement
+  });
+
+  it('logging a debt pays nothing — paying it down is what pays', () => {
+    g().addContact(contact);
+    const contactId = g().contacts[0].id;
+    const before = g().character!.xp;
+    g().addDebt({ contactId, direction: 'iOwe', amount: 1000, note: '' });
+    expect(g().character!.xp).toBe(before);
+
+    g().payDebt(g().debts[0].id, 1000);
+    expect(g().character!.xp).toBeGreaterThan(before); // settling is the payable moment
+  });
+});
+
+describe('events pay when they happen, not when they are scheduled', () => {
+  it('scheduling grants nothing; completing grants once', () => {
+    const before = g().character!.xp;
+    g().addEvent({ title: 'Coffee with Alim', date: today });
+    expect(g().character!.xp).toBe(before);
+
+    const id = g().events[0].id;
+    g().completeEvent(id);
+    const afterComplete = g().character!.xp;
+    expect(afterComplete).toBeGreaterThan(before);
+    expect(g().events[0].doneAt).toBeDefined();
+
+    // Completing twice must not pay twice
+    g().completeEvent(id);
+    expect(g().character!.xp).toBe(afterComplete);
+  });
+});
+
+describe('logManualSession — work done away from the timer', () => {
+  const makeQuest = () => g().addQuest({ title: 'Ship it', targetDuration: '1m', attrs: ['career'] });
+
+  it('records minutes against the quest without paying out early', () => {
+    const id = makeQuest();
+    const before = g().character!.xp;
+    // Deliberately under an hour: crossing an hour would unlock the "Clocked In"
+    // achievement, whose XP is a separate, legitimate award and would mask the
+    // thing under test — that logging work does not itself pay.
+    g().logManualSession(id, 45, 'Wrote the parser', today);
+    expect(g().quests[0].sessions).toHaveLength(1);
+    expect(g().quests[0].sessions[0].minutes).toBe(45);
+    expect(g().stats.sessionMinutes).toBe(45);
+    expect(g().character!.xp).toBe(before); // the payout lands on completion only
+  });
+
+  it('still counts toward the Deep Work achievement ladder, like a timed session', () => {
+    const id = makeQuest();
+    g().logManualSession(id, 60, 'An hour of real work', today);
+    expect(g().unlocked['sessionHours_1']).toBeDefined();
+  });
+
+  it('caps a single sitting at four hours, same as the live timer', () => {
+    const id = makeQuest();
+    g().logManualSession(id, 10_000, 'Forgot to stop', today);
+    expect(g().quests[0].sessions[0].minutes).toBe(240);
+  });
+
+  it('refuses a future date, clamping it to today', () => {
+    const id = makeQuest();
+    g().logManualSession(id, 30, 'Time traveller', addDaysStr(today, 5));
+    expect(g().quests[0].sessions[0].date).toBe(today);
+  });
+
+  it('rounds sub-minute work up to one minute rather than storing zero', () => {
+    const id = makeQuest();
+    g().logManualSession(id, 0, 'Blink', today);
+    expect(g().quests[0].sessions[0].minutes).toBe(1);
+  });
+
+  it('will not log against a completed quest', () => {
+    const id = makeQuest();
+    g().logManualSession(id, 60, 'Real work', today);
+    g().completeQuest(id);
+    g().logManualSession(id, 60, 'After the fact', today);
+    expect(g().quests[0].sessions).toHaveLength(1);
+  });
+});
+
+describe('currency', () => {
+  it('defaults to tenge and only accepts codes the app actually knows', () => {
+    expect(g().currency).toBe('KZT');
+    g().setCurrency('USD');
+    expect(g().currency).toBe('USD');
+    g().setCurrency('DOGE');
+    expect(g().currency).toBe('USD'); // unchanged
   });
 });

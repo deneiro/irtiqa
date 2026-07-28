@@ -1,1 +1,70 @@
 /* finances — owned by one feature. Imported from main.tsx after styles.css. */
+
+/* The currency sits in the page head next to the actions. It is a setting, not an
+   action, so it reads quieter than the buttons beside it. */
+.fin-currency {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.fin-currency select { font-weight: 700; }
+
+/* The head mixes one setting with two actions. .btn-pair aligns to the top by default,
+   which leaves the shorter select box hanging off the buttons' caps. */
+.fin-head-actions { align-items: center; }
+
+/* A compact seven-figure balance is nine glyphs wide ("-999,9k ₸"). At a fixed 32px it
+   runs past its half-width block on a phone, so the headline scales with the viewport —
+   still the loudest thing on the card, never wider than the card. */
+.networth { font-size: clamp(21px, 6.5vw, 32px); }
+
+/* Budgets moved behind Advanced, so the net-worth card now owns the full row instead of
+   sharing .fin-top with them. At that width a single column of accounts leaves a long
+   empty gutter, so the chips wrap into a row and share the space. */
+.acct-row { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+.acct-chip { flex: 1 1 220px; text-align: left; }
+.acct-chip .acct-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A balance must never wrap mid-number — "1 234" split across two lines reads as two amounts. */
+.acct-chip strong { margin-left: auto; white-space: nowrap; }
+
+/* With no accounts yet the row holds a single empty state, which owns the whole width. */
+.acct-row .empty { flex: 1 1 100%; }
+
+/* Direction colour, repeated from the arrow's shape: in your favour vs leaving. */
+.fin-in { color: var(--success); }
+.fin-out { color: var(--danger); }
+
+/* An empty state offers the next step, and the button needs air under the sentence. */
+.fin-empty-action { margin-top: 10px; }
+.fin-hint { margin-top: 8px; font-size: 12px; }
+
+/* ---- Advanced disclosure ----
+   Budgets and transfers are real, just rarely the reason you opened the page. Closed by
+   default so Finances opens on the four things you actually came for. */
+.fin-advanced { margin-top: 4px; }
+.fin-advanced-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--panel2);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  list-style: none;
+}
+.fin-advanced-summary::-webkit-details-marker { display: none; }
+.fin-advanced-summary:hover { color: var(--accent); border-color: var(--accent); }
+/* The app-wide focus ring is scoped to a/button/input/select/textarea/[tabindex], none of
+   which match <summary> — without this the only keyboard-reachable control on the page
+   that isn't a button falls back to the UA's ring and looks foreign. */
+.fin-advanced-summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fin-advanced-summary .muted { font-weight: 500; font-size: 12.5px; }
+.fin-caret { transition: transform 0.15s ease; }
+.fin-advanced[open] .fin-caret { transform: rotate(90deg); }
+.fin-advanced[open] .fin-advanced-summary { margin-bottom: 12px; }
+.fin-advanced-body { display: flex; flex-direction: column; gap: 12px; }

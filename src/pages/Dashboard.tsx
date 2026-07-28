@@ -12,6 +12,7 @@ import { ATTRIBUTES, CLASSES, COSMETICS, DASHBOARD_WIDGETS, DEFAULT_DASHBOARD_OR
 import { contractStatus } from '../game/contract';
 import {
   addDaysStr,
+  bardGold,
   charLevelProgress,
   COMEBACK_HP,
   fmtDay,
@@ -19,11 +20,14 @@ import {
   fmtMinutes,
   GRACE_HOUR,
   habitDueOn,
+  heraldHabitMult,
+  journalXp,
   missDamage,
   momentumMult,
   parseDay,
   questMinutes,
   rankFor,
+  toDayStr,
   todayStr,
   weekKey,
 } from '../game/engine';
@@ -40,6 +44,17 @@ const CAL_TYPE_ICON: Record<CalendarItemType, IconName> = {
   questTarget: 'target',
   subscription: 'subscription',
 };
+
+/**
+ * Widgets that have nothing to say until the player has put something in.
+ *
+ * The Chronicle needs a week of history, the boss needs tagged actions to strike
+ * with, the Calendar needs entries, Quick tasks needs a reason to exist. On a
+ * brand-new save all four render as "you have nothing", which is four cards of
+ * noise stacked over the three actions that would actually fix it. They return
+ * the moment the save stops being empty.
+ */
+const COLD_START_HIDDEN: DashboardWidgetId[] = ['chronicle', 'weeklyBoss', 'calendar', 'quickTasks'];
 
 /**
  * Filters out widgets that no longer exist and slots newly-added ones into the
@@ -80,6 +95,11 @@ export function Dashboard() {
   const [customizing, setCustomizing] = useState(false);
   const [reflect, setReflect] = useState<{ failureId: string; habitName: string } | null>(null);
 
+  // createdAt is a full ISO timestamp; the local day is what the greeting and the
+  // recap guard both care about.
+  const bornDay = toDayStr(new Date(character.createdAt));
+  const firstDay = bornDay === today;
+
   const dueHabits = s.habits.filter(h => habitDueOn(h, today));
   const doneCount = dueHabits.filter(h => !!s.habitLog[h.id]?.[today]).length;
   const yesterday = addDaysStr(today, -1);
@@ -91,6 +111,10 @@ export function Dashboard() {
   const journalDone = s.journal.some(e => e.date === today);
   const ghostToday = s.effects.ghostDays.includes(today);
 
+  // Nothing tracked at all. Not the same as "nothing due today" — this is a save
+  // with no habits, no quests and no entries, i.e. almost always day one.
+  const coldStart = s.habits.length === 0 && s.quests.length === 0 && s.journal.length === 0;
+
   const calendarPreview = useMemo(
     () => buildCalendarItems(
       { events: s.events, contacts: s.contacts, quickTasks: s.quickTasks, journal: s.journal, quests: s.quests, subs: s.subs },
@@ -101,15 +125,31 @@ export function Dashboard() {
   );
 
   const effectiveOrder = reconcileOrder(s.dashboardOrder);
-  const visibleOrder = effectiveOrder.filter(id => !s.dashboardHidden.includes(id));
+  const shownOrder = effectiveOrder.filter(id => !s.dashboardHidden.includes(id));
+  // Cold-start hiding is a render-time filter only — the player's stored layout is
+  // never rewritten, so their choices come back untouched with their first habit.
+  const visibleOrder = coldStart ? shownOrder.filter(id => !COLD_START_HIDDEN.includes(id)) : shownOrder;
 
   const contract = contractStatus(s, today);
   const chestOpenedToday = s.chestLastOpened === today;
   const chestLoot = s.lastChestLoot?.day === today ? s.lastChestLoot : null;
-  const contractDone = [contract.habitsOk, contract.journalOk, contract.extraOk].filter(Boolean).length;
+
+  /**
+   * With nothing scheduled, contract.habitsOk is a free pass, not an achievement —
+   * the chest is really gated by two legs that day, not three. Counting the free
+   * leg printed "1/3" over a fresh save that had done nothing at all, and a green
+   * tick beside "none due today". The counter now tracks only legs in play; the
+   * chest itself still keys off contract.complete, untouched.
+   */
+  const habitsLegLive = contract.habitsDue > 0;
+  const habitsLegOk = habitsLegLive && contract.habitsOk;
+  const legsTotal = habitsLegLive ? 3 : 2;
+  const legsDone = [habitsLegOk, contract.journalOk, contract.extraOk].filter(Boolean).length;
+
   const titleCosmetic = COSMETICS.find(c => c.id === s.equippedCosmetics.title);
   const bannerId = s.equippedCosmetics.banner;
-  const showRecap = s.lastRecapDay < today && !!s.dayLog[yesterday];
+  // A character created today has no yesterday to recap, whatever lastRecapDay says.
+  const showRecap = s.lastRecapDay < today && !!s.dayLog[yesterday] && bornDay <= yesterday;
 
   // Last week's Chronicle. "Fresh" for the first three days of a new week — long
   // enough that a Monday-through-Wednesday open still finds it waiting.
@@ -127,6 +167,10 @@ export function Dashboard() {
   const bossDef = boss ? BOSSES[boss.attr] : null;
   // Days until Monday's rollover — the boss's remaining lifespan
   const bossDaysLeft = Math.max(1, Math.round((parseDay(addDaysStr(weekKey(today), 7)).getTime() - parseDay(today).getTime()) / 86400000));
+
+  // Real per-character numbers, so the first-steps card promises what the engine pays.
+  const habitXp = Math.round(12 * heraldHabitMult(character.classes));
+  const habitGold = 5 + bardGold(character.classes);
 
   const widgetContent: Record<DashboardWidgetId, React.ReactNode> = {
     chronicle: (
@@ -154,43 +198,57 @@ export function Dashboard() {
     ),
 
     dailyContract: (
-      // Exactly one card per screen gets to shout. For the two days after a new
-      // Chronicle lands that card is the Chronicle; the rest of the week it's this.
-      <section className={`card contract-card ${chronicleFresh ? '' : 'card-hero'}`}>
+      // Exactly one card per screen gets to shout. On an empty save that card is the
+      // first-steps hero above the grid; for two days after a new Chronicle lands it's
+      // the Chronicle; the rest of the week it's this.
+      <section className={`card contract-card ${chronicleFresh || coldStart ? '' : 'card-hero'}`}>
         <div className="card-head">
           <h2>Daily Three</h2>
-          <span className="muted">{contractDone}/3</span>
+          <span className="muted">{legsDone}/{legsTotal}</span>
         </div>
         <ul className="contract-list">
-          <li className={contract.habitsOk ? 'contract-ok' : ''}>
-            <span className="contract-check">{contract.habitsOk ? '✓' : '○'}</span>
-            All due habits done{contract.habitsDue > 0 ? ` (${contract.habitsDone}/${contract.habitsDue})` : ' — none due today'}
+          {/* Three rows over a "/2" counter needs the third row to look like what it is.
+              A leg that isn't in play today gets a dashed ring, not the same empty ring
+              as a leg you simply haven't done — one is waiting on you, the other isn't. */}
+          <li className={habitsLegOk ? 'contract-ok' : habitsLegLive ? '' : 'contract-idle'}>
+            <ContractCheck ok={habitsLegOk} />
+            {habitsLegLive ? (
+              <>All due habits done ({contract.habitsDone}/{contract.habitsDue})</>
+            ) : s.habits.length === 0 ? (
+              <>No habits yet — <Link to="/habits">add your first one</Link> and this becomes the daily anchor.</>
+            ) : (
+              <>Nothing scheduled today — the chest rests on the other two.</>
+            )}
           </li>
           <li className={contract.journalOk ? 'contract-ok' : ''}>
-            <span className="contract-check">{contract.journalOk ? '✓' : '○'}</span>
+            <ContractCheck ok={contract.journalOk} />
             Journal written
           </li>
           <li className={contract.extraOk ? 'contract-ok' : ''}>
-            <span className="contract-check">{contract.extraOk ? '✓' : '○'}</span>
+            <ContractCheck ok={contract.extraOk} />
             One extra push — a quick task or a quest session
           </li>
         </ul>
         {chestOpenedToday ? (
           chestLoot ? (
             <div className="chest-opened">
-              🎁 {chestLoot.crit && <strong className="chest-crit">CRITICAL! </strong>}
-              +{chestLoot.gold + (chestLoot.bonus.kind === 'gold' ? chestLoot.bonus.amount : 0)} 🪙
-              {chestLoot.bonus.kind === 'boost' && <> · ⚡ +{chestLoot.bonus.charges} boost charges</>}
-              {chestLoot.bonus.kind === 'shield' && <> · 🛡️ Streak Shield</>}
-              {chestLoot.bonus.kind === 'cosmetic' && <> · ✨ <Link to="/profile">{chestLoot.bonus.cosmetic.name}</Link></>}
+              <Icon name="chest" size={15} className="dash-inline-icon" />{' '}
+              {chestLoot.crit && <strong className="chest-crit">CRITICAL! </strong>}
+              +{chestLoot.gold + (chestLoot.bonus.kind === 'gold' ? chestLoot.bonus.amount : 0)}{' '}
+              <Icon name="gold" size={14} className="dash-inline-icon" />
+              {chestLoot.bonus.kind === 'boost' && <> · <Icon name="boost" size={14} className="dash-inline-icon" /> +{chestLoot.bonus.charges} boost charges</>}
+              {chestLoot.bonus.kind === 'shield' && <> · <Icon name="shield" size={14} className="dash-inline-icon" /> Streak Shield</>}
+              {chestLoot.bonus.kind === 'cosmetic' && <> · <Icon name="sparkles" size={14} className="dash-inline-icon" /> <Link to="/profile">{chestLoot.bonus.cosmetic.name}</Link></>}
               <span className="muted"> — next chest tomorrow</span>
             </div>
           ) : (
-            <div className="chest-opened muted">🎁 Today's chest is opened. Come back tomorrow.</div>
+            <div className="chest-opened muted">
+              <Icon name="chest" size={15} className="dash-inline-icon" /> Today's chest is opened. Come back tomorrow.
+            </div>
           )
         ) : contract.complete ? (
           <button
-            className="btn btn-gold btn-lg chest-btn"
+            className="btn btn-gold btn-lg chest-btn btn-icon-label"
             onClick={e => {
               s.openChest();
               const loot = useGame.getState().lastChestLoot;
@@ -200,10 +258,12 @@ export function Dashboard() {
               }
             }}
           >
-            🎁 Open today's chest
+            <Icon name="chest" size={18} /> Open today's chest
           </button>
         ) : (
-          <div className="chest-locked">🔒 Fulfill all three to unlock today's chest — gold, boosts, shields, or a rare cosmetic.</div>
+          <div className="chest-locked">
+            <Icon name="lock" size={14} className="dash-inline-icon" /> Fulfill {legsTotal === 3 ? 'all three' : 'both'} to unlock today's chest — gold, boosts, shields, or a rare cosmetic.
+          </div>
         )}
       </section>
     ),
@@ -219,7 +279,7 @@ export function Dashboard() {
         ) : (
           <>
             <div className="boss-head">
-              <span className="boss-emoji">{bossDef.emoji}</span>
+              <span className="boss-icon"><Icon name={bossDef.icon} size={34} /></span>
               <div>
                 <div className="boss-name">{bossDef.name}</div>
                 <div className="muted boss-taunt">"{bossDef.taunt}"</div>
@@ -227,14 +287,15 @@ export function Dashboard() {
             </div>
             {boss.defeatedAt ? (
               <div className="boss-defeated">
-                ⚔️ Slain! +{BOSS_REWARD.xp} XP · +{BOSS_REWARD.gold} 🪙 claimed. It re-forms Monday, wherever you're weakest.
+                <Icon name="trophy" size={15} className="dash-inline-icon" /> Slain! +{BOSS_REWARD.xp} XP · +{BOSS_REWARD.gold}{' '}
+                <Icon name="gold" size={14} className="dash-inline-icon" /> claimed. It re-forms Monday, wherever you're weakest.
               </div>
             ) : (
               <>
                 <p className="muted">
                   It feeds on <AttrLink attr={boss.attr} />, your thinnest attribute.
                   Land {boss.required} {ATTRIBUTES[boss.attr].label}-tagged actions this week — habits, tasks, quests, anything real.
-                  Claim it for <strong>+{BOSS_REWARD.xp} XP · +{BOSS_REWARD.gold} 🪙</strong>. Leave it and it just moves on.
+                  Claim it for <strong>+{BOSS_REWARD.xp} XP · +{BOSS_REWARD.gold} <Icon name="gold" size={14} className="dash-inline-icon" /></strong>. Leave it and it just moves on.
                 </p>
                 <Bar value={boss.progress} max={boss.required} className="bar-xp" label={`${boss.progress}/${boss.required} strikes`} />
                 <p className="muted center">{boss.progress}/{boss.required} strikes landed</p>
@@ -260,28 +321,30 @@ export function Dashboard() {
                 <li key={h.id} className="list-row">
                   <span className={`habit-kind ${h.kind}`} />
                   <span className="list-title">{h.name}</span>
-                  <span className="streak" title={`Best: ${h.best}`}>🔥 {h.streak}</span>
+                  <span className="streak" title={`Best: ${h.best}`}>
+                    <Icon name="flame" size={13} className="dash-inline-icon" /> {h.streak}
+                  </span>
                   {status ? (
-                    <span className={`status status-${status}`}>{statusLabel(status)}</span>
+                    <StatusPill status={status} />
                   ) : ghostToday ? (
-                    <span className="status">👻 frozen</span>
+                    <span className="status status-pill"><Icon name="ghost" size={13} /> frozen</span>
                   ) : h.kind === 'good' ? (
                     <button
-                      className="btn btn-primary btn-sm"
+                      className="btn btn-primary btn-sm btn-icon-label"
                       onClick={e => { s.checkinHabit(h.id); spawnVFXAt(e, 'xp', 12); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 5); }}
                     >
-                      ✓ Done
+                      <Icon name="check" size={14} /> Done
                     </button>
                   ) : (
                     <span className="btn-pair">
                       <button
-                        className="btn btn-primary btn-sm"
+                        className="btn btn-primary btn-sm btn-icon-label"
                         onClick={e => { s.checkinHabit(h.id); spawnVFXAt(e, 'xp', 8); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 3); }}
                       >
-                        ✓ Resisted
+                        <Icon name="check" size={14} /> Resisted
                       </button>
                       <button
-                        className="btn btn-danger btn-sm"
+                        className="btn btn-danger btn-sm btn-icon-label"
                         onClick={e => {
                           spawnVFXAt(e, 'damage', missDamage('bad', h.streak));
                           s.relapseHabit(h.id);
@@ -290,7 +353,7 @@ export function Dashboard() {
                           if (f) setReflect({ failureId: f.id, habitName: h.name });
                         }}
                       >
-                        ✗ Relapsed
+                        <Icon name="close" size={14} /> Relapsed
                       </button>
                     </span>
                   )}
@@ -311,14 +374,14 @@ export function Dashboard() {
                   <span className={`habit-kind ${h.kind}`} />
                   <span className="list-title">{h.name}</span>
                   <button
-                    className="btn btn-primary btn-sm"
+                    className="btn btn-primary btn-sm btn-icon-label"
                     onClick={e => {
                       s.checkinHabit(h.id, yesterday);
                       spawnVFXAt(e, 'xp', h.kind === 'good' ? 12 : 8);
                       spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', h.kind === 'good' ? 5 : 3);
                     }}
                   >
-                    {h.kind === 'good' ? '✓ Did it yesterday' : '✓ Resisted yesterday'}
+                    <Icon name="check" size={14} /> {h.kind === 'good' ? 'Did it yesterday' : 'Resisted yesterday'}
                   </button>
                 </li>
               ))}
@@ -367,7 +430,7 @@ export function Dashboard() {
                   title="Complete (+8 XP, +2 Gold)"
                   aria-label={`Complete "${t.title}" (+8 XP, +2 Gold)`}
                 >
-                  ○
+                  <Icon name="check" size={14} />
                 </button>
                 <span className="list-title">{t.title}</span>
                 {t.dueDate && <span className="muted">{fmtDay(t.dueDate)}</span>}
@@ -377,7 +440,7 @@ export function Dashboard() {
                   onClick={() => s.deleteQuickTask(t.id)}
                   aria-label={`Delete "${t.title}"`}
                 >
-                  ✕
+                  <Icon name="trash" size={14} />
                 </button>
               </li>
             ))}
@@ -398,7 +461,11 @@ export function Dashboard() {
           <ul className="list">
             {(priorityQuests.length > 0 ? priorityQuests : activeQuests.slice(0, 3)).map(q => (
               <li key={q.id} className="list-row">
-                {q.priority && <span title="Priority quest">⭐</span>}
+                {q.priority && (
+                  <span className="quest-priority" title="Priority quest" aria-label="Priority quest">
+                    <Icon name="starFilled" size={14} />
+                  </span>
+                )}
                 <Link to={`/quests/${q.id}`} className="list-title">{q.title}</Link>
                 <span className="muted">{fmtMinutes(questMinutes(q))} logged</span>
                 {s.activeSession?.questId === q.id && <span className="status status-live">● recording</span>}
@@ -418,12 +485,14 @@ export function Dashboard() {
         {journalDone ? (
           <div className="journal-done">
             <span className="big-emoji">{MOODS[(s.journal.find(e => e.date === today)?.mood ?? 3) - 1]}</span>
-            <p>Today's reflection is written. +40 XP banked toward Spirituality &amp; Development.</p>
+            <p>Today's reflection is written. +{journalXp(character.classes)} XP banked toward Spirituality &amp; Development.</p>
           </div>
         ) : (
           <div className="journal-cta">
             <p className="muted">You haven't reflected today. Mood, stress, three questions — a solid chunk of XP.</p>
-            <Link to="/journal" className="btn btn-primary">✍️ Write today's entry</Link>
+            <Link to="/journal" className="btn btn-primary btn-icon-label">
+              <Icon name="write" size={15} /> Write today's entry
+            </Link>
           </div>
         )}
       </section>
@@ -457,18 +526,20 @@ export function Dashboard() {
       <div className={`page-head ${bannerId ? `dash-banner banner-${bannerId}` : ''}`}>
         <div>
           <h1>
-            Welcome back, {character.name}
+            {/* "Welcome back" to someone who arrived ninety seconds ago is the first
+                thing a new player notices being wrong. Day one gets its own line. */}
+            {firstDay ? 'Welcome' : 'Welcome back'}, {character.name}
             {titleCosmetic && <span className="char-title"> {titleCosmetic.name}</span>}
           </h1>
           <p className="muted">
-            {rank.emoji} {rank.name} · {cls && <Icon name={cls.id} size={13} />} {cls?.name} · {parseDay(today).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+            <Icon name={rank.icon} size={13} className="dash-inline-icon" /> {rank.name} · {cls && <Icon name={cls.id} size={13} className="dash-inline-icon" />} {cls?.name} · {parseDay(today).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
         </div>
         <div className="quick-actions">
-          <Link className="btn btn-ghost" to="/habits">+ Habit</Link>
-          <Link className="btn btn-ghost" to="/quests">+ Quest</Link>
-          <Link className="btn btn-ghost" to="/journal">✍️ Journal</Link>
-          <button className="btn btn-ghost btn-customize" onClick={() => setCustomizing(true)} title="Choose which cards show and reorder them">
+          <Link className="btn btn-ghost btn-icon-label" to="/habits"><Icon name="plus" size={14} /> Habit</Link>
+          <Link className="btn btn-ghost btn-icon-label" to="/quests"><Icon name="plus" size={14} /> Quest</Link>
+          <Link className="btn btn-ghost btn-icon-label" to="/journal"><Icon name="write" size={14} /> Journal</Link>
+          <button className="btn btn-ghost btn-customize btn-icon-label" onClick={() => setCustomizing(true)} title="Choose which cards show and reorder them">
             <Icon name="grip" size={14} /> Customize
           </button>
         </div>
@@ -478,31 +549,44 @@ export function Dashboard() {
           it just tells you the last stretch was rough and offers a way back. */}
       {character.hp === 0 ? (
         <div className="banner banner-info">
-          🌑 Running on empty ({character.hp}/100 HP) — it's been a hard stretch. Everything still pays full;
+          <Icon name="health" size={15} className="dash-inline-icon" /> Running on empty ({character.hp}/100 HP) — it's been a hard stretch. Everything still pays full;
           today counts as much as any other day. Potions are in the <Link to="/market">Market</Link> when you want one.
         </div>
       ) : character.hp <= 25 ? (
         <div className="banner banner-info">
-          🌘 Low reserves ({character.hp}/100 HP) — a few things slipped recently. One check-in today starts the climb back;
+          <Icon name="health" size={15} className="dash-inline-icon" /> Low reserves ({character.hp}/100 HP) — a few things slipped recently. One check-in today starts the climb back;
           potions are in the <Link to="/market">Market</Link>.
         </div>
       ) : null}
       {ghostToday && (
-        <div className="banner banner-info">👻 Ghost Day active — today is frozen. No penalties, streaks paused. Rest well.</div>
+        <div className="banner banner-info">
+          <Icon name="ghost" size={15} className="dash-inline-icon" /> Ghost Day active — today is frozen. No penalties, streaks paused. Rest well.
+        </div>
       )}
       {s.effects.comeback && (
         <div className="banner banner-info">
-          🌅 Comeback quest: check in {s.effects.comeback.remaining} more habit{s.effects.comeback.remaining > 1 ? 's' : ''} by{' '}
+          <Icon name="brightness" size={15} className="dash-inline-icon" /> Comeback quest: check in {s.effects.comeback.remaining} more habit{s.effects.comeback.remaining > 1 ? 's' : ''} by{' '}
           {fmtDay(s.effects.comeback.expiresDay)} to restore {COMEBACK_HP} HP.
         </div>
       )}
       {s.effects.xpBoostCharges > 0 && (
-        <div className="banner banner-info">⚡ Attribute Boost: +50% XP for your next {s.effects.xpBoostCharges} action{s.effects.xpBoostCharges > 1 ? 's' : ''}.</div>
+        <div className="banner banner-info">
+          <Icon name="boost" size={15} className="dash-inline-icon" /> Attribute Boost: +50% XP for your next {s.effects.xpBoostCharges} action{s.effects.xpBoostCharges > 1 ? 's' : ''}.
+        </div>
       )}
 
-      {visibleOrder.length === 0 ? (
+      {coldStart && (
+        <FirstSteps habitXp={habitXp} habitGold={habitGold} journalPay={journalXp(character.classes)} />
+      )}
+
+      {/* Two different empties. Hiding every card is a choice the player made and can
+          undo, so it says so. Cold-start filtering emptying the grid can only happen when
+          the only cards still showing were the four history widgets — and the first-steps
+          hero above is already carrying that screen, so it gets no message, just no grid. */}
+      {shownOrder.length === 0 && (
         <Empty>Every card is hidden. <button className="btn btn-ghost btn-sm" onClick={() => setCustomizing(true)}>Customize</button> to bring some back.</Empty>
-      ) : (
+      )}
+      {visibleOrder.length > 0 && (
         <div className="dash-grid">
           {visibleOrder.map(id => (
             <div key={id} className="dash-widget">{widgetContent[id]}</div>
@@ -517,6 +601,67 @@ export function Dashboard() {
       {reflect && <RelapseReflect failureId={reflect.failureId} habitName={reflect.habitName} onClose={() => setReflect(null)} />}
     </div>
   );
+}
+
+/**
+ * The whole dashboard on an empty save, compressed into the three actions that end
+ * the empty save. Each one names its payout, because "add a habit" is an instruction
+ * and "add a habit, it pays 12 XP and fills a leg of the Daily Three" is a reason.
+ */
+function FirstSteps({ habitXp, habitGold, journalPay }: { habitXp: number; habitGold: number; journalPay: number }) {
+  return (
+    <section className="card card-hero first-steps">
+      <div className="card-head">
+        <h2><span className="heading-icon"><Icon name="flag" size={16} /> Start here</span></h2>
+        <span className="muted">3 steps</span>
+      </div>
+      <p className="muted first-steps-lede">
+        Nothing is tracked yet, so most cards below are still waiting. Any one of these fills them.
+      </p>
+      <ol className="first-steps-list">
+        <li className="first-steps-row">
+          <span className="first-steps-num">1</span>
+          <span className="first-steps-body">
+            <Link to="/habits" className="first-steps-link">
+              <Icon name="habits" size={15} /> Add your first habit
+            </Link>
+            <span className="muted">
+              Something small you'll repeat. Every check-in pays {habitXp} XP and {habitGold}{' '}
+              <Icon name="gold" size={13} className="dash-inline-icon" />, and it becomes the first leg of the Daily Three.
+            </span>
+          </span>
+        </li>
+        <li className="first-steps-row">
+          <span className="first-steps-num">2</span>
+          <span className="first-steps-body">
+            <Link to="/quests" className="first-steps-link">
+              <Icon name="quests" size={15} /> Forge a quest
+            </Link>
+            <span className="muted">
+              A project worth hours. Log sessions as you go — finishing pays 80 XP plus 40 an hour, and one
+              session covers the third leg.
+            </span>
+          </span>
+        </li>
+        <li className="first-steps-row">
+          <span className="first-steps-num">3</span>
+          <span className="first-steps-body">
+            <Link to="/journal" className="first-steps-link">
+              <Icon name="write" size={15} /> Write today's entry
+            </Link>
+            <span className="muted">
+              Mood, stress, three questions — five minutes. {journalPay} XP and the second leg of the Daily Three.
+            </span>
+          </span>
+        </li>
+      </ol>
+    </section>
+  );
+}
+
+/** Met legs get the tick; unmet legs stay an empty ring rather than a red mark. */
+function ContractCheck({ ok }: { ok: boolean }) {
+  return <span className="contract-check">{ok && <Icon name="check" size={13} />}</span>;
 }
 
 /** End-of-day closure: the first visit on a new day replays what yesterday earned. */
@@ -543,13 +688,17 @@ function RecapModal({ day }: { day: string }) {
         )}
       </div>
       {perfect ? (
-        <p className="recap-perfect">🔥 Perfect day! Momentum is at {s.momentum.streak} — everything you do now earns +{momentumPct}% XP.</p>
+        <p className="recap-perfect">
+          <Icon name="flame" size={15} className="dash-inline-icon" /> Perfect day! Momentum is at {s.momentum.streak} — everything you do now earns +{momentumPct}% XP.
+        </p>
       ) : due.length > 0 && done < due.length ? (
         <p className="muted">Some habits slipped yesterday. Today is a clean page.</p>
       ) : null}
       {!journalWritten && <p className="muted">No journal entry yesterday — the archive keeps what you give it.</p>}
       <div className="modal-actions">
-        <button className="btn btn-primary" onClick={s.dismissRecap}>Onward ⚔️</button>
+        <button className="btn btn-primary btn-icon-label" onClick={s.dismissRecap}>
+          Onward <Icon name="chevronRight" size={15} />
+        </button>
       </div>
     </Modal>
   );
@@ -587,16 +736,26 @@ function CustomizeDashboardModal({ order, onClose }: { order: DashboardWidgetId[
   );
 }
 
-function statusLabel(status: string) {
+/** A logged habit day, as glyph plus word — the glyph carries the state, the word names it. */
+function statusLabel(status: string): { icon: IconName; label: string } {
   switch (status) {
-    case 'done': return '✓ done';
-    case 'failed': return '— missed';
-    case 'pardoned': return '📜 pardoned';
-    case 'shielded': return '🛡️ shielded';
-    case 'ghost': return '👻 frozen';
-    case 'indulged': return '🕯️ indulged';
-    default: return status;
+    case 'done': return { icon: 'check', label: 'done' };
+    case 'failed': return { icon: 'minus', label: 'missed' };
+    case 'pardoned': return { icon: 'pardon', label: 'pardoned' };
+    case 'shielded': return { icon: 'shield', label: 'shielded' };
+    case 'ghost': return { icon: 'ghost', label: 'frozen' };
+    case 'indulged': return { icon: 'indulgence', label: 'indulged' };
+    default: return { icon: 'info', label: status };
   }
+}
+
+function StatusPill({ status }: { status: string }) {
+  const { icon, label } = statusLabel(status);
+  return (
+    <span className={`status status-pill status-${status}`}>
+      <Icon name={icon} size={13} /> {label}
+    </span>
+  );
 }
 
 function QuickTaskAdd() {

@@ -32,13 +32,25 @@ export function Heatmap() {
 
   return (
     <div className="heatmap" title="Habit completion — last 12 weeks">
-      {days.map(({ day, ratio }) => (
-        <div
-          key={day}
-          className={`hm-cell hm-${level(ratio)}`}
-          title={`${fmtDay(day)}: ${ratio === null ? 'nothing scheduled' : `${Math.round(ratio * 100)}% done`}`}
-        />
-      ))}
+      {days.map(({ day, ratio }) => {
+        // Today is still in progress. Painting it with the 0%-done red the instant a
+        // habit is created — which is what happened — reports a failure for a day that
+        // has not finished yet. It gets an outlined "open" cell until the day closes.
+        const open = day === today && ratio !== null && ratio < 1;
+        return (
+          <div
+            key={day}
+            className={`hm-cell ${open ? 'hm-today' : `hm-${level(ratio)}`}`}
+            title={
+              ratio === null
+                ? `${fmtDay(day)}: nothing scheduled`
+                : open
+                  ? `${fmtDay(day)}: today — ${Math.round(ratio * 100)}% done so far`
+                  : `${fmtDay(day)}: ${Math.round(ratio * 100)}% done`
+            }
+          />
+        );
+      })}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ATTR_KEYS } from '../game/constants';
+import { ARCHETYPE_KEYS, ATTR_KEYS } from '../game/constants';
 import {
   HABIT_TEMPLATES,
   QUEST_TEMPLATES,
@@ -112,5 +112,53 @@ describe('profile filtering', () => {
     const out = recommendedFor(HABIT_TEMPLATES, ['emotive', 'schizoid']);
     expect(new Set(out.map(t => t.id)).size).toBe(out.length);
     for (const t of out) expect(HABIT_TEMPLATES).toContain(t);
+  });
+});
+
+describe('library integrity', () => {
+  const all = [...HABIT_TEMPLATES, ...QUEST_TEMPLATES];
+
+  it('has no duplicate ids — createCharacter resolves the starter kit by id', () => {
+    const ids = all.map(t => t.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('gives every sector enough to choose from', () => {
+    // A sector with three options is a sector nobody browses. The library used to
+    // leave Friends, Family, Career and Money on three or four each.
+    for (const key of ATTR_KEYS) {
+      expect(habitTemplatesFor(key).length, `${key} habits`).toBeGreaterThanOrEqual(6);
+      expect(questTemplatesFor(key).length, `${key} quests`).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('is no longer sourced from a single pair of books', () => {
+    // Every card wearing one of two citations made the library read as a book
+    // summary with checkboxes. Most of it should now be ordinary practice.
+    const sources = new Set(all.map(t => t.source));
+    expect(sources.size).toBeGreaterThanOrEqual(4);
+    const booky = all.filter(t => t.source.includes('Atomic Habits') || t.source.includes('Extreme Time Management'));
+    expect(booky.length).toBeLessThan(all.length / 2);
+  });
+
+  it('never recommends a template against a radical it declares it fails for', () => {
+    for (const r of ARCHETYPE_KEYS) {
+      for (const t of recommendedFor(all, [r])) {
+        expect(t.avoid ?? [], `${t.id} recommended to ${r}`).not.toContain(r);
+      }
+    }
+  });
+
+  it('keeps every weekly template on at least one real weekday', () => {
+    for (const t of HABIT_TEMPLATES) {
+      if (t.freq !== 'weekly') continue;
+      expect(t.weekdays, `${t.id}`).toBeDefined();
+      expect(t.weekdays!.length, `${t.id}`).toBeGreaterThan(0);
+      for (const d of t.weekdays!) expect(d, `${t.id}`).toBeGreaterThanOrEqual(0), expect(d).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('tags every template with at least one attribute, so XP always has somewhere to go', () => {
+    for (const t of all) expect(t.attrs.length, `${t.id}`).toBeGreaterThan(0);
   });
 });

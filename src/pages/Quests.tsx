@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Icon } from '../components/Icon';
+import { TemplateBrowser, isHabitTemplate, type AnyTemplate } from '../components/TemplateBrowser';
 import { AttrPicker, AttrTags, Bar, Empty, Modal } from '../components/ui';
 import { QUEST_DURATIONS, QUEST_DURATION_KEYS } from '../game/constants';
 import { addDaysStr, fmtDay, fmtDayFull, fmtMinutes, parseDay, questDeadlineProgress, questMinutes, questPayout, questTargetDate, todayStr } from '../game/engine';
@@ -36,7 +38,19 @@ export function Quests() {
       <GoalsSection />
 
       {active.length === 0 ? (
-        <Empty>No active quests. A quest is real work — write what it is, pick a rough deadline, then clock sessions until it's finished.</Empty>
+        <Empty>
+          <div>
+            No active quests. A quest is real work — pick one from the library or write your own,
+            then clock sessions until it's finished.
+          </div>
+          {/* The modal opens on the library tab, so this button lands on the curated quests
+              rather than on a blank title field nobody knows how to fill. */}
+          <div style={{ marginTop: 12 }}>
+            <button className="btn btn-primary" onClick={() => setCreating(true)}>
+              <Icon name="search" size={14} /> Browse the quest library
+            </button>
+          </div>
+        </Empty>
       ) : (
         <>
           <div className="filter-row">
@@ -60,10 +74,12 @@ export function Quests() {
                     <div className="card-head">
                       <h3>
                         <Link to={`/quests/${q.id}`} className="stretched-link">
-                          {q.priority && '⭐ '}{q.title}
+                          {q.priority && <Icon name="starFilled" size={13} />} {q.title}
                         </Link>
                       </h3>
-                      {s.activeSession?.questId === q.id && <span className="status status-live">● recording</span>}
+                      {s.activeSession?.questId === q.id && (
+                        <span className="status status-live"><Icon name="play" size={11} /> recording</span>
+                      )}
                     </div>
                     {q.description && <p className="muted clamp2">{q.description}</p>}
                     <div className="quest-meta">
@@ -98,7 +114,7 @@ export function Quests() {
           <ul className="list">
             {done.map(q => (
               <li key={q.id} className="list-row">
-                <span>🏁</span>
+                <Icon name="flag" size={14} />
                 <Link to={`/quests/${q.id}`} className="list-title">{q.title}</Link>
                 <span className="muted">{fmtMinutes(questMinutes(q))} total · paid {questPayout(q, s.character?.classes).xp} XP</span>
               </li>
@@ -124,7 +140,7 @@ function GoalsSection() {
   return (
     <section className="card goals-card">
       <div className="card-head">
-        <h2>🎯 Long-term goals</h2>
+        <h2 className="heading-icon"><Icon name="target" size={18} /> Long-term goals</h2>
         <button className="btn btn-ghost btn-sm" onClick={() => setCreating(true)}>+ New goal</button>
       </div>
       {open.length === 0 && achieved.length === 0 ? (
@@ -155,7 +171,7 @@ function GoalsSection() {
                       <div className="muted goal-linked">
                         {linked.map(q => (
                           <Link key={q!.id} to={`/quests/${q!.id}`} className={q!.completedAt ? 'cal-done' : ''}>
-                            {q!.completedAt ? '🏁 ' : '⚔️ '}{q!.title}
+                            <Icon name={q!.completedAt ? 'flag' : 'quests'} size={13} /> {q!.title}
                           </Link>
                         ))}
                       </div>
@@ -165,20 +181,24 @@ function GoalsSection() {
                   )}
                 </div>
                 <div className="goal-actions">
-                  <button className="btn btn-ghost btn-sm" onClick={() => setLinking(goal)}>🔗 Link quests</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setLinking(goal)}>
+                    <Icon name="link" size={13} /> Link quests
+                  </button>
                   <button
                     className="btn btn-gold btn-sm"
                     disabled={doneCount === 0}
-                    title={doneCount === 0 ? 'Finish at least one linked quest first' : 'Claim the milestone: +100 XP, +50 🪙'}
+                    title={doneCount === 0 ? 'Finish at least one linked quest first' : 'Claim the milestone: +100 XP and +50 gold'}
                     onClick={() => s.completeGoal(goal.id)}
                   >
-                    🏁 Achieved
+                    <Icon name="flag" size={13} /> Achieved
                   </button>
                   <button
                     className="btn btn-ghost btn-sm"
+                    title="Delete this goal"
+                    aria-label="Delete this goal"
                     onClick={() => confirm('Delete this goal? Linked quests stay.') && s.deleteGoal(goal.id)}
                   >
-                    ✕
+                    <Icon name="trash" size={13} />
                   </button>
                 </div>
               </div>
@@ -187,7 +207,7 @@ function GoalsSection() {
           {achieved.map(goal => (
             <div key={goal.id} className="goal-row goal-achieved">
               <div className="goal-main">
-                <div className="goal-title">🏁 {goal.title}</div>
+                <div className="goal-title"><Icon name="flag" size={14} /> {goal.title}</div>
                 <span className="muted">Achieved {fmtDayFull(goal.completedAt!.slice(0, 10))}</span>
               </div>
             </div>
@@ -209,7 +229,7 @@ function GoalForm({ onClose }: { onClose: () => void }) {
   const valid = title.trim() && attrs.length > 0;
 
   return (
-    <Modal title="🎯 New long-term goal" onClose={onClose}>
+    <Modal title="New long-term goal" onClose={onClose}>
       <label className="field">
         <span>In {days} days, I want…</span>
         <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="…to have launched my business site" autoFocus />
@@ -255,7 +275,7 @@ function LinkQuestsModal({ goal, onClose }: { goal: Goal; onClose: () => void })
   const candidates = s.quests; // completed quests can be linked too — retroactive credit is honest, the work happened
 
   return (
-    <Modal title={`🔗 Link quests to: ${goal.title}`} onClose={onClose}>
+    <Modal title={`Link quests to: ${goal.title}`} onClose={onClose}>
       {candidates.length === 0 ? (
         <p className="muted">No quests exist yet. Forge one first — goals are won through quests.</p>
       ) : (
@@ -267,7 +287,7 @@ function LinkQuestsModal({ goal, onClose }: { goal: Goal; onClose: () => void })
                 checked={selected.includes(q.id)}
                 onChange={e => setSelected(sel => (e.target.checked ? [...sel, q.id] : sel.filter(x => x !== q.id)))}
               />
-              <span className="list-title">{q.completedAt ? '🏁 ' : ''}{q.title}</span>
+              <span className="list-title">{q.completedAt && <Icon name="flag" size={13} />} {q.title}</span>
               <span className="muted">{fmtMinutes(questMinutes(q))}</span>
             </li>
           ))}
@@ -283,8 +303,18 @@ function LinkQuestsModal({ goal, onClose }: { goal: Goal; onClose: () => void })
   );
 }
 
+/**
+ * New quest.
+ *
+ * The library leads and the blank form follows, because "what should I even work
+ * on" is a harder question than "what do I call it". The curated quests already
+ * carry a description, a realistic duration and their first concrete sessions —
+ * everything the empty form asks you to invent on the spot.
+ */
 function QuestForm({ onClose }: { onClose: () => void }) {
-  const addQuest = useGame(s => s.addQuest);
+  const s = useGame();
+  const addQuest = s.addQuest;
+  const [tab, setTab] = useState<'library' | 'own'>('library');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [targetDuration, setTargetDuration] = useState<QuestDuration>('1m');
@@ -292,8 +322,91 @@ function QuestForm({ onClose }: { onClose: () => void }) {
 
   const valid = title.trim() && attrs.length > 0;
 
+  // Titles already on the board, so the library marks them "Added" instead of
+  // quietly letting you start the same quest twice.
+  const addedTitles = useMemo(() => new Set(s.quests.map(q => q.title)), [s.quests]);
+
+  const addFromTemplate = (t: AnyTemplate) => {
+    if (isHabitTemplate(t)) return; // this browser is quest-only; the guard is for the union type
+    // The steps are the part that makes a template a quest rather than a wish,
+    // so they ride along in the description instead of being lost on the way in.
+    const steps = t.steps.length ? ` First sessions: ${t.steps.map((step, i) => `${i + 1}) ${step}`).join(' ')}` : '';
+    addQuest({ title: t.title, description: `${t.description}${steps}`, targetDuration: t.targetDuration, attrs: t.attrs });
+  };
+
   return (
-    <Modal title="New quest" onClose={onClose}>
+    <Modal title="New quest" onClose={onClose} wide>
+      <div className="field">
+        <div className="seg">
+          <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>Browse library</button>
+          <button type="button" className={tab === 'own' ? 'seg-on' : ''} onClick={() => setTab('own')}>Write my own</button>
+        </div>
+      </div>
+
+      {tab === 'library' ? (
+        <>
+          <TemplateBrowser
+            kind="quest"
+            mode="add"
+            profile={s.character?.profile}
+            addedTitles={addedTitles}
+            onPick={t => addFromTemplate(t)}
+            emptyHint="Nothing matches that. Clear a filter, or write your own."
+          />
+          <div className="modal-actions">
+            <button className="btn btn-ghost" onClick={() => setTab('own')}>Write my own</button>
+            <button className="btn btn-primary" onClick={onClose}>Done</button>
+          </div>
+        </>
+      ) : (
+        <QuestFields
+          title={title}
+          setTitle={setTitle}
+          description={description}
+          setDescription={setDescription}
+          targetDuration={targetDuration}
+          setTargetDuration={setTargetDuration}
+          attrs={attrs}
+          setAttrs={setAttrs}
+          valid={!!valid}
+          onBrowse={() => setTab('library')}
+          onClose={onClose}
+          onCreate={() => { addQuest({ title: title.trim(), description: description.trim() || undefined, targetDuration, attrs }); onClose(); }}
+        />
+      )}
+    </Modal>
+  );
+}
+
+function QuestFields({
+  title,
+  setTitle,
+  description,
+  setDescription,
+  targetDuration,
+  setTargetDuration,
+  attrs,
+  setAttrs,
+  valid,
+  onBrowse,
+  onClose,
+  onCreate,
+}: {
+  title: string;
+  setTitle: (v: string) => void;
+  description: string;
+  setDescription: (v: string) => void;
+  targetDuration: QuestDuration;
+  setTargetDuration: (v: QuestDuration) => void;
+  attrs: AttributeKey[];
+  setAttrs: (v: AttributeKey[]) => void;
+  valid: boolean;
+  onBrowse: () => void;
+  onClose: () => void;
+  onCreate: () => void;
+}) {
+  return (
+    <>
       <label className="field">
         <span>What is the quest?</span>
         <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="Launch my portfolio site" autoFocus />
@@ -322,15 +435,14 @@ function QuestForm({ onClose }: { onClose: () => void }) {
         <AttrPicker value={attrs} onChange={setAttrs} />
       </div>
       <div className="modal-actions">
+        <button className="btn btn-ghost" onClick={onBrowse}>
+          <Icon name="search" size={13} /> Browse library
+        </button>
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-        <button
-          className="btn btn-primary"
-          disabled={!valid}
-          onClick={() => { addQuest({ title: title.trim(), description: description.trim() || undefined, targetDuration, attrs }); onClose(); }}
-        >
+        <button className="btn btn-primary" disabled={!valid} onClick={onCreate}>
           Create quest
         </button>
       </div>
-    </Modal>
+    </>
   );
 }

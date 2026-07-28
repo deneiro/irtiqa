@@ -539,6 +539,8 @@ textarea.input { resize: vertical; }
 .hm-2 { background: color-mix(in srgb, var(--accent) 35%, var(--bg2)); }
 .hm-3 { background: color-mix(in srgb, var(--accent) 65%, var(--bg2)); }
 .hm-4 { background: var(--accent); }
+/* Today, still open. Not a miss — the day hasn't finished. */
+.hm-today { background: var(--bg2); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
 
 /* ============ Per-habit progress intel ============ */
 .intel-toggle { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 8px; }

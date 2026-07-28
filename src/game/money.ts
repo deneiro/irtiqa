@@ -42,16 +42,26 @@ export function currencyDef(code: string): CurrencyDef {
 }
 
 /**
- * Group digits with thin spaces. A fixed 'en-US' grouping is used and then the
- * separator swapped, so the result is identical on every device regardless of the
- * host locale — `1 234 567` reads correctly in every language IrtiQa targets, and
- * avoids the comma/period ambiguity that makes `1,234` mean two different numbers
- * in en-US and de-DE.
+ * U+202F NARROW NO-BREAK SPACE — the digit-group separator, and the gap before a
+ * trailing symbol. Written as an escape rather than a literal because it is
+ * invisible in an editor and would otherwise read as an ordinary space that
+ * someone "tidies up" later. No-break matters: a balance must never wrap between
+ * its thousands group and its symbol.
+ */
+const NBSP = '\u202f';
+
+/**
+ * Group digits without going through Intl.
+ *
+ * The separator is fixed rather than locale-derived so the result is identical on
+ * every device, and it sidesteps the comma/period ambiguity that makes `1,234`
+ * mean two different numbers in en-US and de-DE. A save opened on a second device
+ * must render the same string as on the first.
  */
 function group(n: number, decimals: number): string {
   const fixed = Math.abs(n).toFixed(decimals);
   const [whole, frac] = fixed.split('.');
-  const spaced = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const spaced = whole.replace(/\B(?=(\d{3})+(?!\d))/g, NBSP);
   return frac ? `${spaced},${frac}` : spaced;
 }
 
@@ -62,7 +72,7 @@ export function fmtMoney(amount: number, code: string): string {
   const body = group(amount, def.decimals);
   return def.position === 'before'
     ? `${sign}${def.symbol}${body}`
-    : `${sign}${body} ${def.symbol}`;
+    : `${sign}${body}${NBSP}${def.symbol}`;
 }
 
 /**
@@ -79,5 +89,5 @@ export function fmtMoneyCompact(amount: number, code: string): string {
   else return fmtMoney(amount, code);
   return def.position === 'before'
     ? `${sign}${def.symbol}${body}`
-    : `${sign}${body} ${def.symbol}`;
+    : `${sign}${body}${NBSP}${def.symbol}`;
 }

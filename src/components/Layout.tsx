@@ -9,30 +9,66 @@ import { Sigil } from './Sigil';
 import { Bar } from './ui';
 import { VFXLayer } from './VFXLayer';
 
-const NAV: [string, IconName, string][] = [
-  ['/', 'dashboard', 'Dashboard'],
-  ['/habits', 'habits', 'Habits'],
-  ['/quests', 'quests', 'Quests'],
-  ['/journal', 'journal', 'Journal'],
-  ['/chronicle', 'chronicle', 'Chronicle'],
-  ['/attributes', 'wheel', 'The Wheel'],
-  ['/calendar', 'calendar', 'Calendar'],
-  ['/social', 'social', 'Social'],
-  ['/finances', 'finances', 'Finances'],
-  ['/market', 'market', 'Market'],
-  ['/achievements', 'achievements', 'Achievements'],
-  ['/settings', 'settings', 'Settings'],
+type NavLeaf = { to: string; icon: IconName; label: string };
+type NavGroup = { id: string; icon: IconName; label: string; children: NavLeaf[] };
+
+/**
+ * The four routes worth a permanent slot — sidebar top and mobile thumb row alike.
+ * These are the surfaces you touch daily; everything else is reference material
+ * you go looking for, which is what the groups below are for.
+ */
+const PRIMARY: NavLeaf[] = [
+  { to: '/', icon: 'dashboard', label: 'Today' },
+  { to: '/habits', icon: 'habits', label: 'Habits' },
+  { to: '/quests', icon: 'quests', label: 'Quests' },
+  { to: '/journal', icon: 'journal', label: 'Journal' },
 ];
 
-/** The four routes worth a permanent thumb slot; everything else lives behind "More". */
-const TAB_PRIMARY: [string, IconName, string][] = [
-  ['/', 'dashboard', 'Today'],
-  ['/habits', 'habits', 'Habits'],
-  ['/quests', 'quests', 'Quests'],
-  ['/journal', 'journal', 'Journal'],
+/**
+ * The remaining eight routes, folded into three named shelves. Thirteen flat rows
+ * asked you to re-read the whole list every time; seven rows can be scanned at a
+ * glance and the group label tells you which shelf to open. Nothing is removed —
+ * every route below is still one click from collapsed.
+ */
+const GROUPS: NavGroup[] = [
+  {
+    id: 'life',
+    icon: 'life',
+    label: 'Life',
+    children: [
+      { to: '/attributes', icon: 'wheel', label: 'The Wheel' },
+      { to: '/chronicle', icon: 'chronicle', label: 'Chronicle' },
+      { to: '/achievements', icon: 'achievements', label: 'Achievements' },
+    ],
+  },
+  {
+    id: 'people',
+    icon: 'people',
+    label: 'People & Money',
+    children: [
+      { to: '/social', icon: 'social', label: 'Social' },
+      { to: '/finances', icon: 'finances', label: 'Finances' },
+    ],
+  },
+  {
+    id: 'more',
+    icon: 'more',
+    label: 'More',
+    children: [
+      { to: '/calendar', icon: 'calendar', label: 'Calendar' },
+      { to: '/market', icon: 'market', label: 'Market' },
+      { to: '/settings', icon: 'settings', label: 'Settings' },
+    ],
+  },
 ];
-const TAB_PRIMARY_PATHS = new Set(TAB_PRIMARY.map(([to]) => to));
-const TAB_MORE = NAV.filter(([to]) => !TAB_PRIMARY_PATHS.has(to));
+
+/** Every route that lives inside a group — used to light up the mobile "More" tab. */
+const GROUPED_PATHS = GROUPS.flatMap(g => g.children.map(c => c.to));
+
+/** A route counts as "inside" its own detail pages too: /attributes/health is still The Wheel. */
+function isUnder(pathname: string, to: string) {
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
 
 export function Layout() {
   const character = useGame(s => s.character);
@@ -47,6 +83,14 @@ export function Layout() {
   const momentumPct = Math.round((momentumMult(momentum.streak) - 1) * 100);
   // Color the HP bar by what's left, so a full bar doesn't read as an alarm
   const hpTone = character.hp <= 25 ? 'hp-crit' : character.hp <= 55 ? 'hp-warn' : '';
+  // The tinted bar already says "low" at a glance, so the explanation rides along as a
+  // tooltip on the whole cluster rather than as a second glyph repeating the same signal.
+  const hpNote =
+    character.hp === 0
+      ? 'Running on empty — nothing is locked and everything still pays full'
+      : character.hp <= 25
+        ? 'Low reserves — a few things slipped recently'
+        : undefined;
 
   return (
     <div className="layout">
@@ -63,14 +107,15 @@ export function Layout() {
               {character.name}
               {title && <span className="char-title"> {title.name}</span>}
             </div>
-            <div className="side-char-meta">{rank.emoji} {rank.name} · {cls?.name}</div>
+            <div className="side-char-meta"><Icon name={rank.icon} size={13} /> {rank.name} · {cls?.name}</div>
           </div>
         </Link>
-        <nav>
-          {NAV.map(([to, iconName, label]) => (
-            <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-              <span className="nav-emoji"><Icon name={iconName} size={17} /></span> {label}
-            </NavLink>
+        <nav className="side-nav">
+          {PRIMARY.map(leaf => (
+            <NavLeafLink key={leaf.to} leaf={leaf} />
+          ))}
+          {GROUPS.map(group => (
+            <NavGroupSection key={group.id} group={group} />
           ))}
         </nav>
       </aside>
@@ -83,18 +128,13 @@ export function Layout() {
           </div>
           {momentum.streak > 0 && (
             <span className="stat momentum-flame" title={`Perfect-day momentum: ${momentum.streak} day${momentum.streak > 1 ? 's' : ''} → +${momentumPct}% XP on everything`}>
-              🔥 {momentum.streak}
+              <Icon name="flame" size={14} /> {momentum.streak}
             </span>
           )}
-          <div className="stat stat-hp">
+          <div className="stat stat-hp" title={hpNote}>
             <span className="stat-label"><Icon name="health" size={14} /> HP</span>
             <Bar value={character.hp} max={100} className={`bar-hp ${hpTone}`} label={`${character.hp}/100 HP`} />
             <span className="stat-num">{character.hp}/100</span>
-            {character.hp === 0 ? (
-              <span title="Running on empty — nothing is locked and everything still pays full">🌑</span>
-            ) : character.hp <= 25 ? (
-              <span title="Low reserves — a few things slipped recently">🌘</span>
-            ) : null}
           </div>
           <div className="stat stat-gold" title="Gold">
             <Icon name="gold" size={20} className="gold-coin" /> {character.gold}
@@ -108,6 +148,66 @@ export function Layout() {
       <SessionWidget />
       <CelebrationLayer />
       <VFXLayer />
+    </div>
+  );
+}
+
+/**
+ * One leaf row. Shared by the sidebar and the mobile sheet so they can never drift apart.
+ *
+ * Only "/" gets `end`: every other leaf wants its detail pages (/quests/:id,
+ * /attributes/:key) to keep the parent row lit rather than blanking the nav.
+ */
+function NavLeafLink({ leaf }: { leaf: NavLeaf }) {
+  return (
+    <NavLink
+      to={leaf.to}
+      end={leaf.to === '/'}
+      className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+    >
+      <span className="nav-emoji"><Icon name={leaf.icon} size={17} /></span> {leaf.label}
+    </NavLink>
+  );
+}
+
+/**
+ * A collapsible shelf. Opens by itself when you're standing inside it, and never
+ * closes on its own afterwards — a group that snapped shut on navigation would
+ * punish exactly the person who is working through its contents.
+ *
+ * Open state is deliberately not persisted: it's cheap to reopen, and a remembered
+ * half-open sidebar from three sessions ago is noise rather than help.
+ */
+function NavGroupSection({ group }: { group: NavGroup }) {
+  const { pathname } = useLocation();
+  const holdsCurrent = group.children.some(c => isUnder(pathname, c.to));
+  const [open, setOpen] = useState(holdsCurrent);
+
+  useEffect(() => {
+    if (holdsCurrent) setOpen(true);
+  }, [holdsCurrent]);
+
+  const panelId = `nav-group-${group.id}`;
+  return (
+    <div className={`nav-group ${open ? 'open' : ''}`}>
+      <button
+        type="button"
+        className={`nav-group-head ${holdsCurrent ? 'holds-current' : ''}`}
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        aria-controls={panelId}
+      >
+        <span className="nav-emoji"><Icon name={group.icon} size={17} /></span>
+        <span className="nav-group-label">{group.label}</span>
+        <Icon name="chevronDown" size={15} className="nav-group-chevron" />
+      </button>
+      {open && (
+        <div className="nav-group-items" id={panelId}>
+          {group.children.map(leaf => (
+            <NavLeafLink key={leaf.to} leaf={leaf} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -135,7 +235,8 @@ function TabBar() {
     return () => window.removeEventListener('keydown', onKey);
   }, [moreOpen]);
 
-  const moreActive = TAB_MORE.some(([to]) => location.pathname === to) || location.pathname === '/profile';
+  const moreActive =
+    GROUPED_PATHS.some(to => isUnder(location.pathname, to)) || isUnder(location.pathname, '/profile');
 
   return (
     <>
@@ -145,23 +246,23 @@ function TabBar() {
           <div className="tabbar-sheet" role="dialog" aria-label="More navigation">
             <div className="tabbar-sheet-grab" aria-hidden="true" />
             <nav>
-              {TAB_MORE.map(([to, iconName, label]) => (
-                <NavLink key={to} to={to} className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                  <span className="nav-emoji"><Icon name={iconName} size={17} /></span> {label}
-                </NavLink>
-              ))}
+              {/* Profile has no group of its own: on desktop it hangs off the character
+                  card, which the sidebar hides here, so the sheet carries it instead. */}
               <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                 <span className="nav-emoji"><Icon name={classId ?? 'magician'} size={17} /></span> Profile
               </NavLink>
+              {GROUPS.map(group => (
+                <NavGroupSection key={group.id} group={group} />
+              ))}
             </nav>
           </div>
         </>
       )}
       <nav className="tabbar" aria-label="Main">
-        {TAB_PRIMARY.map(([to, iconName, label]) => (
-          <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `tabbar-item ${isActive ? 'active' : ''}`}>
-            <span className="tabbar-icon"><Icon name={iconName} size={21} /></span>
-            {label}
+        {PRIMARY.map(leaf => (
+          <NavLink key={leaf.to} to={leaf.to} end={leaf.to === '/'} className={({ isActive }) => `tabbar-item ${isActive ? 'active' : ''}`}>
+            <span className="tabbar-icon"><Icon name={leaf.icon} size={21} /></span>
+            {leaf.label}
           </NavLink>
         ))}
         <button

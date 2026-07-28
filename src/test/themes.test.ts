@@ -4,7 +4,7 @@ import { applyThemeOverrides, CUSTOM_THEME_TOKENS, isThemeUnlocked, motionForThe
 import { useGame } from '../store';
 
 const free = THEMES.find(t => t.free)!;              // midnight
-const premium = THEMES.find(t => t.id === 'liquid')!; // a paid theme
+const premium = THEMES.find(t => !t.free)!;         // skeuo
 
 describe('isThemeUnlocked — the owner-mode gate', () => {
   it('unlocks everything while owner mode is on', () => {
@@ -23,7 +23,7 @@ describe('isThemeUnlocked — the owner-mode gate', () => {
   });
 
   it('respects a legacy owned theme even with owner mode off', () => {
-    expect(isThemeUnlocked(premium, { adminUnlockAll: false, ownedThemes: ['midnight', 'liquid'] })).toBe(true);
+    expect(isThemeUnlocked(premium, { adminUnlockAll: false, ownedThemes: ['midnight', premium.id] })).toBe(true);
   });
 
   it('every theme carries the data a picker needs (free flag or a price)', () => {
@@ -36,10 +36,9 @@ describe('isThemeUnlocked — the owner-mode gate', () => {
 
 describe('motionForTheme — the Phase 2 juice-layer signature', () => {
   it('returns each theme its declared motion key', () => {
-    expect(motionForTheme('brutal')).toBe('stamp');
-    expect(motionForTheme('clay')).toBe('squish');
-    expect(motionForTheme('liquid')).toBe('specular');
-    expect(motionForTheme('maximal')).toBe('confetti');
+    expect(motionForTheme('midnight')).toBe('aurora');
+    expect(motionForTheme('skeuo')).toBe('bevel');
+    expect(motionForTheme('neon')).toBe('pulse');
   });
 
   it('falls back to "none" for an unknown theme id', () => {

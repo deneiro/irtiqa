@@ -1,14 +1,27 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Icon } from '../components/Icon';
 import { Bar, Empty, Modal } from '../components/ui';
 import { PayDebtModal } from '../components/PayDebtModal';
-import { EXPENSE_CATEGORIES, GOLD_ICON, INCOME_CATEGORIES } from '../game/constants';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../game/constants';
 import { debtPaid, debtRemaining, fmtDay, fmtDayFull, monthKey, todayStr } from '../game/engine';
+import { CURRENCIES, fmtMoney, fmtMoneyCompact } from '../game/money';
 import type { Debt } from '../game/types';
 import { useGame } from '../store';
 
+/**
+ * Every amount on this page is real money and goes through fmtMoney, which stamps it
+ * with the chosen currency symbol. Gold is the other economy and is rendered with a
+ * coin icon elsewhere; nothing here may look like it.
+ *
+ * Arrow direction is one consistent rule across the whole page: arrowUp = money moving
+ * in your favour (income, someone owes you), arrowDown = money leaving (an expense, a
+ * debt you carry). Colour repeats the same fact for anyone who reads shape slowly.
+ */
 export function Finances() {
   const s = useGame();
+  const cur = s.currency;
+  const money = (n: number) => fmtMoney(n, cur);
   const today = todayStr();
   const thisMonth = monthKey(today);
   const [addingTx, setAddingTx] = useState(false);
@@ -23,8 +36,8 @@ export function Finances() {
     const map = new Map<string, number>();
     for (const a of s.accounts) map.set(a.id, a.initialBalance);
     for (const t of s.txs) {
-      const cur = map.get(t.accountId) ?? 0;
-      map.set(t.accountId, cur + (t.type === 'income' ? t.amount : -t.amount));
+      const running = map.get(t.accountId) ?? 0;
+      map.set(t.accountId, running + (t.type === 'income' ? t.amount : -t.amount));
     }
     return map;
   }, [s.accounts, s.txs]);
@@ -55,6 +68,7 @@ export function Finances() {
   const budgeted = EXPENSE_CATEGORIES.filter(c => (s.budgets[c] ?? 0) > 0);
   const recent = useMemo(() => [...s.txs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 50), [s.txs]);
   const activeSubs = s.subs.filter(x => x.active);
+  const cash = Math.max(0, accountsTotal);
 
   return (
     <div className="page">
@@ -63,70 +77,66 @@ export function Finances() {
           <h1>Finances</h1>
           <p className="muted">Track it honestly. Going over budget hurts here the way it hurts out there.</p>
         </div>
-        <div className="btn-pair">
-          <button className="btn btn-ghost" onClick={() => setAddingAccount(true)}>+ Account</button>
-          <button className="btn btn-ghost" disabled={s.accounts.length < 2} onClick={() => setAddingTransfer(true)}>🔁 Transfer</button>
-          <button className="btn btn-primary" disabled={s.accounts.length === 0} onClick={() => setAddingTx(true)}>+ Transaction</button>
+        <div className="btn-pair fin-head-actions">
+          {/* The currency belongs here rather than in Settings: this is the only page where
+              it changes what you read, so it is set where it is felt. */}
+          <label className="fin-currency">
+            <span className="muted">Currency</span>
+            <select
+              className="input input-sm"
+              aria-label="Currency for every amount on this page"
+              value={cur}
+              onChange={e => s.setCurrency(e.target.value)}
+            >
+              {CURRENCIES.map(c => (
+                <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>
+              ))}
+            </select>
+          </label>
+          <button className="btn btn-ghost" onClick={() => setAddingAccount(true)}><Icon name="plus" size={14} /> Account</button>
+          <button className="btn btn-primary" disabled={s.accounts.length === 0} onClick={() => setAddingTx(true)}>
+            <Icon name="plus" size={14} /> Transaction
+          </button>
         </div>
       </div>
 
-      <div className="fin-top">
-        <section className="card networth-card">
-          <div className="networth-split">
-            <div className="networth-block">
-              <div className="muted">Cash on hand</div>
-              <div className="networth">{Math.max(0, accountsTotal).toLocaleString()}</div>
-              <div className="muted networth-sub">The actual money in your accounts, right now.</div>
-            </div>
-            <div className="networth-block">
-              <div className="muted">Net worth</div>
-              <div className={`networth ${netWorth < 0 ? 'neg' : ''}`}>{netWorth.toLocaleString()}</div>
-              <div className="muted networth-sub">
-                {debtNet !== 0
-                  ? `Cash ${accountsTotal.toLocaleString()} ${debtNet > 0 ? '+' : '−'} debts ${Math.abs(debtNet).toLocaleString()}`
-                  : 'Includes debts — can go negative.'}
-              </div>
+      <section className="card networth-card">
+        <div className="networth-split">
+          <div className="networth-block">
+            <div className="muted">Cash on hand</div>
+            {/* Headline figures are compacted — at 32px a seven-figure balance overflows its
+                block on a phone. The exact amount stays one hover away. */}
+            <div className="networth" title={money(cash)}>{fmtMoneyCompact(cash, cur)}</div>
+            <div className="muted networth-sub">The actual money in your accounts, right now.</div>
+          </div>
+          <div className="networth-block">
+            <div className="muted">Net worth</div>
+            <div className={`networth ${netWorth < 0 ? 'neg' : ''}`} title={money(netWorth)}>{fmtMoneyCompact(netWorth, cur)}</div>
+            <div className="muted networth-sub">
+              {debtNet !== 0
+                ? `Cash ${money(accountsTotal)} ${debtNet > 0 ? '+' : '−'} debts ${money(Math.abs(debtNet))}`
+                : 'Includes debts — can go negative.'}
             </div>
           </div>
-          <div className="acct-row">
-            {s.accounts.map(a => (
-              <div key={a.id} className="acct-chip" title="Account">
-                <span>{a.name}</span>
-                <strong className={(balances.get(a.id) ?? 0) < 0 ? 'neg' : ''}>{(balances.get(a.id) ?? 0).toLocaleString()}</strong>
-                <button className="btn btn-ghost btn-sm" onClick={() => s.deleteAccount(a.id)} title="Delete account">✕</button>
-              </div>
-            ))}
-            {s.accounts.length === 0 && <span className="muted">Add an account (cash, bank card…) to begin.</span>}
-          </div>
-        </section>
-
-        <section className="card">
-          <div className="card-head">
-            <h2>Budgets — {new Date().toLocaleDateString(undefined, { month: 'long' })}</h2>
-            <button className="btn btn-ghost btn-sm" onClick={() => setEditBudgets(true)}>✎ Set limits</button>
-          </div>
-          {budgeted.length === 0 ? (
-            <Empty>No budget limits set. Set a monthly cap per category — blowing it deals HP damage that scales with the overshoot.</Empty>
-          ) : (
-            <div className="budget-list">
-              {budgeted.map(cat => {
-                const budget = s.budgets[cat];
-                const spent = monthSpend.get(cat) ?? 0;
-                const over = spent > budget;
-                return (
-                  <div key={cat} className="budget-row">
-                    <div className="budget-head">
-                      <span>{cat}</span>
-                      <span className={over ? 'neg' : 'muted'}>{spent.toLocaleString()} / {budget.toLocaleString()}{over && ' ⚠️'}</span>
-                    </div>
-                    <Bar value={spent} max={budget} className={over ? 'bar-over' : 'bar-budget'} />
-                  </div>
-                );
-              })}
+        </div>
+        <div className="acct-row">
+          {s.accounts.map(a => (
+            <div key={a.id} className="acct-chip">
+              <span className="acct-name">{a.name}</span>
+              <strong className={(balances.get(a.id) ?? 0) < 0 ? 'neg' : ''}>{money(balances.get(a.id) ?? 0)}</strong>
+              <button className="btn btn-ghost btn-sm" onClick={() => s.deleteAccount(a.id)} title={`Delete ${a.name}`} aria-label={`Delete ${a.name}`}>
+                <Icon name="trash" size={13} />
+              </button>
             </div>
+          ))}
+          {s.accounts.length === 0 && (
+            <Empty>
+              Nothing to track yet. Add where your money actually sits — cash, a card, a bank account.{' '}
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>Add an account</button>
+            </Empty>
           )}
-        </section>
-      </div>
+        </div>
+      </section>
 
       <section className="card">
         <div className="card-head">
@@ -140,15 +150,18 @@ export function Finances() {
             {openDebts.map(d => {
               const remaining = debtRemaining(d);
               const paid = debtPaid(d);
+              const theyOwe = d.direction === 'theyOwe';
               return (
                 <li key={d.id} className="list-row">
-                  <span>{d.direction === 'theyOwe' ? '⬅️' : '➡️'}</span>
+                  <Icon name={theyOwe ? 'arrowUp' : 'arrowDown'} size={15} className={theyOwe ? 'fin-in' : 'fin-out'} />
                   <span className="list-title">
-                    {contactName(d.contactId)} {d.direction === 'theyOwe' ? 'owes you' : '— you owe'} {remaining}
-                    {paid > 0 && <span className="muted"> (paid {paid} of {d.amount})</span>}
+                    {contactName(d.contactId)} {theyOwe ? 'owes you' : '— you owe'} {money(remaining)}
+                    {paid > 0 && <span className="muted"> (paid {money(paid)} of {money(d.amount)})</span>}
                   </span>
                   <span className="muted">{d.note}</span>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setPayingDebt(d)} title="Log a payment">💳 Pay</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setPayingDebt(d)} title="Log a payment">
+                    <Icon name="card" size={13} /> Pay
+                  </button>
                 </li>
               );
             })}
@@ -157,14 +170,14 @@ export function Finances() {
         {settledDebts.length > 0 && (
           <>
             <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => setShowSettledDebts(v => !v)}>
-              {showSettledDebts ? 'hide' : 'show'} settled ({settledDebts.length})
+              {showSettledDebts ? 'Hide' : 'Show'} settled ({settledDebts.length})
             </button>
             {showSettledDebts && (
               <ul className="list list-tight">
                 {settledDebts.map(d => (
                   <li key={d.id} className="list-row">
-                    <span>✓</span>
-                    <span className="list-title">{contactName(d.contactId)} · {d.amount}</span>
+                    <Icon name="check" size={14} className="fin-in" />
+                    <span className="list-title">{contactName(d.contactId)} · {money(d.amount)}</span>
                     <span className="muted">settled {d.settledAt ? fmtDayFull(d.settledAt.slice(0, 10)) : ''}</span>
                   </li>
                 ))}
@@ -177,17 +190,26 @@ export function Finances() {
       <section className="card">
         <div className="card-head">
           <h2>Subscriptions</h2>
-          <button className="btn btn-ghost btn-sm" disabled={s.accounts.length === 0} onClick={() => setAddingSub(true)}>+ Add</button>
+          <button className="btn btn-ghost btn-sm" disabled={s.accounts.length === 0} onClick={() => setAddingSub(true)}>
+            <Icon name="plus" size={13} /> Add
+          </button>
         </div>
         {activeSubs.length === 0 ? (
-          <Empty>No recurring subscriptions. Add them and they post themselves on their due day.</Empty>
+          <Empty>
+            Nothing recurring yet. Add a subscription and it posts itself on its charge day, every month.{' '}
+            {s.accounts.length === 0 ? (
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>Add an account first</button>
+            ) : (
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingSub(true)}>Add a subscription</button>
+            )}
+          </Empty>
         ) : (
           <ul className="list">
             {activeSubs.map(sub => (
               <li key={sub.id} className="list-row">
-                <span>🔄</span>
+                <Icon name="subscription" size={15} className="fin-out" />
                 <span className="list-title">{sub.name}</span>
-                <span className="muted">{sub.amount.toLocaleString()} / mo · next {fmtDay(sub.nextDue)} · {s.accounts.find(a => a.id === sub.accountId)?.name}</span>
+                <span className="muted">{money(sub.amount)} / mo · next {fmtDay(sub.nextDue)} · {s.accounts.find(a => a.id === sub.accountId)?.name}</span>
                 <button className="btn btn-ghost btn-sm" onClick={() => s.cancelSubscription(sub.id)}>Cancel</button>
               </li>
             ))}
@@ -198,26 +220,102 @@ export function Finances() {
       <section className="card">
         <div className="card-head"><h2>Transactions</h2><span className="muted">{s.txs.length} total</span></div>
         {recent.length === 0 ? (
-          <Empty>Nothing logged. Income earns XP toward 💰 Money; in-budget expenses do too.</Empty>
+          <Empty>
+            {/* The Money attribute is named, not iconed: its icon is Coins, the same glyph as Gold,
+                and a coin on the Finances page reads as currency — the one confusion this page exists
+                to avoid. Everywhere else the attribute icon is unambiguous and still used. */}
+            Nothing logged yet. Income earns XP toward your Money attribute, and so do expenses that stay inside their budget.{' '}
+            {s.accounts.length === 0 ? (
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>Add an account first</button>
+            ) : (
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingTx(true)}>Log the first one</button>
+            )}
+          </Empty>
         ) : (
           <ul className="list">
-            {recent.map(t => (
-              <li key={t.id} className="list-row">
-                <span>{t.transferId ? '🔁' : t.type === 'income' ? '🟢' : '🔴'}</span>
-                <span className="list-title">{t.note || t.category}</span>
-                <span className="tag">{t.category}</span>
-                <span className="muted">{fmtDay(t.date)} · {s.accounts.find(a => a.id === t.accountId)?.name ?? '?'}</span>
-                <span className={t.type === 'income' ? 'amount-pos' : 'amount-neg'}>
-                  {t.type === 'income' ? '+' : '−'}{t.amount.toLocaleString()}
-                </span>
-                {t.date === today && (
-                  <button className="btn btn-ghost btn-sm" onClick={() => s.deleteTransaction(t.id)} title="Delete (today's entries only)">✕</button>
-                )}
-              </li>
-            ))}
+            {recent.map(t => {
+              const income = t.type === 'income';
+              return (
+                <li key={t.id} className="list-row">
+                  {/* A transfer is neither income nor spending, so it gets its own mark rather
+                      than a green/red arrow that would claim your total moved. */}
+                  {t.transferId
+                    ? <Icon name="banknote" size={15} className="muted" />
+                    : <Icon name={income ? 'arrowUp' : 'arrowDown'} size={15} className={income ? 'fin-in' : 'fin-out'} />}
+                  <span className="list-title">{t.note || t.category}</span>
+                  <span className="tag">{t.category}</span>
+                  <span className="muted">{fmtDay(t.date)} · {s.accounts.find(a => a.id === t.accountId)?.name ?? '?'}</span>
+                  <span className={income ? 'amount-pos' : 'amount-neg'}>
+                    {income ? '+' : '−'}{money(t.amount)}
+                  </span>
+                  {t.date === today && (
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => s.deleteTransaction(t.id)}
+                      title="Delete (today's entries only)"
+                      aria-label="Delete this entry"
+                    >
+                      <Icon name="trash" size={13} />
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
+
+      {/* Budgets and transfers are real features that most days you don't need. Folding them
+          away keeps the page to the four things you open it for: money, debts, subs, entries. */}
+      <details className="fin-advanced">
+        <summary className="fin-advanced-summary">
+          <Icon name="chevronRight" size={14} className="fin-caret" />
+          <span>Advanced</span>
+          <span className="muted">budgets and transfers</span>
+        </summary>
+        <div className="fin-advanced-body">
+          <section className="card">
+            <div className="card-head">
+              <h2>Budgets — {new Date().toLocaleDateString(undefined, { month: 'long' })}</h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => setEditBudgets(true)}><Icon name="edit" size={13} /> Set limits</button>
+            </div>
+            {budgeted.length === 0 ? (
+              <Empty>
+                No limits set. Give a category a monthly cap and going over it costs HP, scaled to how far over you went.{' '}
+                <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setEditBudgets(true)}>Set limits</button>
+              </Empty>
+            ) : (
+              <div className="budget-list">
+                {budgeted.map(cat => {
+                  const budget = s.budgets[cat];
+                  const spent = monthSpend.get(cat) ?? 0;
+                  const over = spent > budget;
+                  return (
+                    <div key={cat} className="budget-row">
+                      <div className="budget-head">
+                        <span>{cat}</span>
+                        <span className={over ? 'neg' : 'muted'}>
+                          {over && <Icon name="warning" size={13} />} {money(spent)} / {money(budget)}
+                        </span>
+                      </div>
+                      <Bar value={spent} max={budget} className={over ? 'bar-over' : 'bar-budget'} />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <div className="card-head"><h2>Transfer</h2></div>
+            <p className="muted">Move your own money between your own accounts. It's neither income nor spending, so it earns nothing and touches no budget.</p>
+            <button className="btn btn-ghost" disabled={s.accounts.length < 2} onClick={() => setAddingTransfer(true)}>
+              <Icon name="banknote" size={14} /> Move money
+            </button>
+            {s.accounts.length < 2 && <p className="muted fin-hint">Transfers need two accounts. Add another and this opens up.</p>}
+          </section>
+        </div>
+      </details>
 
       {addingAccount && <AccountForm onClose={() => setAddingAccount(false)} />}
       {addingTransfer && <TransferForm onClose={() => setAddingTransfer(false)} />}
@@ -231,6 +329,7 @@ export function Finances() {
 
 function AccountForm({ onClose }: { onClose: () => void }) {
   const addAccount = useGame(s => s.addAccount);
+  const currency = useGame(s => s.currency);
   const [name, setName] = useState('');
   const [balance, setBalance] = useState(0);
   return (
@@ -238,7 +337,7 @@ function AccountForm({ onClose }: { onClose: () => void }) {
       <label className="field"><span>Name</span>
         <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Cash / Kaspi / Bank…" autoFocus />
       </label>
-      <label className="field"><span>Current balance</span>
+      <label className="field"><span>Current balance ({currency})</span>
         <input className="input" type="number" value={balance || ''} onChange={e => setBalance(Number(e.target.value))} />
       </label>
       <div className="modal-actions">
@@ -279,7 +378,7 @@ function TransferForm({ onClose }: { onClose: () => void }) {
           {s.accounts.filter(a => a.id !== fromAccountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </label>
-      <label className="field"><span>Amount</span>
+      <label className="field"><span>Amount ({s.currency})</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
       <label className="field"><span>Note (optional)</span>
@@ -292,7 +391,7 @@ function TransferForm({ onClose }: { onClose: () => void }) {
           disabled={!valid}
           onClick={() => { s.transferMoney(fromAccountId, toAccountId, amount, note.trim() || undefined); onClose(); }}
         >
-          Transfer
+          {amount > 0 ? `Transfer ${fmtMoney(amount, s.currency)}` : 'Transfer'}
         </button>
       </div>
     </Modal>
@@ -315,11 +414,15 @@ function TxForm({ onClose }: { onClose: () => void }) {
       <div className="field">
         <span>Type</span>
         <div className="seg">
-          <button type="button" className={type === 'expense' ? 'seg-on' : ''} onClick={() => { setType('expense'); setCategory(EXPENSE_CATEGORIES[0]); }}>🔴 Expense</button>
-          <button type="button" className={type === 'income' ? 'seg-on' : ''} onClick={() => { setType('income'); setCategory(INCOME_CATEGORIES[0]); }}>🟢 Income</button>
+          <button type="button" className={type === 'expense' ? 'seg-on' : ''} onClick={() => { setType('expense'); setCategory(EXPENSE_CATEGORIES[0]); }}>
+            <Icon name="arrowDown" size={13} /> Expense
+          </button>
+          <button type="button" className={type === 'income' ? 'seg-on' : ''} onClick={() => { setType('income'); setCategory(INCOME_CATEGORIES[0]); }}>
+            <Icon name="arrowUp" size={13} /> Income
+          </button>
         </div>
       </div>
-      <label className="field"><span>Amount</span>
+      <label className="field"><span>Amount ({s.currency})</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
       <label className="field"><span>Category</span>
@@ -361,7 +464,7 @@ function SubForm({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="New subscription" onClose={onClose}>
-      <label className="field"><span>Amount per month</span>
+      <label className="field"><span>Amount per month ({s.currency})</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
       <label className="field"><span>Category</span>
@@ -399,7 +502,7 @@ function BudgetForm({ onClose }: { onClose: () => void }) {
   );
   return (
     <Modal title="Monthly budget limits" onClose={onClose}>
-      <p className="muted">Leave blank for no limit. Over the limit, every extra expense deals HP damage that scales with the overshoot.</p>
+      <p className="muted">Limits are in {s.currency}. Leave blank for no limit. Past the limit, every extra expense costs HP, scaled to the overshoot.</p>
       {EXPENSE_CATEGORIES.map(c => (
         <label className="field field-inline" key={c}>
           <span>{c}</span>

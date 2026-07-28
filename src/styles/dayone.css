@@ -1,1 +1,184 @@
-/* dayone — owned by one feature. Imported from main.tsx after styles.css. */
+/* dayone — owned by one feature. Imported from main.tsx after styles.css.
+   Covers the whole first-run flow: the class picker, the Wheel audit (shared with
+   the Settings retake) and the Day One starting-kit step. Base .class-card,
+   .wheel-* and .tpl-* rules live in styles.css; everything here is additive. */
+
+/* ---- Step 1: the class picker ---- */
+
+/* The radical is identity, not reward — it belongs on the face of every card,
+   alongside the name and the tagline, before anything has been chosen. */
+.class-radical {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  opacity: 0.85;
+  margin-bottom: 6px;
+}
+
+/* What the driver *gives* you, revealed only after you've claimed it. Kept visually
+   quieter than the identity above it so a chosen card still reads as "who I am"
+   first and "what I get" second. */
+.class-reveal {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  animation: dayone-reveal 0.18s ease-out;
+}
+
+.class-reveal .class-boost {
+  margin-top: 0;
+}
+
+.class-perk {
+  display: inline-flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  line-height: 1.4;
+  text-align: left;
+}
+.class-perk svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+@keyframes dayone-reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .class-reveal { animation: none; }
+}
+
+.onb-note {
+  font-size: var(--fs-xs);
+  margin: 14px 0 0;
+}
+
+/* The sync status line carries a leading icon; keep the glyph on the text baseline. */
+.onb-cloud-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ---- The Wheel audit (onboarding step 2 + the Settings retake) ---- */
+
+.wheel-sector-name,
+.wheel-weakest-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wheel-sector-meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  flex: none;
+}
+
+/* Progress, not score: how many of this sector's five statements are ticked. It sits
+   left of the level so the eye reads "how far am I" before "what did it give me". */
+.wheel-sector-count {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Step 3: the starting kit ---- */
+
+.dayone-kit {
+  text-align: left;
+}
+/* The heading and lede stay centred with the rest of onboarding; only the library
+   below them goes left, where forty cards of body copy actually belong. */
+.dayone-kit > h2,
+.dayone-kit > .muted {
+  text-align: center;
+}
+.dayone-kit > .muted {
+  max-width: 62ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dayone-focus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.dayone-section {
+  margin-top: 26px;
+}
+
+.dayone-hint {
+  font-size: var(--fs-sm);
+  margin: -2px 0 10px;
+}
+
+/* Two browsers stack on this screen, and two sticky filter bars would pin one on top
+   of the other. On a page that scrolls as one document they don't need to stick. */
+.dayone-kit .tpl-filters {
+  position: static;
+  background: none;
+}
+
+/* The quest browser is the junior partner here — one pick, not three — so its cards
+   run narrower than the habit grid above and read as a shorter list. */
+.dayone-quests .tpl-grid {
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+.dayone-quests .tpl-card {
+  padding: 13px;
+}
+.dayone-quests .tpl-name {
+  font-size: var(--fs-sm);
+}
+
+/* The way out travels with the player: past the fold there are forty cards between
+   any given moment and the bottom of the page, and "Begin" must never be one of them. */
+.dayone-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 22px;
+  padding: 12px 0 max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: linear-gradient(to top, var(--bg) 72%, transparent);
+}
+
+.dayone-bar .onb-actions {
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+
+.dayone-count {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+  .dayone-bar {
+    justify-content: center;
+    text-align: center;
+  }
+  .dayone-bar .onb-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}

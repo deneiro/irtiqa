@@ -1,1 +1,93 @@
 /* dashboard — owned by one feature. Imported from main.tsx after styles.css. */
+
+/* ---- Icons inside prose ----
+   An <svg> is a replaced inline element: it sits on the baseline and pushes the
+   line box down, so a glyph dropped mid-sentence rides high and adds leading.
+   Nudging it a fifth of an em optically centres it against lowercase text while
+   the sentence keeps flowing (a flex wrapper would break the wrap). */
+.dash-inline-icon { display: inline-block; vertical-align: -0.18em; }
+
+/* Buttons and links that pair a glyph with a word. .btn is not a flex container
+   (its text-overflow behaviour on mobile depends on that), so the pairing is
+   opted into per element rather than imposed on every button in the app. */
+.btn-icon-label { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* ---- Daily Three ---- */
+/* The tick is a glyph now, not a text character — strip the inline baseline gap
+   so it sits dead centre in the ring. An unmet leg renders the ring empty: a leg
+   you simply haven't got to yet is not a failure, and the copy beside it already
+   says what would fill it. */
+.contract-check svg { display: block; }
+/* A leg whose copy carries a link needs the line to breathe around it. */
+.contract-list li { line-height: 1.45; }
+/* A leg that isn't in play today (nothing scheduled) is neither done nor pending.
+   Dashing the ring separates "not required" from "not yet done" without borrowing
+   the failure colour for a day where nothing failed. */
+.contract-idle .contract-check { border-style: dashed; }
+
+/* ---- First steps (cold start only) ---- */
+.first-steps { margin-bottom: 14px; }
+.first-steps-lede { margin: 0 0 12px; }
+.first-steps-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.first-steps-row { display: flex; align-items: flex-start; gap: 12px; }
+.first-steps-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px; font-weight: 800;
+  /* Optical: the ring should line up with the cap-height of the link beside it. */
+  margin-top: 1px;
+}
+.first-steps-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.first-steps-link {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-weight: 700; font-size: 15px;
+  width: fit-content;
+}
+
+/* ---- Weekly boss ---- */
+/* Replaces .boss-emoji: a stroked glyph has no intrinsic colour, so the danger
+   tint and the glow that used to come free with the emoji are set here. The
+   loom keyframes live in styles.css and are shared. */
+.boss-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--danger);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--danger) 45%, transparent));
+  animation: boss-loom 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .boss-icon { animation: none; }
+}
+
+/* ---- Habit status pills ---- */
+/* Scoped to a new class rather than bare .status, which other pages also use. */
+.status-pill { display: inline-flex; align-items: center; gap: 5px; }
+
+/* ---- Quest priority marker ---- */
+.quest-priority { display: inline-flex; color: var(--gold); flex-shrink: 0; }
+
+/* ---- Quick-task complete button ---- */
+/* The circle already reads as "not done"; the tick inside is a hint of what the
+   click does, so it sits back until the row is hovered or the button focused. */
+.dash-grid .check { display: inline-flex; align-items: center; justify-content: center; }
+.dash-grid .check svg { opacity: 0.35; transition: opacity 0.12s ease; }
+.dash-grid .check:hover svg,
+.dash-grid .check:focus-visible svg { opacity: 1; }
+
+@media (max-width: 640px) {
+  /* Three quick actions share one row at 375px; the glyph gets the space it needs
+     by giving up the horizontal padding, not by dropping the label. */
+  .quick-actions .btn-icon-label { gap: 5px; padding-left: 6px; padding-right: 6px; }
+  .first-steps-link { font-size: 14.5px; }
+}

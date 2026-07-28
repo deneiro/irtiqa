@@ -93,3 +93,54 @@ describe('save migration v5 → v6', () => {
     useGame.getState().resetGame();
   });
 });
+
+describe('save migration v9 → v10 — retired themes and one identity', () => {
+  /** A v9 save sitting on a theme that no longer exists, with no radical profile set. */
+  const V9_SAVE = {
+    version: 9,
+    state: {
+      character: {
+        name: 'Stylish', classId: 'magician', classes: ['magician', 'bard'],
+        xp: 400, hp: 90, gold: 120, createdAt: '2026-03-01T09:00:00.000Z',
+      },
+      attrs: { health: 100, friends: 100, family: 100, money: 100, career: 100, spirituality: 100, development: 100, brightness: 100 },
+      theme: 'liquid',
+      ownedThemes: ['midnight', 'liquid', 'clay'],
+      themeOverrides: { liquid: { '--accent': '#ff0000' }, midnight: { '--accent': '#00ff00' } },
+      habits: [], habitLog: {}, failures: [], quests: [], quickTasks: [], goals: [],
+      journal: [], contacts: [], debts: [], events: [], accounts: [], txs: [], subs: [],
+    },
+  };
+
+  it('moves a save off a deleted theme instead of rendering it unstyled', async () => {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(V9_SAVE));
+    await useGame.persist.rehydrate();
+    const s = useGame.getState();
+
+    // 'liquid' has no [data-theme] block any more — falling back is the only safe read
+    expect(s.theme).toBe('midnight');
+    expect(s.ownedThemes).not.toContain('liquid');
+    expect(s.ownedThemes).not.toContain('clay');
+    expect(s.ownedThemes).toContain('midnight');
+    // A recolour saved against a dead theme is dead weight; one against a live theme survives
+    expect(s.themeOverrides.liquid).toBeUndefined();
+    expect(s.themeOverrides.midnight).toEqual({ '--accent': '#00ff00' });
+
+    // Nothing the player earned may be lost in the process
+    expect(s.character?.gold).toBe(120);
+    expect(s.character?.xp).toBe(400);
+
+    localStorage.removeItem(SAVE_KEY);
+    useGame.getState().resetGame();
+  });
+
+  it('backfills the radical profile from the classes the player already chose', async () => {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(V9_SAVE));
+    await useGame.persist.rehydrate();
+    // magician=schizoid, bard=hysteroid — asked once, not twice
+    expect(useGame.getState().character?.profile).toEqual(['schizoid', 'hysteroid']);
+
+    localStorage.removeItem(SAVE_KEY);
+    useGame.getState().resetGame();
+  });
+});
