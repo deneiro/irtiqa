@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildCalendarItems } from '../lib/calendar';
-import type { Contact, JournalEntry, Quest, QuickTask, SocialEvent } from '../game/types';
+import type { Contact, JournalEntry, Quest, QuickTask, SocialEvent, Subscription } from '../game/types';
 
 function mkContact(patch: Partial<Contact> = {}): Contact {
   return {
@@ -28,7 +28,11 @@ function mkQuest(patch: Partial<Quest> = {}): Quest {
   };
 }
 
-const empty = { events: [] as SocialEvent[], contacts: [] as Contact[], quickTasks: [] as QuickTask[], journal: [] as JournalEntry[], quests: [] as Quest[] };
+function mkSub(patch: Partial<Subscription> = {}): Subscription {
+  return { id: 's1', name: 'Spotify', amount: 1500, accountId: 'a1', category: 'Subscriptions', dayOfMonth: 15, nextDue: '2026-07-15', active: true, ...patch };
+}
+
+const empty = { events: [] as SocialEvent[], contacts: [] as Contact[], quickTasks: [] as QuickTask[], journal: [] as JournalEntry[], quests: [] as Quest[], subs: [] as Subscription[] };
 
 describe('buildCalendarItems', () => {
   it('includes events within range and excludes events outside it', () => {
@@ -80,6 +84,31 @@ describe('buildCalendarItems', () => {
     const items = buildCalendarItems({ ...empty, quests: [active, completed, undated] }, '2026-07-01', '2026-07-31');
     expect(items).toHaveLength(1);
     expect(items[0]).toMatchObject({ type: 'questTarget', date: '2026-07-08', link: '/quests/q-active' });
+  });
+
+  it('places an active subscription on its charge day each month within the range', () => {
+    const sub = mkSub({ dayOfMonth: 15 });
+    const items = buildCalendarItems({ ...empty, subs: [sub] }, '2026-07-01', '2026-08-31');
+    expect(items.map(i => i.date)).toEqual(['2026-07-15', '2026-08-15']);
+    expect(items[0]).toMatchObject({ type: 'subscription', title: 'Spotify bills (1,500)', link: '/finances' });
+  });
+
+  it('clamps a subscription day-of-month to the last day of a shorter month', () => {
+    const sub = mkSub({ dayOfMonth: 30, nextDue: '2026-01-30' });
+    const items = buildCalendarItems({ ...empty, subs: [sub] }, '2026-02-01', '2026-02-28');
+    expect(items.map(i => i.date)).toEqual(['2026-02-28']);
+  });
+
+  it('does not surface a subscription occurrence before its nextDue (e.g. the month it was created in)', () => {
+    const sub = mkSub({ dayOfMonth: 28, nextDue: '2026-07-28' });
+    const items = buildCalendarItems({ ...empty, subs: [sub] }, '2026-06-28', '2026-07-31');
+    expect(items.map(i => i.date)).toEqual(['2026-07-28']);
+  });
+
+  it('excludes a cancelled (inactive) subscription', () => {
+    const sub = mkSub({ active: false });
+    const items = buildCalendarItems({ ...empty, subs: [sub] }, '2026-07-01', '2026-07-31');
+    expect(items).toHaveLength(0);
   });
 
   it('sorts the merged result by date ascending', () => {

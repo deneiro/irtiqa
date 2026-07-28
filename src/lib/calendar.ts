@@ -1,7 +1,7 @@
-import { questTargetDate } from '../game/engine';
-import type { Contact, JournalEntry, Quest, QuickTask, SocialEvent } from '../game/types';
+import { addMonthsClamp, questTargetDate } from '../game/engine';
+import type { Contact, JournalEntry, Quest, QuickTask, SocialEvent, Subscription } from '../game/types';
 
-export type CalendarItemType = 'event' | 'birthday' | 'quickTask' | 'journal' | 'questTarget';
+export type CalendarItemType = 'event' | 'birthday' | 'quickTask' | 'journal' | 'questTarget' | 'subscription';
 
 export interface CalendarItem {
   id: string;
@@ -18,6 +18,7 @@ interface CalendarSource {
   quickTasks: QuickTask[];
   journal: JournalEntry[];
   quests: Quest[];
+  subs?: Subscription[];
 }
 
 /** All yearly occurrences of a birthday's month/day that fall within [rangeStart, rangeEnd] (inclusive). */
@@ -33,7 +34,22 @@ function birthdaysInRange(birthday: string, rangeStart: string, rangeEnd: string
   return out;
 }
 
-/** Unifies every date-bearing thing in the app — events, birthdays, due quick tasks, journal entries, quest targets — into one list for a range. */
+/**
+ * Every monthly charge date from a subscription's `nextDue` onward that falls within [rangeStart, rangeEnd] (inclusive).
+ * Anchored at `nextDue` rather than at the range's own start — a subscription never bills before its first due date,
+ * so it must not show up in months prior to that (e.g. the month it was created in).
+ */
+function subscriptionOccurrencesInRange(sub: Subscription, rangeStart: string, rangeEnd: string): string[] {
+  const out: string[] = [];
+  let date = sub.nextDue;
+  while (date <= rangeEnd) {
+    if (date >= rangeStart) out.push(date);
+    date = addMonthsClamp(date, 1, sub.dayOfMonth);
+  }
+  return out;
+}
+
+/** Unifies every date-bearing thing in the app — events, birthdays, due quick tasks, journal entries, quest targets, subscription charges — into one list for a range. */
 export function buildCalendarItems(src: CalendarSource, rangeStart: string, rangeEnd: string): CalendarItem[] {
   const items: CalendarItem[] = [];
 
@@ -65,6 +81,13 @@ export function buildCalendarItems(src: CalendarSource, rangeStart: string, rang
     const target = questTargetDate(q);
     if (!target || target < rangeStart || target > rangeEnd) continue;
     items.push({ id: `quest-${q.id}`, date: target, type: 'questTarget', title: `Quest target: ${q.title}`, link: `/quests/${q.id}` });
+  }
+
+  for (const sub of src.subs ?? []) {
+    if (!sub.active) continue;
+    for (const date of subscriptionOccurrencesInRange(sub, rangeStart, rangeEnd)) {
+      items.push({ id: `sub-${sub.id}-${date}`, date, type: 'subscription', title: `${sub.name} bills (${sub.amount.toLocaleString()})`, link: '/finances' });
+    }
   }
 
   return items.sort((a, b) => a.date.localeCompare(b.date));

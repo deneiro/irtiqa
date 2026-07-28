@@ -14,6 +14,32 @@ const CHANNEL_META: { key: keyof ContactChannels; label: string; icon: string; p
   { key: 'email', label: 'Primary Email Address', icon: '✉️', placeholder: 'name@example.com' },
 ];
 
+/** Deep-link straight into a chat/profile/mail composer with this contact, not just the app's home screen. */
+function channelHref(key: keyof ContactChannels, raw: string): string | null {
+  const value = raw.trim();
+  if (!value) return null;
+  switch (key) {
+    case 'whatsapp': {
+      const digits = value.replace(/\D/g, '');
+      return digits ? `https://wa.me/${digits}` : null;
+    }
+    case 'telegram': {
+      const handle = value.replace(/^@/, '');
+      return handle ? `https://t.me/${handle}` : null;
+    }
+    case 'instagram': {
+      const handle = value.replace(/^@/, '');
+      return handle ? `https://instagram.com/${handle}` : null;
+    }
+    case 'phone':
+      return `tel:${value.replace(/[^\d+]/g, '')}`;
+    case 'email':
+      return `mailto:${value}`;
+    default:
+      return null;
+  }
+}
+
 export function Social() {
   const s = useGame();
   const [editing, setEditing] = useState<Contact | 'new' | null>(null);
@@ -150,9 +176,24 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
       )}
       {channels.length > 0 && (
         <div className="contact-channels">
-          {channels.map(m => (
-            <span key={m.key} className="muted">{m.icon} {contact.channels[m.key]}</span>
-          ))}
+          {channels.map(m => {
+            const value = contact.channels[m.key] ?? '';
+            const href = channelHref(m.key, value);
+            return href ? (
+              <a
+                key={m.key}
+                className="contact-channel-link"
+                href={href}
+                target={m.key === 'phone' || m.key === 'email' ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                title={`Open ${m.label.replace(/ handle| Number| Username| Phone| Address/, '')}`}
+              >
+                {m.icon} {value}
+              </a>
+            ) : (
+              <span key={m.key} className="muted">{m.icon} {value}</span>
+            );
+          })}
         </div>
       )}
       {contact.notes && <p className="contact-notes">{contact.notes}</p>}

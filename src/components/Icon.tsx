@@ -23,6 +23,7 @@ import {
   PieChart,
   Play,
   Plus,
+  RefreshCw,
   Repeat,
   ScrollText,
   Settings,
@@ -53,7 +54,7 @@ export type IconName =
   // actions / chrome
   | 'gold' | 'check' | 'close' | 'edit' | 'trash' | 'plus' | 'starFilled' | 'starOutline'
   | 'play' | 'stop' | 'flag' | 'lock' | 'trophy' | 'grip' | 'eye' | 'eyeOff'
-  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight' | 'chronicle' | 'wheel';
+  | 'cake' | 'target' | 'chevronLeft' | 'chevronRight' | 'chronicle' | 'wheel' | 'subscription';
 
 const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   // modules
@@ -107,6 +108,7 @@ const ICONS: Record<IconName, React.ComponentType<LucideProps>> = {
   target: Target,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
+  subscription: RefreshCw,
 };
 
 export function Icon({ name, size = 18, fill, ...props }: { name: IconName; size?: number } & LucideProps) {

@@ -38,6 +38,7 @@ const CAL_TYPE_ICON: Record<CalendarItemType, IconName> = {
   quickTask: 'check',
   journal: 'journal',
   questTarget: 'target',
+  subscription: 'subscription',
 };
 
 /**
@@ -92,11 +93,11 @@ export function Dashboard() {
 
   const calendarPreview = useMemo(
     () => buildCalendarItems(
-      { events: s.events, contacts: s.contacts, quickTasks: s.quickTasks, journal: s.journal, quests: s.quests },
+      { events: s.events, contacts: s.contacts, quickTasks: s.quickTasks, journal: s.journal, quests: s.quests, subs: s.subs },
       today,
       addDaysStr(today, 7),
     ).slice(0, 6),
-    [s.events, s.contacts, s.quickTasks, s.journal, s.quests, today],
+    [s.events, s.contacts, s.quickTasks, s.journal, s.quests, s.subs, today],
   );
 
   const effectiveOrder = reconcileOrder(s.dashboardOrder);

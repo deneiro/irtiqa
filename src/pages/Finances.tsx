@@ -354,7 +354,6 @@ function TxForm({ onClose }: { onClose: () => void }) {
 
 function SubForm({ onClose }: { onClose: () => void }) {
   const s = useGame();
-  const [name, setName] = useState('');
   const [amount, setAmount] = useState(0);
   const [accountId, setAccountId] = useState(s.accounts[0]?.id ?? '');
   const [category, setCategory] = useState('Subscriptions');
@@ -362,14 +361,8 @@ function SubForm({ onClose }: { onClose: () => void }) {
 
   return (
     <Modal title="New subscription" onClose={onClose}>
-      <label className="field"><span>Name</span>
-        <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Spotify, gym…" autoFocus />
-      </label>
       <label className="field"><span>Amount per month</span>
-        <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} />
-      </label>
-      <label className="field"><span>Charged on day of month (1–28)</span>
-        <input className="input" type="number" min={1} max={28} value={dayOfMonth} onChange={e => setDayOfMonth(Math.min(28, Math.max(1, Number(e.target.value))))} />
+        <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
       <label className="field"><span>Category</span>
         <select className="input" value={category} onChange={e => setCategory(e.target.value)}>
@@ -381,12 +374,16 @@ function SubForm({ onClose }: { onClose: () => void }) {
           {s.accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </label>
+      <label className="field"><span>Charged on day of month (1–28)</span>
+        <input className="input" type="number" min={1} max={28} value={dayOfMonth} onChange={e => setDayOfMonth(Math.min(28, Math.max(1, Number(e.target.value))))} />
+      </label>
+      <p className="muted">It'll show up on the <Link to="/calendar">Calendar</Link> on its charge day every month.</p>
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
         <button
           className="btn btn-primary"
-          disabled={!name.trim() || amount <= 0 || !accountId}
-          onClick={() => { s.addSubscription({ name: name.trim(), amount, accountId, category, dayOfMonth }); onClose(); }}
+          disabled={amount <= 0 || !accountId}
+          onClick={() => { s.addSubscription({ name: category, amount, accountId, category, dayOfMonth }); onClose(); }}
         >
           Add subscription
         </button>

@@ -12,8 +12,9 @@ const TYPE_META: Record<CalendarItemType, { icon: IconName; label: string; dotCl
   quickTask: { icon: 'check', label: 'Task', dotClass: 'cal-dot-task' },
   journal: { icon: 'journal', label: 'Journal', dotClass: 'cal-dot-journal' },
   questTarget: { icon: 'target', label: 'Quest target', dotClass: 'cal-dot-quest' },
+  subscription: { icon: 'subscription', label: 'Subscription', dotClass: 'cal-dot-subscription' },
 };
-const TYPE_ORDER: CalendarItemType[] = ['event', 'birthday', 'quickTask', 'journal', 'questTarget'];
+const TYPE_ORDER: CalendarItemType[] = ['event', 'birthday', 'quickTask', 'subscription', 'journal', 'questTarget'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function Calendar() {
@@ -36,11 +37,11 @@ export function Calendar() {
 
   const items = useMemo(
     () => buildCalendarItems(
-      { events: s.events, contacts: s.contacts, quickTasks: s.quickTasks, journal: s.journal, quests: s.quests },
+      { events: s.events, contacts: s.contacts, quickTasks: s.quickTasks, journal: s.journal, quests: s.quests, subs: s.subs },
       gridStart,
       addDaysStr(gridStart, totalCells - 1),
     ),
-    [s.events, s.contacts, s.quickTasks, s.journal, s.quests, gridStart, totalCells],
+    [s.events, s.contacts, s.quickTasks, s.journal, s.quests, s.subs, gridStart, totalCells],
   );
 
   const byDate = useMemo(() => {
