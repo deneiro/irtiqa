@@ -2412,6 +2412,239 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Memories & Fun / Resource / Эйдельман — Сказка, миф и морфология Проппа',
   },
+
+  {
+    slug: 'means-not-end',
+    attr: 'spirituality',
+    title: 'A good life, not a rich one — and poverty is not a virtue',
+    origin: 'Ustaz lecture on wealth, provision and intention',
+    medium: 'lecture',
+    minutes: 7,
+    hook: 'Wanting more is not the problem. Confusing the means with the goal is.',
+    thesis:
+      'Success in the Qur\'anic vocabulary is a good life rather than a rich one — and the recurring frame is that work, money, family and property are means, never the goal. Confusing the two is named as the root of most of the difficulty people have with earning. But the corollary cuts the other way too: poverty is not treated as a virtue, and wanting out of it is legitimate.',
+    ideas: [
+      {
+        name: 'A good life, not a wealthy one',
+        body: 'The textual observation offered: the promise made is of a good, pleasant life rather than a rich or provided-for one. The word chosen for the successful person in the hadith cited is the one meaning sufficiency — contentment with what there is — rather than the word for abundance.',
+      },
+      {
+        name: 'Poverty is not praiseworthy',
+        body: 'An explicit rebuttal of a view common among some practising people: the Prophet is described as asking for protection from poverty specifically, in the daily morning and evening remembrances. Poverty is inevitable in any society but not spiritually commendable, and wanting to escape it is legitimate.',
+      },
+      {
+        name: 'Wealthy companions as precedent',
+        body: 'Answering the charge that an ambitious believer is chasing the world: several of the ten companions promised paradise were very wealthy, and one financed the equipping of an entire army alone. The stated conclusion is that the problem is never the wealth but the ordering — someone who earns a great deal while not knowing the basics of their religion has misordered priorities, not too much money.',
+      },
+      {
+        name: 'Means versus goal',
+        body: 'The formula repeated throughout: work, money, family and property are the instrument, and the goal is God\'s pleasure. Everything else must serve that rather than compete with it. This is offered as the single diagnostic to run on your own ambitions.',
+      },
+      {
+        name: 'Provision is set; forbidden means change the risk, not the sum',
+        body: 'The theological position given: the total provision is already determined, so pursuing it through forbidden means does not increase the amount — it increases the exposure. Interest is described as erasing blessing even where the number on the statement has grown.',
+      },
+      {
+        name: 'Tie the camel, then trust',
+        body: 'The sequence is explicit and in that order: take preparation to its maximum, and only then stop being anxious about the outcome. Trust is not offered as a substitute for the preparation.',
+      },
+    ],
+    notes: [
+      'Sharia is contrasted with utopian ideology: it does not promise universal equality but states plainly that poverty, illness and crime persist in any society, and supplies conduct for the poor, for the rich, and for living alongside both.',
+      'Against the argument "I earn a lot in order to lift the community": if the real intention is vanity dressed as service, the framing does not repair it.',
+      'Maintaining kinship ties is the one action named as linked to both increased provision and long life.',
+      'Direction of comparison as a quick diagnostic: downward in material things, upward in spiritual ones — against envy in one direction and stagnation in the other.',
+      'A practising teacher answering mostly through direct citation with explicit references, relying on widely transmitted material rather than marginal positions. Some historical and economic details come without academic sourcing and are best read as transmitted tradition rather than documented history.',
+    ],
+    practices: [
+      'Run the means-versus-goal check regularly: has the current target quietly become the point rather than the instrument?',
+      'Prepare to the maximum, then deliberately stop carrying the outcome.',
+      'Change your physical state — posture, ablution, prayer, a pause — before any decision being made on emotion.',
+      'Keep kinship ties actively, not as sentiment but as a named priority.',
+      'Compare downward in material matters and upward in spiritual ones.',
+    ],
+    habits: [
+      { id: 'f_remember', because: 'Maintaining kinship ties is the single action the source names as tied to both provision and long life — and it is made of small specific attention, not sentiment.' },
+      { id: 'm_charity', because: 'Giving is the cleanest daily proof that the money is being held as a means rather than as the goal.' },
+      { id: 's_gratitude', because: 'Sufficiency rather than abundance is the stated definition of success, and gratitude is how sufficiency gets noticed at all.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'The misordering the source warns about is precisely earning a great deal while never studying the basics — this is the corrective it prescribes.' },
+      { id: 'q_debts', because: 'Interest is described as erasing blessing even when the figure grows, which makes the real exposure something you have to actually look at.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Богатство, искушения, кредиты — успех как хорошая жизнь, ризк как предопределённый и харам как источник риска',
+  },
+  {
+    slug: 'the-prayer-of-yunus',
+    attr: 'spirituality',
+    title: 'When every cause fails at once',
+    origin: 'Lecture on the prayer of Yunus and the habit of self-justification',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'Explaining yourself is not a small flaw of character. The source calls it worship of the self.',
+    thesis:
+      'The prayer of Yunus is read as the model of any trial: swallowed by a fish, in a storm, at night — three created things threatening at once, with every ordinary cause simultaneously stripped of any power to help. What remains is the One who governs the causes themselves. The general law drawn from it: a trial is not primarily there to be solved through causes but to make their powerlessness undeniable.',
+    ideas: [
+      {
+        name: 'The Causer of causes',
+        body: 'Causes are described as having no influence of their own — they are entirely subject to what governs them. The distinction drawn is between knowing this as a general formula, which almost every believer does, and holding it with enough certainty that it changes the reaction to a specific difficulty.',
+      },
+      {
+        name: 'Two paths through a trial',
+        body: 'Either fixate on the causes — fearing them, hoping in them, waiting for mercy from them — which is described as only increasing the pressure; or move attention immediately from the causes to the relationship with the Creator, ask why this is happening, find the fault, and repent. The second is presented as changing the situation rather than only the reaction to it.',
+      },
+      {
+        name: 'Self-justification as worship of the self',
+        body: 'The sharpest claim in the source. The verse cited is "do not justify yourselves", with attention drawn to a grammatical lengthening in the original conveying intensity — that our justifications are many. The self by nature loves only itself and refuses to concede its faults, spending even the capacities given for worship on serving itself.',
+      },
+      {
+        name: 'Knowing and being convinced are different states',
+        body: 'The practical version of the whole lecture: the question is not whether you can state the belief, but whether it changes what you actually do the next time something goes wrong.',
+      },
+      {
+        name: 'The world as a place of service',
+        body: 'Framed as somewhere one is present for work and service rather than for enjoyment — a formulation the source arrives at from a second, independent direction rather than by repeating an earlier argument.',
+      },
+    ],
+    notes: [
+      'The concrete exercise offered: catch the moment you explain your action instead of simply admitting it — regardless of how convincing the explanation happens to be.',
+      'This is a preacher transmitting a recognised theological tradition, with personal interpretation and anecdote in the interludes. Hadith are conveyed by meaning without chains examined.',
+      'The lecture also uses a deliberately jarring rhetorical contrast that the source itself qualifies immediately afterwards; it is a homiletic device rather than a doctrinal position, and is left out here because it does not survive separation from its delivery.',
+    ],
+    practices: [
+      'Notice when you are explaining rather than admitting, and stop at the admission.',
+      'In a difficulty, move attention off the causes early rather than after they have been exhausted.',
+      'Ask whether your conviction changes what you do next, or only what you can say.',
+      'Take the trial as a question about the relationship rather than only as a problem to be routed around.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'Catching self-justification requires looking back over the week, since in the moment the explanation is always the most convincing thing available.' },
+      { id: 's_dhikr', because: 'The turn described is from the causes to their Author — and five quiet minutes before the day is where that turn is practised while nothing is on fire.' },
+      { id: 's_forgive', because: 'Letting a thing go without first constructing a case for yourself is the same muscle the self-justification test is trying to build.' },
+    ],
+    quests: [
+      { id: 'q_anchor', because: 'The difference between knowing and being convinced is closed by daily practice, not by agreeing with the argument once.' },
+      { id: 'q_learnfaith', because: 'The source\'s own distinction — a formula everyone can state versus a conviction that changes behaviour — is an argument for studying rather than collecting.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Из мрака к свету — Молитва Юнуса, нафс как идол через самооправдание и мир как служение',
+  },
+
+  {
+    slug: 'beliefs-under-habits',
+    attr: 'career',
+    title: 'Willpower is short-term. The belief underneath is not.',
+    origin: 'Seisembayev — entrepreneur, on beliefs, mission and real wealth',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Change a habit without changing the belief it grew from and you are fighting your own picture of the world.',
+    thesis:
+      'Habits are roughly ninety per cent of the autopilot a life runs on, and attacking them directly with will is close to useless because they sit at the end of a chain: belief forms a picture of the world, which produces values, then principles, then rules, then skill, then character. The lever is at the root. Willpower is a short-term instrument, useful for crossing a gap, not for holding a position.',
+    ideas: [
+      {
+        name: 'The chain, in order',
+        body: 'A belief forms on contact with reality — the kettle was hot, so it must not be touched. On that belief a picture of the world is built, and it is inside that representation, rather than in reality, that a person spends most of their life. Values sit on the picture, principles generalise the values, rules apply them to specific situations, and habit and character are what is left downstream.',
+      },
+      {
+        name: 'Identity is memory, and autopilot is not remembered',
+        body: 'What is lived on autopilot is not stored, and therefore, functionally, was not lived. That gives the ninety-per-cent figure its bite: it is not only about efficiency but about how much of a life is actually retained.',
+      },
+      {
+        name: 'Where money shame comes from',
+        body: 'On the figures cited, a majority of people first encounter money through petty theft — small change taken from a parent — forming an early association between money and guilt, which is offered as an explanation for why money later "does not stay in the hands".',
+      },
+      {
+        name: 'The belief inherited from a father',
+        body: 'A child watching an exhausted parent earn through hard physical work forms the belief that money equals brutal labour — and as an adult unconsciously rejects every easier route as a scam. Those who earn hard and see others earn easily must explain it as fraud, a good marriage, or a secret, but never as something they could also do, because that would require giving up a self-protective identity.',
+      },
+      {
+        name: 'Mission by organic growth, not analysis',
+        body: 'The recommendation is to let a hobby grow until it demonstrates its own commercial viability rather than forcing monetisation early — and to find the mission by progressive narrowing, striking out categories you are certain you do not want, rather than trying to state it correctly in one attempt.',
+      },
+      {
+        name: 'Real wealth is opportunities minus obligations',
+        body: 'The closing formula: wealth is the gap between what you can do and what you owe, rather than a quantity of money. On that definition an income rise that arrives with matching obligations is not an increase.',
+      },
+    ],
+    notes: [
+      'On acting under pressure: emotions are described as a signalling function aimed at other people, and therefore useless when nobody is there — the account given is of ignoring them entirely while executing a sequence where each action gets exactly one attempt.',
+      'A personal interview rather than an academic source, from a speaker with a pattern of confidently delivered personal theory, including theological claims that cannot be checked empirically.',
+      'The statistic about childhood money and theft is given without a source — plausible, unverified, and better carried as an illustration than as a number.',
+    ],
+    practices: [
+      'Before forcing a habit, ask which belief is producing the resistance — then argue with that instead.',
+      'Let a side project grow on its own until it proves it can pay, rather than monetising it early.',
+      'Find the direction by elimination: cross out what you are sure you do not want, repeatedly.',
+      'Measure a gain as opportunities minus obligations, not as income.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'The chain is only visible looking backwards — a belief shows itself in the pattern of a week, never in the moment it is operating.' },
+      { id: 's_makecreate', because: 'The mission is supposed to emerge from something grown rather than analysed, and growth needs regular hours before it needs a plan.' },
+      { id: 'c_onelesson', because: 'What is run on autopilot is not remembered; writing down the one thing that worked is how a day stops being lost to the ninety per cent.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'Progressive narrowing only converges if each round is tested against something real rather than imagined.' },
+      { id: 'q_portfolio', because: 'A hobby proves its own commercial case by being found — which requires it to exist somewhere other than your own machine.' },
+    ],
+    vaultSource: 'Business & career / Resource / Сейсембаев — Убеждения как источник привычек, поиск миссии через хобби и формула истинного богатства',
+  },
+  {
+    slug: 'the-idea-is-a-multiplier',
+    attr: 'career',
+    title: 'The idea is a multiplier, not the source',
+    origin: 'Tokovinin — entrepreneur, on management as a craft and choosing a niche',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Managing people is described as the highest-paid skill on earth — and as something nobody can teach you, only let you learn.',
+    thesis:
+      'The traits that make a good entrepreneur — protest, self-direction, vanity, ambition, nerve — are described as the same traits that can put someone under a bridge, and what separates the outcomes is circumstance, environment and chance rather than character. Against that, the practical claim: the idea is a multiplier rather than the source, which makes selling and managing the things worth building because they work with any idea.',
+    ideas: [
+      {
+        name: 'Rebellion as fuel rather than defect',
+        body: 'The account given is of deliberately becoming the worst student in the school to differentiate from a high-achieving older sibling — and of the same qualities later becoming the engine. The explicit caution attached is not to underestimate chance, probability and environment in deciding which way those qualities resolve.',
+      },
+      {
+        name: 'Marks may measure compliance rather than ability',
+        body: 'Offered as a hypothesis with the survivorship bias openly acknowledged: school grades often mark willingness to comply rather than knowledge. But compliance is not written off — the same passage states you will not reach great heights without being able to listen and to serve.',
+      },
+      {
+        name: 'The marshmallow test, reread',
+        body: 'A counterintuitive reframe: both the diligent and the indifferent child can wait for a future reward. The difference is not willpower but whose approval is at stake — a teacher and parents in one case, peers in the other.',
+      },
+      {
+        name: 'Management is a craft, learned by being allowed to ruin things',
+        body: 'It is called the highest-paid skill on earth and one nobody teaches, because it is a craft rather than a body of knowledge. The only route described is someone experienced choosing to invest in you specifically and patiently permitting the bad hires, the bad firings and the badly set tasks until the hand is trained.',
+      },
+      {
+        name: 'Entrepreneur and manager are two different people',
+        body: 'The entrepreneurial role is creative — conceive the product, read the market. Management is a separate skill of persistence and system. The pairing is presented as a tandem rather than a progression.',
+      },
+      {
+        name: 'Timing a niche by consumption, not by enthusiasm',
+        body: 'Two heuristics: a topic having gone stale among the earliest enthusiasts is a timing signal, and before betting on a trend, check whether the pattern of consumption has actually changed — look for new consumers without the old habit rather than trying to re-educate the existing ones.',
+      },
+    ],
+    notes: [
+      'A capital formula is offered as the filter for choosing a direction: money, people and knowledge together — rather than picking whichever idea is most attractive in the abstract.',
+      'Because the idea is a multiplier rather than the source, the antidote to paralysis while hunting for the perfect idea is to build sales and management, which pay off under any idea.',
+      'A practising entrepreneur speaking in the first person about specific decisions, sums and failures, with open self-irony — he calls several of his own decisions disgraceful failures and admits a nine-year unsuccessful push abroad. Company figures are deliberately vague, which he says outright.',
+    ],
+    practices: [
+      'Choose a direction by money, people and knowledge rather than by the appeal of the idea.',
+      'Stop hunting for the idea and build the two skills that work regardless of which one you land on.',
+      'Before betting on a trend, look for consumers with no prior habit rather than trying to convert the existing ones.',
+      'Seek out someone willing to let you make management mistakes on purpose — that permission is the training.',
+    ],
+    habits: [
+      { id: 'd_build', because: 'A craft is learned by producing bad work under supervision — which requires actually building with the thing rather than reading about it.' },
+      { id: 'c_onelesson', because: 'If management is trained by ruining things, then the training only compounds when what went wrong gets written down while it is still fresh.' },
+      { id: 'd_askquestion', because: 'Both niche heuristics are questions asked of other people — whether the consumption pattern moved, and who is buying without the old habit.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'Selling and managing are named as the skills that pay off under any idea, which makes them the concrete thing to take on while the idea is still unsettled.' },
+      { id: 'q_promise', because: 'Nerve is treated as the fuel, and a commitment made publicly is the cheapest way to find out whether you have any.' },
+    ],
+    vaultSource: 'Business & career / Resource / Токовинин — Бунтарство как топливо, ремесло менеджмента и выбор ниши как выбор судьбы',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
