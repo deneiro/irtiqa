@@ -1486,6 +1486,233 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Personal growth / Resource / Лембке — Баланс удовольствия-боли, зависимость и правда',
   },
+
+  {
+    slug: 'resist-less',
+    attr: 'brightness',
+    title: 'The point is not to try harder. It is to resist less.',
+    origin: 'Anne Lamott — on attention, permission and the first draft',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Most creative blocks are not a skill problem. They are an attention problem, and they have a different fix.',
+    thesis:
+      'Most problems that present as a deficit of skill are really a deficit of attention. Being blocked is usually being empty — and the remedy is noticing the world more closely, not accumulating more experiences, because what a piece needs is generally already available to anyone paying attention. Editing is a separate matter entirely: a mechanical, learnable craft of cutting and strengthening whatever a permissive first draft produced.',
+    ideas: [
+      {
+        name: 'Headlights in fog',
+        body: 'Borrowed from Doctorow — driving at night, you see only a little way ahead and can still make the whole journey — with fog added. You do not need the ending or even the next chapter, only the next couple of sentences; arriving at them reveals what follows.',
+      },
+      {
+        name: 'Empty, not blocked',
+        body: 'When a novelist friend reported writer\'s block, Lamott\'s reply was that she was not blocked but empty — all the sand had run out of the sack. The accompanying image is a "ragbag" collector who gathers noticed scraps (a colour, a texture, an overheard line) into a mental quilt and hands it over only once there is enough material. The fix is better attention, not chasing more experience, which only adds pressure.',
+      },
+      {
+        name: 'Resist less',
+        body: 'The line she uses as her core discipline reframes the work as agreeing to notice and receive rather than forcing output. Trying harder is the wrong axis.',
+      },
+      {
+        name: 'Attention is raw material, and it need not be yours',
+        body: 'She does not need to have lived a thing to write it: the exact greenish-yellow centre of someone else\'s orchid can later become a character\'s eyes. The craft is capturing observed specifics as they happen — a pen and index card, or phone notes — because writing something down makes it nearly indelible even if never used.',
+      },
+      {
+        name: 'The inner critic is a character you can negotiate with',
+        body: 'Locate where the critical voice physically sits, bring it forward, and ask directly who hired it, why, and when. The practice is not to silence or defeat it — it once served a protective function — but to thank it for that and ask it to step aside while you work.',
+      },
+      {
+        name: 'Three drafts, three different jobs',
+        body: 'The child\'s draft gets everything down permissively, firm but friendly with yourself and without judgement; it will be too long and partly bad. The later passes are where cuts and stronger verbs happen, and then the final line edit. Conflating the three is what makes first drafts impossible.',
+      },
+    ],
+    notes: [
+      '"Tell me a story, make me care" works as a compact test for anything you make: is there a real stake and a recognisably human, flawed subject, or is it only information delivery?',
+      'Lamott is a long-established published author speaking about her own documented method; this is high-reliability craft opinion rather than research, and the personal anecdotes are self-reported and not load-bearing.',
+      'One quotation in the source is misattributed in transcription — the line about surviving childhood giving you enough to write about belongs to Flannery O\'Connor. Flagged rather than quietly corrected.',
+    ],
+    practices: [
+      'When stuck, treat the diagnosis as "pay closer attention", not "try harder".',
+      'Carry something to capture specifics the moment you notice them — writing it down is what makes it available later.',
+      'Give yourself an explicitly bad first pass, then do the cutting in a separate, later session.',
+      'Name the inner critic and ask it to step aside for the duration of the draft rather than trying to win the argument.',
+    ],
+    habits: [
+      { id: 's_makecreate', because: 'The permission model only works if there is a regular, low-stakes place to put a bad first pass — twenty minutes is the size that survives a busy week.' },
+      { id: 'b_play', because: 'The ragbag fills through undirected noticing, which is exactly what doing something with no purpose protects time for.' },
+      { id: 'd_notes', because: 'Writing an observation down in your own words is the capture step she says makes a detail nearly indelible, whether or not it ever gets used.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'The three-draft model is meaningless until one thing gets carried all the way to finished — that is where the second and third passes actually happen.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Anne Lamott — Writing Advice and the Craft of Attention',
+  },
+  {
+    slug: 'escalate-dont-subvert',
+    attr: 'brightness',
+    title: 'Finish it first. Diagnose later.',
+    origin: 'Brandon Sanderson — on promises, escalation and broken stories',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'The instinct to tell "stuck" from "fundamentally broken" is earned by finishing things, not by thinking harder.',
+    thesis:
+      'Subplots, twists and hooks all pass or fail on one test: do they escalate the stakes and honour the promises already made to the audience, or do they merely surprise and delay without paying off? And the ability to tell an ordinary stuck patch from a genuinely broken structure only develops after finishing several complete pieces — which is the argument for finishing rather than diagnosing mid-draft.',
+    ideas: [
+      {
+        name: 'The promise is the contract',
+        body: 'The failure in a badly received subplot is usually not the digression itself but an abandoned promise. The worked negative example opens by stating an explicit goal — I need to get to my friend — then immediately drops it for an unrelated errand. Breaking the promise, not the detour, is what the audience actually registers.',
+      },
+      {
+        name: 'Twists must escalate, not merely subvert',
+        body: 'A twist is good only insofar as it expands the scope or stakes of a conflict that already exists. The canonical example works because it is a natural escalation of a conflict the story had been building toward, with real foreshadowing — not because it was unexpected.',
+      },
+      {
+        name: 'Every subplot deserves its own promise-and-progress',
+        body: 'In a large cast, audiences will always rank favourites and least-favourites; that is unavoidable rather than a fixable bug. The lever is treating each secondary arc with the same discipline as the main one, so it reads as its own story rather than a detour.',
+      },
+      {
+        name: 'There is no master list — build your own',
+        body: 'He says plainly that he has never found a satisfying catalogue of plot archetypes beyond reductive lists. The alternative is deliberate pattern-matching: consume work while asking what sub-genre and beat pattern it belongs to, and accumulate a personal, growing catalogue of reusable patterns.',
+      },
+      {
+        name: 'The threshold of tolerance, and what earns it',
+        body: 'Every audience tolerates a different amount of slow setup before leaving, and that tolerance is extended by trust an author has already earned. The practical rule for openings: establish the character\'s head, the tone, and their relationship to the coming conflict as fast as possible. Nobody has ever complained that something started too interesting.',
+      },
+    ],
+    notes: [
+      'Sanderson is unusually explicit about the limits of his own frameworks — he admits an unsolved structural problem in a published book and a years-long struggle to fix another. That makes him a useful calibration against more dogmatically stated craft "laws".',
+      'This is a working practitioner teaching a university course, not a content-creator take; the frameworks are offered as heuristics rather than measured findings.',
+    ],
+    practices: [
+      'Before adding a thread, state its promise to the audience in one sentence — then check later whether that exact promise was honoured.',
+      'Test every planned reveal with: does this deepen a conflict they already care about, or is it surprise for its own sake?',
+      'Finish the draft before deciding it is broken. The diagnostic instinct is a product of completed work.',
+      'Build your own catalogue of patterns by asking, of everything you consume, what shape it actually is.',
+    ],
+    habits: [
+      { id: 'c_ship', because: 'Whether a promise was honoured is not knowable from inside your own head — it needs one person who did not watch you make it.' },
+      { id: 's_makecreate', because: '"Finish it first" is a claim about accumulated volume, and volume is made of ordinary sessions rather than inspired ones.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'This is the thesis as a task: the judgement he describes is only earned by carrying something all the way to done.' },
+      { id: 'q_portfolio', because: 'Tolerance is extended by trust already earned — which requires the earlier work to exist somewhere findable.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Sanderson — Viewpoint, Escalation and Diagnosing a Broken Story',
+  },
+
+  {
+    slug: 'heart-soul-body-mind',
+    attr: 'spirituality',
+    title: 'Treating the symptom is not the same as treating the soul',
+    origin: 'Rania Awaad — psychiatrist, on al-Ghazali\'s model of the psyche',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'Two opposite errors — faith instead of treatment, and treatment with no soul in it. The source rejects both.',
+    thesis:
+      'Islamic psychology is presented not as adding scripture to an existing Western model but as a discipline built from its own sources, in which the psyche cannot be treated while the soul is left out. The clinical position is explicitly neither of the two available extremes: refusing medicine on the grounds that faith should be sufficient, and full medicalisation with no spiritual component, are both named as failures.',
+    ideas: [
+      {
+        name: 'Al-Ghazali\'s model, used clinically',
+        body: 'At the centre sits the qalb — the metaphysical heart, not the organ — connected bidirectionally to the ruh (soul), the nafs (here meaning behavioural inclination rather than simply "self"), the jasad (body) and the aql (mind). All four interact, so intervening on behaviour alone or cognition alone produces symptom reduction rather than healing.',
+      },
+      {
+        name: 'The stated goal is fitra, not symptom scores',
+        body: 'Therapy aims at returning a person toward their original given state. Work that never touches the ruh is described as operating on the surface layer — real, but partial.',
+      },
+      {
+        name: 'Grief and trauma are different processes',
+        body: 'Grief is bounded in time and naturally weakens. Trauma is the state in which the same circumstances still spontaneously trigger a person long afterwards — and if that is not happening, the source calls it a difficulty rather than trauma in the clinical sense. Untreated trauma does not fade; it goes deeper and resurfaces at full intensity.',
+      },
+      {
+        name: 'The hadith cited against refusing treatment',
+        body: 'Asked whether one should seek treatment when ill, the Prophet answered yes, and added that Allah does not send an illness without also sending its cure. On that basis the source sharply criticises the claim that a believer does not get depressed as contradicting both the Sunnah and the evidence.',
+      },
+      {
+        name: 'Depression is multifactorial',
+        body: 'Reducing its cause to weak faith ignores biological, hormonal, genetic and environmental factors. Postnatal depression — affecting roughly one in five women — is given as a largely hormonal condition unrelated to strength of iman, and blaming the woman\'s faith is named as direct harm.',
+      },
+      {
+        name: 'Therapy is a period, not an identity',
+        body: 'It is framed as time-bounded, with the goal that a person becomes their own therapist rather than indefinitely dependent on one specialist — a useful marker for whether a process is actually going somewhere.',
+      },
+    ],
+    notes: [
+      'Historically, the argument is that psychiatric care was first institutionalised inside a hospital system in the Islamic world, and that the model was integrated: architecture, music, diet, talking therapy and spiritual care working together rather than separately.',
+      'A useful self-check offered on wealth: the question is not the size of the income or the ambition, but where the heart\'s priority actually sits.',
+      'The author is a practising psychiatrist with an academic post and classical religious training, and states those positions openly as the basis for trust. The historical section is her own archival argument advancing a specific thesis rather than independently verified here, and the hadith is conveyed by meaning without a chain analysis in the interview.',
+    ],
+    practices: [
+      'Before interpreting a hard state spiritually, account for the biological, hormonal and environmental factors — especially postnatally.',
+      'Distinguish grief from trauma by whether the triggers still return at full intensity long afterwards; if they do, seek structured help rather than waiting it out.',
+      'Judge a therapeutic process by whether it is making you more able to handle yourself, not by how long it has lasted.',
+      'Check where the heart\'s priority sits rather than auditing the income figure.',
+    ],
+    habits: [
+      { id: 's_dhikr', because: 'The model\'s whole claim is that leaving the ruh untouched gives symptom reduction rather than healing — this is the smallest daily version of not leaving it out.' },
+      { id: 'd_review', because: 'Grief that fades and trauma that keeps returning can only be told apart by noticing the pattern over weeks, which needs a standing look rather than memory.' },
+      { id: 's_gratitude', because: 'Naming what went right is the practical form of the source\'s reframe: relationship built on recognising what is already there rather than on what is missing.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'The model is only usable if actually understood — and the source\'s own argument is that doubts do not clear without deliberate study.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Rania Awaad — Бимаристан, модель психики по Газали и границы медикализации',
+  },
+  {
+    slug: 'the-map-and-the-support',
+    attr: 'spirituality',
+    title: 'Feeling lost is a signal, not a verdict',
+    origin: 'Belal Assaad — lecture on guidance and its five components',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'Guidance splits into two kinds — and confusing them is what makes "guides whom He wills" sound arbitrary.',
+    thesis:
+      'Guidance is a two-way process rather than something imposed or withheld arbitrarily. One kind is universal — the map, given to everyone without exception. The other is the support that comes to those who took the map up. Feeling lost is therefore read as a signal to return to five concrete elements of practice rather than as a verdict already passed.',
+    ideas: [
+      {
+        name: 'Two kinds of guidance',
+        body: 'Guidance-as-direction is universal and does not depend on acceptance — the map is issued to everyone. Guidance-as-support is subjective and arrives only after the first is taken up. The apparent tension in "guides whom He wills" resolves once the phrase is read as applying to the second kind.',
+      },
+      {
+        name: 'Being left in your own choice',
+        body: 'Correspondingly, misguidance is presented not as active pushing off the path but as being left in the choice you insisted on — the same logical structure as the freedom to jump or not.',
+      },
+      {
+        name: 'Recitation with tadabbur, not as an oracle',
+        body: 'The first component is remembrance, at best through the Qur\'an read reflectively — rereading a single verse many times and going deeper — explicitly against superstitious use. The cautionary anecdote is a man opening the Mushaf at random and reading the first words as a sign, which produced a verse about Musa\'s serpent in answer to a question about marriage.',
+      },
+      {
+        name: 'The five components',
+        body: 'Remembrance; conviction in belief, meaning going back and studying what one actually holds, since doubts do not resolve without deliberate study; the obligatory acts first and then the voluntary ones; charity, which explicitly includes a service, an embrace, a smile, or listening to someone\'s pain; and good company that reminds you.',
+      },
+      {
+        name: 'The "222" minimum',
+        body: 'For the voluntary night prayer: two units, two tears of sincerity, at two in the morning, for two minutes. Offered as the smallest possible version that still counts — a deliberately low floor rather than an ideal.',
+      },
+      {
+        name: 'Gratitude as the opening move',
+        body: 'A story about rereading the Qur\'an and rediscovering the meaning of its first word — praise — as an invitation into relationship through recognising blessings already present, rather than through what is lacking.',
+      },
+    ],
+    notes: [
+      'Charity is defined broadly enough that having no money removes no excuse: a service, a smile, or listening counts.',
+      'A recurring caution: do not judge someone\'s religiosity by outward behaviour observed in a moment — including your own earlier practice.',
+      'The speaker is a preacher rather than an academic; much of the material is personal narrative and practical exhortation rather than strict exegesis. Hadith are attributed to their collections but given by meaning without chains examined, and at least one fiqh position is flagged by the speaker himself as contested rather than settled.',
+    ],
+    practices: [
+      'Read feeling lost as an instruction to check the five components rather than as evidence about your standing.',
+      'Reread one verse repeatedly for meaning instead of covering volume — and do not use the text as an oracle for decisions.',
+      'Secure the obligatory acts before adding voluntary ones.',
+      'Use the smallest viable version of the night prayer rather than an ideal you will not keep.',
+      'Treat company as part of the practice, not as background.',
+    ],
+    habits: [
+      { id: 's_fivedaily', because: 'The order in the five components is explicit: the obligatory acts come first, and the voluntary ones are built on top rather than instead.' },
+      { id: 's_quran', because: 'One page read with tadabbur is the component named first — and the format the source argues for, against covering volume.' },
+      { id: 'm_charity', because: 'Charity here explicitly includes a service, a smile or listening, which makes the daily version possible regardless of what is in the account.' },
+    ],
+    quests: [
+      { id: 'q_anchor', because: 'The five components only function as a returnable structure if at least one of them is fixed to the day rather than negotiated each morning.' },
+      { id: 'q_learnfaith', because: 'Component two is exactly this: doubts are described as not clearing on their own, only through deliberate study of what you actually hold.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Belal Assaad — Хидая, пять слагаемых руководства и вопрос обращённых',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
