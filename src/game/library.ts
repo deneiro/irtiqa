@@ -2873,6 +2873,234 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Finance & money / Resource / Дмитриева — Психология денег, стыд и смелость',
   },
+
+  {
+    slug: 'the-cycle-is-the-enemy',
+    attr: 'family',
+    title: 'Neither of you is the problem. The dance is.',
+    origin: 'Sue Johnson — originator of EFT, on the pursue-withdraw cycle',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'Criticism is usually protest in disguise — and what it literally means is "where are you, I need you".',
+    thesis:
+      'Romantic relationships are attachment bonds — structurally the same system that binds infants to caregivers — rather than negotiations between two independent parties. Distress follows a predictable shape: one partner protests disconnection in a form that looks like criticism, the other hears attack and withdraws to protect themselves, and the withdrawal fuels more protest. Neither person is the problem; the cycle is.',
+    ideas: [
+      {
+        name: 'Bonds, not bargains',
+        body: 'Her account of the shift: skills-based couples work produced compliant behaviour inside the session that evaporated the moment the exercise ended. Applying attachment theory — until then reserved for infants and mothers — to adult relationships was professionally risky at the time and drew open ridicule from peers working in the bargaining model.',
+      },
+      {
+        name: 'The pursue-withdraw loop',
+        body: 'A raised voice or a criticism is a distorted protest: I do not feel heard, I do not feel like I matter to you. The partner receives it as blame — I am not wanted, I am not enough — and shuts down, face going flat. The more one shuts down, the more frantic the other becomes. Naming the dance itself as the shared enemy is the reframe that makes the work approachable at all.',
+      },
+      {
+        name: 'The same few fears underneath, on both sides',
+        body: 'Whatever the surface emotion — anger, demand, numbness — it sits on a small set of primal fears: rejection, abandonment, isolation, not being enough. These are described as wired into the nervous system of a bonding mammal rather than as personality flaws, which is why they do not respond to being argued with.',
+      },
+      {
+        name: 'The case that shows the translation',
+        body: 'A man presenting with relentless sexual demand turned out, once explored, to be panicking about whether his wife loved him at all — sex was the only channel where he briefly felt safe. When he could name the actual need — touch me, reassure me that I matter — his wife responded to the vulnerability rather than to the demand, and the dynamic changed.',
+      },
+      {
+        name: 'Why the bonding conversation sticks',
+        body: 'When a partner can share genuine vulnerability and reach toward the other rather than attack or withdraw, it functions as biologically prepared learning: the nervous system registers it as survival-relevant and keeps it. Taught communication skills do not stick the same way, because they are processed as technique.',
+      },
+    ],
+    notes: [
+      'One round of genuine vulnerability is not a fair test — several cycles before a withdrawn partner responds is described as normal. Persistent non-response across many is different information.',
+      'Specifying a vague fear is itself de-escalating rather than merely analytical: not "everything is falling apart" but the particular thing being feared.',
+      'EFT has a substantial independent outcome-research base and is commonly named alongside the Gottman method as a gold-standard approach — the core claims here reflect mainstream clinical consensus rather than a fringe position.',
+      'In this particular conversation the neuroscience vocabulary is used loosely and metaphorically rather than technically, and the outcome figures cited are referenced without naming studies. Read the mechanism as clinical shorthand, not as precise neuroscience.',
+    ],
+    practices: [
+      'Describe the loop instead of the person: when I get loud you go quiet, and the quieter you get the louder I get.',
+      'Translate protest into its literal request before responding to its tone.',
+      'Say the vulnerable version — the fear underneath — rather than the demand on top of it.',
+      'Name the specific fear rather than letting it stay global.',
+      'Do not judge the approach on a single attempt.',
+    ],
+    habits: [
+      { id: 'f_remember', because: 'Mattering is the thing being protested for, and remembering what someone told you last time is its smallest daily evidence.' },
+      { id: 'f_voice', because: 'Tone is what gets misread in the loop — a voice carries the vulnerability that the same words in text reliably lose.' },
+      { id: 'f_thanks', because: 'Specific appreciation is a reach toward the other person, which is the exact move the cycle prevents both partners from making.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The bonding conversation is the whole intervention — and it is precisely the conversation the cycle has been postponing.' },
+      { id: 'q_reconnect', because: 'The same protest-and-withdraw shape runs in every close relationship, not only romantic ones, and it ends the same way: someone reaches first.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Johnson — Emotionally Focused Therapy and the Bonding Conversation',
+  },
+  {
+    slug: 'dont-collect-stamps',
+    attr: 'family',
+    title: 'Do not collect stamps',
+    origin: 'Meleshko — psychotherapist, on the four stages and the drama triangle',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The breakup happens over the socks. The reason was filed months earlier.',
+    thesis:
+      'The organising metaphor is a garden two people tend together rather than a fifty-fifty deal. The structural map: four stages a couple moves through, the drama triangle as the explanation for most recurring conflict, and a written five-area agreement as the concrete instrument. The deliberately unpopular claim underneath: mature love is not finding someone who closes your earlier problems but joint work on finishing what did not finish in childhood.',
+    ideas: [
+      {
+        name: 'Four stages, and why duration tells you nothing',
+        body: 'Searching; infatuation and symbiosis, running from a month to around three years on hormonal drive; the struggle for power, where each partner starts producing what they inherited from their family and tries to build the relationship to that internal template; and interdependence, which takes seven years and upward. How long you have been together says nothing — a couple can spend twenty years stuck in the third stage. The example given is a pair discovering in therapy after fifteen years that they did not know each other.',
+      },
+      {
+        name: 'The imago',
+        body: 'The unconscious image of the expected partner, formed in the family you came from — whether there was warmth, whether there was trust. It gets repeated in who you choose and in what you expect from them, whether or not you intend it.',
+      },
+      {
+        name: 'Why drama is more comfortable than closeness',
+        body: 'A conflict pattern is predictable, and predictability is psychologically comfortable even when it is unpleasant. Vulnerability is genuinely unknown territory, which is why it frightens people more than familiar pain does.',
+      },
+      {
+        name: 'The drama triangle',
+        body: 'Persecutor, victim, rescuer — three roles the parties switch between while passing responsibility around: the victim hands it over (you should have guessed), the persecutor pushes it back (you owe me), the rescuer takes on what is not theirs. The exit is direct conversation about the specific need instead of playing the role.',
+      },
+      {
+        name: 'Stamps',
+        body: 'Unspoken grievances collect like stamps in an album. When the album fills, the break happens over something trivial — the socks in the wrong place — although the cause accumulated much earlier. The instruction that follows is not to collect them at all: say the tension immediately, in small amounts.',
+      },
+      {
+        name: 'Criticise the behaviour, not the person',
+        body: 'Taken from the Gottman material: a trainable rule that applies to any close relationship rather than only a romantic one.',
+      },
+    ],
+    notes: [
+      'A written agreement across five areas is offered as a concrete template — with stability (not taking large decisions alone) and openness (which subjects are not left unsaid) named as the load-bearing ones.',
+      'A fair diagnostic before deciding to leave: have you actually done everything to keep it, or is this a reaction to being tired?',
+      'A practising transactional-analysis therapist citing the real originators of the models used — these are documented frameworks from established schools rather than the speaker\'s own metaphors, which is worth noting given how much material in this area is invented vocabulary. The clinical illustrations are, as always, unverifiable.',
+    ],
+    practices: [
+      'Say the small irritation now, in a small amount, rather than filing it.',
+      'When a conflict repeats, ask which of the three roles each of you is currently occupying.',
+      'Criticise a specific behaviour, never the character.',
+      'Write the agreement down together rather than assuming it is understood.',
+      'Ask what stage you are actually in, rather than how long it has been.',
+    ],
+    habits: [
+      { id: 'f_meet', because: 'The stages are moved through by shared experience rather than elapsed time — and shared experience needs to actually be scheduled.' },
+      { id: 'f_remember', because: 'The fifteen-year couple who did not know each other is the warning; asking about the thing they told you last time is the cheapest possible defence against becoming them.' },
+      { id: 'f_nogossip', because: 'Talking about someone who is not there is how a grievance gets filed instead of said — which is exactly how the album fills.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Leaving the triangle is described as naming the specific need directly — which is a conversation, not a resolution to behave differently.' },
+      { id: 'q_reconnect', because: 'Stamps collect in every close relationship, not only the romantic one, and they are cleared the same way: by saying the thing.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Мелешко — Четыре стадии отношений, драматический треугольник и контракт из пяти обещаний',
+  },
+
+  {
+    slug: 'count-it-in-grams',
+    attr: 'health',
+    title: 'The gut does not rest, and neither does the myth',
+    origin: 'Vyalov — gastroenterologist, on digestion myths and what actually matters',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Most of what people believe about eating does not survive contact with the mechanism.',
+    thesis:
+      'Most popular beliefs about eating and digestion do not hold: the stomach does not rest between meals any more than the heart does, frequent small meals have no demonstrated basis, probiotics are indicated for a narrow group rather than everyone, and fizzy drinks harm through one specific mechanism — pushing acidic stomach contents back into the oesophagus. The systemic problem underneath is that people think about food abstractly, in "I eat normally", and never in grams.',
+    ideas: [
+      {
+        name: 'The tract does not take breaks',
+        body: 'Like the heart, lungs and brain, the digestive tract works continuously — it can move faster or slower, but a full stop is an obstruction rather than a rest. The frequent-small-meals advice is traced to dietary tables designed in the 1920s for feeding up the starving, not for a modern person with a surplus of food.',
+      },
+      {
+        name: 'Skipped meals are borrowed, not free',
+        body: 'If you do not eat when you should, the body takes from reserves, and that has to be returned. Skipping is not costless even when it feels fine at the time.',
+      },
+      {
+        name: 'A sustained fast is not a skipped day',
+        body: 'Extended fasting periods are described as having a real measurable effect — a reported reduction in liver fat over a month — but only where there was overeating to begin with. A single day without food does not produce the same thing.',
+      },
+      {
+        name: 'Probiotics are a narrow indication',
+        body: 'Probiotic is the microbe, prebiotic its food, and the further categories are largely marketing. Medical indications after antibiotics are a short list rather than everyone as a precaution — a substantial share of people taking them report feeling worse, because an excess of gut microbes is more common than a shortage. Most commercial microbiota tests show only part of the picture; one sequencing method gives the full species composition.',
+      },
+      {
+        name: 'Gastritis is cell death, not a stomach ache',
+        body: 'Medically it means the death of stomach cells, with three paths onward: recovery — the option few people know exists — ulceration, or the cycles of damage and repair that can go wrong. Using it as a household label for any abdominal discomfort devalues a genuinely serious diagnosis.',
+      },
+    ],
+    notes: [
+      'The stomach is on the left, under the heart; the liver on the right. Pain on the left is the stomach and on the right the liver, rather than the pancreas as is commonly assumed.',
+      'The threshold for seeing a doctor, offered as a concrete rule: the same troubling symptom at least once a week for around three months.',
+      'For weight loss: no ideal diet, only a sustained deficit at roughly a kilogram a week, with waist circumference a more honest reference than the scale.',
+      'A demystifying rather than promotional source — he calls parts of the market, including some tests and product categories, marketing outright. But the specific figures are given confidently without citations in the conversation itself; they align with the direction of the current literature but cannot be checked from here.',
+      'One remark about fermented drinks and gut flora is directionally correct but delivered without dose or context, and he immediately clarifies his overall position against alcohol — the qualification matters more than the line.',
+    ],
+    practices: [
+      'Count the actual grams once — protein, fat, fibre — to see the gap between what you assume and what you eat.',
+      'Do not drink fizzy drinks in the evening, and do not lie down straight after eating.',
+      'Use the once-a-week-for-three-months rule as the threshold to stop tolerating a symptom.',
+      'Judge weight change by waist circumference rather than by the scale.',
+      'Drop sweeteners and flavour enhancers if the goal is to stop overeating.',
+    ],
+    habits: [
+      { id: 'h_nolate', because: 'The reflux mechanism is the specific one described — and not eating late is the version of the fix that costs no new time.' },
+      { id: 'h_realmeal', because: 'The gap between "I eat normally" and the actual grams closes at the level of one real meal, not at the level of a diet.' },
+      { id: 'h_water', because: 'The routine, unglamorous input is the one that survives; the marketed categories are the ones he spends the episode dismantling.' },
+    ],
+    quests: [
+      { id: 'q_healthcheck', because: 'The once-a-week-for-three-months threshold is useless as knowledge and useful as an appointment.' },
+      { id: 'q_energyaudit', because: 'Thinking about food abstractly is the named root problem, and an audit is what replaces the impression with a record.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Вялов — ЖКТ, микробиота и мифы о питании',
+  },
+  {
+    slug: 'cut-the-middle-out',
+    attr: 'health',
+    title: 'Cut the unproductive middle out of your week',
+    origin: 'Stacy Sims — exercise physiologist, on polarised training and intensity language',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The zone that feels hardest is often the one doing least — hard enough to cost you, not hard enough to pay.',
+    thesis:
+      'Two things make training legible: a precise vocabulary for intensity, and a polarised model that combines genuinely hard work with genuinely easy recovery while deliberately avoiding sustained moderate effort. That middle zone feels effortful enough to raise cortisol and generate fatigue without being intense enough to trigger the adaptive response that would offset it.',
+    ideas: [
+      {
+        name: 'Reps in reserve, and RPE',
+        body: 'Stopping a set a defined number of repetitions short of true failure — eight clean reps with two more available in good form. It maps directly onto a one-to-ten perceived-exertion scale, which lets intensity be prescribed without testing a one-rep max, itself a risky thing to attempt on compound lifts.',
+      },
+      {
+        name: 'The unproductive middle',
+        body: 'Combine truly hard efforts with true easy movement and avoid the sustained moderate zone. Popular class formats are criticised by name for parking people exactly there — maximally effortful in feel, least productive in effect.',
+      },
+      {
+        name: 'Two different interval protocols, routinely conflated',
+        body: 'Interval work at eighty per cent and above runs one to four minutes with self-paced recovery. Sprint interval training is a distinct and harder protocol: thirty seconds or less at true maximum, then two to three minutes of full recovery — explicitly not the twenty-on twenty-off format, because that does not allow the energy system and nervous system to recover between efforts. They produce different stimuli.',
+      },
+      {
+        name: 'A concrete post-training sauna sequence',
+        body: 'After resistance training: hydrate lightly with a little salt, sauna, then rehydrate slowly afterwards — presented as a low-cost addition aimed at blood volume, applicable regardless of sex.',
+      },
+      {
+        name: 'Where default advice inverts',
+        body: 'Her specialisation is that women are more oxidatively efficient by default — more slow-twitch fibre, better baseline fat utilisation — which flips several pieces of male-derived advice from neutral to counterproductive: fasted training, long fasting windows, and low carbohydrate intake among them.',
+      },
+    ],
+    notes: [
+      'The intensity vocabulary here is the same one used elsewhere in this sector, which makes reps-in-reserve the common language across the strength material rather than a competing scheme.',
+      'A world-recognised exercise physiologist with a large peer-reviewed record and direct work with professional teams — high authority, particularly on the female-specific material that is her core specialisation.',
+      'Comparative male-female claims are stated confidently without individual citations in the episode, and several are flagged by her as preliminary or as her own coaching pattern-matching: she calls the menstrual-cycle-and-performance research confounded and underpowered, and says outright that the study on contraceptive effects on training adaptation has not been done. One cold-water finding is a single pilot rather than a replicated result.',
+    ],
+    practices: [
+      'Prescribe intensity in reps in reserve rather than by percentage of a max you have not tested.',
+      'Make the easy sessions genuinely easy and the hard sessions genuinely hard.',
+      'Treat sustained medium-hard cardio as the least useful category rather than the safe middle ground.',
+      'Keep sprint efforts under thirty seconds with full recovery, rather than compressing the rest.',
+    ],
+    habits: [
+      { id: 'h_steps', because: 'The easy pole of the polarised model has to actually exist, and walking is the version of it that does not quietly become moderate.' },
+      { id: 'h_pushups', because: 'Reps in reserve is only learnable on something you do often enough to feel the difference between eight and failure.' },
+      { id: 'b_sport', because: 'True high intensity is easier to reach in something you would play anyway than in a session you have to talk yourself into.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'Polarising a week is a scheduling decision about which sessions are hard and which are easy — made once, not renegotiated each morning.' },
+      { id: 'q_energyaudit', because: 'The unproductive middle is invisible without a record: it is the zone that feels like it counted.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Sims — Polarized Training, RPE, Post-Workout Sauna Protocol and Female-Specific Physiology',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
