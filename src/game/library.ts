@@ -947,6 +947,235 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Health & sport / Resource / Терушкин — Энергия и хроническая усталость',
   },
+
+  // ---------------- Money ----------------
+  {
+    slug: 'rich-versus-wealthy',
+    attr: 'money',
+    title: 'Rich is what you spend. Wealthy is what you did not.',
+    origin: 'Morgan Housel — on financial behaviour, independence and expectations',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'The one distinction that changes what a savings target is even for.',
+    thesis:
+      'Financial outcomes are driven overwhelmingly by behaviour rather than intelligence or education — this is the rare field where an ordinary person with no training routinely outperforms the credentialed professional. The load-bearing distinction is between being rich (having money to spend on what you want) and being wealthy (independence — the money you did NOT spend, which buys control over your own time). Most financial damage comes not from stupidity but from ignorance in the literal sense: not knowing your own real income and outgoings.',
+    ideas: [
+      {
+        name: 'Every dollar is a piece of your future, owned by someone',
+        body: 'A dollar of debt is a piece of your future that belongs to a lender; a dollar saved is a piece of your future that belongs to you. Taken literally, saving $100 is not deferring pleasure — it is purchasing $100 of independence today.',
+      },
+      {
+        name: 'Two buckets for every purchase',
+        body: 'Every dollar spent does one of two things: makes you or your family happier, or impresses strangers who do not actually care. The source\'s sharpest observation is that people are impressed by the object, not its owner — each onlooker is imagining themselves driving the car, being envied. Seeing this clearly deflates most status spending on its own.',
+      },
+      {
+        name: 'Savings is a bill, not a leftover',
+        body: 'Housel files saving in the same budget category as rent and food — not "whatever remains". The concrete version is a 10% rule applied to any inflow of any size, automated at the transfer level so it never depends on willpower after the fact.',
+      },
+      {
+        name: 'The moving goalpost',
+        body: 'Happiness is the gap between expectations and reality, and expectations tend to rise faster than results — so chasing more, without stopping the goalposts, never registers as progress. Social media widened the comparison set from neighbours and colleagues to an algorithmic feed of the most successful people alive, permanently available.',
+      },
+      {
+        name: 'Compounding is a function of time, not returns',
+        body: 'The variable that matters is how long you can hold without selling, not the annual rate. Housel notes Buffett accumulated the overwhelming majority of his net worth after age 60. The claim attached: an average investor over a disproportionately long horizon ends up in the top percentile.',
+      },
+      {
+        name: 'The metric is sleeping at night',
+        body: 'Housel describes his own portfolio as more conservative than textbook-optimal, because the goal is not beating an index but not waking at 2am asking whether he has got it wrong. Asset allocation is treated as a question of temperament and circumstance rather than a universal formula.',
+      },
+    ],
+    notes: [
+      'Independence is a spectrum, not a threshold: the thought "why bother saving $20, it changes nothing" is the error. It is one small step of independence bought, not an all-or-nothing move.',
+      'It is possible to be a multi-billionaire with no independence (wholly captive to others\' opinion) and to be independent on very little.',
+      'The market\'s return is not free — the price is continuous volatility and uncertainty, not broker fees. Declining to pay it means accepting the predictable, lower return of a deposit.',
+      'Before changing spending habits, ask what psychological hole a purchase is trying to fill. Usually the honest answer is none — the object\'s effect lasts a day or two while the payment lasts months.',
+      'A deliberately boring habit — checking your account balance daily, ten seconds — is claimed to outperform elaborate apps and spreadsheets, because the failure it fixes is not knowing the numbers at all.',
+      'Housel is a practitioner and writer rather than an academic researcher; the argument rests on documented public histories and observation, not controlled studies. Treat the specific figures as directionally credible rather than precise.',
+    ],
+    practices: [
+      'Automate a fixed percentage off every inflow, however small, on the day it arrives — before any spending decision gets made.',
+      'Run the two-bucket test on any non-trivial purchase: is this for me and mine, or to impress strangers?',
+      'Check the account balance daily. The point is not control, it is ending the ignorance that most mistakes actually come from.',
+      'State the long-term goal as an amount of independence rather than an amount of income.',
+      'Practise gratitude deliberately: it closes the expectation gap more reliably than a raise does, because the gap is what happiness is measured against.',
+    ],
+    habits: [],
+    quests: [
+      { id: 'q_emergencyfund', because: 'This is "savings as a bill" made concrete — the first block of independence bought, rather than an amount left over at month end.' },
+      { id: 'q_debts', because: 'If a dollar of debt is a piece of your future someone else owns, then facing the total is the act of finding out how much of your future is currently spoken for.' },
+      { id: 'q_raise', because: 'The source treats income as the weaker lever than behaviour — but raising it is what makes a savings rate survivable rather than punishing.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Housel — The Psychology of Money, Rich vs Wealthy',
+  },
+
+  // ---------------- Friends ----------------
+  {
+    slug: 'social-health-5-3-1',
+    attr: 'friends',
+    title: 'Social health is a pillar, and it has a number',
+    origin: 'Kasley Killam — public-health researcher, on connection and loneliness',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'Most loneliness is not circumstance. It is accumulated small avoidances — and there is a weekly target that fixes it.',
+    thesis:
+      'Social health is a distinct, measurable pillar of wellbeing alongside physical and mental health, and its absence carries mortality risk that researchers place in the range of smoking or obesity. The practical claim underneath: the majority of missed connection is not the result of genuine need but of small, repeated avoidances that feel justified in the moment — and the felt risk of reaching out is systematically higher than the real one.',
+    ideas: [
+      {
+        name: 'Loneliness is a signal, not a defect',
+        body: 'A study comparing the brains of people isolated all day with people who had not eaten all day found the same regions active — loneliness is framed as hunger-like, indicating an unmet need rather than something wrong with the person feeling it. The trap is that it is self-fulfilling: chronically lonely people enter social situations more guarded and primed for negative cues, which degrades the interaction itself.',
+      },
+      {
+        name: 'The liking gap',
+        body: 'When strangers were paired for a short conversation, both consistently underestimated how much the other liked them — while outside observers judged the rapport accurately. A parallel finding: people underestimate how much a friend will appreciate an unprompted message. The cost of reaching out is nearly always overestimated.',
+      },
+      {
+        name: 'The 5-3-1 formula',
+        body: 'Five different people per week (diversity of ties is itself protective, not just one close person), at least three close relationships, and a cumulative hour a day of connection. The hour need not be continuous or with one person — a minute with a barista, twenty with a partner, a ten-minute call all count. A work meeting does not, unless part of it is genuinely personal.',
+      },
+      {
+        name: 'The stress-buffering hypothesis',
+        body: 'Being with supportive people actively damps the cortisol and inflammation response rather than adding to it. The implication is counterintuitive: the moments you most want to withdraw — after a hard day, mid-burnout — are often exactly when connection would help most.',
+      },
+      {
+        name: 'Four friendship styles',
+        body: 'Butterfly (frequent, casual, easy in groups), wallflower (selective and infrequent, a natural listener, slow to warm), firefly (infrequent but deep, loves solitude, skips small talk entirely), evergreen (frequent and deep). Explicitly descriptive rather than evaluative — useful for knowing which settings will actually energise you, and for not reading a friend\'s different rhythm as a weaker bond.',
+      },
+      {
+        name: 'Connection is a muscle with four modes',
+        body: 'Stretch (seek new ties), rest (deliberately scale back when overconnected — solitude is legitimate), tone (deepen what exists), flex (enjoy and sustain what is already built). The analogy is fitness: it needs recovery as well as exertion.',
+      },
+    ],
+    notes: [
+      'Shared activity beats cold networking: joining something organised around a real interest, with a recurring touchpoint rather than a one-off, is named as the actual mechanism — it removes the pressure of a one-to-one first impression.',
+      'For distance friendships, three tactics: micro-moments (a text when someone crosses your mind), "autopilot" (a standing recurring call that kills the scheduling negotiation), and prioritising real in-person time.',
+      'When a friend seems to be pulling away, a direct caring check-in is recommended over silent worry — get curious instead of assuming it is personal.',
+      'Closeness is defined by two properties: mutual (an even exchange over time, not within every conversation) and meaningful (room to be authentic rather than performing wellness).',
+      'The claims come from a credentialed public-health researcher, but in interview form: the individual statistics are cited without authors or years, so treat them as directionally credible expert claims. The "excuse versus need" sorting is an editorial device, not research, and some of its calls are normative judgements.',
+    ],
+    practices: [
+      'Sort your own recent cancellations into genuine needs and excuses. The source\'s finding is that needs are real but rare; most cancellations are the easier default.',
+      'Use 5-3-1 as a weekly checklist rather than an aspiration to "be more social".',
+      'In dead moments that default to scrolling — a queue, a commute, a meeting that ended early — message or call someone instead. The time was already unstructured.',
+      'Identify your own friendship style, then stop reading a friend\'s different rhythm as a verdict on the friendship.',
+      'When someone hits a life transition, name it and ask what staying connected could look like now, rather than letting it quietly fade.',
+    ],
+    habits: [],
+    quests: [
+      { id: 'q_reconnect', because: 'Five people is exactly the diversity leg of 5-3-1, and the liking gap says every one of those messages will land better than it feels like it will.' },
+      { id: 'q_hardconversation', because: 'The source\'s recommendation for sensed distance is a direct, caring check-in — this is that conversation, and silence is what the research says makes it worse.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Killam — Social Health, the 5-3-1 Formula and Four Friendship Styles',
+  },
+
+  // ---------------- Spirituality ----------------
+  {
+    slug: 'the-virtue-that-hides-the-flaw',
+    attr: 'spirituality',
+    title: 'The virtue you already have can hide the one you lack',
+    origin: 'Omar Suleiman — lecture on wholesomeness, sincerity and self-deception',
+    medium: 'lecture',
+    minutes: 7,
+    hook: 'Why doing more of what you are already good at can be a way of avoiding the thing that actually needs fixing.',
+    thesis:
+      'Wholeness is the balance between practice and character, and the central danger is specific: a quality that comes naturally to you can become cover for a fundamental flaw you are refusing to look at. The pattern is compensation — answering a known defect by intensifying an already-strong virtue, so that the effort feels like growth while the one thing that needed correcting stays untouched.',
+    ideas: [
+      {
+        name: 'The child who vacuums instead of washing up',
+        body: 'Asked to do the dishes, the child vacuums the living room and mows the lawn instead — good things, but not the thing that was required. The spiritual analogue: praying more, fasting more, giving more, as a way of not confronting the single specific fault that was asked of you.',
+      },
+      {
+        name: 'Introspection as the clearest mirror',
+        body: 'The exercise: imagine you are your own friend, someone who has watched you closely for the last five or six months, and must now give honest, uncomfortable advice. Reflection is described as a clearer mirror than even an honest friend — because you are the only one who sees yourself all day, every day.',
+      },
+      {
+        name: 'The handover of responsibility for your own faith',
+        body: 'There is a point at which care for your own practice must pass from parents to you — you rise before anyone knocks on the door. The analogy given: parents can buy the best school and the best teachers, but the student still has to sit at the desk. Without that, the best institution changes nothing.',
+      },
+      {
+        name: 'Unexpected pairings of quality and station',
+        body: 'The figures held up are notable for virtues their position did not require: Dawud, a wealthy and powerful prophet-king, remembered for night prayer and alternate-day fasting; Uthman ibn Affan, exceptionally wealthy yet the most modest person in the room; Luqman, celebrated for eloquence yet distinguished by knowing when to stay silent; Umar ibn al-Khattab, commanding and imposing, yet never too proud to accept correction from a child.',
+      },
+      {
+        name: 'Al-Ghazali on the delusion of the devout',
+        body: 'Four groups are named as most vulnerable to spiritual self-deception precisely because of their piety: scholars who reduce religion to theory and do not practise what they teach; worshippers who add extra devotions while holding on to a major fault with no intention of correcting it, developing contempt for "sinners"; those who believe they have reached a station exempting them from ordinary obligations; and the wealthy, practising a "chequebook religion" — giving just enough to be called generous, and changing nothing else.',
+      },
+      {
+        name: 'Good deeds are easier than leaving a sin',
+        body: 'Citing Ibn al-Qayyim: good deeds resonate with innate nature, which is why they feel good to perform and why anyone at all is capable of them. Abstaining from what is forbidden requires sincerity, because it offers no immediate reward. The real sacrifice is not adding another good deed — it is stopping the thing you know to be wrong, precisely when that is uncomfortable.',
+      },
+    ],
+    notes: [
+      'The culture of a religious circle can normalise a fault — "he does it too, so it cannot be that serious" is named explicitly as a mechanism of drift.',
+      'Detachment can be inherited from example rather than status: Sulayman is described as inheriting not only his father\'s wealth but his distance from it.',
+      'Khadija is cited as choosing a husband for truthfulness and trustworthiness rather than standing, despite having wealth, beauty and rank herself — and spending her fortune freeing slaves and providing dowries for poor brides.',
+      'The lecture is a structured talk by a named, credentialed scholar drawing on classical sources; it is teaching within a tradition rather than empirical research, and is best read on those terms.',
+    ],
+    practices: [
+      'Do the friend exercise honestly: what would someone who watched you closely for six months tell you, that you would not enjoy hearing?',
+      'Name the one fault you have been compensating for. Then check whether your recent effort has gone into it, or into something you were already good at.',
+      'Treat leaving one wrong thing as worth more than adding one more good thing — it is the harder act, and the one that requires sincerity.',
+      'Watch for the four delusions in your own practice, especially the two most socially rewarded: teaching what you do not do, and giving enough to be praised.',
+    ],
+    habits: [],
+    quests: [
+      { id: 'q_anchor', because: 'The handover of responsibility is described exactly as a daily practice you hold yourself, before anyone reminds you — which is what anchoring the day to one practice means.' },
+      { id: 'q_learnfaith', because: 'The lecture\'s warning about scholars who know about God without knowing God is an argument for studying something properly rather than collecting fragments.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Omar Suleiman — Wholesomeness, Sincerity and Spiritual Delusion',
+  },
+
+  // ---------------- Brightness ----------------
+  {
+    slug: 'the-curse-of-knowledge',
+    attr: 'brightness',
+    title: 'The curse of knowledge',
+    origin: 'Steven Pinker — cognitive scientist, on why clear writing is rare',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Bad writing is almost never malice or stupidity. It is one specific blind spot — and it hides itself.',
+    thesis:
+      'Most bad writing is not obfuscation and not low intelligence: it is the curse of knowledge, the inability to imagine what it is like not to already know what you know. Nearly every concrete technique for writing clearly is a countermeasure against that single root cause — which matters because the blind spot cannot be detected by introspection, since the thing hiding it is the very knowledge you cannot unsee.',
+    ideas: [
+      {
+        name: 'Hanlon\'s razor, applied to prose',
+        body: 'Never attribute to malice what is adequately explained otherwise. Most impenetrable academic and technical writing comes from intelligent, well-meaning people who simply cannot model what their audience does not know — not from a wish to gatekeep or sound impressive.',
+      },
+      {
+        name: 'Four seconds to lose a room',
+        body: 'A brilliant molecular biologist at a conference lost several hundred people almost immediately by opening with jargon-heavy findings, never framing the problem or why it mattered — and was visibly the only person in the room who could not tell.',
+      },
+      {
+        name: 'The symptoms are structural, not stylistic',
+        body: 'The curse shows up as unexplained abbreviations, jargon known only to a small clique, and needless abstraction. Pinker\'s example of the last: "the level of the stimulus was proportional to the intensity of the reaction" in place of "kids look longer at a bunny than a truck".',
+      },
+      {
+        name: 'You cannot introspect your way out',
+        body: 'Trying to imagine the reader\'s ignorance helps, but is fundamentally unreliable — the blind spot conceals itself. The only dependable correction is external: show the draft to intelligent, well-read people outside your specialty and watch where they stumble.',
+      },
+      {
+        name: 'The clique is smaller than you think',
+        body: 'Even sub-specialists inside the same department can become unintelligible to one another once each has been immersed in a small group\'s private vocabulary. "Written for experts" is rarely a real defence.',
+      },
+    ],
+    notes: [
+      'Concrete and visual language outperforms abstraction not as a matter of taste but because it gives the reader something to actually simulate.',
+      'Examples are not decoration — they pin down what a generalisation actually claims, which is the thing an unfamiliar reader cannot reconstruct on their own.',
+      'This source differs in kind from craft advice given by novelists: it explains from cognitive science why the techniques work, rather than describing one writer\'s personal process.',
+    ],
+    practices: [
+      'Give the draft to someone intelligent and well read but outside your field, and note precisely where they slow down. Do not explain — watch.',
+      'Open by framing the problem and why it matters, before any finding, term or abbreviation.',
+      'Replace abstraction with the concrete thing it stands for wherever the sentence still means what you intended.',
+      'Attach an example to every generalisation you are asking a reader to accept.',
+    ],
+    habits: [],
+    quests: [
+      { id: 'q_makeweekly', because: 'The countermeasure only works on a finished draft in someone else\'s hands — which requires actually finishing one thing you made.' },
+      { id: 'q_portfolio', because: 'Putting work where it can be found is what recruits the outside readers whose stumbles are the only reliable detector of your own blind spot.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Steven Pinker — The Curse of Knowledge and the Science of Clear Writing',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
