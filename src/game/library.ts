@@ -2179,6 +2179,239 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Health & sport / Resource / Утин — Атеросклероз, тромбы и ВСД',
   },
+
+  {
+    slug: 'critical-mass-of-a-habit',
+    attr: 'development',
+    title: 'Habits end by accumulation, not by breakage',
+    origin: 'Alipov — neuroscientist, on how habits actually end',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'People quit for years-long habits without rehab or a dramatic trigger. That is a mechanism, and it can be used deliberately.',
+    thesis:
+      'The popular model — a substance breaks the reward system, so a person cannot stop until an overdose or forced intervention — does not match how people actually quit smoking, games or scrolling. They do it themselves, without treatment. The alternative offered: every interaction leaves an emotional trace (guilt, disappointment, time lost); those traces accumulate slowly, like memory, until they cross a threshold and the person simply asks what they are getting from it.',
+    ideas: [
+      {
+        name: 'Goal-trackers and sign-trackers',
+        body: 'In a conditioning experiment, some animals wait at the food bowl (orienting on the biologically meaningful object) and others at the lamp that predicts it (orienting on the surrogate symbol). The sign-trackers are experimentally more prone to forming dependencies — a predisposition that appears innate rather than the result of meeting a bad stimulus.',
+      },
+      {
+        name: 'Recall the actual ending, not the idealised one',
+        body: 'His own technique, at the moment the hand reaches for the app: ask what exactly you are about to get, and deliberately recall not the imagined pleasure but the real emotions the last session ended in. Memory selectively preserves the good, so the negative has to be reconstructed on purpose rather than trusted to surface.',
+      },
+      {
+        name: 'The bed rule',
+        body: 'Remove every competing activity from the bed so no conditioned reflex forms between lying down and reaching for the phone. The bed is for sleep, and the association is built by what you repeatedly do there rather than by intention.',
+      },
+      {
+        name: 'Timeboxing beats "less"',
+        body: 'A hard window for the thing works where a general resolution to do less of it does not — the same mechanism as work expanding to fill the time available.',
+      },
+      {
+        name: 'Manufactured competition as a motivation switch',
+        body: 'When interest in the task itself is not enough, an artificial competitive frame is offered as a working substitute — not as a virtue, but as a lever that reliably moves people who are otherwise stuck.',
+      },
+      {
+        name: 'Build the routine around your own confirmed limits',
+        body: 'The explicit antidote to copying other people\'s extreme regimes: construct the schedule around limits you have actually verified in yourself rather than around someone else\'s published routine.',
+      },
+    ],
+    notes: [
+      'A technique credited to psychiatry for making a distant consequence usable: instead of listing abstract risks, walk the person concretely and emotionally through the future that inaction produces.',
+      'The same neuroscientist appears elsewhere in a more structured format; this is a personal, confessional podcast, which yields more tested techniques and fewer direct references to studies.',
+      'He marks the critical-mass model of addiction himself as an open question rather than a settled finding — worth carrying as a practitioner\'s working hypothesis, not established fact.',
+    ],
+    practices: [
+      'At the moment of reaching, ask what you are actually about to get — and recall how the last one ended rather than how it started.',
+      'Keep the bed for sleep alone, so the association never forms.',
+      'Give the habit a hard window instead of resolving to do less of it.',
+      'When interest fails, borrow a competitive frame rather than waiting for motivation.',
+      'Build your schedule from limits you have confirmed on yourself, not from someone else\'s routine.',
+    ],
+    habits: [
+      { id: 'h_lightsout', because: 'The bed rule in its enforceable form: the association is built by what you repeatedly do there, so the fix is a boundary rather than a resolution.' },
+      { id: 'f_nodoom', because: 'A hard window beats "less" — and this is the version of the window that protects the part of the day the habit is most likely to swallow.' },
+      { id: 'd_nopassive', because: 'Every session adds to the pile of traces; making something first is what stops the pile being the only thing accumulating.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'Timeboxing and the bed rule are structural changes, and structure does not survive being reinvented each evening.' },
+      { id: 'q_declutter', because: 'The bed rule is really about the room: the competing activities have to physically leave, not merely be resisted.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Алипов — Критическая масса привычки, конкуренция как топливо и правило кровати',
+  },
+  {
+    slug: 'mindlessness-and-novelty',
+    attr: 'development',
+    title: 'Mindfulness is noticing novelty, not sitting still',
+    origin: 'Ellen Langer — psychologist, on mindlessness and the mind-body unit',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Most rules you live by were set by someone, once. The question nobody asks is who.',
+    thesis:
+      'Mind and body are treated as one system rather than two connected objects — the dualism is called a mistaken habit of thought rather than a fact. Mindfulness here is not meditation but a way of being: continually noticing novelty and acknowledging that the situation is uncertain, as against mindlessness, which is acting mechanically on rules absorbed in childhood without noticing you are doing it.',
+    ideas: [
+      {
+        name: 'Mindlessness is unexamined rules, not low intelligence',
+        body: 'It is defined as accepting rules absorbed early — someone said it once and it became absolute — without ever asking who decided. Even basic "facts" turn out to be statistical probabilities rather than laws, which a single contrary observation is enough to expose.',
+      },
+      {
+        name: 'Placebo and nocebo as direct evidence',
+        body: 'Placebo is described as the most effective medicine precisely because it shows that belief produces a physical effect with no substance involved. In the cited hotel-housekeeper study, one group was told their work already constituted exercise and the other was not; both worked identically and ate the same, and only the informed group showed measurable changes.',
+      },
+      {
+        name: 'Perceived time changes physiology',
+        body: 'Two results are cited: wound healing tracked perceived rather than real elapsed time in front of deliberately altered clocks, and blood sugar in people with type 2 diabetes followed the perceived rather than actual time passed during a task with a falsified clock.',
+      },
+      {
+        name: 'Expecting failure produces it',
+        body: 'On a standard eye chart the letters shrink downward, building an expectation that you are about to stop seeing. With the chart reversed, people read letters they had not managed on the standard version — the expectation, not the eyesight, had been setting the limit.',
+      },
+      {
+        name: 'Tragedy or inconvenience',
+        body: 'Offered as the first question to ask under stress, before any attempt to solve the problem — a reproducible action rather than an instruction to feel differently.',
+      },
+    ],
+    notes: [
+      'The novelty practice is concrete: notice two or three new details in a familiar setting, or in a person you know well, daily. The same claim applies to travel — looking for novelty at home works as well as going somewhere new.',
+      'On a hard decision: rather than spending the time hunting for the right option, choose and then invest the energy in making the choice work.',
+      'Fifty years of her own research at Harvard, and most claims point at specific studies from her lab — but methodology, sample sizes and replication are not given in an interview format.',
+      'She explicitly marks the boundary of her own data: her claim that stress outweighs genetics, diet and treatment is flagged by her as personal conviction she has not run the study for. That distinction is worth preserving rather than flattening.',
+    ],
+    practices: [
+      'Notice two or three genuinely new things about something familiar, every day.',
+      'Ask "is this a tragedy or an inconvenience?" before trying to solve the stressful thing.',
+      'When a rule is running you, ask who decided it and whether it was ever true.',
+      'Make the decision, then spend the energy on making it work rather than on verifying it was optimal.',
+    ],
+    habits: [
+      { id: 'b_new', because: 'Noticing novelty is the whole definition being used here — and the reliable way to guarantee some is to put something unfamiliar in the day.' },
+      { id: 's_gratitude', because: 'Naming what actually happened forces attention onto the specifics of the day, which is the opposite of running it on absorbed rules.' },
+      { id: 'b_morningjoy', because: 'A small deliberate pleasure is a daily instance of attending to the present rather than executing the morning mechanically.' },
+    ],
+    quests: [
+      { id: 'q_tryfive', because: 'The novelty practice scaled up from noticing to doing — and her own claim is that unfamiliarity at home counts as much as unfamiliarity abroad.' },
+      { id: 'q_wheel', because: 'Scoring your own life is the structured version of asking which of your rules you have never actually examined.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Langer — Осознанность, единство разума и тела и сила неопределённости',
+  },
+
+  {
+    slug: 'yes-comma-but',
+    attr: 'brightness',
+    title: 'Yes, comma, but',
+    origin: 'Diarmaid MacCulloch — historian, on honesty, bias and sense of place',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'A person taken over by lies is no longer sane — and the same is true of a society.',
+    thesis:
+      'The ethical claim: technical disciplines can get you to the moon without making you a sane person, and that job falls to history alongside philosophy and literature. A society that sanitises its own record to fit a comfortable narrative is not merely dishonest but losing its grip — and the working method that defends against it is a structural refusal to resolve tension too early.',
+    ideas: [
+      {
+        name: 'Be sceptical, then be sympathetic',
+        body: 'The core instruction: read any source with scepticism first, since everyone has an agenda and you can only gradually tell which — but pair it with genuine interest in the person as a human being. Scepticism without sympathy produces cynicism; sympathy without scepticism produces credulity.',
+      },
+      {
+        name: 'Yes, comma, but',
+        body: 'Acknowledge the conventional version honestly — yes, I see that — then add the complicating truth: but I also see this. It prevents idolising the past as a standard the present is unfairly judged against, and his claim is that the result is more satisfying precisely because it is truer, even though it pleases less immediately than the simplified version.',
+      },
+      {
+        name: 'Read the clichés before you try to correct them',
+        body: 'He deliberately read the great earlier syntheses before going to primary sources — not to adopt their conclusions but to know what the standing clichés are, so he would recognise them rather than unconsciously reinvent them later.',
+      },
+      {
+        name: 'Two thirds of the day, deliberately',
+        body: 'Fixed hours, nothing before mid-morning, nothing past early evening, no evening work at all, a substantial midday break and an unembarrassed nap. The rule credited to his supervisor: divide the day in thirds and work only two. Not working the third is what removes the guilt of should-be-working and makes the other two productive.',
+      },
+      {
+        name: 'Declare your standpoint',
+        body: 'He opens his own books by stating who he is and where he stands, so readers can weigh passages knowing it. No historian is neutral, and pretending otherwise deprives the reader of data they need — self-disclosure is treated as respect, not weakness.',
+      },
+      {
+        name: 'Sense of place changes the account, not the decoration',
+        body: 'Filming inside a cathedral whose ground plan is calm and symmetrical on paper, he found the lived interior claustrophobic and vertiginous, and rewrote his script on the spot — the revision survived into the book. Enormous amounts can be researched without travel, but the felt experience of a specific space genuinely cannot.',
+      },
+    ],
+    notes: [
+      'On the boundary between history and fiction: a novelist may write "and" where a historian must write "may have" — filling the gap outright rather than flagging the uncertainty.',
+      'His sharp division between the humanities and the sciences on who makes a person sane is a stated personal conviction rather than a neutral description, and a scientist would likely contest it.',
+      'A senior credentialed historian speaking from decades of practice — strong on method and craft; the collaboration account is a first-person recollection used as illustration rather than a general claim.',
+    ],
+    practices: [
+      'State the conventional version honestly before complicating it — do not lead with the contrarian take alone.',
+      'Say where you stand, up front, so people can weigh what follows.',
+      'Learn the existing consensus before forming an objection to it, or risk reinventing one already answered.',
+      'Work two thirds of the day and genuinely stop for the third.',
+      'Go and stand in the place when the felt experience of it might change what you would say.',
+    ],
+    habits: [
+      { id: 'c_shutdown', because: 'The two-thirds rule only works if the third is really off — an unenforced stop is what turns it back into guilt about not working.' },
+      { id: 'd_read', because: 'Knowing the standing clichés before objecting to them is a reading habit before it is a research method.' },
+      { id: 'd_notes', because: 'Yes-but is a structure you have to be able to state, and putting a source in your own words is where you find out whether you can.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'Declaring a standpoint and holding a tension are decisions that only get made in a finished piece, not in notes.' },
+      { id: 'q_tryfive', because: 'Sense of place is his one claim that cannot be met by research — some things require going and standing there.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / MacCulloch — The Historian as Guardian of Sanity, Sense of Place and the \'Yes, But\' Motto',
+  },
+  {
+    slug: 'morphology-of-the-tale',
+    attr: 'brightness',
+    title: 'Thirty-one functions, seven characters, one order',
+    origin: 'Eidelman — on Propp\'s morphology, myth and the coded initiation',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'Behind apparently endless variety sits a fixed order — and it is a rite, not a literary device.',
+    thesis:
+      'The wonder tale is not a children\'s genre by origin but a weakened myth: the same archaic structure moved from the scale of the whole world down to one family and one hero. Propp showed that behind seemingly endless variety sits a rigid structure — thirty-one functions in fixed order and only seven character types — and that the structure encodes a rite of initiation rather than a storytelling technique.',
+    ideas: [
+      {
+        name: 'Myth and tale, distinguished',
+        body: 'Myth is sacred, concerns the whole community, explains the origin of the world and is bound to ritual. The tale is less sacred and eventually not sacred at all, individual, focused on one family and one hero. The formulation quoted: a tale is a weakened myth — not worse, but different in scale and function.',
+      },
+      {
+        name: 'The trickster as a desacralised culture hero',
+        body: 'The culture hero of myth is a divine figure performing a feat for all humanity. The trickster of the tale — the hare, the raven, the fool — is the same structural type stripped of sanctity: small, sly, local. A visible illustration of myth contracting into tale.',
+      },
+      {
+        name: 'Functions hold their order',
+        body: 'Working by hand through thousands of recorded tales in the 1920s, Propp found the plot decomposes into thirty-one functions — struggle, abduction, difficult tasks — in an order that never changes. Functions may be absent, but they never swap places.',
+      },
+      {
+        name: 'Seven roles, freely cast',
+        body: 'Hero, villain, false hero, donor, helper, dispatcher and princess-as-reward. One character can hold several roles at once — a stepmother may be both villain and dispatcher — and one functional type can appear as wildly different figures, so that a witch and a talking apple tree are both donors.',
+      },
+      {
+        name: 'The forest is the world of the dead',
+        body: 'The wood the hero enters is not scenery but the realm of ancestors. Behaving correctly with the beings met there, eating the food of the other world, passing the tests and returning with a reward and a mark are the elements of an initiation rite preserved inside the plot.',
+      },
+      {
+        name: 'Structure over props',
+        body: 'Both of Propp\'s own definitions deliberately avoid mentioning magical objects: the flying carpet is not what makes a wonder tale. The structure matters and the equipment does not.',
+      },
+    ],
+    notes: [
+      'Each era rewrites folklore to fit its own anxieties and tastes rather than neutrally recording it — which makes a translation a mirror of its translator\'s period as much as of the original.',
+      'A folklorist\'s comparison of the distribution of one motif against archaeological migration routes suggests extreme antiquity for some plots — the lecturer explicitly marks this as needing confirmation rather than settled.',
+      'The lecturer is a history populariser rather than a folklorist, but leans consistently on named, established specialists, and flags the uncertain claims as uncertain — an unusually clean piece of popular scholarship.',
+    ],
+    practices: [
+      'Look for the function a character is performing rather than the costume they are wearing.',
+      'When a story is not working, check whether a required function is missing rather than adding more invention.',
+      'Read the structure of old material before borrowing its surface.',
+      'Treat a translation as a document of its own era, and know whose optics you are reading through.',
+    ],
+    habits: [
+      { id: 'd_read', because: 'The argument is that the structure is only visible across many tales — which is a reading volume problem before it is an analytical one.' },
+      { id: 'd_notes', because: 'Functions are noticed by writing them down: the fixed order only appears once you have restated several plots in the same terms.' },
+      { id: 's_makecreate', because: 'A structure this explicit is meant to be used — and it only becomes yours when something gets built on it.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'This is a canonical, still-cited body of work rather than a summary to skim — the sort of thing the quest means by studying one thing properly.' },
+      { id: 'q_makeweekly', because: 'The morphology is a tool for making, and the fastest test of whether you have understood it is finishing something built with it.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Эйдельман — Сказка, миф и морфология Проппа',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
