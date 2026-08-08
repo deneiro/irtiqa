@@ -1948,6 +1948,237 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Finance & money / Resource / Кладько — Правила диверсификации, психология финансовых пирамид и деньги как иерархия в семье',
   },
+
+  {
+    slug: 'notice-the-manipulation',
+    attr: 'friends',
+    title: 'A request that does not allow "no" is not a request',
+    origin: 'Safin — psychologist, on manipulation, boundaries and communication',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Manipulation is in every conversation in some dose. The skill is not removing it — it is seeing it, including your own.',
+    thesis:
+      'Manipulation is conscious or unconscious pressure on another person\'s picture of the world that makes them more compliant, and it is present in some dose in all communication. The goal is not to eradicate it but to notice it — in other people\'s speech, and in your own. Most conflicts, at work and at home, are not about the thing being argued over: they are about goals that have drifted out of sync or a communicative function nobody named.',
+    ideas: [
+      {
+        name: 'Double binds',
+        body: 'A sentence with two layers: on the surface a compliment or a neutral remark, underneath a compulsion or a devaluation — "you\'re a clever person, you must understand" carrying "if you don\'t, be ashamed". Spotting them in others protects you; spotting them in yourself lowers your own toxicity.',
+      },
+      {
+        name: 'The straw-man request',
+        body: 'Asking while denying the other person permission to refuse is manipulation: it places them where "no" reads as betrayal. The healthy form makes refusal explicit — "can I ask you for X? If not, that\'s completely fine." Learning to ask this way is described as muscular rather than intellectual: it needs daily reps over weeks, not an insight.',
+      },
+      {
+        name: 'Naming an emotion makes it manageable',
+        body: 'Saying "this is awkward for me" out loud before a request already converts it from something passively suffered into something being handled. The supporting image: a painter cannot use a colour they have never seen — you cannot manage a state you have no name for.',
+      },
+      {
+        name: 'The formula for a drifted agreement',
+        body: '"As I understand it the situation is A, though we agreed B. I suggest we pause and discuss how you see it." It works because it states the fact without an accusation and explicitly invites a conversation rather than a confrontation.',
+      },
+      {
+        name: 'The body governs the thought',
+        body: 'When someone is chemically carried away by a strong emotion, verbal technique does not work — physiological regulation has to come first, and only then the conversation. A practical marker offered: the stronger the awkwardness about refusing, the more reliably it signals that refusal is the right answer.',
+      },
+      {
+        name: '"I am good enough" as the starting position',
+        body: 'Working on yourself does not require first agreeing that you are insufficient. Holding that you and others are fundamentally fine does not remove the need to grow — it removes self-flagellation as the fuel for it. If an idea is still beyond you, that is about readiness, not worth.',
+      },
+    ],
+    notes: [
+      'A register of unfinished business — conversations left hanging, things unresolved — is offered as a concrete exercise rather than a metaphor.',
+      'Separating the roles someone occupies (friend, creditor, business partner) is treated as a prerequisite for talking clearly with them, since an unnamed role mix is where most of the confusion lives.',
+      'This is a practising psychologist working from an Ericksonian and transactional-analysis lineage rather than academic psychology, and he presents the material explicitly as a set of viewpoints rather than an axiom. Some terminology is standard systemic family therapy rather than original to him, though not cited as such.',
+    ],
+    practices: [
+      'Phrase requests so that "no" is explicitly available, and mean it.',
+      'Say the awkward thing out loud before the request rather than working around it.',
+      'When reality has drifted from an agreement, name the gap and invite discussion instead of accusing.',
+      'Regulate the body first when emotion is high — the words do not work until it is down.',
+      'Watch your own sentences for the two-layer version, not only other people\'s.',
+    ],
+    habits: [
+      { id: 'f_nogossip', because: 'Talking about someone absent is where the second layer lives unchecked — the same double bind you would notice instantly if it were aimed at you.' },
+      { id: 'f_thanks', because: 'Naming something specific is the plain-speech counterpart to the two-layer sentence: nothing underneath it, nothing to decode.' },
+      { id: 'm_owed', because: 'Money between friends is the most common drifted agreement there is, and the formula is built exactly for naming a gap without an accusation.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The desync formula only proves itself in the conversation you have been postponing — which is the one it was designed for.' },
+      { id: 'q_debts', because: 'Separating a friend from a creditor requires knowing the actual numbers first; the roles cannot be untangled while the amount is vague.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Сафин — Манипуляции, границы и коммуникация',
+  },
+  {
+    slug: 'comparison-is-learned',
+    attr: 'friends',
+    title: 'Comparison is a learned habit, not a need',
+    origin: 'Nasibyan — psychologist, on fear, comparison and boundaries',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Anxiety is fear projected onto a future that does not exist — which is why it never resolves on its own terms.',
+    thesis:
+      'Suffering comes less from not knowing than from holding a model of the world that hurts and refusing to revise it. Fear of change is, underneath, fear of death. Anxiety is fear projected onto a non-existent future and is therefore neurotic by construction. And comparing yourself with others is not an innate need but a cognitive process learned in childhood — which means it can be dismantled.',
+    ideas: [
+      {
+        name: 'The question is not whether it is true',
+        body: 'The useful question about a belief you are holding is not "is this true" but "does holding this make me happy — and if not, why am I holding on to it?" Suffering is framed as knowing wrongly rather than not knowing.',
+      },
+      {
+        name: 'Square breathing, and nerves as a signal of significance',
+        body: 'Four heartbeats in, four held, four out, four held. He reports his own pulse still hitting 130 before every talk after years of practice — the aim is not removing the fear but not being run by it. His stated view: if the anxiety before teaching disappeared, it would mean he had stopped finding it interesting.',
+      },
+      {
+        name: '"Why" taken to its limit',
+        body: 'Fear of having lived pointlessly comes from nobody ever helping you formulate your own why. The practice is to push any goal through repeated "why" until the real motive is exposed — not "to earn" but "to become a professional". Goals that extend beyond your own life make any current task automatically meaningful.',
+      },
+      {
+        name: 'Irritation as a reflection',
+        body: 'What reliably irritates you in another person is offered as diagnostic information about yourself — a cheap and uncomfortable instrument.',
+      },
+      {
+        name: 'Criticism and hate are different inputs',
+        body: 'Distinguishing the two is presented as a practical requirement for anyone doing anything public, along with the claim that an inability to tolerate criticism is itself a signal of stagnation.',
+      },
+    ],
+    notes: [
+      'Knowing a decision was better or worse is only available retrospectively — which is an argument for letting time run rather than trying to compute everything in advance.',
+      'A value vacuum is described as what appears when an externally imposed meaning collapses: not freedom but a gap, filled with anxiety and consumption.',
+      'This is a rapid-answer interview format, so the depth on any single point is limited. Several concepts are the speaker\'s own free interpretation of philosophical and religious systems rather than sourced positions, one cited statistic is used rhetorically rather than as fact, and his position on religion is a personal thesis rather than an empirical finding.',
+    ],
+    practices: [
+      'Ask of a belief you are suffering under: what is it doing for me, and why am I keeping it?',
+      'Use square breathing before anything that frightens you, with the aim of not being run by the fear rather than removing it.',
+      'Push a goal through "why" until you reach a motive you actually recognise.',
+      'Treat what irritates you in someone else as information about you.',
+      'Separate criticism from hate before responding to either.',
+    ],
+    habits: [
+      { id: 'b_nocompare', because: 'If comparison is learned rather than innate, then the feed that trains it daily is the first thing to remove — the habit is the dismantling.' },
+      { id: 'f_nodoom', because: 'Anxiety here is fear aimed at a future that does not exist, and scrolling is the most reliable supplier of imagined futures to be afraid of.' },
+      { id: 's_gratitude', because: 'Naming what actually happened is the direct counterweight to a mind working on a projected future instead of the day that occurred.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Boundaries are a theme he keeps returning to, and the strength of your reluctance is described as the signal that the conversation is the necessary one.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Насибян — Страх, сравнение и границы',
+  },
+
+  {
+    slug: 'three-sources-of-fatigue',
+    attr: 'health',
+    title: 'Training is only one of three things tiring you out',
+    origin: 'Mike Israetel — sport physiologist, on recovery and what does not aid it',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'Most recovery is subtraction. Several of the most popular recovery tools do not repair anything.',
+    thesis:
+      'Fatigue comes from three independent sources — training, all non-training physical activity across the day, and psychological stress — and most people account only for the first, which is why they systematically misjudge how recovered they are. All three draw on the same finite capacity. The second reframe: recovery is mostly subtraction rather than addition, and several popular recovery tools do not accelerate tissue repair at all.',
+    ideas: [
+      {
+        name: 'The three sources',
+        body: 'Training is obvious. Everyday movement is not: conscientious people who walk constantly and cannot sit still quietly drain recovery capacity without ever connecting it to their training results, while naturally sedentary athletes recover easily almost by accident. The third — described as the biggest surprise of his own doctoral training — is psychological stress: chronic relationship conflict, work anxiety and rumination measurably degrade performance and body composition, roughly in proportion to severity.',
+      },
+      {
+        name: 'The nervous system is the actual gate',
+        body: 'Being physically still does not start recovery if the nervous system stays sympathetically dominant — lying on the sofa while scrolling and getting angry counts as rest on paper and not in the body. Recovery unlocks at parasympathetic dominance, which is why stress can silently block it while sleep hours, food and rest time all look correct.',
+      },
+      {
+        name: 'Why stress wrecks sleep quality without shortening it',
+        body: 'A stressed nervous system deliberately keeps sleep shallower as a vigilance adaptation — more micro-awakenings, lighter stages — so duration can be entirely normal while the restoration is not.',
+      },
+      {
+        name: 'Acute versus cumulative fatigue, as debt',
+        body: 'Acute fatigue clears in hours to days. Cumulative fatigue builds when training frequency outruns recovery, never fully clearing between sessions, and after several weeks of hard work reaches a point that has to be addressed deliberately. One easy day is a small payment against a balance that is still there and still dragging — which is the argument for a periodic planned deload rather than an improvised one.',
+      },
+      {
+        name: 'Masking is not repairing',
+        body: 'Cold plunges, extensive stretching, foam rolling and most supplements are presented as not accelerating tissue repair — they reduce the sensation of fatigue, or actively blunt the inflammatory process that performs the repair. Useful if you enjoy them; not a substitute for sleep, food and less load.',
+      },
+    ],
+    notes: [
+      'A default question for handling stress: what can I actually do about this? If there is an action, take it or schedule it and then disengage deliberately; if there is none, further rumination carries no additional signal.',
+      'Judge recovery by trackable numbers — reps, loads, any measurable personal-best-adjacent metric — rather than by how you feel on the day.',
+      'He holds a doctorate in sport physiology and coaches competitive athletes; the repair-versus-masking distinction reflects mainstream sport-science consensus rather than a fringe position. Specific numbers are stated confidently without in-episode citation, and the hard-work-culture commentary is labelled by him as personal philosophy rather than a finding.',
+    ],
+    practices: [
+      'Count everyday movement and psychological stress as training load, because your body already does.',
+      'Get the nervous system down before calling it rest — stillness with your jaw clenched is not recovery.',
+      'Schedule a lighter week periodically instead of waiting until performance forces one.',
+      'Use cold, stretching and rolling because you like them, not as a substitute for sleeping and eating.',
+      'Ask what action is available; take it or drop it, rather than continuing to turn it over.',
+    ],
+    habits: [
+      { id: 'h_lightsout', because: 'Sleep is the intervention the whole model rests on — and the one the other two fatigue sources quietly degrade the quality of.' },
+      { id: 'f_nodoom', because: 'Scrolling and getting angry is the exact example given of rest that never reaches parasympathetic dominance, so it never becomes recovery.' },
+      { id: 'b_noalarm', because: 'A regular unforced day is the smallest version of the deload — a scheduled payment against cumulative fatigue rather than an emergency one.' },
+    ],
+    quests: [
+      { id: 'q_sleepreset', because: 'If stress keeps sleep shallow while its duration looks fine, then the fix is structural rather than a matter of going to bed earlier once.' },
+      { id: 'q_energyaudit', because: 'The three sources compete for one budget, and there is no way to see that competition without actually logging where the week goes.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Israetel — Recovery as Machine Maintenance, the Three Sources of Fatigue and Why Cold Plunges Don\'t Recover You',
+  },
+  {
+    slug: 'plaques-and-risk-factors',
+    attr: 'health',
+    title: 'Atherosclerosis is a process, not an event',
+    origin: 'Utin — cardiologist, on plaques, clots and misfiled anxiety',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'The goal was never to remove the plaques. It is to stop them rupturing.',
+    thesis:
+      'Cardiovascular disease leads causes of death because infections were defeated and four risk factors were not: smoking, inactivity, obesity and untreated hypertension. Atherosclerosis is not a single event but a process running from birth — cholesterol deposits in the artery wall in everyone, and the only questions are how fast and whether a plaque ruptures. Treatment therefore aims not at removing plaques but at making them safe.',
+    ideas: [
+      {
+        name: 'Good and bad cholesterol is about packaging',
+        body: 'Cholesterol is not good or bad in itself — the distinction describes how it is packaged for transport. The loosely packed form oxidises easily, sticks to the artery wall and gets inside. Macrophages arrive, gorge, and die, forming a plaque: a fibrous cap over a liquid core of cholesterol and dead immune cells.',
+      },
+      {
+        name: 'How a plaque becomes a clot',
+        body: 'If the liquid core breaks through into the vessel lumen, blood clots on the plaque surface and blocks it — a heart attack if the vessel serves the heart, a stroke if it serves the brain. Which is why the therapeutic goal is described as stabilising the core rather than clearing the deposit.',
+      },
+      {
+        name: 'Three different places clots form',
+        body: 'In arteries, almost always on a ruptured plaque. In leg veins, via slowed flow, wall damage and changes in clotting — a detached clot travels to the lung, and the warning sign given is one leg suddenly thicker and redder than the other plus sudden breathlessness. In the left atrium during atrial fibrillation, from where a clot travels to the brain.',
+      },
+      {
+        name: 'Thick blood is not the mechanism',
+        body: 'Clot formation is a chemical process — platelet aggregation and fibrin polymerisation — not blood being too thick and sitting still. Blood-thinning drugs do not change the consistency of blood; they act on those chemical steps.',
+      },
+      {
+        name: 'The plate, in practice',
+        body: 'Half the plate vegetables and fruit across the colour range, a quarter whole grains, a quarter protein; olive oil rather than sunflower. Roughly one steak of red meat a week rather than daily; cold-water fish once or twice a week; a small daily portion of nuts, counted, because they are calorie-dense.',
+      },
+      {
+        name: 'A diagnosis used as a wastebasket',
+        body: 'His second theme is that a widely used functional diagnosis in the region operates as a bin for untreated anxiety and panic disorders, keeping people looking for a cardiac cause instead of being referred appropriately.',
+      },
+    ],
+    notes: [
+      'Salt intake in the region runs at roughly two to three times the WHO reference; the first step named is taking the salt cellar off the table. Pink and sea salt are described as marketing rather than a health difference.',
+      'Distinguishing cardiac pain from anxiety or muscular spasm: cardiac pain relates to exertion and tends to press; spasm and anxiety tend to worsen on inhalation and lack the link to exertion.',
+      'Dried fruit as a potassium source, collagen supplements and pink salt are named as myths without demonstrated effect.',
+      'On alcohol he cites the position that there is no safe dose.',
+      'Notably not a promotional source — he is openly sceptical of sponsored content and pseudo-diagnoses. The specific figures quoted are given without in-episode references; they align with widely cited cardiology literature but cannot be checked from the conversation itself, and he flags the evidence on harm-reduction alternatives to smoking as still developing.',
+    ],
+    practices: [
+      'Take the salt off the table before changing anything else about the diet.',
+      'Build the plate by proportion rather than by counting: half vegetables and fruit, a quarter whole grains, a quarter protein.',
+      'Measure resting blood pressure properly once a year — sit still for several minutes first. It costs nothing.',
+      'Get a full cholesterol panel once to learn your inherited baseline, independent of how you currently eat.',
+      'Stop hunting for a cardiac explanation for symptoms that behave like anxiety, and get the anxiety treated as anxiety.',
+    ],
+    habits: [
+      { id: 'h_nosmoke', because: 'It heads the list of the four unbeaten risk factors — and it is the only one on that list you can act on in a single decision.' },
+      { id: 'h_realmeal', because: 'The plate is a proportion rather than a calculation, which makes it something a single honest meal a day can actually carry.' },
+      { id: 'h_steps', because: 'Inactivity is named as a risk factor in its own right, sitting alongside smoking and untreated hypertension rather than below them.' },
+    ],
+    quests: [
+      { id: 'q_healthcheck', because: 'A resting blood pressure reading and one full cholesterol panel are the two cheap numbers that turn a lifelong silent process into something visible.' },
+      { id: 'q_energyaudit', because: 'Two of the four risk factors are lifestyle patterns rather than events, and patterns only become addressable once the week is actually written down.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Утин — Атеросклероз, тромбы и ВСД',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
