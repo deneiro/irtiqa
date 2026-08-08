@@ -2645,6 +2645,234 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Business & career / Resource / Токовинин — Бунтарство как топливо, ремесло менеджмента и выбор ниши как выбор судьбы',
   },
+
+  {
+    slug: 'the-bottom-is-still-your-life',
+    attr: 'friends',
+    title: 'Is this thought coming from the healthy part or the other one?',
+    origin: 'Zhukova — gestalt therapist, on hitting bottom and climbing out',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The dangerous stage is not the fall. It is when the damage you are doing yourself exceeds the damage of the situation.',
+    thesis:
+      'Two moments decide a slide. The first is ignoring the signal — sensing that a situation or a person should no longer be trusted, and writing the unease off as tiredness or shame. The second, more dangerous, is active self-drowning: knowing things are bad and choosing destructive ways to cope, rationalised as "it is already bad, it cannot get worse". The clear marker of the second stage is that the harm from your own behaviour has overtaken the harm from the original situation.',
+    ideas: [
+      {
+        name: 'A crisis is a segment, not a cancellation',
+        body: 'The reframe the whole conversation rests on: time at the bottom does not stop being your life — it is a specific, often hard stretch of it. The technique offered is drawing a timeline from nought to a hundred and marking the peaks and troughs, so the present crisis appears as one segment of a line rather than as the whole line.',
+      },
+      {
+        name: 'Healthy part or dependent part',
+        body: 'The daily test: before a small decision in a hard period, ask which part of you the thought is coming from. It is fast, requires no insight, and is meant to be used on ordinary choices rather than saved for large ones.',
+      },
+      {
+        name: 'Three silver bullets',
+        body: 'Formulate three minimal actions that are genuinely doable today, in the direction of the basic goals — instead of waiting for strength or motivation to arrive. The size is the point: they have to survive a day with nothing in the tank.',
+      },
+      {
+        name: 'Defences amplify exactly when they help least',
+        body: 'In an acute crisis psychological defences intensify: a person may swing into harsh self-flagellation, or land in an environment that answers real distress with "just pull yourself together" — which reliably worsens it.',
+      },
+      {
+        name: 'Devaluing the past is a symptom, not an assessment',
+        body: 'The pattern where someone in crisis declares everything they previously did worthless is treated as a regressive intensification of a general tendency to devalue — information about the state, not about the record.',
+      },
+      {
+        name: 'Compare with yourself in crisis, not yourself at your peak',
+        body: 'Offered as the specific defence against self-criticism during a depleted period: the comparison class has to match the conditions, or the verdict is guaranteed in advance.',
+      },
+    ],
+    notes: [
+      'Why saying "I am not okay" out loud is hard: patterns absorbed early — boys do not cry, a man should be resilient — collide with the public image someone has built.',
+      'A useful check on delay: if you are waiting until you have more reach or more resources, ask what specifically will be different at the larger number. It separates genuine unreadiness from self-deception.',
+      'A practising gestalt therapist specialising in dependency, who explicitly separates clinical experience from her own history. The format is a live interview with a rapid-fire segment, so some advice is personal opinion rather than protocol — and one clinical claim about which couples therapy performs best is worth checking separately rather than taking from a conversation.',
+    ],
+    practices: [
+      'Ask which part of you a thought is coming from, before acting on it.',
+      'Name three minimal actions that are actually possible today, and do those instead of waiting to feel able.',
+      'Draw the timeline and mark where this stretch sits on it.',
+      'Compare yourself to yourself in the same conditions, not to your best year.',
+      'Say it out loud to one person, rather than waiting until it can be said well.',
+    ],
+    habits: [
+      { id: 'f_reachout', because: 'Isolation is what lets the second stage run unobserved — and the source is explicit that the hard part is saying it out loud at all.' },
+      { id: 's_gratitude', because: 'Devaluing everything already done is named as a symptom; writing down what went right is the cheapest daily correction to it.' },
+      { id: 'b_morningjoy', because: 'The three-bullet principle applied to the day itself: something small and genuinely possible, rather than waiting for the tank to refill.' },
+    ],
+    quests: [
+      { id: 'q_reconnect', because: 'The environment decides whether distress is met with help or with "pull yourself together" — which makes who you are actually in contact with a practical variable.' },
+      { id: 'q_hardconversation', because: 'Asking for help is described as the hardest sentence to say, and this is the quest that turns it into a specific conversation with a specific person.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Жукова — Дно как часть жизни, здоровая vs зависимая часть психики и три серебряные пули',
+  },
+  {
+    slug: 'fixing-the-car-instead-of-driving',
+    attr: 'friends',
+    title: 'Repairing the car instead of taking the trip',
+    origin: 'Zhuravlyov — psychiatrist, on neurotic relationships and the image in your head',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The diagnostic is not how much conflict there is. It is whether the resources go into living or into repair.',
+    thesis:
+      'The defining sign of a neurotic relationship is that it contains the problem in its own substance: psychological, financial and emotional resources go not into living but into endlessly fixing the relationship itself — repairing the car rather than driving it somewhere. Underneath sits a paradox: wanting to change and fearing it, wanting to leave and being unable to.',
+    ideas: [
+      {
+        name: 'You relate to yourself as you were related to',
+        body: 'From cultural-historical psychology: there is no unmediated access to your own inner experience — the relationship you have with yourself is modelled on how adults related to you, the way a child first led by the hand later leads themselves. The illustration offered is self-consciousness in front of a camera when alone: it materialises the gaze of another, and there is no way to look at yourself except with social eyes.',
+      },
+      {
+        name: 'Not every neurotic component is fatal',
+        body: 'He takes a deliberately more moderate position than the "leave immediately if there is neurosis" view, naming the colleague he differs from without disparaging them. The criterion offered: does the relationship reduce entirely to the neurotic mechanism, or are the people still driving and looking around — still getting something real? If the latter, there is something to work with.',
+      },
+      {
+        name: 'Repetition can be its own reward',
+        body: 'The neurotic personality is described as beating their head against the wall and, at some level, getting something from it — repeating a pattern in order to feel a familiar pain again, without that being conscious.',
+      },
+      {
+        name: 'Therapy works on the image, not the person',
+        body: 'Work on a relationship is always work with the version of the other person inside your own head rather than with the actual human being. That reframe is what makes the work possible when the other party is unavailable, unwilling, or gone.',
+      },
+      {
+        name: 'What I do but do not want; what I want but do not do',
+        body: 'The two-column exercise given as universal — applicable to any area where things feel stuck, not only to relationships.',
+      },
+    ],
+    notes: [
+      'Like attracts like, sometimes further down than expected — friendship and attraction tend to form between similar people, with an illustration running to shared clinical outcomes decades later.',
+      'A list of what the other person is actually living by is offered as a direct test of the quality of any close relationship, friendships included.',
+      'A named psychiatrist in private practice, giving clinical positions rather than research claims and openly marking where he differs from a colleague — an acknowledgement that schools of thought differ rather than a single correct view. The philosophical references are real and attributed; the one empirical reference is not backed with a citation.',
+    ],
+    practices: [
+      'Ask where the resources are going: into living, or into repairing the relationship itself.',
+      'Write the two columns — what you do but do not want, and what you want but do not do.',
+      'Try to list what the other person is actually living by right now. Struggling to is the finding.',
+      'Notice which image of the person you are arguing with, since that is who you are actually talking to.',
+    ],
+    habits: [
+      { id: 'f_remember', because: 'Listing what someone is actually living by is only possible if you were listening last time — this is that test, run weekly instead of once.' },
+      { id: 'f_meet', because: 'The image in your head drifts from the person unless it is regularly corrected by the person.' },
+      { id: 'f_thanks', because: 'Naming something specific and real is the opposite of the repair loop: it is the relationship being used rather than worked on.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The two-column exercise usually produces one thing you want but do not do — and it is almost always a conversation.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Журавлёв — Невротические отношения, вина и починка машины вместо поездки',
+  },
+
+  {
+    slug: 'the-cost-of-ownership',
+    attr: 'money',
+    title: 'Every purchase drags a tail of purchases behind it',
+    origin: 'Seisembay — on the delta, cost of ownership and expense order',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'If investing feels exciting, that is the signal you are losing money rather than making it.',
+    thesis:
+      'Managing money is a third process, independent of earning more and spending less — the gap does not accumulate by itself even on a high income if nobody is managing it. Two practical consequences follow: anything you buy drags a chain of subsequent costs behind it that is rarely counted in advance, and personal spending has to run in a fixed order rather than by whatever is most pressing.',
+    ideas: [
+      {
+        name: 'Three separate processes',
+        body: 'Financial literacy is built around the delta between income and outgoings, and without a positive delta investing is not a meaningful conversation. But managing money reduces to neither earning more nor economising: someone can grow their income steadily and still be short, precisely because managing is a distinct skill nobody trained.',
+      },
+      {
+        name: 'The brain spends future income now',
+        body: 'Deferred payment is handled badly: money not yet received is mentally spent before it arrives, which is the mechanism that makes borrowing against a future salary feel reasonable in the moment.',
+      },
+      {
+        name: 'Cost of ownership',
+        body: 'Any status purchase pulls a chain of unaccounted costs after it — the worked example runs from an expensive lighter to a matching cigar, to the drink it apparently requires, to somewhere to store them, ending at roughly ten times the original outlay. The practical instruction is to say out loud what tail a purchase will drag before looking at the price on it.',
+      },
+      {
+        name: 'Investing should be boring',
+        body: 'The marker given: if investing produces excitement and a pull to check the charts, that is a sign of losing money rather than earning it. Investing that works looks like routine, tedious work. Related rules: never borrow in order to invest, do not confuse the guaranteed saving of early repayment with a hypothetical market return, and start with a sum you would not mind losing, because early losses are close to inevitable.',
+      },
+      {
+        name: 'Quality of life has a floor',
+        body: 'The stated order is a tax to your future self first, then the insurance reserve, then genuine necessities, and only then quality of life — which cannot be cut below a certain level, because doing so hits self-esteem and through it the ability to earn at all.',
+      },
+    ],
+    notes: [
+      'Cash reserve kept separately from investments, so a shock does not force the sale the strategy depends on not making.',
+      'Pyramids and casinos are grouped as psychologically adjacent — both are the wish to earn everything at once, and one participant argues the better predictor of walking into one is the absence of a cushion and of any long-horizon habit, rather than a lack of financial literacy.',
+      'The host opens by saying explicitly that this is kitchen-table conversation rather than an expert platform, and most material is personal observation rather than data.',
+      'One study is misattributed to the wrong university in passing, quoted figures come from memory, and personal sums are anecdote — none of it load-bearing, but not to be leaned on as sourced.',
+    ],
+    practices: [
+      'Before a status purchase, write the chain of costs it will pull behind it, then decide.',
+      'Run the order deliberately: future self, reserve, necessities, then quality of life.',
+      'Treat excitement about an investment as a stop signal rather than a good sign.',
+      'Keep the cash reserve separate from anything invested.',
+      'Start with an amount whose loss would not injure you, and expect to lose some of it.',
+    ],
+    habits: [
+      { id: 'm_waitlist', because: 'A day\'s delay is exactly long enough to write out the tail of costs the purchase drags — which is the calculation the price tag hides.' },
+      { id: 'm_payday', because: 'The tax to your future self comes first in the stated order, and the only way an order survives contact with a month is if the first item is automatic.' },
+      { id: 'm_log', because: 'The delta is a subtraction, and half of it stays unknown while the outgoings are unmeasured.' },
+    ],
+    quests: [
+      { id: 'q_emergencyfund', because: 'The reserve sits second in the order and is named separately from investments — it is the thing that stops a shock forcing a sale.' },
+      { id: 'q_debts', because: 'Early repayment is a guaranteed return, and the source\'s warning is against trading that certainty for a hypothetical one.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Сейсембай — Дельта, цена владения и приоритет расходов',
+  },
+  {
+    slug: 'money-shame-and-courage',
+    attr: 'money',
+    title: 'Money amplifies what was already there',
+    origin: 'Dmitrieva — psychologist, on money beliefs, shame and naming your price',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Underneath most of the barriers sits one thing: the courage to be visible and say what you cost.',
+    thesis:
+      'The capacity to earn more is set not only by knowledge and skill but by a set of psychological settings: separation from family, self-esteem, appetite for novelty, and beliefs about money absorbed in childhood. Money neither corrupts nor improves — it amplifies what was already in the character. And underneath most of the barriers sits the same deficit: the courage to be visible, to name your price, to risk failing.',
+    ideas: [
+      {
+        name: 'The fear of outgrowing your parents',
+        body: 'An unconscious fear of exceeding the standard of living you came from is described as a real and common barrier. Separation is not rupture: it is the capacity to be close and separate at once — different principles, different incomes, different decisions, without that being a conflict.',
+      },
+      {
+        name: 'Self-esteem can be fuel or brake',
+        body: 'Low self-esteem can drive someone to work harder and prove something, and it works up to a point — or it can produce capitulation: it will not work anyway, so why try. The practical diagnostic is to notice which direction yours is running and intervene only if it is the second. Successful people not uncommonly monetise a wound, and that is not automatically a reason to fix it while it is functioning as fuel.',
+      },
+      {
+        name: 'Wanting, devalued early',
+        body: '"You will stop wanting it" teaches that wanting is not worth doing, and lowers the odds that the adult wants much at all. The proposed replacement keeps the wanting and adds the work: good that you want it — let us think about how to get there.',
+      },
+      {
+        name: 'Money does not change the character it arrives at',
+        body: 'The claim against "money spoils people": it amplifies what was there before, illustrated with the speaker\'s own tendency to give gifts — small ones before, large ones after.',
+      },
+      {
+        name: 'Shame as a cultural layer',
+        body: 'Beyond the family beliefs sits a cultural layer that attaches shame to having money and to discussing it at all — which is what makes naming a price feel like a transgression rather than a transaction.',
+      },
+      {
+        name: 'Managing money is its own variable',
+        body: 'Independent of financial literacy: the ability to not spend to zero or into the negative is treated as a separate capacity rather than a consequence of knowing more.',
+      },
+    ],
+    notes: [
+      'Phrases that keep an adult a child — you will always be my little one — are described as lowering rather than raising the motivation to build an independent life. The suggested substitution keeps the relationship and drops the infantilising.',
+      'A useful separation: how much you actually need for stability, versus how much it seems you need based on other people\'s examples.',
+      'A practising psychologist in an interview format, working from clinical observation rather than cited research. Two claims presented as research-backed are given without naming the studies; they are plausible and consistent with the wider literature but cannot be checked here, and the personal anecdotes illustrate a mechanism rather than establish a rate.',
+    ],
+    practices: [
+      'Take the single belief about money that is costing you most right now, and rewrite it deliberately.',
+      'Check which way your self-esteem is running before trying to repair it.',
+      'Separate the number you need for stability from the number you inherited from comparison.',
+      'Practise saying the price out loud, since the barrier is usually the saying rather than the number.',
+    ],
+    habits: [
+      { id: 'm_owed', because: 'Money between people is where the shame layer shows up first — and the habit is one sentence about a thing that is otherwise never said.' },
+      { id: 'm_checkbalance', because: 'Shame works by keeping the number unlooked at; ten seconds a day removes the avoidance without requiring the feeling to change first.' },
+      { id: 'm_log', because: 'Managing money is named as a variable separate from knowing about it, and the log is where managing becomes possible at all.' },
+    ],
+    quests: [
+      { id: 'q_raise', because: 'The whole entry converges on naming your price out loud — this is the quest where that stops being a belief and becomes a sentence someone hears.' },
+      { id: 'q_debts', because: 'Shame keeps the total vague, and the total is the specific thing shame makes hardest to look at directly.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Дмитриева — Психология денег, стыд и смелость',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
