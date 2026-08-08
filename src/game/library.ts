@@ -3101,6 +3101,225 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Health & sport / Resource / Sims — Polarized Training, RPE, Post-Workout Sauna Protocol and Female-Specific Physiology',
   },
+
+  {
+    slug: 'weakness-and-goal',
+    attr: 'brightness',
+    title: 'Two things make an audience care, and detail is neither',
+    origin: 'John Truby — on genre, weakness and the premise line',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Most scripts fail before a page is written — at the one-sentence premise.',
+    thesis:
+      'What makes an audience care about a character is exactly two things: their weakness or need — a deep internal problem running their life — and their goal. Detailed traits are surface. Plot comes from character in a specific engineering sense: the pursuit of the external goal is built to force a confrontation with the internal weakness, and it is the inner change the audience is actually invested in.',
+    ideas: [
+      {
+        name: 'The premise is where things fail',
+        body: 'The claim is that the overwhelming majority of scripts fail at the one-sentence stage, before drafting — and usually not because the idea is bad but because it was put into the wrong form to develop it in. The two tests offered: is there a desire line that can sustain the full length, and is there an opponent capable of sustaining conflict?',
+      },
+      {
+        name: 'The product is the form, not the person',
+        body: 'Genres are story forms refined over decades or longer, with their characters, themes and mechanics already worked out — which is why they travel across cultures. A studio buying a character bank is buying pre-established, globally recognised figures reusable indefinitely.',
+      },
+      {
+        name: 'Combination is the default and the hard part',
+        body: 'Almost nothing modern is single-genre; most combine two to four. Each carries its own hero, opponent, desire line and theme, so combining them without skill produces unconnected chaos rather than richness.',
+      },
+      {
+        name: 'Transcending means paying the dues surprisingly',
+        body: 'Every form has eight to fifteen non-negotiable beats. Writing them conventionally produces something indistinguishable; ignoring them produces something unsatisfying. The professional move is hitting each required beat in a way nobody has seen — giving the audience what they came for and something new at once.',
+      },
+      {
+        name: 'Structure first, dialogue last',
+        body: 'A checkable rewrite discipline: resist polishing sentences until the underlying structure has been confirmed to work. Applies to any long piece, not only scripts.',
+      },
+    ],
+    notes: [
+      'His method was empirical rather than theoretical — roughly three years of watching two films a day and taking notes in the dark, hunting for what recurred.',
+      'Worth holding as a live disagreement rather than a settled answer: Truby dismisses three-act structure outright as fabricated, while other working screenwriting educators build their frameworks on exactly that paradigm. Both are practitioners with real records; this is a genuine professional dispute about which structural model is real versus oversimplified, not a case of one being uninformed.',
+      'A credentialed consultant whose craft book sits alongside the standard references in the field. The specific counts — how many genres, what proportion of scripts fail — are stated confidently and are best read as working figures rather than measurements.',
+    ],
+    practices: [
+      'Define the internal weakness and the external goal before adding any surface detail.',
+      'Test the premise for a desire line long enough to sustain the whole thing, and an opponent strong enough to sustain conflict.',
+      'Name the form you are working in, then find the version of each required beat nobody has seen.',
+      'Fix structure before sentences, every time.',
+    ],
+    habits: [
+      { id: 'd_notes', because: 'His whole framework came out of taking notes on what recurred — the method is available to anyone willing to write down what they noticed.' },
+      { id: 'd_read', because: 'Recognising the beats of a form requires having consumed enough of it to feel where they land, which is a volume problem.' },
+      { id: 's_makecreate', because: 'Premise tests are cheap and abstract until something is being built against them.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'Structure-before-dialogue is only a real discipline on a piece carried to done — an unfinished draft never reaches the stage where it would bite.' },
+      { id: 'q_portfolio', because: 'Whether a beat actually surprised anyone is not answerable from inside your own head.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Truby — Genre, Character Weakness and the Craft of Premise',
+  },
+  {
+    slug: 'plan-so-the-poetic-brain-is-free',
+    attr: 'brightness',
+    title: 'Solve the problems first, so the making can be instinctive',
+    origin: 'Amor Towles — novelist, on planning, vocabulary and noticing',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Front-load every analytical decision, so that while working, the analytical part has nothing left to argue about.',
+    thesis:
+      'The working method is extreme front-loading: years of handwritten notebooks resolving plot, setting and backstory before drafting a single chapter — specifically so that during the writing the analytical brain is already satisfied and the instinctive side is free to produce surprising language. And description works when filtered through a specific character\'s actual noticing rather than through the maker\'s inventory of researched facts.',
+    ideas: [
+      {
+        name: 'Vocabulary as a collected toolkit',
+        body: 'Every domain has its own vocabulary, and the ongoing job is tuning the ear to collect striking words across all of them for later use. His example: weaving period-appropriate French into a novel because that society genuinely spoke it, so the vocabulary signals class and sensibility without anything being stated.',
+      },
+      {
+        name: 'Immersive reading instead of research',
+        body: 'Before writing a book set in a particular year, he read four novels written inside that same narrow window — chosen because they are radically different in subject and milieu despite being contemporaneous. The aim is period sensibility rather than period facts.',
+      },
+      {
+        name: 'Description is presence, not decoration',
+        body: 'Sharp and concise enough that a reader can locate themselves; not so spare the space could be anywhere, not so dense that they bog down. A practical move: front-load the spatial geography early so later scenes can rely on a map the reader has already built.',
+      },
+      {
+        name: 'Tempo without urgency',
+        body: 'Genre page-turners generate urgency from action. Literary pacing can generate it from psychological interest or sentence-level phrasing alone — which permits deliberately slow stretches, provided something else keeps pulling. The editing test he gives: if a section still bores him on the third pass, it goes.',
+      },
+      {
+        name: 'The opening of doors',
+        body: 'A test for an idea: does imagining it spontaneously generate many directions, or does it stay flat and singular? Useful before committing time rather than after.',
+      },
+    ],
+    notes: [
+      'Ground a period or a place in one character\'s small specific noticing rather than reaching for the obvious landmark — the specific detail carries more than the famous one.',
+      'A named, verifiable novelist describing his own documented method, consistent with his other public accounts. The anecdotes illustrate process rather than establish facts, and his opinions on other writers are presented explicitly as personal taste.',
+    ],
+    practices: [
+      'Do the structural thinking before starting, so that the making itself can be instinctive.',
+      'Collect vocabulary continuously, from domains you do not work in.',
+      'Establish the geography early, then trust it for everything that follows.',
+      'Run the opening-of-doors test on an idea before committing months to it.',
+      'Cut what still bores you on the third read.',
+    ],
+    habits: [
+      { id: 'c_plan', because: 'Front-loading the analytical work is the entire method — and it only works if the planning happens somewhere other than the moment of making.' },
+      { id: 'd_read', because: 'Immersive reading is his substitute for research: sensibility is absorbed rather than looked up.' },
+      { id: 'd_notes', because: 'The notebooks are the method. A striking word or a noticed detail is only available later if it was written down when it appeared.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'The point of the planning is that the making goes fast when it starts — which only gets tested by carrying one thing to done.' },
+      { id: 'q_tryfive', because: 'The opening-of-doors test needs several candidate ideas to compare, and ideas come from contact with unfamiliar things.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Amor Towles — The Mindset Behind an Unforgettable Novel',
+  },
+
+  {
+    slug: 'different-doors',
+    attr: 'spirituality',
+    title: 'You answer for delivering it, not for the result',
+    origin: 'Gimatdinov — imam, on dialogue, different doors and the forgotten pillar',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Children repeat what their parents do, not what their parents say — and the same is true of everyone you are trying to convince.',
+    thesis:
+      'Three practical claims. Raising children in a practice works through dialogue and shared desire rather than compulsion. Persuasion has a methodology — different people are reached through different doors, and choosing the wrong one is a failure of method rather than of the listener. And the release from burnout in any persuasive effort is the same: you are answerable for the delivery, not for the outcome.',
+    ideas: [
+      {
+        name: 'Dialogue is in the text, not a modern fashion',
+        body: 'The Qur\'anic conversations between fathers and sons are described as friendly, containing the direct question "how do you see this yourself?" — even where the decision has already been settled from above and submission is inevitable. Asking a child\'s view and listening to it is therefore modelled in the source text rather than borrowed from contemporary psychology.',
+      },
+      {
+        name: 'The sentence that fixed a practice for life',
+        body: 'A personal account: after a missed dawn prayer the father did not reproach him, but said that the prayer is his own and not performed for anyone else — and that it would nonetheless help the father before God. The observation attached is that this framing, rather than shame, is why it was never missed again.',
+      },
+      {
+        name: 'Fear of the parent produces bad advice from elsewhere',
+        body: 'From pastoral experience: children facing serious problems, dependencies included, do not go to their parents precisely because they are afraid — and take advice from worse sources instead. The prevention named is not declared availability but actual presence and listening at the moment someone wants to say something.',
+      },
+      {
+        name: 'Enter through different doors',
+        body: 'For each type of person a different route: conversation for the talkative, a book for the reader, a film for the watcher, audio for someone who drives, and for some simply being listened to. The historical illustration offered is a region converted not through war but through the observed honesty of traders.',
+      },
+      {
+        name: 'Character is the most effective argument',
+        body: 'The recurring claim: how you conduct yourself does more persuasive work than what you say, which is the same mechanism as children copying behaviour rather than instruction.',
+      },
+    ],
+    notes: [
+      'Patience rather than reaction to hostility is presented as a tested strategy, with a transmitted story used as illustration — passed on rather than personally witnessed, and flagged as such.',
+      'Checking the reputation of a charitable fund before giving is offered as an ordinary practical habit rather than a caveat.',
+      'A practising imam with formal theological training, drawing on pastoral experience and citing sources explicitly. The biography that made up much of the original conversation is deliberately not carried here.',
+    ],
+    practices: [
+      'Ask "how do you see this yourself?" even when the decision is already made.',
+      'Be present at the moment someone wants to speak, rather than announcing you are available.',
+      'Choose the door that fits the person — a book, a conversation, a recording, or simply being heard.',
+      'Hold yourself answerable for delivering it and not for whether it landed.',
+      'Check who you are giving to before you give.',
+    ],
+    habits: [
+      { id: 'm_charity', because: 'The pillar he calls the least understood is the one that only becomes real as a repeated act rather than an annual calculation.' },
+      { id: 'f_remember', because: 'Being present at the moment someone wants to talk is built from having listened last time — that is what makes a person try again.' },
+      { id: 's_forgive', because: 'Patience instead of reaction is the strategy the source puts most weight on, and it is trained on small things before it is available for large ones.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The warning is specific: the conversation not had, out of fear, is the one that gets answered by someone worse.' },
+      { id: 'q_learnfaith', because: 'He names one pillar as the least understood even among practising people — which makes it a thing to study rather than assume.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Гиматдинов — Диалог как воспитание, дауат через разные двери и закят как забытый столп',
+  },
+  {
+    slug: 'environment-is-fuel',
+    attr: 'spirituality',
+    title: 'Check the source before you repeat it',
+    origin: 'Two first-person accounts on practice, environment and verification',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'If your practice slipped after the company changed, that is the finding — not the excuse.',
+    thesis:
+      'This is personal testimony rather than instruction, and two transferable patterns come out of it. The first: environment is fuel — conviction is described as something that needs feeding, and proximity decides which direction it moves. The second: verify a quotation before repeating it, because material circulating on social platforms is frequently distorted or stripped of its context.',
+    ideas: [
+      {
+        name: 'Environment as the input, not the excuse',
+        body: 'The mechanism given: near someone knowledgeable, knowledge accumulates; near someone devoted, the pull toward practice grows; near someone outside it, either vigilance quietly drops or it sharpens. The illustration is two strawberries, one spoiled — proximity to the spoiled one does its work by default unless the arrangement changes first.',
+      },
+      {
+        name: 'The audit that follows from it',
+        body: 'The concrete action: if practice started slipping after the company changed, treat that as the signal to change the circle rather than as a reason to blame circumstances. One account describes doing exactly that, and treats the arrival of a better circle as an answer rather than a coincidence.',
+      },
+      {
+        name: 'Verify before repeating',
+        body: 'Both speakers warn that verses and quotations circulating on short-video platforms are often distorted or cut from their context, and recommend opening a commentary and checking the whole passage yourself rather than trusting the clip.',
+      },
+      {
+        name: 'Conscious practice versus performed practice',
+        body: 'The distinction they draw from their own history — an early, formal observance that did not match the rest of how they were living, and a later, deliberate acceptance. The transferable marker is the difference between doing something because it is expected and doing it having actually agreed to it.',
+      },
+      {
+        name: 'The order of asking',
+        body: 'Their reformulation of reliance: ask God first, then recognise His hand in the people who help — rather than working the other way around.',
+      },
+    ],
+    notes: [
+      'They also report that hostility they experienced years ago has since subsided, and separately note that a colour convention they encountered was a school uniform rule rather than a religious requirement — a local norm rather than a ruling.',
+      'This is the testimony of two non-specialists, and the podcast itself says so in its preamble. Its value is in the psychological patterns and the lived account, not in theological precision.',
+      'One hadith is conveyed by meaning without a chain, one claim about where a practice occurs is an unverified personal impression the speaker flags herself, and the striking coincidences both describe as direct answers are an interpretation common in this genre rather than a demonstrated mechanism — worth reading as how conviction gets reinforced rather than as evidence of how it works.',
+    ],
+    practices: [
+      'Audit the company: if the practice slipped when the circle changed, change the circle.',
+      'Open the commentary and read the whole passage before repeating a quotation you saw in a clip.',
+      'Ask whether a practice is being performed or actually agreed to.',
+      'Take instruction from a person you can verify rather than from an algorithmic feed.',
+    ],
+    habits: [
+      { id: 's_quran', because: 'Reading the passage yourself is the verification habit in its ordinary form — the clip is only persuasive while the source stays unopened.' },
+      { id: 'f_meet', because: 'If environment is the input, then who you are actually in a room with is the variable, and it does not change by intention.' },
+      { id: 's_dhikr', because: 'The thing described as needing feeding does not survive on occasional attention, which is what makes the small daily version the load-bearing one.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'Their own conclusion is to take it from a verified teacher and a real commentary rather than assembling it from fragments.' },
+      { id: 'q_reconnect', because: 'Changing the circle is the action the environment argument actually points at, and it is done by contacting specific people.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Dinde Podcast — Осознанность хиджаба, окружение как топливо имана и таваккуль через причины',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
