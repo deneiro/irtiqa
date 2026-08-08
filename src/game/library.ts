@@ -1000,7 +1000,12 @@ export const LIBRARY: LibraryEntry[] = [
       'State the long-term goal as an amount of independence rather than an amount of income.',
       'Practise gratitude deliberately: it closes the expectation gap more reliably than a raise does, because the gap is what happiness is measured against.',
     ],
-    habits: [],
+    habits: [
+      { id: 'm_checkbalance', because: 'The source names this exact habit — ten seconds a day — as the fix for the ignorance most financial mistakes actually come from.' },
+      { id: 'm_payday', because: 'The 10% rule in its literal form: the transfer happens the day money arrives, before any spending decision competes with it.' },
+      { id: 'm_waitlist', because: 'A day\'s delay is enough to answer the source\'s question — what hole is this purchase filling? — before the money is gone.' },
+      { id: 'm_nodebt', because: 'If a dollar of debt is a piece of your future owned by someone else, then not borrowing is the cheapest way to keep it.' },
+    ],
     quests: [
       { id: 'q_emergencyfund', because: 'This is "savings as a bill" made concrete — the first block of independence bought, rather than an amount left over at month end.' },
       { id: 'q_debts', because: 'If a dollar of debt is a piece of your future someone else owns, then facing the total is the act of finding out how much of your future is currently spoken for.' },
@@ -1060,7 +1065,12 @@ export const LIBRARY: LibraryEntry[] = [
       'Identify your own friendship style, then stop reading a friend\'s different rhythm as a verdict on the friendship.',
       'When someone hits a life transition, name it and ask what staying connected could look like now, rather than letting it quietly fade.',
     ],
-    habits: [],
+    habits: [
+      { id: 'f_nodoom', because: '"Go for connection first" is precisely this: the dead moments that default to scrolling were already unstructured, so the swap costs nothing.' },
+      { id: 'f_reachout', because: 'The liking gap means this message will land better than it feels like it will — the felt risk is the thing the research says is wrong.' },
+      { id: 'f_meet', because: 'The cumulative hour and the three close relationships both need time in person; this is the leg of 5-3-1 that a phone cannot cover.' },
+      { id: 'f_voice', because: 'Named directly as a micro-moment tactic for distance friendships — the spontaneous note when someone crosses your mind.' },
+    ],
     quests: [
       { id: 'q_reconnect', because: 'Five people is exactly the diversity leg of 5-3-1, and the liking gap says every one of those messages will land better than it feels like it will.' },
       { id: 'q_hardconversation', because: 'The source\'s recommendation for sensed distance is a direct, caring check-in — this is that conversation, and silence is what the research says makes it worse.' },
@@ -1117,7 +1127,12 @@ export const LIBRARY: LibraryEntry[] = [
       'Treat leaving one wrong thing as worth more than adding one more good thing — it is the harder act, and the one that requires sincerity.',
       'Watch for the four delusions in your own practice, especially the two most socially rewarded: teaching what you do not do, and giving enough to be praised.',
     ],
-    habits: [],
+    habits: [
+      { id: 'd_review', because: 'The mirror exercise needs a standing slot: the honest friend cannot give you uncomfortable advice if you never sit down to hear it.' },
+      { id: 's_dhikr', because: 'Reflection is called the clearest mirror — five quiet minutes before the day is the smallest version that still counts as looking.' },
+      { id: 'f_nogossip', because: 'A concrete instance of the lecture\'s core move: leaving one wrong thing, which it argues is worth more than adding another good deed.' },
+      { id: 's_forgive', because: 'Letting something go is the harder, less rewarded act the source contrasts against the easy satisfaction of a good deed.' },
+    ],
     quests: [
       { id: 'q_anchor', because: 'The handover of responsibility is described exactly as a daily practice you hold yourself, before anyone reminds you — which is what anchoring the day to one practice means.' },
       { id: 'q_learnfaith', because: 'The lecture\'s warning about scholars who know about God without knowing God is an argument for studying something properly rather than collecting fragments.' },
@@ -1169,12 +1184,76 @@ export const LIBRARY: LibraryEntry[] = [
       'Replace abstraction with the concrete thing it stands for wherever the sentence still means what you intended.',
       'Attach an example to every generalisation you are asking a reader to accept.',
     ],
-    habits: [],
+    habits: [
+      { id: 'c_ship', because: 'This is the countermeasure itself. The blind spot cannot be found by introspection — only by watching one real reader stumble.' },
+      { id: 'd_teach', because: 'Explaining something to a non-specialist is the fastest way to discover which parts of what you know you cannot actually put into words.' },
+      { id: 'd_notes', because: 'Rewriting a source in your own words is where abstraction gets swapped for the concrete thing it stood for, at low stakes.' },
+    ],
     quests: [
       { id: 'q_makeweekly', because: 'The countermeasure only works on a finished draft in someone else\'s hands — which requires actually finishing one thing you made.' },
       { id: 'q_portfolio', because: 'Putting work where it can be found is what recruits the outside readers whose stumbles are the only reliable detector of your own blind spot.' },
     ],
     vaultSource: 'Memories & Fun / Resource / Steven Pinker — The Curse of Knowledge and the Science of Clear Writing',
+  },
+  {
+    slug: 'focus-then-rest',
+    attr: 'development',
+    title: 'Focus, then rest. The rewiring happens in the second part.',
+    origin: 'Andrew Huberman — neuroscientist, on plasticity, focus and self-regulation',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'Focused work is supposed to feel bad at the start. Expecting flow is why people conclude they are doing it wrong.',
+    thesis:
+      'Adult neuroplasticity requires two things in sequence: intense focus, which is inherently uncomfortable because agitation is a byproduct of the stress system doing its job, followed by deep rest or sleep, where the actual rewiring occurs. Dopamine is not a reward at the finish line — it is released at any recognised milestone along the way, and its function is to suppress the norepinephrine buildup that otherwise makes people quit.',
+    ideas: [
+      {
+        name: 'Focus tags, rest rewires',
+        body: 'Focused attention releases acetylcholine from a brainstem structure that marks the active neurons for change — but the change itself happens later, in deep rest or sleep. Focus without adequate rest afterwards does not produce plasticity; the two are one mechanism in sequence, not alternatives.',
+      },
+      {
+        name: 'Duration, path, outcome — and why it feels bad',
+        body: 'Real focus requires the brain to work out how long something will take, what the path is, and what the outcome will be. That is effortful by design and throws off genuine agitation as a side effect. Expecting focused work to feel good from the start sets you up to think you are failing at the exact moment you are doing it correctly.',
+      },
+      {
+        name: 'Dopamine marks the path, not the arrival',
+        body: 'The model given is a thirsty deer finding a stream partway to the lake: the signal reinforces the route, not only the destination. So rewarding real intermediate progress is a genuine performance lever rather than a mood boost — though it has to attach to actual effort, not to detached positive self-talk.',
+      },
+      {
+        name: 'Why people quit, mechanically',
+        body: 'Sustained effort accumulates norepinephrine in the brainstem; past a threshold it shuts down voluntary motor control and the behaviour stops. Dopamine pushes that level back down, buying more capacity before the quit point. Marking milestones is therefore how you extend the runway.',
+      },
+      {
+        name: 'Action changes thought, not the other way round',
+        body: 'The causal direction runs from behaviour to mood and thought more reliably than the reverse. Waiting to feel motivated before acting has the sequence backwards — behaviour is the entry point when stuck.',
+      },
+      {
+        name: 'Adult plasticity has to be triggered deliberately',
+        body: 'Childhood plasticity is largely passive; the brain resists change past roughly twenty-five by design. Adult learning means actively re-creating the same focus-then-rest mechanism that ran automatically in childhood.',
+      },
+    ],
+    notes: [
+      'Perception is a spotlight and is controllable; sensation is not. The nervous system\'s core job is described as matching internal state to external demand — impatience, on this model, is an internal pulse running faster than the situation calls for, rather than a character flaw.',
+      'Urgency is required for plasticity, and Huberman is explicit that motivation from love and from fear converge on the same acetylcholine/norepinephrine pathway — he makes no claim they are interchangeable for wellbeing, only for triggering the mechanism.',
+      'Down-regulation in real time: two nasal inhales and one long exhale. Rapid cyclic breathing is the opposite tool, for when you are under-aroused and need activation.',
+      'Huberman is a publishing Stanford neuroscientist and several claims trace to citable work, but this is a long-form conversational podcast: figures are given from memory without in-episode sourcing. He flags the physiological-sigh protocol as an in-progress study at the time of recording, and the self-reward synthesis as his own extrapolation rather than a published finding — worth carrying those hedges rather than dropping them.',
+    ],
+    practices: [
+      'Treat early agitation in a focus block as the mechanism working, not as evidence the task is wrong or flow is unreachable.',
+      'Reward real milestones inside a larger goal, not only the finish — that is what extends capacity before the quit threshold.',
+      'When stuck, start with the behaviour rather than waiting to feel ready.',
+      'Take deliberate defocus breaks between blocks — look at something far away, not a screen — to preserve capacity for the next block.',
+      'Before a hard conversation, lower physiological arousal first: listening is gated by autonomic state, not by good intentions.',
+    ],
+    habits: [
+      { id: 'c_plan', because: 'Duration, path and outcome are exactly what planning tomorrow settles — done the night before, so the focus block does not have to spend its energy there.' },
+      { id: 'd_nopassive', because: 'The direct application of action-before-motivation: make something first, and let the mood follow the behaviour rather than gating it.' },
+      { id: 'd_review', because: 'Milestones only suppress the quit signal if you actually notice them — a standing review is where intermediate progress gets recognised instead of passing unmarked.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'Focus-then-rest is a structure, not a mood; building the stack is how the rest half stops being whatever is left over.' },
+      { id: 'q_skill', because: 'Adult plasticity has to be deliberately triggered, which needs one concrete skill to aim the focus at over a real stretch of time.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Huberman — Neuroplasticity, Focus and Self-Regulation',
   },
 ];
 
