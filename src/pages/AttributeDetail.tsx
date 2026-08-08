@@ -1,65 +1,39 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Icon } from '../components/Icon';
-import { TemplateBrowser, isHabitTemplate, type AnyTemplate } from '../components/TemplateBrowser';
 import { Bar } from '../components/ui';
 import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import { attrLevelProgress } from '../game/engine';
+import { MEDIUM_LABEL, libraryFor } from '../game/library';
 import { ATTRIBUTE_CONTENT } from '../game/wheel';
 import type { AttributeKey } from '../game/types';
-import { spawnVFXAt } from '../lib/vfx';
 import { useGame } from '../store';
 
 /**
- * One sector, in full: what it means, why it's on the wheel, and what to put in it.
+ * One sector: what it means, why it's on the wheel, and what to read about it.
  *
- * The two library sections used to be hand-rolled card grids that only ever listed
- * this sector's templates — a fixed list with no search and no way to say "something
- * under two minutes". They now run through the shared TemplateBrowser, which floats
- * this sector to the top (focusAttrs) while keeping the rest of the library one
- * search away: arriving at Health and finding a habit that happens to be filed under
- * Development is a good outcome, not a leak.
+ * This page used to end in two full TemplateBrowsers — the entire habit and quest
+ * library, searchable, filtered, forty cards deep. Wrong place for it. Picking a
+ * habit is something you do on the Habits page, where "+ New habit" already opens
+ * the same browser; here it turned a page about *understanding a sector* into a
+ * second, worse version of the Habits page, and buried the reading under it.
+ *
+ * So the sector page is now short: what the sector is, where you stand in it, and
+ * the Library. The habits and quests still arrive — at the end of an entry, chosen
+ * by the source you just read, which is a better recommendation than a search box.
  */
 export function AttributeDetail() {
   const { key } = useParams<{ key: string }>();
   const attr = key as AttributeKey;
-  const s = useGame();
+  const attrs = useGame(s => s.attrs);
+  const libraryRead = useGame(s => s.libraryRead);
 
   if (!ATTR_KEYS.includes(attr)) return <Navigate to="/attributes" replace />;
 
   const meta = ATTRIBUTES[attr];
   const content = ATTRIBUTE_CONTENT[attr];
-  const lp = attrLevelProgress(s.attrs[attr]);
-
-  // Templates already in play, matched by name — the library is a starting point,
-  // so a habit the player has since renamed correctly reads as not-yet-added.
-  const existingHabits = new Set(s.habits.filter(h => !h.archived).map(h => h.name));
-  const existingQuests = new Set(s.quests.filter(q => !q.completedAt).map(q => q.title));
-
-  const addHabitTemplate = (t: AnyTemplate, e: React.MouseEvent) => {
-    if (!isHabitTemplate(t)) return;
-    s.addHabit({
-      name: t.name,
-      kind: t.kind,
-      freq: t.freq,
-      attrs: t.attrs,
-      weekdays: t.weekdays ?? [],
-      dates: [],
-    });
-    spawnVFXAt(e, 'item', 1, t.name);
-  };
-
-  const addQuestTemplate = (t: AnyTemplate, e: React.MouseEvent) => {
-    if (isHabitTemplate(t)) return;
-    s.addQuest({
-      title: t.title,
-      // The steps ride along in the description: a quest has no step model of its own,
-      // and losing the template's plan would leave the player with only a title.
-      description: `${t.description}\n\n${t.steps.map(x => `· ${x}`).join('\n')}`,
-      targetDuration: t.targetDuration,
-      attrs: t.attrs,
-    });
-    spawnVFXAt(e, 'item', 1, t.title);
-  };
+  const lp = attrLevelProgress(attrs[attr]);
+  const entries = libraryFor(attr);
+  const unread = entries.filter(e => !libraryRead[e.slug]).length;
 
   return (
     <div className="page" style={{ ['--attr-color' as string]: meta.color }}>
@@ -97,33 +71,48 @@ export function AttributeDetail() {
         </section>
       </div>
 
-      <h2 className="section-title">Habits for this sector</h2>
-      <p className="muted attr-filter-note">
-        {meta.label} habits come first. Search or switch sectors to see the rest of the library.
-      </p>
-      <TemplateBrowser
-        kind="habit"
-        mode="add"
-        focusAttrs={[attr]}
-        profile={s.character?.profile}
-        addedTitles={existingHabits}
-        onPick={addHabitTemplate}
-        emptyHint="Nothing matches that. Clear a filter, or write your own on the Habits page."
-      />
-
-      <h2 className="section-title">Quests for this sector</h2>
-      <p className="muted attr-filter-note">
-        Bigger pieces of work, with a target date. {meta.label} quests are listed first.
-      </p>
-      <TemplateBrowser
-        kind="quest"
-        mode="add"
-        focusAttrs={[attr]}
-        profile={s.character?.profile}
-        addedTitles={existingQuests}
-        onPick={addQuestTemplate}
-        emptyHint="Nothing matches that. Clear a filter, or write your own on the Quests page."
-      />
+      {entries.length > 0 && (
+        <>
+          <h2 className="lib-label lib-label-page">
+            The Library
+            {unread > 0 && <span className="lib-unread">{unread} unread</span>}
+          </h2>
+          <p className="lib-section-note">
+            A source per card, distilled and read in full — then the habits and quests it argues for,
+            waiting at the bottom of it.
+          </p>
+          <div className="lib-grid">
+            {entries.map(e => {
+              const read = libraryRead[e.slug];
+              return (
+                <Link
+                  to={`/attributes/${attr}/library/${e.slug}`}
+                  className={`card lib-card ${read ? 'lib-card-read' : ''}`}
+                  key={e.slug}
+                >
+                  <div className="lib-card-head">
+                    <span className="tag tag-icon">
+                      <Icon name="book" size={12} /> {MEDIUM_LABEL[e.medium]}
+                    </span>
+                    <span className="muted lib-card-time">{e.minutes} min</span>
+                    {read && (
+                      <span className="lib-card-check" title="Read">
+                        <Icon name="check" size={13} />
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="lib-card-title">{e.title}</h3>
+                  <p className="lib-card-hook">{e.hook}</p>
+                  <p className="muted lib-card-origin">{e.origin}</p>
+                  <span className="lib-card-go">
+                    Read <Icon name="chevronRight" size={13} />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

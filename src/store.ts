@@ -17,6 +17,7 @@ import {
   TIER_REWARDS,
   TRANSFER_CATEGORY,
 } from './game/constants';
+import { LIBRARY_READ_REWARD, libraryEntry } from './game/library';
 import { CURRENCIES, DEFAULT_CURRENCY } from './game/money';
 import { HABIT_TEMPLATES, QUEST_TEMPLATES } from './game/templates';
 import { TUTORIAL_STEP_COUNT } from './game/tutorial';
@@ -174,6 +175,13 @@ export interface GameState {
   /** Routes already visited, so a coach tip fires once and never again. */
   seenPages: string[];
 
+  /**
+   * Library entries finished: slug → ISO time. The reward pays once per entry and
+   * the library is a fixed, finite set, so there is nothing here to farm — but the
+   * record is what lets a sector page show which pages are still unread.
+   */
+  libraryRead: Record<string, string>;
+
   // ---- actions ----
   createCharacter: (name: string, classes: ClassId[], wheel?: Record<AttributeKey, number>, starterTemplateIds?: string[]) => void;
   recordWheelCheck: (scores: Record<AttributeKey, number>) => void;
@@ -251,6 +259,7 @@ export interface GameState {
   completeTutorial: () => void;
   goToTutorialStep: (step: number) => void;
   markPageSeen: (path: string) => void;
+  markLibraryRead: (slug: string) => void;
   replayTutorial: () => void;
 
   setSoundOn: (on: boolean) => void;
@@ -590,6 +599,7 @@ const initialData = () => ({
   // existing player must never be dropped into a first-run tour on update.
   tutorialStep: null as number | null,
   seenPages: [] as string[],
+  libraryRead: {} as Record<string, string>,
 });
 
 // ---------------- Store ----------------
@@ -1534,6 +1544,17 @@ export const useGame = create<GameState>()(
           if (!d.seenPages.includes(path)) d.seenPages.push(path);
         }),
 
+      // Reading pays once, and only for an entry that exists. Re-opening a finished
+      // page is free — the sector library is meant to be re-read, not re-farmed.
+      markLibraryRead: slug =>
+        set(d => {
+          if (d.libraryRead[slug]) return;
+          const entry = libraryEntry(slug);
+          if (!entry) return;
+          d.libraryRead[slug] = new Date().toISOString();
+          grantD(d, LIBRARY_READ_REWARD.xp, LIBRARY_READ_REWARD.gold, [entry.attr], `Read: ${entry.title}`);
+        }),
+
       replayTutorial: () =>
         set(d => {
           d.tutorialStep = 0;
@@ -1557,7 +1578,8 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 11, // v11: guided tour (tutorialStep, seenPages)
+      version: 12, // v12: the sector Library (libraryRead)
+      // v11: guided tour (tutorialStep, seenPages)
       // v10: currency, retired themes, wishlist removed, one identity
       // Older saves get new fields filled with defaults instead of being discarded
       migrate: persisted => {

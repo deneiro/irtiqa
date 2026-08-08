@@ -1541,7 +1541,9 @@ textarea.input { resize: vertical; }
 
 .attr-essay { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .attr-essay h2 { font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.8px; color: var(--attr-color); margin-bottom: 8px; }
-.attr-essay p { margin: 0; line-height: 1.62; color: var(--muted); max-width: 60ch; }
+/* Body copy, not metadata: --muted here made three paragraphs of actual explanation
+   read as fine print and go unread. Muted is for labels and timestamps. */
+.attr-essay p { margin: 0; font-size: 15.5px; line-height: 1.68; color: var(--text); max-width: 60ch; }
 
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .attr-filter-note { margin: -6px 0 0; max-width: 66ch; }

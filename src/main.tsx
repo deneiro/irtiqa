@@ -10,6 +10,7 @@ import './styles/nav.css';
 import './styles/dashboard.css';
 import './styles/dayone.css';
 import './styles/templates.css';
+import './styles/library.css';
 import './styles/finances.css';
 import './styles/social.css';
 import './styles/calendar.css';

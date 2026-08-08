@@ -11,6 +11,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Finances } from './pages/Finances';
 import { Habits } from './pages/Habits';
 import { Journal } from './pages/Journal';
+import { LibraryEntry } from './pages/LibraryEntry';
 import { Market } from './pages/Market';
 import { Onboarding } from './pages/Onboarding';
 import { Profile } from './pages/Profile';
@@ -129,6 +130,7 @@ export default function App() {
           <Route path="/chronicle" element={<Chronicle />} />
           <Route path="/attributes" element={<Attributes />} />
           <Route path="/attributes/:key" element={<AttributeDetail />} />
+          <Route path="/attributes/:key/library/:slug" element={<LibraryEntry />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/social" element={<Social />} />
           <Route path="/finances" element={<Finances />} />

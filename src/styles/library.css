@@ -1,0 +1,356 @@
+/* library — the reading surface (game/library.ts, pages/LibraryEntry.tsx).
+
+   The rest of this app is a dashboard: dense cards, small type, muted body text,
+   everything boxed. That is right for state you scan and wrong for prose you read.
+   An entry is 700 words of argument — set it in dashboard type and nobody reads it,
+   which makes the whole feature pointless.
+
+   So the reader breaks the app's own conventions on purpose, and only here:
+     · one column at a fixed measure, no cards, no boxes
+     · body type two steps up from --fs-body, line-height near 1.75
+     · full --text for body copy; --muted is for metadata, never for paragraphs
+     · section labels (small, uppercase, ruled) instead of headings, so the ideas
+       themselves are the largest thing on screen after the title
+   Boxes come back exactly where the page stops being reading and starts being UI:
+   the "turn it into practice" cards.
+
+   Everything scales off --lib-body, so the whole surface moves together. */
+
+.lib-page {
+  --lib-body: clamp(16px, 0.6vw + 14.5px, 18px);
+  --lib-measure: 63ch;
+  /* How wide the interactive half is allowed to get. Wider than the prose so the
+     practice cards keep two to a row, narrow enough that it still reads as the
+     same column continuing rather than a different page. */
+  --lib-wide: 880px;
+}
+
+/* `.page` is a column flex container, so a child with a max-width pins to the
+   left and leaves the rest of a 1600px monitor empty beside it. An article needs
+   to sit on the page's centre line, not in its left margin — every block below
+   is centred on the same axis so the column reads as one. */
+.lib-page > * {
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* ---- Header ---- */
+
+.lib-head {
+  /* `ch` resolves against the element's own font-size, so the header has to be set
+     at reading size or its rule stops short of the column it introduces. Every child
+     below declares its own size, so nothing else inherits this. */
+  font-size: var(--lib-body);
+  max-width: var(--lib-measure);
+  padding-bottom: 22px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid var(--border);
+}
+
+.lib-title {
+  font-size: clamp(28px, 4.4vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 10px 0 10px;
+  text-wrap: balance;
+}
+
+.lib-origin {
+  font-size: calc(var(--lib-body) * 0.95);
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 0 0 14px;
+}
+
+.lib-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+.lib-tag-read {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 45%, var(--border));
+}
+
+/* ---- The reading column ---- */
+
+.lib-read {
+  max-width: var(--lib-measure);
+  font-size: var(--lib-body);
+  line-height: 1.75;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+/* The thesis, set as a lead: one size up, and the only place the sector colour
+   touches the prose. Everything after it is deliberately quieter. */
+.lib-lead {
+  font-size: calc(var(--lib-body) * 1.2);
+  line-height: 1.6;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 3px solid var(--attr-color, var(--accent));
+}
+
+/* A label, not a heading — it names the section without competing with the ideas
+   inside it. The rule after the text does the separating that a big bold H2 would
+   otherwise have to do with size. */
+.lib-label {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 46px 0 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lib-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.lib-idea {
+  margin-bottom: 28px;
+}
+.lib-idea:last-child {
+  margin-bottom: 0;
+}
+/* Same size as the body, distinguished by weight and a short colour mark. A
+   coloured heading at every idea reads as a warning list, not as an essay. */
+.lib-idea h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 1em;
+  font-weight: 800;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+.lib-idea h3::before {
+  content: '';
+  flex-shrink: 0;
+  width: 14px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--attr-color, var(--accent));
+  transform: translateY(-0.3em);
+}
+.lib-idea p {
+  margin: 0;
+}
+
+.lib-notes,
+.lib-practices {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lib-notes li,
+.lib-practices li {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 18px;
+}
+.lib-notes li:last-child,
+.lib-practices li:last-child {
+  margin-bottom: 0;
+}
+.lib-notes li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--attr-color, var(--accent));
+}
+
+/* Numbered by CSS so the numbers can be styled as marginal marks rather than
+   inline text — they should locate a step, not interrupt the sentence. */
+.lib-practices {
+  counter-reset: lib-practice;
+}
+.lib-practices li {
+  counter-increment: lib-practice;
+}
+.lib-practices li::before {
+  content: counter(lib-practice);
+  position: absolute;
+  left: 0;
+  top: 0.12em;
+  font-family: var(--font-num);
+  font-size: 0.8em;
+  font-weight: 700;
+  color: var(--attr-color, var(--accent));
+}
+
+/* ---- Where reading stops and UI starts ---- */
+
+.lib-apply {
+  max-width: var(--lib-wide);
+  margin-top: 8px;
+}
+.lib-section-note {
+  max-width: var(--lib-measure);
+  margin: -8px 0 18px;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.lib-practice-group {
+  margin-bottom: 22px;
+}
+.lib-group-title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+/* The "because" line sits above its card, not inside it: it is this entry's
+   argument for the template, not a property of the template itself, which is
+   offered unchanged everywhere else in the app. */
+.lib-practice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lib-because {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text);
+  border-left: 2px solid color-mix(in srgb, var(--attr-color, var(--accent)) 60%, transparent);
+  padding-left: 12px;
+}
+
+.lib-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: var(--lib-wide);
+  margin-top: 34px;
+  padding-top: 26px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.lib-done {
+  min-width: 210px;
+}
+.lib-done-note,
+.lib-source {
+  margin: 0;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+
+/* ---- Entry cards on the sector page ---- */
+
+/* Page-level use of the section label: it heads a grid of cards, so it keeps the
+   ruled label look but sits closer to what follows. */
+.lib-label-page {
+  margin: 38px 0 10px;
+}
+
+.lib-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.lib-card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  color: inherit;
+  text-decoration: none;
+  border-left: 3px solid var(--attr-color, var(--accent));
+  transition: transform 0.16s ease, border-color 0.16s ease;
+}
+.lib-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--attr-color, var(--accent)) 45%, var(--border));
+  border-left-color: var(--attr-color, var(--accent));
+}
+
+/* Read entries stay legible and stop competing for attention — the sector page is
+   a place to find what you haven't read yet, not a shelf of trophies. */
+.lib-card-read {
+  opacity: 0.62;
+}
+
+.lib-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lib-card-time {
+  font-size: var(--fs-xs);
+}
+.lib-card-check {
+  margin-left: auto;
+  display: inline-flex;
+  color: var(--success);
+}
+
+.lib-card-title {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.lib-card-hook {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+.lib-card-origin {
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+  margin: 0;
+}
+.lib-card-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 4px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--attr-color, var(--accent));
+}
+
+.lib-unread {
+  margin-left: 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .lib-grid {
+    grid-template-columns: 1fr;
+  }
+  .lib-label {
+    margin: 34px 0 16px;
+  }
+  .lib-idea {
+    margin-bottom: 24px;
+  }
+}

@@ -9,6 +9,8 @@ import {
   type TemplateEffort,
 } from '../game/templates';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
+import { spawnVFXAt } from '../lib/vfx';
+import { useGame } from '../store';
 import { Icon } from './Icon';
 
 /**
@@ -35,6 +37,55 @@ export type AnyTemplate = HabitTemplate | QuestTemplate;
 
 export const isHabitTemplate = (t: AnyTemplate): t is HabitTemplate => 'kind' in t;
 export const templateTitle = (t: AnyTemplate) => (isHabitTemplate(t) ? t.name : t.title);
+
+/**
+ * Adding a template, in one place.
+ *
+ * The sector page and the Library both end in the same offer — "here is a habit,
+ * take it" — and the rules for taking one (steps ride along in the quest
+ * description, a burst of VFX at the cursor, already-added matched by name) have
+ * to be identical in both, or the same card behaves differently depending on
+ * which page you found it on.
+ */
+export function useTemplateAdders() {
+  const addHabit = useGame(s => s.addHabit);
+  const addQuest = useGame(s => s.addQuest);
+  const habits = useGame(s => s.habits);
+  const quests = useGame(s => s.quests);
+
+  // Matched by name, not id: the library is a starting point, so a habit the
+  // player has since renamed correctly reads as not-yet-added.
+  const existingHabits = new Set(habits.filter(h => !h.archived).map(h => h.name));
+  const existingQuests = new Set(quests.filter(q => !q.completedAt).map(q => q.title));
+
+  const addHabitTemplate = (t: AnyTemplate, e: React.MouseEvent) => {
+    if (!isHabitTemplate(t)) return;
+    addHabit({
+      name: t.name,
+      kind: t.kind,
+      freq: t.freq,
+      attrs: t.attrs,
+      weekdays: t.weekdays ?? [],
+      dates: [],
+    });
+    spawnVFXAt(e, 'item', 1, t.name);
+  };
+
+  const addQuestTemplate = (t: AnyTemplate, e: React.MouseEvent) => {
+    if (isHabitTemplate(t)) return;
+    addQuest({
+      title: t.title,
+      // The steps ride along in the description: a quest has no step model of its own,
+      // and losing the template's plan would leave the player with only a title.
+      description: `${t.description}\n\n${t.steps.map(x => `· ${x}`).join('\n')}`,
+      targetDuration: t.targetDuration,
+      attrs: t.attrs,
+    });
+    spawnVFXAt(e, 'item', 1, t.title);
+  };
+
+  return { addHabitTemplate, addQuestTemplate, existingHabits, existingQuests };
+}
 
 /** One template, as a card. Selection is either a checkbox (Day One) or a button (library). */
 export function TemplateCard({
