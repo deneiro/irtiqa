@@ -1255,6 +1255,237 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Personal growth / Resource / Huberman — Neuroplasticity, Focus and Self-Regulation',
   },
+  {
+    slug: 'minimum-effective-dose-strength',
+    attr: 'health',
+    title: 'There is no threshold. There is a gradient.',
+    origin: 'Andy Galpin — exercise scientist, on strength training and fast-twitch loss',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'One session a week is not a compromise. It is most of the benefit.',
+    thesis:
+      'Strength training has a gradient dose-response, not a threshold: there is no cutoff below which it does not count. The jump from zero sessions to one is larger than any later increment, and each added day gives real but diminishing further benefit. The reason to lift specifically — rather than only walk or do cardio — is that fast-twitch fibres activate only under genuine load, and are preferentially lost with age if never recruited, regardless of how generally active you are.',
+    ideas: [
+      {
+        name: 'Do not let perfect be the enemy of good',
+        body: 'One session a month beats never, though not by much. One a week produces a large measurable jump against zero across longevity, bone, cardiovascular and mental-health markers. Around three a week is described as roughly "best-ish" as a lifelong average. The instruction that follows: never let an inability to hit the ideal frequency become the reason to do nothing.',
+      },
+      {
+        name: 'Why walking cannot substitute',
+        body: 'Slow-twitch fibres are fatigue-resistant and low-force — they cover standing, walking, chewing. Fast-twitch fibres produce high force and fatigue quickly, and are recruited only under real effort. Ageing strips the fast-twitch preferentially precisely because ordinary daily movement never calls on them. That is the mechanism behind an otherwise active older person who suddenly cannot lift a case overhead or catch themselves in a fall.',
+      },
+      {
+        name: 'Hardish, not maximal',
+        body: 'Fixing it does not require a one-rep max or training to failure — only periodic exposure to genuinely hardish relative load. Modern life no longer demands that, so it has to be deliberately engineered.',
+      },
+      {
+        name: 'Three components, none substitutable',
+        body: 'A full week has baseline activity (steps and general movement, with no real upper limit), at least one structured cardiovascular session, and at least one structured strength session. Heavy load in one component can lower the minimum needed in another, but nothing else reaches the force production, connective tissue and bone adaptations that strength work does.',
+      },
+      {
+        name: 'Program the days you have, minus one',
+        body: 'The coaching method shown: ask how many days are actually available, not how many the person wishes they had — then subtract one as a buffer against overcommitment and dropout. If they say four, program three.',
+      },
+    ],
+    notes: [
+      'Reps in reserve: stop sets meaningfully short of failure, especially as a beginner. Next-day soreness above roughly 2–3 out of 10 is a signal to back off, not evidence of a good session.',
+      'Soreness as a measure of effectiveness, training to failure, and standing desks as a fix are all addressed as myths rather than tactics.',
+      'On a day when a full session is impossible, do the smaller substitute — a walk, light movement, stretching — rather than skipping. "Make a dollar, not zero."',
+      'A protein reference point of roughly 2 g/kg/day is given, and creatine at 5 g/day is named as the one supplement worth considering. Both are general-population figures: anyone with a relevant medical condition should treat them as a question for a clinician rather than an instruction.',
+      'Galpin directs a university human-performance centre and coaches professionally. The physiology is described as backed by many labs but is not individually cited in the episode, and he flags his own live coaching example as simplified. Recovery and deficit percentages are his working heuristics, not sharp cutoffs.',
+    ],
+    practices: [
+      'Put one genuine strength session in the week before optimising anything else about training.',
+      'Use compound pairs — a leg movement and an upper-body movement — as supersets, two sets of eight, with whatever minimal equipment you have.',
+      'Stop each set short of failure and treat heavy next-day soreness as a signal you overshot.',
+      'On a day the session will not happen, do the reduced version instead of nothing.',
+      'Decide the week from the days you actually have, then subtract one.',
+    ],
+    habits: [
+      { id: 'h_pushups', because: 'The whole argument in its smallest honest form: fast-twitch fibres need real load, and this recruits them without a gym or a program.' },
+      { id: 'h_steps', because: 'Component one of the three — baseline activity, the part with no real upper limit on benefit and the one that carries a bad week.' },
+      { id: 'b_sport', because: '"Make a dollar, not zero" — the structured cardiovascular leg is easier to keep when it is something you would do anyway.' },
+      { id: 'h_stretch', because: 'The named substitute for a day when the full session is not happening, so the week does not become all-or-nothing.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'The days-minus-one rule is a scheduling decision, not a motivation problem — which is exactly what building the stack settles in advance.' },
+      { id: 'q_energyaudit', because: 'The three components can only be balanced against a real picture of where the week\'s capacity currently goes.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Galpin — Minimum Effective Dose Strength Training, Fast-Twitch Fiber Loss and Creatine',
+  },
+  {
+    slug: 'the-delta-and-the-debt',
+    attr: 'money',
+    title: 'Your standard of living is your spending, not your income',
+    origin: 'Kuralay Mukhamizhanova — financial consultant, on debt, the gap and capital',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Earning and spending are two processes. The third one — the gap between them — is the only one that builds anything.',
+    thesis:
+      'There are three independent processes: earning, spending, and managing the gap between them. Most people run only the first two and therefore never form capital. Income is never guaranteed — illness, redundancy, a dry month all remove it — while spending is guaranteed always, which is why standard of living is set by the expense base rather than the income. Income equal to spending is a slow road to poverty; spending above income is a fast road to insolvency.',
+    ideas: [
+      {
+        name: 'Pay yourself first',
+        body: 'The rule is order, not amount: the first action on any income is setting aside a share, and you live on the remainder — never spend-then-save-the-leftover. The psychological argument is that 90% and 100% of a given sum are subjectively indistinguishable, so the felt drop in living standard is close to nothing while the compounding difference is not.',
+      },
+      {
+        name: 'The delta is the whole game',
+        body: 'Income equal to spending means no delta, no capital, and poverty at retirement. Income below spending means bankruptcy. Only income above spending creates the delta that savings and investment are built from — and it can be widened from either side, by cutting spending or raising income, ideally both.',
+      },
+      {
+        name: 'Compounding runs both directions',
+        body: 'The same mechanism works against a borrower and for an investor, and the dominant variable is time rather than the sum. The source\'s illustration: $200/month for twenty years beats $400/month for ten, despite identical capital contributed. Starting small immediately beats waiting for the right moment and a bigger amount.',
+      },
+      {
+        name: 'Instalments feel free because the pain is deferred',
+        body: 'An instalment plan reads as costless because the first payment belongs to next month. The pleasure of the purchase fades quickly while the payment runs for a year or two — so an instalment on a trip or an experience means paying, at length, for a joy that has already faded. Retail instalment plans frequently carry an interest component the buyer never sees stated.',
+      },
+      {
+        name: 'Snowball versus avalanche',
+        body: 'Snowball: rank debts smallest balance first, pay minimums on everything else, attack the smallest — the first closure arrives quickly and creates momentum. Avalanche: rank by highest interest rate and attack the most expensive, which is mathematically optimal and minimises total overpayment. The choice is a trade between psychology and arithmetic.',
+      },
+    ],
+    notes: [
+      'When income falls, spending falls more slowly — that lag is where credit traps are actually born.',
+      'The first step out of debt is structural rather than financial: stop adding new borrowing, or none of the rest holds.',
+      'List debts by real outstanding balance, not by monthly payment. The monthly figure is what makes a total feel survivable while it grows.',
+      'The consultant is a practitioner rather than a researcher, and the advice tracks standard personal-finance practice. "Pay yourself first" comes from the popular finance canon rather than original research; the compound-interest-as-eighth-wonder line is an apocryphal attribution; and the specific hidden-interest figure for local instalment products is a reasonable claim given without published data.',
+    ],
+    practices: [
+      'Write every debt down at its real remaining balance, in one list, before choosing any strategy.',
+      'Pick snowball or avalanche deliberately — momentum if you need a visible first win, avalanche if you can hold out for the lower total.',
+      'Set aside a fixed share the day income arrives, and live on the rest.',
+      'Treat an instalment offer as a loan with a hidden rate, and refuse it for anything whose pleasure will fade before the payments do.',
+      'Track the expense base, since that — not income — is what your standard of living actually is.',
+    ],
+    habits: [
+      { id: 'm_payday', because: 'This is "pay yourself first" as a mechanism rather than an intention: it happens on arrival, before the remainder gets claimed.' },
+      { id: 'm_log', because: 'Standard of living is the expense base, and the expense base cannot be managed while it is unmeasured.' },
+      { id: 'm_subs', because: 'Recurring charges are the part of the base that grows without a decision — the instalment logic applied monthly and invisibly.' },
+      { id: 'm_nospend', because: 'The delta can be widened from either side; this is the cheapest available move on the spending side.' },
+    ],
+    quests: [
+      { id: 'q_debts', because: 'Snowball and avalanche both require the same first artefact — every debt at its real balance, in one place.' },
+      { id: 'q_emergencyfund', because: 'Because income is never guaranteed and spending always is, the buffer is what stops the next gap becoming new borrowing.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Мухамижанова — Долги, рассрочки и формирование капитала',
+  },
+  {
+    slug: 'manage-emotions-dont-control-them',
+    attr: 'friends',
+    title: 'Manage the emotion. Do not control it.',
+    origin: 'Victoria Shimanskaya — on emotional intelligence as a skill',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'One sentence structure that separates the feeling from you — and changes it in the process.',
+    thesis:
+      'Emotional intelligence runs in three stages: recognise and name the emotion, separating it from yourself ("I feel anger", not "I am angry"); understand what caused it; then choose the response from that cause. The distinction the whole account rests on is managing rather than controlling — control is felt in the body as clamping down and tends toward psychosomatic cost, while management feels like flexibility and choice. There are no bad emotions, only signals carrying energy and a function; only the expression can be wrong.',
+    ideas: [
+      {
+        name: 'The same feeling, different causes, different handling',
+        body: 'Anxiety from a nutrient deficiency, from bad news, and from fear of speaking in public are the same sensation with three different origins — and the correct response differs in each case. Skipping the cause stage means treating all of them identically, which is why generic advice about emotions so often fails.',
+      },
+      {
+        name: 'The three-part formula',
+        body: '"I feel X, because Y, and I would like Z." It executes all three stages in one sentence: it names the emotion apart from the identity, states the cause, and converts the state into a request. The claim is that the wording does not merely describe the state but changes it — "I am upset" degrades how you feel, while "I feel off, give me five minutes" is already a route out.',
+      },
+      {
+        name: 'Language fuses feeling and identity',
+        body: 'Everyday grammar quietly does the merging — "you are angry" instead of "you are feeling anger". Separating the two in how you speak is the practical form of separating them in how you experience it.',
+      },
+      {
+        name: 'A stop-word is preventive, not emergency equipment',
+        body: 'A personal trigger word, said instead of the automatic reaction, buys the pause in which "why do I feel this right now?" can be asked. It only works if trained in advance — reaching for it for the first time mid-emotion does not work.',
+      },
+      {
+        name: 'Vocabulary widens perception',
+        body: 'Six basic emotions combine into compound ones — disappointment, for instance, as sadness plus surprise, arising specifically from a gap between expectation and reality. The exercise is to write out sixteen distinct shades of a single emotion. The analogy offered: the more names for colours a person knows, the more shades the eye actually distinguishes.',
+      },
+    ],
+    notes: [
+      'Control is associated with blocked digestion and a stress response that shows up later as evening overeating; management leaves the option of deciding whether the emotion is needed now, and letting it go if not.',
+      'Asking "but why" down to a third or fourth level is offered as the diagnostic that gets past the surface answer — past "he is an idiot" or "I am just lazy" to the cause the response should actually address.',
+      'Boundaries with someone who reliably pushes you into unwanted behaviour work better formulated in advance than improvised at the moment of pressure.',
+      'The author is a practising specialist with mainstream-published books rather than an academic researcher. Plutchik\'s wheel, Vygotsky and Gardner are used appropriately; the neurophysiology is broadly correct at a general level but uncited; and the proprietary diagnostic and role-model framework should be taken as a useful practitioner\'s frame rather than an independently validated instrument.',
+    ],
+    practices: [
+      'Replace "I am upset" with "I feel X, because Y, I would like Z" — in conflicts at home and in negotiations alike.',
+      'Choose a stop-word now, while calm, and rehearse it. It is preventive equipment.',
+      'When irritated, ask why three or four times rather than stopping at the first answer.',
+      'Build the vocabulary deliberately: name several distinct shades of one emotion instead of reusing one word for all of them.',
+      'Decide a boundary with a difficult person in advance, in words, rather than improvising under pressure.',
+    ],
+    habits: [
+      { id: 'f_remember', because: 'Asking about what someone told you last time is the outward half of the same skill — reading another person\'s state well enough to know what mattered to them.' },
+      { id: 'f_thanks', because: 'Naming specifically what someone did is the same precision the shades exercise trains, pointed outward instead of inward.' },
+      { id: 'f_nogossip', because: 'Talking about someone who is absent is expression without the cause stage — the exact failure mode the three-stage model is meant to catch.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The formula and the pre-formulated boundary are built for precisely this conversation, which is why having it is the test of whether they work.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Шиманская — Эмоциональный интеллект как навык управления, а не контроля',
+  },
+  {
+    slug: 'the-pleasure-pain-balance',
+    attr: 'development',
+    title: 'Pleasure and pain share one set of scales',
+    origin: 'Anna Lembke — psychiatrist, on dopamine, indulgence and honesty',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'The comedown is not a side effect. It is the same system rebalancing — and waiting it out is the whole skill.',
+    thesis:
+      'Pleasure and pain are processed by the same brain structures and behave like scales seeking equilibrium: any stimulus on one side produces an equal tilt to the other. Under repeated indulgence the rebound gains the advantage — the brain compensates by down-regulating its own dopamine transmission — and if the balance is never allowed to recover, a person settles into a chronic dopamine deficit that is subjectively indistinguishable from clinical depression.',
+    ideas: [
+      {
+        name: 'Deviation from baseline, not absolute level',
+        body: 'Dopamine is tied to movement as much as to reward, and is released tonically at a baseline. What matters is the deviation from that baseline rather than the absolute figure — and there is evidence that in depression the tonic baseline itself may sit lower.',
+      },
+      {
+        name: 'Why the pain side wins',
+        body: 'After a large dopamine release the brain immediately compensates downward by reducing receptor sensitivity. That compensation is the hangover, and the moment of wanting to repeat. Wait for the feeling to pass and the balance restores itself; keep indulging before it recovers and the result is anhedonia — anxiety, irritability, insomnia, dysphoria, intrusive thoughts of using.',
+      },
+      {
+        name: 'Addiction is one circuit, not many diseases',
+        body: 'The same loop can attach to almost any substance or behaviour. That is why the mechanism generalises across things that look unrelated from the outside.',
+      },
+      {
+        name: 'Impulsivity is a risk factor, not a vice',
+        body: 'The inability to find space between wanting and acting genuinely raises addiction risk — but is not bad in itself: in intimacy or in danger it is exactly what serves. Many traits currently framed as disorder would be advantages in a different environment; the mismatch is with this world, not with the person.',
+      },
+      {
+        name: 'Pleasure often turns into avoidance',
+        body: 'Even when the pursuit begins as pleasure-seeking, motivation shifts over time toward avoiding withdrawal and consequence — which is why "pleasure" cannot be treated as one single thing.',
+      },
+      {
+        name: 'Modern life is hard because it is boring',
+        body: 'With survival needs largely met, people have to manufacture their own friction — effort and challenge. How much friction someone needs varies widely, and those who need a lot and do not build it deliberately tend to find it in worse ways.',
+      },
+    ],
+    notes: [
+      'Abstinence long enough to reset the circuit is put at roughly thirty days on average — presented as clinical experience generalised, not as a measured constant.',
+      'Complete honesty, including in small things, is named as a load-bearing part of recovery rather than a moral extra — and as a daily, checkable marker of progress.',
+      'Vigilance matters most when things are going well. Success is itself a trigger, not protection.',
+      'Rather than waiting to discover a calling, the recommendation is to look at what actually needs doing right now, nearby.',
+      'Lembke is a practising psychiatrist running a dual-diagnosis clinic; the pleasure-pain homeostasis mechanism is settled neurobiology rather than a contested position. Specific figures quoted from memory in conversation — including a recovery percentage attributed to a real study — are worth checking before being relied on precisely.',
+    ],
+    practices: [
+      'When the rebound hits, wait it out instead of resolving it with more of the same. That pause is the entire mechanism.',
+      'Plan phone and social media use in advance — set hours off, physical no-phone zones — rather than deciding in the moment.',
+      'Practise honesty in small things as the daily marker, not only in the large ones.',
+      'Raise vigilance when things are going well, not only in a crisis.',
+      'When apathetic or bored, look around for what actually needs doing instead of waiting for inspiration.',
+    ],
+    habits: [
+      { id: 'd_nopassive', because: 'The cheapest available source of the exact rebound described — and putting making before consuming is the self-binding rule in its smallest form.' },
+      { id: 'f_nodoom', because: 'A pre-committed barrier rather than an in-the-moment decision, which is precisely the form the source says actually works.' },
+      { id: 'b_nocompare', because: 'Scrolling other people\'s lives is the indulgence whose rebound is hardest to notice, because it does not feel like one while it happens.' },
+    ],
+    quests: [
+      { id: 'q_declutter', because: 'Self-binding is environmental before it is psychological — the barriers have to exist in the room, not only in the intention.' },
+      { id: 'q_habitsystem', because: 'Manufacturing deliberate friction is a structural job: if the effort is not scheduled, the scales get tipped by whatever is nearest.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Лембке — Баланс удовольствия-боли, зависимость и правда',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
