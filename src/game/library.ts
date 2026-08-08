@@ -1713,6 +1713,241 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Spirituality & Religion / Resource / Belal Assaad — Хидая, пять слагаемых руководства и вопрос обращённых',
   },
+
+  {
+    slug: 'goal-audience-format-moment',
+    attr: 'career',
+    title: 'One goal, then audience, format and moment',
+    origin: 'Nina Zvereva — communications trainer, on speaking and being remembered',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'A thousand goals means no goal — and eight seconds decides whether anyone is still listening.',
+    thesis:
+      'A talk or an important conversation works only if it starts from one clearly formulated goal — the expected result — and that result only lands if three further factors are respected: the audience, the format, and the moment. Any one of the three can collapse the communication entirely, even when the goal is perfectly stated. The speaker\'s actual job is not saying things well; it is being remembered.',
+    ideas: [
+      {
+        name: 'A thousand goals means no goal',
+        body: 'The goal is the expected result, stated as one thing. Everything downstream — what to include, what to cut, how to open — is decided by it, which is why an unfocused goal produces an unfocused talk no amount of delivery can rescue.',
+      },
+      {
+        name: 'Said it, proved it',
+        body: 'Any claim has to be backed by a fact, an example or a story, or it will not be remembered. But proof has a ceiling too: too many stories and figures dissolve the thread of the claim they were meant to support.',
+      },
+      {
+        name: 'The eight-second rule',
+        body: 'A speaker has roughly eight seconds to hook an audience — by analogy with how quickly a viewer decides whether to keep watching. The practical consequence is specific: learn the first sentence by heart rather than preparing a general plan, because that sentence decides whether the rest gets heard.',
+      },
+      {
+        name: 'Prepare triggers, rehearse aloud, not at a mirror',
+        body: 'Do not write the talk out in full — prepare a notebook of trigger words meaningful only to you. Record yourself, since recorded speech always runs shorter than live delivery, where pauses appear. Do not rehearse at a mirror: your own frightened eyes amplify the anxiety. Rehearsing aloud in front of family or friends is already a real rehearsal.',
+      },
+      {
+        name: 'Turn the nerves into drive rather than removing them',
+        body: 'Pre-talk nerves are not a defect to eliminate but a sign of being alive and charged — the stated position is that it will be a bad sign when the nerves stop. The task is converting them into drive without letting them take your tongue.',
+      },
+      {
+        name: 'The moment is uncontrollable and cannot be ignored',
+        body: 'The moment is whatever is happening here and now that you do not control — noise next door, a piece of news everyone is carrying, a match on everyone\'s mind. Walking out and behaving as though it does not exist loses the room; sometimes cancelling is the better call. The worked example is a speaker arriving crumpled after a night at the maternity hospital who simply named why — and had the audience immediately.',
+      },
+    ],
+    notes: [
+      'Announcing the format explicitly at the start — "I will take N minutes of your time" — saves time and sets the frame for any meeting, not only a talk.',
+      'An I-statement instead of a direct accusation is offered as a general de-escalation technique, not a family-specific one.',
+      '"Do the surplus" as a principle: try more variants than are formally required, so you have earned the right to have some of them fail.',
+      'This is a practising trainer with decades of broadcast and coaching experience. The central formula is presented as her own find that nobody has yet disproved — a practical instrument from one successful trainer rather than a validated model, and worth taking on those terms.',
+    ],
+    practices: [
+      'Before anything that matters, write one goal, then check it against audience, format and moment.',
+      'Write and memorise the opening sentence. Prepare the rest as trigger words only.',
+      'Rehearse out loud to a person, and record yourself — never to a mirror.',
+      'Name the moment out loud when there is one, rather than performing around it.',
+      'State the format up front so nobody is guessing how long this will take.',
+    ],
+    habits: [
+      { id: 'c_plan', because: 'Goal, audience, format and moment are four decisions best made the night before, not in the corridor on the way in.' },
+      { id: 'c_ship', because: 'Rehearsing aloud to one real person is named as a full rehearsal — and it is the only way to find out what actually landed.' },
+      { id: 'd_askquestion', because: 'Audience is half the formula, and the fastest way to stop guessing at it is to ask the question you would normally skip.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'Speaking is treated here as a craft with a protocol rather than a trait — which makes it a concrete skill to take on deliberately.' },
+      { id: 'q_promise', because: 'The eight-second rule and the moment can only be practised in front of actual people, which requires committing to a date you cannot quietly drop.' },
+    ],
+    vaultSource: 'Business & career / Resource / Зверева — Формула ЦАФМ, правило 8 секунд и волнение как кураж',
+  },
+  {
+    slug: 'psychology-over-technique',
+    attr: 'career',
+    title: 'Perfect technique with broken psychology is worth nothing',
+    origin: 'Anatoly Tremzin — professional player, on preparation, tilt and leaks',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Knowing your weakness does not remove it, because the decision has already been made automatically.',
+    thesis:
+      'At an elite level the asymmetry is explicit: flawless technique paired with failing psychology gives no chance of success. The corollaries are unglamorous — sleep ranks above nutrition and training in the preparation hierarchy, the cost of high performance is a specific sacrifice consciously accepted rather than resented, and known weaknesses persist because decisions are made automatically, long before the knowledge can intervene.',
+    ideas: [
+      {
+        name: 'Everything has a price, and accepting it is what makes it bearable',
+        body: 'World-class performance is described as requiring a concrete sacrifice — in his case an inverted sleep schedule. The claim is that it stays comfortable precisely because it was chosen consciously as the price, rather than experienced as an imposed restriction.',
+      },
+      {
+        name: 'Flexible planning beats rigid planning',
+        body: 'Rigid planning fixes the day and follows it regardless. Flexible planning holds an approximate plan and deliberately changes it when something more valuable appears. For an unpredictable working life, the flexible mode is presented as the healthier one.',
+      },
+      {
+        name: 'Sleep is priority one',
+        body: 'The stated hierarchy puts sleep above both nutrition and physical training when preparing for a demanding stretch. His personal threshold: six hours is not enough to reset, seven is the minimum.',
+      },
+      {
+        name: 'Leaks — known weaknesses that resist being fixed',
+        body: 'A "leak" is a weakness the player already knows about. The observation that matters is that awareness is not enough: decisions become mechanical and automated — the button is pressed, and only afterwards does the recognition arrive. Closing the gap between knowing and doing needs targeted practice, not more understanding.',
+      },
+      {
+        name: 'Catch the emotion first',
+        body: 'The first step in handling tilt is recognising the emotion in the moment — a general self-regulation technique that transfers well beyond the game, since naming it in the moment is what lowers the odds of an impulsive decision.',
+      },
+      {
+        name: 'Top 1% in several fields, deliberately',
+        body: 'An explicit alternative to trying to be the single best at one thing: aim for the top percentile in more than one area at once, as a stated strategy for distributing effort across several active projects.',
+      },
+    ],
+    notes: [
+      'Preparation includes studying recordings of specific future opponents — mood, tactics, patterns — before the stage where the real stakes sit.',
+      'At the top the contest is recursive reading of intent and deliberate exploitation of noticed patterns, rather than strategy knowledge alone.',
+      'Play strictly within a predetermined budget — bankroll management generalises to any decision made under real risk.',
+      'The speaker has a verifiable public record and is openly candid about his own gambling addiction and long struggle with it. Claims about typical earnings and industry structure come from personal experience rather than external statistics.',
+    ],
+    practices: [
+      'Name the price your goal actually requires and accept it explicitly, or drop the goal.',
+      'Hold the plan loosely enough to trade up when something genuinely more valuable appears.',
+      'Protect sleep ahead of diet and training when a demanding stretch is coming.',
+      'Attack a known weakness with targeted practice — understanding it does not disarm an automatic decision.',
+      'Catch and name the emotion before acting on it.',
+    ],
+    habits: [
+      { id: 'h_lightsout', because: 'The stated hierarchy puts sleep above nutrition and training — this is that priority made into a decision you only take once.' },
+      { id: 'c_plan', because: 'Flexible planning still needs a plan to deviate from; without one, every interruption looks equally valuable.' },
+      { id: 'c_onelesson', because: 'Leaks close through targeted practice, and targeting requires noticing what actually worked rather than reconstructing it later.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'The gap between knowing a weakness and acting differently is closed by deliberate practice over a real stretch of time, not by insight.' },
+    ],
+    vaultSource: 'Business & career / Resource / Тремзин — Психология как 100%, гибкое планирование и топ-1% в двух сферах',
+  },
+
+  {
+    slug: 'budget-from-facts',
+    attr: 'money',
+    title: 'Build the budget from transactions, not from memory',
+    origin: 'Caleb Hammer — on budget audits and the share-of-income view',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Everyone agrees with the principles. The statement is where the disagreement actually shows up.',
+    thesis:
+      'Financial trouble rarely looks like not knowing the principles — it looks like agreeing with every one of them and immediately producing a reason to keep spending. The diagnostic that cuts through: build the budget from actual transactions rather than from a person\'s account of themselves, and convert every category into a percentage of income, because that is the only view in which small purchases visibly outweigh the large obvious ones.',
+    ideas: [
+      {
+        name: 'Facts before principles',
+        body: 'The method is to take a full month\'s statement, sort every transaction into categories, and compute the reality before arguing about discipline. In the worked case the self-description ("I pay my own bills") and the statement disagreed on nearly every point.',
+      },
+      {
+        name: 'Share of income is the diagnostic language',
+        body: 'Each category is expressed as a percentage of total income. The reference point offered: if rent alone is consuming most of the income, the conversation about spending discipline is secondary — the problem is structural, and no amount of restraint on small categories will reach it.',
+      },
+      {
+        name: 'A credit limit is not a credit debt',
+        body: 'Confusing the maximum you may spend with what you actually owe is presented as a basic literacy gap that looks trivial until it has produced thousands in real debt.',
+      },
+      {
+        name: 'The reserve rule, deliberately harsher',
+        body: 'The floor is set as the greater of six months of essential spending or a fixed nominal sum — deliberately stricter than the common three-to-six-months rule, on the reasoning that a real emergency (medical, vehicle) does not scale down just because the income is small.',
+      },
+      {
+        name: 'Help without a change of behaviour removes the trigger',
+        body: 'Clearing someone\'s debt without requiring anything to change is argued to remove the only effective prompt for change and to set up a predictable repeat of the same debt.',
+      },
+    ],
+    notes: [
+      'Check whether you are paying for a version of something that has a free equivalent — a quick, painless audit that usually finds something.',
+      'The mechanics of repayment given: total the required minimums, subtract all genuine essentials from income, and direct everything left at the debt.',
+      'Watch for the pattern of agreeing in one sentence and contradicting it in the next — useful as a test on your own internal monologue, not only on other people.',
+      'The format is a deliberately confrontational entertainment audit. The host\'s interrupting, sarcastic style is the genre, not a model for how to hold this conversation with your own family.',
+      'The reserve figure and the rent threshold are standard American personal-finance reference points, not universal constants — cost of living, currency and available social provision all change them.',
+      'The framing of family help as straightforwardly harmful is a culturally specific "tough love" position. It sits in real tension with traditions that treat supporting family as an obligation, and is worth holding as one view rather than a verdict.',
+    ],
+    practices: [
+      'Pull one full month of transactions and categorise every line before drawing any conclusion about your habits.',
+      'Convert each category to a percentage of income — that is where the small recurring things become visible.',
+      'Know the difference between your limit and your balance, in numbers, today.',
+      'Set the emergency floor by the harsher of the two rules, and treat it as the target you move toward rather than a demand for right now.',
+      'If you give or receive help, attach a change in behaviour to it rather than repeating it unconditionally.',
+    ],
+    habits: [
+      { id: 'm_log', because: 'The whole method depends on the transaction record existing — a budget built from memory is exactly the thing the audit disproves.' },
+      { id: 'm_checkbalance', because: 'Limit versus balance is the confusion at the centre of the worked case, and this is the ten-second habit that makes it impossible to hold.' },
+      { id: 'm_subs', because: 'The paid-where-a-free-version-exists check is a recurring-charge problem, and recurring charges only surface if something looks at them weekly.' },
+    ],
+    quests: [
+      { id: 'q_emergencyfund', because: 'The reserve rule is the source\'s one hard number — and it is deliberately set above the common advice because emergencies do not scale with income.' },
+      { id: 'q_debts', because: 'Minimums first, then everything spare at the balance, requires the same artefact the audit does: every debt, at its real number.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Caleb Hammer — Аудит бюджета, ловушка доли дохода и семейное потворство долгам',
+  },
+  {
+    slug: 'investing-is-not-trading',
+    attr: 'money',
+    title: 'Investing is not trading, and chasing yield is how capital dies',
+    origin: 'Kladko — investor, on diversification rules and the pull of fast returns',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The loss did not come from a bad market. It came from deciding a good return was too slow.',
+    thesis:
+      'Investing and trading are different activities with different costs: investing aims at long-term return at risk only slightly above a deposit and needs a few minutes of attention a month, while trading requires continuous market attention and is a full working day. "Trader is a profession; anyone can be an investor." The characteristic failure is not a bad market but the decision that an adequate return is too slow — which is the doorway to schemes built for exactly that impulse.',
+    ideas: [
+      {
+        name: 'The loss followed the good months, not the bad ones',
+        body: 'After three or four successful months of active trading, the judgement that the returns were too small led to searching online for something better — and to losing nearly the entire capital in a pyramid scheme. The lesson taken from it was a permanent move to long-term strategy and an end to chasing quick profit.',
+      },
+      {
+        name: 'Numeric diversification limits',
+        body: 'Concrete ceilings rather than principles: no more than a set share of capital in a single country, a hard cap on any one company inside a fund, and a small ceiling on speculative assets. The point of numbers is that they still work on a day when conviction is high.',
+      },
+      {
+        name: 'The rollback after a jump in income',
+        body: 'A sharp rise in income was followed by a collapse the next month. The explanation offered: a new income level demands a matching level of responsibility, energy, environment and projects, and without accumulated capacity for it the rollback is predictable. The useful part: each rollback is proportionally smaller than the rise, so the level ratchets upward rather than returning to zero.',
+      },
+      {
+        name: 'Money solves money problems, and no others',
+        body: 'The first large sum is described as producing exactly one thing — expenses of the same size — and roughly half a year of reckoning with the fact that the expected transformation did not arrive.',
+      },
+      {
+        name: 'Why she left profitable trading',
+        body: 'Three reasons given, none financial: it adds no value and serves nobody; one participant\'s gain is another\'s loss; and the psychological damage she observed in traders directly, including someone carrying enormous debt while outwardly composed.',
+      },
+    ],
+    notes: [
+      'One year, one field in focus, the rest held steady — offered as a concrete alternative to running everything at once.',
+      'A morning practice of writing goals before opening messages, and a rule against heavy financial reading first thing, are both given as zero-cost and immediately available.',
+      'The speaker is a practising investor and adviser with an evident commercial interest — courses are promoted in the episode. The early-biography details carry noticeable self-presentation and are not verifiable.',
+      'The diversification numbers are reasonable and match standard risk-management practice; some of the supporting market history is simplified and given without a source.',
+      'Her firm position that regularly supporting parents inverts the family hierarchy and harms both sides is a personal conviction, not a consensus of family psychology — and stands in direct tension with traditions treating that support as an obligation. Useful as one viewpoint, not as a diagnosis.',
+    ],
+    practices: [
+      'Decide which activity you are actually doing — investing or trading — and price the time it demands honestly.',
+      'Write the diversification ceilings as numbers before you have a position you feel strongly about.',
+      'Treat "this return is too slow" as the warning sign it is; it is the sentence that precedes the loss.',
+      'Expect a rollback after a jump, and plan for the level rather than the peak.',
+      'Keep one field in focus per year and hold the others steady instead of running all of them.',
+    ],
+    habits: [
+      { id: 'm_waitlist', because: 'A day\'s delay is the cheapest possible defence against "this return is too slow", which is the exact impulse the schemes are built to catch.' },
+      { id: 'm_nodebt', because: 'The rollback after an income jump is described as predictable — borrowing against the peak is how a temporary drop becomes permanent.' },
+      { id: 'm_owed', because: 'Her hardest claim is about money inside a family inverting the hierarchy; naming what is actually owed, in either direction, is where that gets handled rather than accumulated.' },
+    ],
+    quests: [
+      { id: 'q_emergencyfund', because: 'A buffer is what makes the long-term strategy survivable — without it the first shock forces the sale the strategy depends on not making.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Кладько — Правила диверсификации, психология финансовых пирамид и деньги как иерархия в семье',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
