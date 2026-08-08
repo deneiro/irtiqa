@@ -11,7 +11,36 @@ npm run build    # production bundle in dist/
 npm test         # vitest suite for the game engine + store rules
 ```
 
-The game is local-first: it always runs off the save in your browser, so it works with zero setup and no network. Optionally, sign in (Settings → Account & cloud sync, or "Returning player?" on the start screen) to mirror your save to Supabase — every change auto-uploads a few seconds later, and signing in on any device restores your character. Manual export/import is still available in **Settings**.
+The game is local-first: it always runs off the save in your browser, so it works with zero setup and no network. Cloud sync is **optional** and off until you configure it (see below) — when off, every sign-in / sync control hides itself and the app is purely local. When on, sign in (Settings → Account & cloud sync, or "Returning player?" on the start screen) to mirror your save to Supabase — every change auto-uploads a few seconds later, and signing in on any device restores your character. Manual export/import is always available in **Settings**.
+
+## Deploy (Vercel + Supabase)
+
+The app is a static Vite SPA. It deploys with **no backend at all** (local-first), or with cloud accounts once you set two env vars. Nothing in the code is hardcoded to a specific project — sync activates purely from env.
+
+### 1. Provision the backend (enables accounts + cross-device sync)
+
+1. Create a project at [supabase.com](https://supabase.com) (free tier is fine).
+2. Run the migration in [`supabase/migrations/0001_saves.sql`](supabase/migrations/0001_saves.sql): Supabase dashboard → **SQL Editor** → paste & run. It creates the `saves` table, the `updated_at` trigger, and row-level-security policies so each user can only touch their own row. It's idempotent.
+3. Grab **Project Settings → API**: the project **URL** and the **publishable (anon)** key. (Never use the `service_role`/secret key in client code.)
+
+*Skip this whole step to ship local-first — the app builds and runs fine with the env vars unset.*
+
+### 2. Deploy to Vercel
+
+Import the repo at [vercel.com/new](https://vercel.com/new) (or run `npx vercel` from the project root). Vercel auto-detects Vite; [`vercel.json`](vercel.json) pins the build (`npm run build` → `dist/`), SPA rewrites, and asset caching.
+
+Then, in **Vercel → Settings → Environment Variables**, add the two values from step 1 (leave unset for local-first):
+
+| Variable | Value |
+|---|---|
+| `VITE_SUPABASE_URL` | `https://<your-project>.supabase.co` |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | your publishable/anon key |
+
+Redeploy so the vars are baked into the client bundle (`VITE_*` vars are inlined at build time). Accounts + sync light up automatically — no code change.
+
+### Local dev with sync
+
+Copy [`.env.example`](.env.example) → `.env`, fill in the same two values, and `npm run dev`. `.env` is gitignored.
 
 ## What's inside
 

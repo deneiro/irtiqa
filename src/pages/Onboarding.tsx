@@ -6,6 +6,7 @@ import { WheelSurvey } from '../components/WheelSurvey';
 import { ATTR_KEYS, ATTRIBUTES, CLASSES, CLASS_RADICAL, classAffinityLabel } from '../game/constants';
 import { attunements } from '../game/engine';
 import type { AttributeKey, ClassId } from '../game/types';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { useSync } from '../lib/sync';
 import { useGame } from '../store';
 
@@ -97,23 +98,25 @@ export function Onboarding() {
             <button className="btn btn-primary btn-lg" disabled={!name.trim()} onClick={() => setStep(1)}>
               Continue →
             </button>
-            <div className="onb-returning">
-              {syncUser ? (
-                <p className="muted onb-cloud-line">
-                  <Icon name="link" size={14} /> Signed in as {syncUser.email}
-                  {syncStatus === 'syncing' ? ' — looking for your save…' : ' — no cloud save found. Forge a new character above.'}
-                </p>
-              ) : showLogin ? (
-                <>
-                  <p className="muted">Sign in and your character will be restored from the cloud.</p>
-                  <AuthPanel />
-                </>
-              ) : (
-                <button className="btn btn-ghost" onClick={() => setShowLogin(true)}>
-                  <Icon name="download" size={14} /> Returning player? Sign in to restore your save
-                </button>
-              )}
-            </div>
+            {isSupabaseConfigured && (
+              <div className="onb-returning">
+                {syncUser ? (
+                  <p className="muted onb-cloud-line">
+                    <Icon name="link" size={14} /> Signed in as {syncUser.email}
+                    {syncStatus === 'syncing' ? ' — looking for your save…' : ' — no cloud save found. Forge a new character above.'}
+                  </p>
+                ) : showLogin ? (
+                  <>
+                    <p className="muted">Sign in and your character will be restored from the cloud.</p>
+                    <AuthPanel />
+                  </>
+                ) : (
+                  <button className="btn btn-ghost" onClick={() => setShowLogin(true)}>
+                    <Icon name="download" size={14} /> Returning player? Sign in to restore your save
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 

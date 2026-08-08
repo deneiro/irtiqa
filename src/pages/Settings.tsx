@@ -17,6 +17,7 @@ import { CUSTOM_THEME_TOKENS, charLevel, isThemeUnlocked, rankFor } from '../gam
 import { CURRENCIES, fmtMoney } from '../game/money';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
 import { playSound } from '../lib/sound';
+import { isSupabaseConfigured } from '../lib/supabase';
 import { signOutUser, syncNow, useSync } from '../lib/sync';
 import { SAVE_KEY, useGame } from '../store';
 
@@ -406,7 +407,13 @@ function AccountCard() {
           </span>
         )}
       </div>
-      {sync.user ? (
+      {!isSupabaseConfigured ? (
+        <p className="muted">
+          Cloud sync isn't enabled on this build, so your save lives in this browser only — clearing
+          site data or switching devices loses it. Use <strong>Export</strong> below to keep a backup.
+          To turn on accounts and cross-device sync, set the Supabase env vars and redeploy (see the README).
+        </p>
+      ) : sync.user ? (
         <>
           <p>Signed in as <strong>{sync.user.email}</strong></p>
           <p className="muted">

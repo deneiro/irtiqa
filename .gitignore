@@ -2,6 +2,9 @@ node_modules/
 dist/
 graphify-out/
 
+# Vercel
+.vercel/
+
 # Local env / secrets
 .env
 .env.local

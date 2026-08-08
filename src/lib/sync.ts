@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import type { GameState } from '../store';
 import { useGame } from '../store';
-import { supabase } from './supabase';
+import { isSupabaseConfigured, supabase } from './supabase';
 
 /**
  * Cloud sync: the whole save is one JSONB row per user.
@@ -135,6 +135,8 @@ async function initialSync(): Promise<void> {
 
 export function initSync(): void {
   if (initialized) return;
+  // No backend configured → stay fully offline. Never touch supabase; the UI hides sync.
+  if (!isSupabaseConfigured) return;
   initialized = true;
 
   supabase.auth.onAuthStateChange((event, session) => {
@@ -170,12 +172,19 @@ export interface AuthResult {
   message: string;
 }
 
+const NO_BACKEND: AuthResult = {
+  ok: false,
+  message: 'Cloud sync is not enabled on this build. Your progress is saved in this browser.',
+};
+
 export async function signIn(email: string, password: string): Promise<AuthResult> {
+  if (!isSupabaseConfigured) return NO_BACKEND;
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   return error ? { ok: false, message: error.message } : { ok: true, message: 'Signed in — syncing your save.' };
 }
 
 export async function signUp(email: string, password: string): Promise<AuthResult> {
+  if (!isSupabaseConfigured) return NO_BACKEND;
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) return { ok: false, message: error.message };
   if (!data.session) {
