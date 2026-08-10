@@ -3320,6 +3320,226 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Spirituality & Religion / Resource / Dinde Podcast — Осознанность хиджаба, окружение как топливо имана и таваккуль через причины',
   },
+
+  {
+    slug: 'three-sources-of-an-idea',
+    attr: 'career',
+    title: 'Your own head is the worst source of an idea',
+    origin: 'Seisembay — investor, on where opportunities come from and when to stop',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The ideas that feel most like yours are the ones with the worst record.',
+    thesis:
+      'Opportunities arrive from exactly three sources: somebody else\'s validated pain, an event or a piece of news, and your own head — and the third is named as the worst and most dangerous. The claim attached is personal and blunt: the overwhelming majority of businesses he personally started from "great idea" failed. The rule that follows is not to fall in love with your own idea.',
+    ideas: [
+      {
+        name: 'Somebody else\'s pain, already validated',
+        body: 'The strongest source is a problem someone brought to you because they have it — the examples given are founders who started after direct contact with an organisation that had a real, specific operational problem, or after a friend complained about a logistics failure. The validation happened before the idea existed.',
+      },
+      {
+        name: 'Events and news',
+        body: 'The second source is what is changing rather than what is bothering someone. His own example is a large contract found through a small news item — the opportunity was public and available to anyone reading with the right attention.',
+      },
+      {
+        name: 'Four ways to train noticing',
+        body: 'See things differently, do things differently, see different things, do different things — illustrated with a single glass of water yielding different ideas depending on the angle of attention.',
+      },
+      {
+        name: 'Three decisions before choosing a niche',
+        body: 'First, the base decision: are you willing to do this at all, independent of the niche? Second, intention — if the intention is to make money, failures are close to guaranteed; the workable intention is solving someone\'s pain, with money as consequence. Third, belief in the outcome, because without it nobody follows you: people do not follow a salary, they follow meaning.',
+      },
+      {
+        name: 'Obstacles as a filter, and planning backwards',
+        body: 'Someone who does not love the work magnifies small problems and leaves at the first refusal; someone who does minimises them and keeps the large goal in view. So the size obstacles appear to be is a diagnostic. The planning instruction that follows is to decompose backwards from the goal rather than forwards from current resources — his observation being that resources arrive during movement rather than existing beforehand.',
+      },
+    ],
+    notes: [
+      'On building a team: look first at engagement and genuine interest rather than at credentials — stated as the opposite of the instinct to select by diploma.',
+      'A panel of practising entrepreneurs rather than an academic source, hosted by an investor openly promoting his own investment philosophy. That frame is useful but not neutral — he has an obvious interest in presenting his approach as universally correct.',
+      'The specific founder cases are first-hand and checkable; the general claims about faith and luck are personal conviction rather than empirical statements, and the religious framing of belief as a mechanism is explicitly his own.',
+    ],
+    practices: [
+      'Classify any new idea by which of the three sources it came from — and distrust yourself most on the third.',
+      'Before committing, answer the three decisions: willing at all, what the intention is, and whether you actually believe it.',
+      'Read obstacle size as a signal about fit rather than about the obstacle.',
+      'Decompose backwards from the goal instead of forwards from what you currently have.',
+      'Select people by engagement rather than by credential.',
+    ],
+    habits: [
+      { id: 'd_askquestion', because: 'The best source is a problem someone else already has — which only reaches you if you are in the habit of asking about it.' },
+      { id: 'd_read', because: 'The second source is events, and his own example was a small news item nobody else acted on.' },
+      { id: 'c_onelesson', because: 'Training the four ways of noticing is a daily observation practice, and observations that go unwritten do not accumulate.' },
+    ],
+    quests: [
+      { id: 'q_promise', because: 'The three decisions — willingness, intention, belief — stay abstract until something has been said out loud to someone who will remember it.' },
+      { id: 'q_skill', because: 'Planning backwards from the goal produces a list of capabilities you do not yet have, which is where the next concrete skill comes from.' },
+    ],
+    vaultSource: 'Business & career / Resource / Сейсембай — Три источника бизнес-идей, найм по вовлечённости и решение о пивоте',
+  },
+  {
+    slug: 'narrow-then-infinite',
+    attr: 'career',
+    title: 'Start in the narrowest real niche, then change modes',
+    origin: 'Alexandr Wang — founder, on market sequencing and hiring for care',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The market that was "obviously too small" is exactly what made speed possible.',
+    thesis:
+      'A deliberate two-mode strategy: begin in the narrowest defensible niche to build real momentum, then consciously switch to searching for markets with no structural ceiling. Both halves are load-bearing, and the mistake is doing either alone — designing for an infinite market on day one, or never leaving the niche that made the early speed possible.',
+    ideas: [
+      {
+        name: 'Early ideas are memetic',
+        body: 'His own diagnosis of his first attempts: young founders\' ideas tend to be copies of whatever is visibly trending, because they lack a developed sense of where they are uniquely positioned to win. The actual founding insight arrived almost accidentally — noticing that every company around them needed the same unglamorous thing.',
+      },
+      {
+        name: 'Both judgements about the niche were true',
+        body: 'An investor called the initial market obviously too small to build anything large on. That was correct — and narrow-and-real was also exactly what allowed them to build fast and reach real scale quickly. The two are not in conflict; they describe different stages.',
+      },
+      {
+        name: 'What makes a credible second act',
+        body: 'He studied the canonical example of a large unrelated-seeming business built on internal capability, and extracts two ingredients: genuine conviction that the underlying market is structurally growing without a ceiling, and real cost advantages from scale — not merely having a capability lying around.',
+      },
+      {
+        name: 'Hire for care, not credentials',
+        body: 'Stated as a direct interview heuristic — and it converges with the same principle arrived at independently by other operators, which is worth more than either statement alone.',
+      },
+      {
+        name: 'Quality is fractal',
+        body: 'Standards do not hold below a level where care about them is visibly modelled above. The consequence for anyone leading anything: the standard is set by what you are seen to care about, not by what you ask for.',
+      },
+    ],
+    notes: [
+      'A practical engineering discipline offered in passing: check whether the simple approach already clears the bar before reaching for the elaborate one.',
+      'A named founder with an obvious incentive to frame his own strategy and leadership favourably, in a friendly rather than adversarial interview — pushback is minimal.',
+      'The concrete business facts are specific and checkable. His geopolitical claims are stated with more confidence than the evidence offered supports, and are best held as one well-placed person\'s judgement rather than as settled.',
+    ],
+    practices: [
+      'Start in the narrowest niche you can actually defend, and accept that it is too small to end in.',
+      'Decide deliberately when to switch modes rather than drifting.',
+      'Before a second act, check both ingredients: no ceiling, and a real cost advantage.',
+      'Interview for whether someone cares, not for what they have completed.',
+      'Model the standard visibly, because it will not hold above the level you are seen to hold it.',
+    ],
+    habits: [
+      { id: 'd_build', because: 'The founding insight came from noticing what everyone around them actually needed — which is visible from inside the building, not from planning.' },
+      { id: 'c_ship', because: 'Quality being fractal means the standard is set by what others see you care about, which requires the work to be seen at all.' },
+      { id: 'c_plan', because: 'Switching modes is a decision that has to be made deliberately at some point, and drift is what happens when nothing is scheduled to ask.' },
+    ],
+    quests: [
+      { id: 'q_portfolio', because: 'A narrow, real, finished thing is the evidence that makes the second act credible — the capability has to exist before it can be redeployed.' },
+      { id: 'q_skill', because: 'The two ingredients for a second act are a market read and a genuine cost advantage, and both are capabilities rather than opinions.' },
+    ],
+    vaultSource: 'Business & career / Resource / Alexandr Wang — Infinite Markets, the Swarm-of-Agents Manager, and Hiring for Care',
+  },
+
+  {
+    slug: 'truth-then-plan',
+    attr: 'money',
+    title: 'Truth first. The plan comes after.',
+    origin: 'Rublev — entrepreneur, on debt crisis, boundaries and neutrality',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The energy to build the plan does not arrive until after you have told everyone the truth.',
+    thesis:
+      'The account of climbing out of a large cash-flow collapse puts the order deliberately: not a plan first, but public honesty with every creditor — reaching out yourself, naming the real situation and at most a draft plan, rather than waiting until a finished solution exists. His claim is that the energy to build the plan only appears after that step, not before it.',
+    ideas: [
+      {
+        name: 'Reach out first',
+        body: 'The protocol is to contact people rather than hide, and to do it before there is anything good to report. Silence is what converts a solvable situation into an unrecoverable relationship.',
+      },
+      {
+        name: 'Neutrality rather than reconciliation',
+        body: 'His counterintuitive claim: what matters financially is not the state of the relationship with a parent but your internal state about it. He describes the drive to prove something operating as fuel while a relationship was severed, and part of that drive disappearing when it was restored. The goal he proposes is neither restoring the tie for its own sake nor holding on to the injury for its energy, but a neutral state in which proximity or distance stops steering decisions.',
+      },
+      {
+        name: 'The order of the oxygen mask',
+        body: 'An explicit hierarchy — yourself, then partner, then children, then parents, then everyone else — argued through the aircraft metaphor: it is not selfishness but the condition under which helping anyone is sustainable. He applies the same logic to giving.',
+      },
+      {
+        name: 'The garden',
+        body: 'A visualisation: your own space with a fence you set at whatever height you choose. Anyone or anything spending your energy without agreement does not automatically get access, regardless of relation or of what politeness prescribes. Whether to keep distance from a difficult relative is framed as a deliberate boundary decision rather than a moral verdict.',
+      },
+      {
+        name: 'Repeated public giving escalates expectation',
+        body: 'Unbounded, repeated and visible generosity is described as producing the same escalating cycle as any other pattern of help without conditions — offered from his own experience rather than as a theory.',
+      },
+    ],
+    notes: [
+      'The systemic family model he draws on is an alternative, non-evidence-based therapeutic approach, and his causal statements about parents and money are one person\'s narrative reading of a single life rather than a demonstrated mechanism.',
+      'Worth noting across this sector: three different sources here offer three different stories about a father\'s role in financial development, and they do not agree with each other. None is verified. They are best held as three viewpoints rather than as converging evidence.',
+      'A personal, unstructured conversation between acquaintances — not a therapist, not a financial adviser, and he says as much about the limits of his own view.',
+    ],
+    practices: [
+      'Make contact before you have a solution, and say the real number.',
+      'Aim for a neutral internal state rather than for either reconciliation or estrangement.',
+      'Set the height of the fence deliberately, and stop treating access as socially obligatory.',
+      'Put yourself first in the order, because everything downstream depends on it holding.',
+    ],
+    habits: [
+      { id: 'm_owed', because: 'The whole protocol is one message sent before it is comfortable — and it is the same message every month it goes unsent.' },
+      { id: 'm_checkbalance', because: 'Telling the truth to creditors requires knowing the truth first, and avoidance starts with not looking.' },
+      { id: 'm_log', because: 'The collapse he describes began with treating money received as money earned — which a record distinguishes and memory does not.' },
+    ],
+    quests: [
+      { id: 'q_debts', because: 'Truth-then-plan needs the truth to exist in one place first: every debt at its real number, before any conversation.' },
+      { id: 'q_hardconversation', because: 'The first step is explicitly a conversation you initiate rather than a plan you finish.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Рублёв — Нейтральность к родителям, техника «сад» и правда как первый шаг из долгового кризиса',
+  },
+  {
+    slug: 'name-it-to-lower-it',
+    attr: 'friends',
+    title: 'An unnamed feeling runs hotter than a named one',
+    origin: 'Shevchenko — gestalt therapist, on the thought-feeling-body triad',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'When the feeling has no name, the body finds a substitute for what you actually needed.',
+    thesis:
+      'Thoughts, feelings and body are treated as one interconnected organism: ignore one part and another compensates. Someone disconnected from their feelings starts explaining decisions rationally — I just need a rest — while the body takes its share through compulsive spending or eating, and the real need is replaced with a substitute.',
+    ideas: [
+      {
+        name: 'Where the vocabulary comes from',
+        body: 'A child does not know the names of their internal states; an adult names them on their behalf — I can see you are upset, I can see you are angry — and through that a vocabulary of feeling is built early. The adult also acts as a container, temporarily holding part of the affect because the child cannot yet carry it alone.',
+      },
+      {
+        name: 'Naming lowers the temperature',
+        body: 'When a feeling stays undifferentiated and unspoken its intensity runs high; saying it — I am angry, this infuriates me — legitimises it and lowers the heat. Immediately usable, and it requires no analysis of where the feeling came from.',
+      },
+      {
+        name: 'Inventory of beliefs',
+        body: 'Beliefs absorbed uncritically from significant adults need periodic review, like going through a wardrobe: which of these are still current and have become values, and which are being kept out of inertia? The worked example is an assumption about qualifications and job security that no longer matches how fast skills now turn over.',
+      },
+      {
+        name: 'Two reasons people arrive',
+        body: 'On her estimate the large majority arrive because they are already at the bottom and cannot manage. The smaller group are broadly fine and want the quality raised — deeper relationships, more freedom. Framing the second as legitimate is the useful part, since it is the one people talk themselves out of.',
+      },
+      {
+        name: 'Small decisions train the large ones',
+        body: 'Asking "do I actually want this?" on ordinary daily choices is offered as the practice that builds the capacity to recognise a desire at all — before it is needed for something that matters.',
+      },
+    ],
+    notes: [
+      'A reframe offered for hard experience: move from "what was this for" in the sense of blame to "what is this for" in the sense of use — presented as the working alternative to a victim position.',
+      'The source also advances a causal claim linking suppressed aggression to a specific category of illness. It rests on five consecutive clients — her own description — rather than on any epidemiological basis, and it is not carried here; a medical claim from a self-selected sample of five is the kind of thing this library exists not to repeat.',
+      'A practising gestalt therapist speaking from clinical work in a long unstructured conversation. Several positions are delivered with conversational confidence but are the personal view of one practitioner rather than consensus, and one physiological explanation is a simplified popularisation useful as metaphor rather than as mechanism.',
+    ],
+    practices: [
+      'Say the feeling out loud before deciding anything while it is running.',
+      'Run the wardrobe check on your beliefs: still mine, or kept out of inertia?',
+      'Ask "do I want this?" on small daily choices, so the answer is available on large ones.',
+      'Treat wanting the quality raised as a sufficient reason, not a luxury.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'The inventory only happens if it has a slot — beliefs kept out of inertia are exactly the ones that never come up on their own.' },
+      { id: 'b_morningjoy', because: 'A small deliberate pleasure is the "do I actually want this?" question in its daily, low-stakes form.' },
+      { id: 'f_thanks', because: 'Naming something specific out loud is the same muscle as naming a feeling, trained where the stakes are low.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The substitute appears when the real need goes unspoken — and the unspoken need is usually addressed to a particular person.' },
+      { id: 'q_wheel', because: 'The inventory of inherited beliefs is a whole-life audit, which is what scoring the wheel actually is.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Шевченко — Триада мысли-чувства-тело, инвентаризация установок и жетон вместо цели',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
