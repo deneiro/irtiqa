@@ -3992,6 +3992,234 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Spirituality & Religion / Resource / Алексеев — Ислам как дискурсивная традиция, джихад без принуждения и ловушка эссенциализма',
   },
+
+  {
+    slug: 'three-solutions-to-debt',
+    attr: 'money',
+    title: 'A large national debt has exactly three exits',
+    origin: 'Vyugin — economist, on debt, inflation and a two-pole world',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Growth, default, or inflation. There is no fourth road — which tells you what to expect.',
+    thesis:
+      'A framework for reading macroeconomic news rather than a personal-finance method: the problem of a large sovereign debt is solved in exactly three ways — fast sustained growth, default, or inflation. There is no fourth. Once that is fixed, the question about any indebted state becomes which of the three is politically available to it, and the answer is usually predictable.',
+    ideas: [
+      {
+        name: 'Reserve status is a burden as well as a privilege',
+        body: 'The mechanism described: reserve-currency status holds a currency artificially strong, which prices domestic labour out of competitiveness and moves manufacturing abroad, leaving behind only sectors where labour cost is not decisive. The dependence of critical supply chains on external links then gets read as a strategic risk rather than an efficiency.',
+      },
+      {
+        name: 'Why the default option is closed',
+        body: 'Default on sovereign obligations is treated as politically impossible for the largest issuer, because it would undermine confidence in the entire system. A softer variant — converting debt into very long-dated near-zero-coupon paper — is described as having been discussed and rejected: a deferral onto later generations rather than a solution.',
+      },
+      {
+        name: 'Inflation as the path of least resistance',
+        body: 'Which leaves the third exit. Cheaper debt service through lower rates predictably feeds inflation — bad for the population, and politically more acceptable than the alternatives. The prediction is offered as a scenario rather than a forecast.',
+      },
+      {
+        name: 'De-dollarisation means a smaller share, not a replacement',
+        body: 'The term is deflated: what is actually happening is a reduction in share rather than the arrival of a substitute. Reading it as replacement produces expectations the data does not support.',
+      },
+      {
+        name: 'Do not read institutional moves as a personal signal',
+        body: 'Simultaneous rises across gold, equities and crypto are described as the movement of very large institutional money, and specifically not as an investment signal addressed to a private individual.',
+      },
+    ],
+    notes: [
+      'A gravity model of economic positioning is offered for reading how a mid-sized economy sits relative to large neighbours — useful as a frame rather than as a prediction.',
+      'On anxiety about events you do not control, his practical line is to feed the mind with tasks rather than with doubts, and switch to something concrete and completable.',
+      'A practising economist with senior regulatory and central-banking experience who states plainly where he is speaking as a personal view or a hypothesis rather than from expertise. The forward-looking material is explicitly framed as scenarios with stated uncertainty, and one explanation of a country\'s technological trajectory is his own political reading rather than a settled account.',
+    ],
+    practices: [
+      'Read any sovereign-debt story by asking which of the three exits is politically available.',
+      'Treat "de-dollarisation" claims as questions about share rather than about replacement.',
+      'Do not convert a broad institutional asset move into a personal buying signal.',
+      'When macro anxiety rises, switch to a concrete completable task rather than to more analysis.',
+    ],
+    habits: [
+      { id: 'm_payday', because: 'If inflation is the politically likeliest exit, then money that sits still loses quietly — which makes the automatic transfer a defence rather than a virtue.' },
+      { id: 'm_nodebt', because: 'The same mechanism that erodes a state\'s debt does not erode yours: household borrowing is priced against it in advance.' },
+      { id: 'm_subs', because: 'Inflation is felt first in recurring charges, which drift upward without a decision being made anywhere.' },
+    ],
+    quests: [
+      { id: 'q_emergencyfund', because: 'The buffer is what makes macro turbulence survivable at household scale, where none of the three exits are available to you.' },
+      { id: 'q_debts', because: 'Reading the three exits properly means noticing which of them applies to your own balance — and only one of them does.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Вьюгин — Двухполярный мир, инфляция как путь наименьшего сопротивления и теория гравитации',
+  },
+
+  {
+    slug: 'the-formula-is-memory',
+    attr: 'brightness',
+    title: 'The epithet is not decoration. It is scaffolding.',
+    origin: 'Zakharyan — on Homer, oral tradition and formula theory',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'Knowing how oral epic is built is the difference between reading it and abandoning it in book two.',
+    thesis:
+      'The Homeric poems are dictated rather than written — oral composition by singers, recorded much later, with "Homer" most likely a name that a rich tradition converged on rather than a documented person. Three archaic barriers stop a modern reader: the form, which is built for a singer\'s memory rather than for literary effect; the optics, which do not rank detail by importance; and the language, which any translation archaises further.',
+    ideas: [
+      {
+        name: 'The question was settled in the field, not in the study',
+        body: 'In the 1930s a philologist went to the Balkans to test whether an illiterate singer could physically hold an epic of that length in memory, and found one performing songs comparable in scale. That fieldwork turned "could this have existed in an oral culture" from a speculation into something empirically answered.',
+      },
+      {
+        name: 'The formula holds metre and memory at once',
+        body: 'Fixed word-combinations — the swift-footed hero, the lord of men — are structural rather than ornamental: they bind the oral text together and let the singer carry metre and content simultaneously. The system bends toward metrical necessity rather than toward local accuracy of meaning.',
+      },
+      {
+        name: 'Ossified epithets',
+        body: 'The epithet loses its literal sense in exchange for constancy: the swift-footed hero sitting by a fire, a starry sky in daylight. Read as literary choice this looks like carelessness; read as scaffolding it is the mechanism working.',
+      },
+      {
+        name: 'Each performance recreates the text',
+        body: 'Recordings of one singer performing the same song show a stable plot frame and unstable details — the drink in the hero\'s hand changes between versions. Oral epic is recomposed at each performance rather than reproduced word for word, closer to a comedian repeating material than to reciting a script.',
+      },
+      {
+        name: 'Retardation is a device, not a pacing fault',
+        body: 'The deliberate deferral of a climax — cutting away into backstory at the moment of recognition — is a working technique when the digression is itself substantial, rather than an error of tempo.',
+      },
+      {
+        name: 'A collective author does not exclude an individual one',
+        body: 'The quoted position dissolves the false choice between a single genius and impersonal folklore: oral tradition presupposes individual authorship rather than ruling it out.',
+      },
+    ],
+    notes: [
+      'A practical entry strategy for any dense text: an accessible translation or retelling first, the original after — applicable well beyond this one.',
+      'A literary essayist rather than an academic, but the episode rests on a well-documented mainstream tradition in classical philology rather than on an invention of his own, and the technical term used is correctly attributed.',
+      'One quotation is given without a clear attribution, and his comparison of translations is offered openly as personal taste rather than as a ranking.',
+    ],
+    practices: [
+      'Read repeated structure as a memory device before judging it as style.',
+      'Enter a dense text through an accessible version first, then go to the original.',
+      'Use deliberate deferral of a climax when the digression carries its own weight.',
+      'Expect a stable frame and unstable detail in anything transmitted by performance.',
+    ],
+    habits: [
+      { id: 'd_read', because: 'The barriers described are dissolved by contact with the material rather than by more explanation of it.' },
+      { id: 'd_onepage', because: 'His whole practical point is that these texts defeat people who attempt them in bulk — a page held is worth more than a book abandoned.' },
+      { id: 'd_notes', because: 'The formula only becomes visible once you have written down what recurs, which is the same method the fieldwork used.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'This is a canonical body of work with a real scholarly tradition behind it — precisely what studying one thing properly means rather than skimming.' },
+      { id: 'q_makeweekly', because: 'Retardation and repeated structure are devices for making, and they only teach you anything once used in something finished.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Захарян — Гомер, устная эпическая традиция и теория формул',
+  },
+
+  {
+    slug: 'the-asymmetric-bet',
+    attr: 'career',
+    title: 'Eight failures and two successes, if the downside is bounded',
+    origin: 'A founders\' panel on business models and repeated betting',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'What survives repeated failure is not judgement about sectors. It is conviction.',
+    thesis:
+      'The organising idea is an asymmetric bet: a self-reported ratio of roughly eight failures to two successes, where each failure costs a bounded amount and each success pays a large multiple. On that arithmetic the sector timing and the gut feel matter far less than the ability to keep going through the eight — which makes self-conviction the resource that actually gets consumed.',
+    ideas: [
+      {
+        name: 'Name the tournament',
+        body: 'One founder reframes his product as a tournament business rather than an education one: the customer is not buying teaching but coaching toward winning a specific competitive outcome that functions as a mobility gateway. The generalisable question is what concrete, named outcome your offer actually points at, since motivation follows a specific result far more reliably than a general promise of improvement.',
+      },
+      {
+        name: 'Education versus exposure',
+        body: 'The distinction that decides product design: is the customer\'s real constraint the quality of instruction, or the absence of a legible credential or pathway? They look similar from outside and call for different products.',
+      },
+      {
+        name: 'Views are not revenue',
+        body: 'A decade-scale example: enormous audience existed years before any working monetisation did. Reaching product-market fit on attention is a different and earlier event than reaching it on revenue, and confusing the two is what makes the second one feel like a failure.',
+      },
+      {
+        name: 'Ten pivots is normal, not a warning sign',
+        body: 'The same company went through at least ten business-model changes over four years before the revenue model appeared. That is presented as the ordinary shape of the process rather than as evidence of a broken thesis.',
+      },
+      {
+        name: 'Value where the model is not yet legible',
+        body: 'The stated thesis of the harder path: outsized value tends to be created precisely where a lot of people think they have not understood what you are building — offered as a reason to prefer the less obviously defensible position over the safer one.',
+      },
+      {
+        name: 'The unlock is interaction, not delivery',
+        body: 'Both operators converge on the same diagnosis of what is broken in online education: it optimises for delivering content when the actual mechanism is peer interaction, gamification and storytelling — the same things that make other products hard to put down.',
+      },
+    ],
+    notes: [
+      'A practical design question that follows: does the format have an accessible entry mode, or does it implicitly restrict engagement to the strongest participants?',
+      'A peer conversation among named, checkable operators rather than a research source. The market and salary figures are stated confidently without citation — plausible insider estimates rather than audited numbers.',
+      'The panel preserves genuine unresolved disagreement between successful people in the same sector rather than converging on one thesis, which is worth more for calibration than agreement would be.',
+    ],
+    practices: [
+      'Bound the downside deliberately, so that eight failures remain survivable.',
+      'Name the specific outcome your work points at, rather than promising general improvement.',
+      'Separate attention fit from revenue fit, and expect the second much later.',
+      'Ask whether the real constraint is instruction or exposure before designing anything.',
+    ],
+    habits: [
+      { id: 'd_build', because: 'Ten pivots is a claim about iterations survived, and iterations only happen where something is being built rather than planned.' },
+      { id: 'c_onelesson', because: 'Eight failures teach nothing unless what each one actually showed gets written down while it is still specific.' },
+      { id: 'c_ship', because: 'The distinction between attention and revenue is only observable once the thing is in front of people.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'Conviction is what the model says gets consumed — and it is far easier to sustain on ground where you are demonstrably getting better.' },
+      { id: 'q_portfolio', because: 'A bounded bet needs the previous attempts to be visible, or each new one starts from zero credibility.' },
+    ],
+    vaultSource: 'Business & career / Resource / Kamath, Screwvala, Munjal & Kotak — EdTech Business Models and the Asymmetric-Bet Theory of Founding',
+  },
+
+  {
+    slug: 'understanding-without-forgiving',
+    attr: 'friends',
+    title: 'Understanding why does not oblige you to forgive',
+    origin: 'A first-person account on trauma bonding, forgiveness and fear',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'The alternative to forgiving is not staying angry. It is leaving them where they are.',
+    thesis:
+      'Two claims here are worth carrying, and both push against widely repeated advice. Understanding where someone\'s behaviour came from is instrumentally useful — it removes the maddening quality of not knowing — and is entirely separable from any obligation to forgive or reconcile. And forgiveness is treated as optional rather than as a therapeutic requirement, with disengagement offered as the alternative to both forgiving and continuing to carry it.',
+    ideas: [
+      {
+        name: 'Understanding is for you, not for them',
+        body: 'The recurring framing: it does not mean the behaviour has to be accepted, but understanding where it came from is pursued for one\'s own clarity. The contrast drawn is with being cut off without explanation, which is described as intolerable precisely because it withholds the causal account.',
+      },
+      {
+        name: 'Forgiveness as optional',
+        body: 'Direct pushback on the "forgive or you will suffer" framing: not everyone is owed your forgiveness, and the alternative on offer is not continued suffering but simply leaving them where they are. Whatever one concludes, the separation of the two ideas is the useful part.',
+      },
+      {
+        name: 'The nervous system prefers familiar over healthy',
+        body: 'The pull is toward what is recognisable rather than what is good — which means someone calibrated on chaos or abandonment in childhood may experience those dynamics as comfort. The reformulation offered: people say they are seeking happiness in a relationship and are often seeking familiarity.',
+      },
+      {
+        name: 'Blame and responsibility as a pivot',
+        body: 'Named as the turning point in recovery. The practical test: does identifying the past cause change anything actionable today, or does it hand continued power to someone who is no longer present? An accurate explanation can still be doing the second thing.',
+      },
+      {
+        name: 'Coercive power runs entirely on fear',
+        body: 'Someone\'s leverage over you is described as contingent on your fear of the consequence, and as evaporating when the fear does — which converts a vague sense of being trapped into a specific question: what exactly am I afraid of here?',
+      },
+    ],
+    notes: [
+      'Neither speaker is a credentialed mental-health professional; this is lived-experience testimony and self-assembled framework rather than clinical material, and it belongs in that register.',
+      'Several ideas here overlap substantially with clinically grounded entries already in this sector — the pull toward familiar dynamics is covered from a clinical angle elsewhere. What this adds that they do not is the explicit decoupling of understanding from forgiving, and the reading of coercive power as purely a function of fear.',
+      'Where it touches a real criminal case, it is used to illustrate understanding a person\'s desperation without endorsing what was done — a distinction worth keeping intact rather than collapsing in either direction.',
+    ],
+    practices: [
+      'Pursue the understanding for your own clarity, and treat the question of forgiveness as separate and optional.',
+      'Ask whether naming the past cause changes anything you can act on today.',
+      'When something feels familiar rather than good, treat the familiarity itself as the information.',
+      'Name the specific consequence you are afraid of, since that is where the leverage actually sits.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'The blame-versus-responsibility test is a question about a pattern over time, which is not answerable in the moment the grievance is active.' },
+      { id: 's_forgive', because: 'Letting one thing go here means stopping carrying it — which the source explicitly separates from absolving the person or resuming contact.' },
+      { id: 'f_nogossip', because: 'Rehearsing a grievance to people who were not there is how it keeps its power without ever getting resolved.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Naming the exact feared consequence is usually the thing being avoided by not having one specific conversation.' },
+      { id: 'q_reconnect', because: 'Disengaging from what was familiar leaves a gap, and the gap is what the pull back is actually made of.' },
+    ],
+    vaultSource: 'Social & friends / Resource / The Wizard Liz — Trauma Bonding, Forgiveness as Optional, and Power Through Fear',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
