@@ -4220,6 +4220,234 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Social & friends / Resource / The Wizard Liz — Trauma Bonding, Forgiveness as Optional, and Power Through Fear',
   },
+
+  {
+    slug: 'the-image-comes-first',
+    attr: 'brightness',
+    title: 'It starts with an image that will not leave you alone',
+    origin: 'Poliarinov — novelist, on where a book actually begins',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Not a plot. An image or an emotion that lodges and causes discomfort.',
+    thesis:
+      'A book never begins with a plot — it begins with an image or an emotion that lodges in the head for a long time and is uncomfortable to carry. Everything else is attached to that cornerstone afterwards. Without it the text spreads, because there is nothing to fasten it to. The through-line is blunt: art has no obligation to make you feel pleasantly warm, and a good story is almost always built around an unresolved feeling of the author\'s.',
+    ideas: [
+      {
+        name: 'The nuclear image, in practice',
+        body: 'His own examples are all concrete and visual: a gravestone whose engraved face was being erased by rain; a warm steaming bone thrown to dogs; dry ice tipped from a bucket onto asphalt and melting; a newspaper photograph of a thousand couples married simultaneously in a stadium. In each case the plot was assembled around the image by trial and rewriting, not the other way round.',
+      },
+      {
+        name: 'The first step is admitting you cannot do it yet',
+        body: 'Framed half-jokingly as steps of sobriety, but used seriously: the hardest and first is conceding that you are not yet any good. In his experience that does not arrive early, and it requires giving up the assumption of exceptional talent that adolescent work runs on.',
+      },
+      {
+        name: 'From compiling other people to being honest',
+        body: 'His early work was direct copying of the pop culture he loved, without structure. The turn came while translating a novel about an entirely ordinary childhood — he realised he had spent his career avoiding the banality of his own, compiling other people\'s material instead of using his own honestly.',
+      },
+      {
+        name: 'A second language changes the thinking',
+        body: 'Not merely more vocabulary: some concepts take one sentence in one language and are absent in another. Translation, correspondingly, is separate labour rather than neutral transmission — a translator can distort a text with their own hand.',
+      },
+      {
+        name: 'Successful and good are different measurements',
+        body: 'Immediate response is not the same as lasting value, and he keeps the two apart when judging his own work. A related heuristic for filtering feedback: whether a reaction is about what was actually written or about something itching in the reader.',
+      },
+    ],
+    notes: [
+      'On unpleasant material: the question is not whether to add difficulty but whether it is unavoidable for the thing you are trying to say.',
+      'A working novelist and translator speaking from practice rather than theory. Much of this is stated as personal conviction rather than as critical consensus, and he says so himself — he calls himself an apologist for the harsh and is ironic about it.',
+      'One unusual quality of the conversation: his opinion on specific books visibly changes mid-discussion under the other person\'s argument, rather than being a rehearsed position.',
+    ],
+    practices: [
+      'Look for the image or feeling that will not leave you alone before inventing any plot around it.',
+      'Judge your own work by whether it lasts, separately from how it lands immediately.',
+      'When you receive criticism, ask whether it is about the work or about the reader.',
+      'Use your own ordinary material rather than compiling what you admire.',
+    ],
+    habits: [
+      { id: 'd_notes', because: 'An image that lodges has to be caught when it appears — the gravestone and the melting ice were noticed years before they were used.' },
+      { id: 's_makecreate', because: 'The plot is assembled around the image by rewriting, which is a volume of ordinary sessions rather than one insight.' },
+      { id: 'd_read', because: 'His own turning point came through close work with someone else\'s book, not through thinking about his own.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'The cornerstone only proves itself by holding a finished thing together — an unfinished draft never tests whether it was load-bearing.' },
+      { id: 'q_portfolio', because: 'Separating successful from good requires work that has been out long enough for the immediate response to fade.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Поляринов — Сильный образ как ядро истории, трезвость писателя и природа насилия в искусстве',
+  },
+
+  {
+    slug: 'dopamine-capture',
+    attr: 'development',
+    title: 'When the reward system is already occupied',
+    origin: 'Abu Saad — counselling psychologist, on attention capture and raising children',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'It does not only take your time. It takes the capacity to feel rewarded by anything else.',
+    thesis:
+      'The argument he makes about device dependency is that its danger is not the hours consumed but the capture of the reward system itself: someone dependent stops feeling satisfaction from study, from achievement, from ordinary self-care — not because those stopped mattering but because the system that registers them is already occupied. His framing of the generational challenges is fourfold: killing time, the pull of empty content, and dependency itself.',
+    ideas: [
+      {
+        name: 'The mechanism, as he describes it',
+        body: 'The reward system is normally engaged by effortful and meaningful acts, each returning a felt reward. Dependency redirects that return, so the same acts stop paying. The practical implication is that willpower applied to the acts is aimed at the wrong place.',
+      },
+      {
+        name: 'Escalation through content',
+        body: 'From his counselling practice he describes a progression in which the previous level stops producing the same response and the material sought becomes more extreme, and eventually participatory. He uses the type of material found as a rough indicator of how long a pattern has been running.',
+      },
+      {
+        name: 'Nobody is exempt by discipline or belief',
+        body: 'His observation is that this appears across every level of education and religious practice — including a case of someone with decades of standing whose practice collapsed. The claim is aimed at the assumption that being serious about something protects you from this.',
+      },
+      {
+        name: 'Symptoms he lists',
+        body: 'Waking at night and sleeping through the day, persistent fatigue, loss of concentration and memory, falling performance, neglected hygiene, changed eating in either direction, headaches and digestive complaints, and emotional flattening — not reacting even to things that should land.',
+      },
+      {
+        name: 'Two things time can be',
+        body: 'His personal filter: time is either achievement or enjoyment, and what falls outside both is killing it. The useful part is that it permits genuine rest rather than treating all non-productive time as waste.',
+      },
+      {
+        name: 'Thirty seconds, more often',
+        body: 'For advice to anyone close: shorter and more frequent rather than long correction, which produces closure. Paired with the instruction to listen rather than only instruct — offered for children but not limited to them.',
+      },
+    ],
+    notes: [
+      'His stated priority order under overload: connection to God, then your own state, then family, then everything else — with the second placed deliberately above the third.',
+      'He takes a hard prescriptive position on no internet-capable devices before adulthood, arguing that the conflict over a removed device is far cheaper than the alternative. That is his position, stated as such, rather than a consensus recommendation.',
+      'A practising counselling psychologist speaking from daily clinical work in a religious-educational format rather than a scientific one. Several striking figures — proportions of device owners affected, support-group populations, divorce percentages — are given without any citation or methodology and should be treated as indicative rather than verified.',
+      'On inflated statistics generally, his own advice is useful: ask for the percentage and the comparison period rather than the absolute number.',
+    ],
+    practices: [
+      'Sort the day into achievement, enjoyment, and time killed — and let the second count.',
+      'Aim the effort at the capture rather than at the acts that stopped feeling rewarding.',
+      'Give correction in thirty seconds, more often, instead of at length.',
+      'Listen before instructing, with anyone younger than you.',
+      'Ask for the percentage and the period before accepting an alarming number.',
+    ],
+    habits: [
+      { id: 'f_nodoom', because: 'The capture happens through repeated small reaches, which makes the barrier more useful than the resolution.' },
+      { id: 'h_lightsout', because: 'Night waking and daytime sleeping head his list of symptoms — the sleep pattern is where the capture shows first.' },
+      { id: 'd_nopassive', because: 'Making something before consuming is the direct test of whether the reward system still responds to effort.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'His priority order is a structure, and structures under overload survive only if they were decided in advance.' },
+      { id: 'q_declutter', because: 'His hardest recommendation is environmental rather than motivational — the device leaves the room.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Абу Саад — Воспитание, захват дофамина и вызовы поколения',
+  },
+
+  {
+    slug: 'equal-but-not-identical',
+    attr: 'spirituality',
+    title: 'Agree the procedure before you need it',
+    origin: 'Haifaa Younis — on marriage as an institution with rules',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'Every institution has written rules made by whoever understands it best. The argument is about who that is.',
+    thesis:
+      'Marriage is presented not as a romantic feeling but as a formally constituted institution with rights, duties and a procedure for resolving disputes. The framing offered for the surrounding rules is preventive rather than prohibitive — an architecture built to stop a thing failing, by analogy with quarantine measures, rather than restriction for its own sake.',
+    ideas: [
+      {
+        name: 'A contract includes how disagreements get settled',
+        body: 'The practical advice is to agree before marriage not only who will work but the procedure for resolving future disagreement — explicitly not my way or yours. It generalises well past marriage to any partnership.',
+      },
+      {
+        name: 'Equal but not identical',
+        body: 'The distinction she puts most weight on: equal in standing and in reward, not identical in nature or function. Confusing equality with sameness is named as the root of most of the argument around the topic.',
+      },
+      {
+        name: 'A contested verse and a named translation',
+        body: 'On the most disputed verse, she works from a specific published translation rendering the key term as caregiver rather than as controller, and argues the role parallels a parent\'s care rather than authority over. She names the translation she is using rather than presenting it as the only possible reading.',
+      },
+      {
+        name: 'Three images of the pair',
+        body: 'The Qur\'anic images she draws on describe tranquillity as the aim, and garment — something that covers, protects, adorns and warms — as the relation, with the point that the role does not change with circumstance.',
+      },
+      {
+        name: 'Worship defined by intention, not by the other\'s merit',
+        body: 'The consequence she draws: an obligation performed as worship does not become conditional on whether the other person has earned it. That detaches doing your part from adjudicating theirs.',
+      },
+    ],
+    notes: [
+      'Her own professional background is medical, and the physiological claims come from that position while the theological readings are identified as a particular interpretive stance rather than the only one.',
+      'Divorce statistics and a survey she cites are given without precise references — illustrative rather than verified.',
+      'She closes with an explicit caveat that her interpretation may be wrong, which is an unusually clean marker of where a source places its own confidence.',
+    ],
+    practices: [
+      'Agree the dispute-resolution procedure in advance, in any partnership that matters.',
+      'Keep equality and sameness apart when arguing about roles.',
+      'Check which translation or reading a strong claim rests on before adopting it.',
+      'Do your part as your own commitment rather than as a response to whether the other person deserves it.',
+    ],
+    habits: [
+      { id: 'f_remember', because: 'The garment image is about constancy regardless of circumstance, which is made of small attention rather than of declarations.' },
+      { id: 'f_thanks', because: 'Detaching your part from the other person\'s merit is easiest to practise where the stakes are low and specific.' },
+      { id: 's_gratitude', because: 'Tranquillity is named as the aim rather than intensity — and it is noticed by looking, not by waiting for it to announce itself.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Agreeing a procedure before it is needed is a conversation people postpone precisely because nothing is wrong yet.' },
+      { id: 'q_learnfaith', because: 'Her own method is to name the reading she is using — which is only possible for someone who studied rather than absorbed it.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Хайфа Юнис — Права супругов и богословие брака как института',
+  },
+
+  {
+    slug: 'excess-is-also-a-problem',
+    attr: 'health',
+    title: 'More of a good substance is its own kind of harm',
+    origin: 'Kononenko — physician, on fatigue, deficiency and the limits of supplementation',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'Almost every popular supplement advice works only if you actually have that deficiency.',
+    thesis:
+      'The methodological point is differential diagnosis rather than self-prescription: take iron, take omega-3, drop gluten — each works only where that specific deficiency has been identified, and an excess of a formally beneficial substance can itself become the harm. The body is treated as an interconnected system in which no single marker means anything in isolation.',
+    ideas: [
+      {
+        name: 'Fatigue is a sequence of exclusions',
+        body: 'The order she gives: rule out chronic viral load first, then chronic stress, then deficiencies — water, then macro- and micronutrients. Dehydration of even one or two per cent is cited as measurably reducing cognitive and physical function, and the individual water requirement is given per kilogram rather than as a universal two litres, with part of the intake arriving through food and metabolism.',
+      },
+      {
+        name: 'Why iron supplementation so often fails',
+        body: 'Before taking iron on one marker, she lists what else has to be checked: zinc, which antagonises it; total protein, since the carriers are proteins rather than iron itself; the B vitamins involved in producing red cells before iron is incorporated; stomach acidity, which governs absorption from plant sources; and gut flora, which can consume it. Without that, the familiar pattern follows — a course taken, the deficiency back within months.',
+      },
+      {
+        name: 'The reversal principle',
+        body: 'Any antioxidant taken past a threshold begins to behave in the opposite direction. The generalisation is the entry\'s title: the dose decides whether a beneficial substance is beneficial, and "more" is not a safe default for anything.',
+      },
+      {
+        name: 'Ageing theories have moved',
+        body: 'Away from damage and loss of function — oxidative stress, telomere shortening — toward excess function: overactive growth signalling. That shift changes the practical recommendations toward fewer eating occasions and attention to total intake, rather than only toward fighting free radicals.',
+      },
+      {
+        name: 'Cooking method as a lever',
+        body: 'Preferring boiling, stewing and lower-temperature baking over frying, and particularly avoiding prolonged frying of coated protein — offered as a systematic rather than occasional preference.',
+      },
+    ],
+    notes: [
+      'Worth reading against the strength-training entry in this sector, which gives a protein target as a general reference: this source raises the opposite concern, that intake above the average warrants checking the breakdown products. Neither is talking nonsense — one is addressing training adaptation and the other cumulative load, and the honest position is that the right number depends on which problem you have.',
+      'Two low-risk changes she names as available without any diagnostics: remove snacking, and move the last meal earlier.',
+      'A practising physician with a doctorate and long clinical experience who cites studies and meta-analyses by year but not by title or author, so the specific percentages cannot be checked from here.',
+      'She explicitly marks her own clinical observations — the timing of iron dosing, the effect of late meals — as practical experience rather than as controlled findings, and presents one ageing theory as a competing position rather than as consensus.',
+    ],
+    practices: [
+      'Check the adjacent markers before starting any supplement, rather than acting on one number.',
+      'If protein intake is above average, check the breakdown products at your next panel.',
+      'Prefer boiling, stewing and lower-temperature baking to frying, systematically.',
+      'Remove snacking and move the last meal earlier — both available without any testing.',
+      'Take the base panel to your next check-up rather than assembling a diagnosis from single tests.',
+    ],
+    habits: [
+      { id: 'h_water', because: 'Hydration is the first deficiency in her sequence, and the one with a measurable effect at a level most people would not notice.' },
+      { id: 'h_nolate', because: 'Moving the last meal earlier is one of the two changes she names as available with no diagnostics at all.' },
+      { id: 'h_realmeal', because: 'Fewer, more substantial eating occasions is the practical direction the shift in ageing theory points at.' },
+    ],
+    quests: [
+      { id: 'q_healthcheck', because: 'Her entire method is differential diagnosis, which needs an actual panel rather than a guess about which single thing is missing.' },
+      { id: 'q_energyaudit', because: 'Chronic stress sits second in her exclusion order, and it is the item that a blood test will not show you.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Кононенко — Хроническая усталость, дефициты, теории старения и опасность избытка белка',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
