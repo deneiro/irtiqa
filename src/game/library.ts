@@ -3540,6 +3540,233 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Social & friends / Resource / Шевченко — Триада мысли-чувства-тело, инвентаризация установок и жетон вместо цели',
   },
+
+  {
+    slug: 'rupture-and-repair',
+    attr: 'family',
+    title: 'Repair, not perfect attunement, is what builds security',
+    origin: 'Allan Schore — on right-brain attachment and regulation theory',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'The bar was never getting it right every time. It was coming back afterwards.',
+    thesis:
+      'Attachment is psychobiological rather than primarily psychological. The right hemisphere is dominant for roughly the first two to three years, and it is through wordless right-brain-to-right-brain communication — face, voice, gesture — that a caregiver regulates an infant\'s emotional and autonomic states. That early regulation becomes the template later reused for adult relationships, friendships and the therapeutic one: the same circuitry, not an analogy.',
+    ideas: [
+      {
+        name: 'Before words, everything is implicit',
+        body: 'The growth spurt runs from before birth through the second or third year, with the right hemisphere accelerating across that window while the left does not begin its own until the end of it. Because there is no speech yet, everything about attachment in this period is nonverbal and beneath conscious awareness.',
+      },
+      {
+        name: 'Regulation, not just bonding',
+        body: 'The caregiver reads face, voice — prosody rather than words — and gesture, synchronises with the child\'s rising and falling arousal, and then regulates it. That includes down-regulating distress, which classical attachment theory emphasised, and up-regulating positive states like joy and excitement, which it historically under-studied and which he names as a corrective emphasis of his own work.',
+      },
+      {
+        name: 'Misattunement then repair is the mechanism',
+        body: 'A good-enough caregiver inevitably gets it wrong sometimes. What makes attachment secure is returning and resynchronising afterwards. Security is built out of the repair cycle rather than out of unbroken attunement — which makes the standard for any close relationship less perfectionistic than people assume.',
+      },
+      {
+        name: 'Two regulation modes, and access to both',
+        body: 'Auto-regulation is self-soothing alone; interactive regulation is co-regulating with another person, under stress or to share joy. Secure attachment means flexible access to both rather than being stuck in either — which is a usable diagnostic on your own default: under stress, do you move toward people or away?',
+      },
+      {
+        name: 'Widening attention is a learnable move',
+        body: 'The shift away from tracking literal word content toward tone, face and body is described as a specific, practiceable skill rather than an innate trait or a mystical state — directly usable in any conversation where the goal is understanding someone\'s state rather than their argument.',
+      },
+    ],
+    notes: [
+      'His stronger claim is that the right hemisphere is the unconscious mind in a neurobiological rather than metaphorical sense, continuously processing whether it is safe to be with someone, beneath awareness.',
+      'A UCLA figure central to this research programme, and the core claims reflect a decades-long body of work rather than a one-off popular claim. Several specific figures are given without in-episode citation — treat them as pointers to a real literature rather than as verified numbers.',
+      'Where he was uncertain he said so: one physiological question he explicitly declined to settle, and one therapeutic discussion is flagged as speculative by both participants.',
+    ],
+    practices: [
+      'Aim for returning after a rupture rather than for avoiding one.',
+      'Attend to tone, face and body rather than only to the content of the words.',
+      'Notice whether you default to soothing alone or with people, and practise the other one.',
+      'Up-regulate the good states deliberately, not only calm the bad ones.',
+    ],
+    habits: [
+      { id: 'f_voice', because: 'Prosody rather than words is the channel described as carrying the regulation — and it is the one that text removes entirely.' },
+      { id: 'f_meet', because: 'Face, voice and gesture are the whole mechanism, and only one of the three survives a screen.' },
+      { id: 'f_remember', because: 'Attunement is reading the other person\'s state accurately, which starts from having actually registered it last time.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Repair is a specific act of returning after a rupture — which is a conversation, not a decision to feel differently.' },
+      { id: 'q_reconnect', because: 'Interactive regulation requires people to be available, and availability is built before it is needed rather than during.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Schore — Right-Brain Attachment, Regulation Theory and the Roots of Personality',
+  },
+  {
+    slug: 'speech-markers',
+    attr: 'family',
+    title: 'You cannot spot it in the moment. Check the body afterwards.',
+    origin: 'Orlova — psychologist, on manipulation, speech and boundaries',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'If a motive is open, you can disagree with it. Hidden is what makes it manipulation.',
+    thesis:
+      'Not all influence is manipulation. It becomes so when the motive is concealed and the other person is being handled as an object — moved and used for one party\'s benefit alone. If the motive is stated, the listener can refuse, and it is an honest position rather than a manoeuvre. Recognising it live is close to impossible without a paranoid vigilance that costs more than it saves; the reliable route is analysis afterwards.',
+    ideas: [
+      {
+        name: 'Three focuses in a conversation',
+        body: 'What is happening for me, what is happening for the other person, and what is happening between us. Without the third, a conversation becomes a sequence of monologues where each side waits for a pause to insert their argument rather than listening.',
+      },
+      {
+        name: 'Diagnose after the fact, through the body',
+        body: 'The practical method: did the body change — tightness, disrupted breathing, unexplained tiredness? Did the mood drop sharply, and if so, which sentence started it? The body registers it faster than the analysis does.',
+      },
+      {
+        name: 'Help as a hiding place',
+        body: 'Constant instruction in how to live, combined with a complete unwillingness to accept help in return, is described as establishing oneself through a demonstration of strength over another\'s weakness — avoiding contact with one\'s own vulnerability by permanently improving someone else.',
+      },
+      {
+        name: 'Speech markers',
+        body: 'Passive constructions — it turned out, I had to, it is not working out — shed responsibility for the outcome. "Honestly speaking" is read as the moment the speaker is convincing themselves rather than the listener. And "by the way" is named as a technique: lead someone through medium-weight questions long enough to tire their resistance, then insert the real request as though it were incidental.',
+      },
+      {
+        name: 'The painful question',
+        body: 'When are you getting married, when are you getting promoted — these land on the area where things are currently not going well, producing a light trance and disorientation. The speaker experiences it as care and the recipient as manipulation, especially when it recurs.',
+      },
+    ],
+    notes: [
+      'For people who love you and mean no harm, the recommended move is a direct statement of the discomfort rather than a defence. For people who are aiming at the weak point deliberately, a light redirection back to them rather than justification or attack.',
+      'She describes a recognisable escalation pattern in a dangerous partner — capturing not only time but space, contacts, and financial and educational independence — but this is a heuristic from practice, not a diagnostic checklist, and a real assessment of danger requires more than a list of signs.',
+      'A practising psychologist working phenomenologically, who says outright that she works without templates. That is an honest methodological frame, and it also means nearly all of this is clinical observation rather than research with citable data. One psychodynamic explanation she offers is her reading of specific cases rather than a general law.',
+    ],
+    practices: [
+      'Run the review after the conversation: what did the body do, when did the mood turn, which sentence did it.',
+      'Say the discomfort plainly to people who mean well, instead of defending.',
+      'Listen to your own passive constructions and apologetic filler as a signal to stop and ask what is actually happening.',
+      'Treat a stated motive as a position you may decline, and a hidden one as the actual problem.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'Her whole method is post-hoc: the pattern only appears when the week\'s conversations get looked at rather than relived.' },
+      { id: 'f_thanks', because: 'Naming something specific and open is the structural opposite of the two-layer sentence she spends the episode taking apart.' },
+      { id: 'f_nogossip', because: 'The hidden motive survives best when the conversation is about someone who cannot answer.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The recommended move with people who love you is a direct statement of the discomfort — which is the conversation that keeps getting postponed.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Орлова — Манипуляция, речевые маркеры и границы',
+  },
+
+  {
+    slug: 'fear-as-fuel',
+    attr: 'development',
+    title: 'Craving and dread run on the same chemistry',
+    origin: 'Andrew Huberman — on fear as fuel, no-go circuits and mentors',
+    medium: 'podcast',
+    minutes: 7,
+    hook: 'The agitation you read as a signal to back off is the same molecule that drives pursuit switching on.',
+    thesis:
+      'Motivation and fear run through one pathway — dopamine metabolises into adrenaline — so craving and dread are cousins rather than opposites, and treating fear only as a cue to retreat discards a real source of drive. Discipline, correspondingly, is less about raw will than about using the body to redirect the mind and training a specific, separate skill: suppressing an impulse on command.',
+    ideas: [
+      {
+        name: 'Activation is not a verdict',
+        body: 'Dopamine\'s role is craving and pursuit rather than pleasure itself. Because it metabolises into the molecule underlying fear, agitation and a raised heart rate when you want something are the pursuit system switching on. Reading that activation as a cue to freeze is a learned interpretation rather than a biological necessity, which means it can be relearned.',
+      },
+      {
+        name: 'Both directions are legitimate',
+        body: 'Moving toward — love, joy, gratitude — and moving away from — fear, craving — are both real motivational paths. Treating only the first as valid is named explicitly as a mistake rather than a virtue.',
+      },
+      {
+        name: 'No-go circuits train like a muscle',
+        body: 'Suppressing an impulse on command is a distinct neural skill that strengthens with repeated small practice. His version is a rough daily quota of resisting one low-stakes impulse — usually reaching for the phone — which trains impulse control directly rather than through shame or willpower framing.',
+      },
+      {
+        name: 'REM as nightly exposure',
+        body: 'Later-night sleep carries the emotional load of recent days. During REM the body is atonic while the nervous system runs emotionally intense material with adrenaline release blocked — functioning like built-in exposure therapy. Deprived of that stage, people report small things weighing more. You do not erase a memory; you uncouple it from its emotional charge.',
+      },
+      {
+        name: 'Structure creates freedom, and success erodes it',
+        body: 'The paradox named: success brings more distraction rather than less, so protecting focused blocks gets harder exactly when it matters most. When the routine slips as things improve, that is expected rather than a personal failure — the move is to rebuild quickly instead of interrogating it.',
+      },
+      {
+        name: 'A committee rather than a role model',
+        body: 'Where a mentor is not available, name two or three people — met or known only through their work — and the single specific trait each represents, instead of searching for one complete example to copy.',
+      },
+    ],
+    notes: [
+      'Deliberate visualisation of something wanted, phone away, for a few minutes, is offered as a way to observe and train this chemistry rather than waiting for motivation to appear.',
+      'Private journaling nobody will read is suggested as a low-cost stand-in between sessions or where therapy is unavailable — explicitly not written for an imagined reader.',
+      'Same credentialed neuroscientist, same informal long-form format. Several items here are his own frameworks offered as personal tools rather than findings: the daily quota, the committee, and his framing of REM as built-in exposure therapy are his synthesis, though the underlying sleep science is real and the collaborators named are verifiable.',
+    ],
+    practices: [
+      'Reinterpret pre-action agitation as the pursuit system engaging rather than as a stop signal.',
+      'Practise refusing one small impulse repeatedly through the day, on a rough quota.',
+      'Protect the later-night sleep that carries the emotional processing.',
+      'Name two or three people and the one trait each represents, instead of hunting for a complete model.',
+      'Rebuild the structure fast when it slips, rather than treating the slip as evidence about you.',
+    ],
+    habits: [
+      { id: 'f_nodoom', because: 'The no-go practice needs one specific low-stakes impulse to train on, and reaching for the phone is the one he names.' },
+      { id: 'h_lightsout', because: 'The emotional processing happens in the later part of the night — which is exactly the part a late bedtime removes.' },
+      { id: 'c_plan', because: 'Structure is described as what creates freedom, and it erodes precisely when things are going well unless something re-establishes it.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'Rebuilding quickly after a slip is only possible if there was a defined structure to return to.' },
+      { id: 'q_skill', because: 'Fear as fuel is unusable in the abstract — it needs one thing you actually want badly enough to feel the activation about.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Huberman — Fear as Fuel, No-Go Circuits and the Committee of Mentors',
+  },
+  {
+    slug: 'the-choice-makes-you',
+    attr: 'development',
+    title: 'You make the choice, and the choice makes you',
+    origin: 'Asmolov — psychologist, on the act, individuality and forgetting',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Personality is not found by looking inward. It is produced by acting.',
+    thesis:
+      'Personality forms through the act rather than through introspection — a thought becomes itself only when it turns into action. The three-step formula: you are born an individual, you become a person by absorbing society\'s roles and rules, and you assert individuality when you begin choosing roles rather than living out ones handed to you. And the choosing runs both ways: you make the choice, and the choice makes you.',
+    ideas: [
+      {
+        name: 'Self-creation through self-action',
+        body: 'Each act produces not only a result but the person acting. You make yourself through your own particular actions rather than through analysis of an inner world in a closed loop. The failure mode named is living by guess-and-please — becoming an adapter fitted to other people\'s expectations.',
+      },
+      {
+        name: 'The third step is choosing the role',
+        body: 'Becoming a person means absorbing social roles; individuality begins when you stop merely performing the ones assigned and start selecting and creating them. The distinction is between playing roles and choosing which to play.',
+      },
+      {
+        name: 'A choice is a formative event',
+        body: 'Not a neutral decision point but something that constitutes identity — which reframes the question before a large decision from what am I choosing to who will this choice make me.',
+      },
+      {
+        name: 'Loneliness and solitude are opposites',
+        body: 'Loneliness is imposed; solitude is chosen, the state in which you find yourself decent company. They look similar from outside and are structurally opposed — and the claim underneath is that nobody communicates only with themselves anyway; even the hermit is in dialogue with the world.',
+      },
+      {
+        name: 'The art of forgetting',
+        body: 'Humans are described as the only creature able to put down the weight of their own biography and remake themselves. That is presented not as a weakness of memory but as a separate and difficult skill — part of healthy development is being able to stop carrying the past as the explanation for present behaviour.',
+      },
+      {
+        name: 'Trust maps to values, not to goals',
+        body: 'Trust extends to those whose value-and-motive pattern matches yours, rather than those whose objectives currently coincide. Shared goals are temporary; the pattern is what holds when they diverge.',
+      },
+    ],
+    notes: [
+      'Projection is described as constructing the other person rather than merely describing them — the traits you look for tend to appear.',
+      'A recognised psychologist with a long teaching record, in a free philosophical conversation rather than a scientific report. Much of the material is his own metaphor, literary taste and recollection rather than empirical data.',
+      'The thinkers and concepts he cites are real and independently checkable. One widely repeated anthropological claim he uses is popular and frequently quoted but not rigorously verified.',
+    ],
+    practices: [
+      'Before a large decision, ask who the choice will make you, not only what it gets you.',
+      'Test whether your current state is imposed loneliness or chosen solitude, because they need opposite responses.',
+      'Check trust against a shared pattern of values rather than a current alignment of goals.',
+      'Stop requiring yourself to keep re-examining the past as the explanation for the present.',
+      'Turn the thought into an act, since that is where it becomes yours.',
+    ],
+    habits: [
+      { id: 'd_build', because: 'The claim is that the act produces the actor — which makes building with the thing the only version of learning that changes anything.' },
+      { id: 'd_nopassive', because: 'Guess-and-please is consumption of other people\'s expectations; making something first is the structural opposite.' },
+      { id: 'c_onelesson', because: 'If each act produces the actor, then noticing what you actually did is how the production becomes visible instead of accidental.' },
+    ],
+    quests: [
+      { id: 'q_promise', because: 'A choice that constitutes identity has to be made somewhere it cannot be quietly withdrawn — which is what a public commitment is.' },
+      { id: 'q_wheel', because: 'Choosing roles rather than performing inherited ones requires first seeing which ones you are currently living out.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Асмолов — Личность, поступок и искусство забывания',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
