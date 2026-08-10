@@ -3767,6 +3767,231 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Personal growth / Resource / Асмолов — Личность, поступок и искусство забывания',
   },
+
+  {
+    slug: 'build-backward-from-the-ending',
+    attr: 'brightness',
+    title: 'Know the ending before you write the beginning',
+    origin: 'Eric Edson — screenwriting professor, on structure and goal sequences',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'Writing forward without knowing where it lands is named as the direct cause of drafts abandoned halfway.',
+    thesis:
+      'Structure is not a constraint imposed on creativity but how the mind processes story, and on this account it has not changed in millennia. Three elements are non-negotiable: a sympathetic and physically active hero, a visible high-stakes goal, and a powerful adversary. Visual storytelling has no narrator, so interior states can only be shown through external behaviour in pursuit of something.',
+    ideas: [
+      {
+        name: 'Structure is psychology, not convention',
+        body: 'The argument opens on a play two and a half thousand years old, read against the same framework used on modern hits — because story-processing has not changed. Structure exists because life is chaotic and ambiguous, and story is the ritual that turns it into meaning.',
+      },
+      {
+        name: 'The adversary is where conflict actually comes from',
+        body: 'Defined as the character most committed to stopping the hero. Without one there is no story — only someone wanting something and getting it. This is the element most often missing from a draft that feels flat despite a clear goal.',
+      },
+      {
+        name: 'Every character helps or hinders',
+        body: 'The fourteen character roles all serve one function: helping or obstructing the pursuit. A character doing neither is not meaningful and should be cut unless purely atmospheric — offered directly as the antidote to thin subplots.',
+      },
+      {
+        name: 'The hero goal sequence',
+        body: 'His own contribution: a short unit in which the hero pursues one immediate goal, hits fresh news that ends that goal, and launches the next. It gives a countable structural unit rather than a general sense of pacing.',
+      },
+      {
+        name: 'Build backward',
+        body: 'Before writing anything you need the idea — hero, goal, adversary — the ending as the emotional target of the final scene, and roughly where the two largest reversals will land. Writing forward without the ending is named as the specific cause of drafts abandoned mid-way.',
+      },
+    ],
+    notes: [
+      'Hold the quantitative claim with real scepticism, as the source assessment does: the assertion that successful films reliably contain a near-fixed count of these units per act is an extremely strong, falsifiable claim in a creative domain, arrived at by counting sequences retroactively in films already known to have succeeded. The unit is useful; the count is not evidence.',
+      'This sits on the opposite side of a genuine professional disagreement from the Truby entry in this same sector: Edson builds explicitly on the three-act paradigm and cites its earlier names approvingly, while Truby dismisses that paradigm outright as fabricated. Both are credentialed working educators. The dispute is real and unresolved rather than a case of one being uninformed — reading both is the point.',
+      'A screenwriting professor teaching a graduate seminar, drawing on his own published textbook; the core framework is consistent with mainstream pedagogy in the field.',
+    ],
+    practices: [
+      'Name the adversary explicitly. If there is not one, that is the problem rather than the pacing.',
+      'Decide the ending before writing toward it.',
+      'Cut any character who neither helps nor hinders the pursuit.',
+      'Diagnose a stalled draft by counting real turning points per section rather than by feeling something is off.',
+    ],
+    habits: [
+      { id: 'c_plan', because: 'Building backward is a planning act that has to happen before the making, not during it — which means it needs its own slot.' },
+      { id: 'd_notes', because: 'The countable unit is only usable if you have written the structure of things you have consumed down in the same terms.' },
+      { id: 'd_read', because: 'The claim that the shape is ancient is checkable, and checking it requires reading old material rather than taking it on trust.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'Knowing the ending in advance only pays off in a piece carried to that ending.' },
+      { id: 'q_portfolio', because: 'Whether the structure actually held is answered by other people meeting the finished thing, not by the outline.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Edson — Screenplay Structure and the Hero Goal Sequence',
+  },
+
+  {
+    slug: 'check-the-adjacent-markers',
+    attr: 'health',
+    title: 'Nothing in the body works in isolation',
+    origin: 'Kononenko — physician and nutritionist, on fatigue and deficiencies',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Taking iron on the strength of one number is the reason the deficiency comes back in six months.',
+    thesis:
+      'The methodological claim is differential diagnosis rather than self-prescription: almost any popular recommendation works only where that specific deficiency has actually been identified, and an excess of a nominally beneficial substance can itself become the harm. The body is described as an interconnected system in which no single marker means anything alone.',
+    ideas: [
+      {
+        name: 'Fatigue is a sequence to work through, not a diagnosis',
+        body: 'The order given: exclude chronic viral causes, then chronic stress, then deficiencies — water, macro- and micronutrients. Dehydration of even a per cent or two is cited as measurably reducing cognitive and physical function, with individual water needs scaled to body weight rather than a universal figure, and a meaningful share arriving through food and metabolism.',
+      },
+      {
+        name: 'Why iron alone fails',
+        body: 'Before supplementing on one result, the adjacent markers have to be checked: zinc, which antagonises it; total protein, since the carriers are proteins rather than iron itself; the B vitamins involved in producing red cells before iron is incorporated; stomach acidity, which governs absorption from plant sources; and gut flora, where overgrowth can consume it. Without that, the familiar pattern follows — a course taken, and the deficiency back within months.',
+      },
+      {
+        name: 'Aging theories are shifting from damage to excess',
+        body: 'The move described is away from loss-of-function models — oxidative stress, telomere shortening — toward excess function, meaning hyperactivity of growth signalling. That changes the practical advice toward fewer eating occasions and attention to overall intake rather than only toward fighting free radicals.',
+      },
+      {
+        name: 'Cooking method as a lever',
+        body: 'Boiling, stewing and low-temperature baking are preferred over frying, with prolonged frying of coated protein singled out — a change of method rather than of ingredients.',
+      },
+      {
+        name: 'Two changes that need no diagnostics',
+        body: 'Remove snacking and move the last meal earlier. Both are low-risk and reproducible without waiting for any test results.',
+      },
+    ],
+    notes: [
+      'A basic panel worth having in hand is named — glucose, glycated haemoglobin, insulin, a lipid profile, total protein, urea and uric acid — as an addition to whatever a routine check already covers.',
+      'If protein intake is above average, the breakdown products are worth measuring rather than assumed harmless.',
+      'A practising physician with a doctorate and fifteen years of practice, citing studies and meta-analyses by year but without titles or authors — the specific percentages quoted cannot be independently checked from the conversation.',
+      'She marks her own clinical observations as practical experience rather than controlled findings, and presents one aging theory as a competing position rather than consensus. That separation is worth noting as a mark of care, not a hedge.',
+    ],
+    practices: [
+      'Check the adjacent markers before supplementing anything on the strength of one number.',
+      'Work fatigue as a sequence — viral, then stress, then deficiency — rather than guessing at the end of it.',
+      'Scale water to your own body weight rather than to a universal figure.',
+      'Change the cooking method before changing the ingredients.',
+      'Drop snacking and move the last meal earlier, which needs no test to justify.',
+    ],
+    habits: [
+      { id: 'h_water', because: 'A shortfall of a per cent or two already costs cognitive and physical function, which makes this the cheapest intervention on the whole list.' },
+      { id: 'h_nolate', because: 'Moving the last meal earlier is one of the two changes she says need no diagnostics at all.' },
+      { id: 'h_realmeal', because: 'Complex sources sustain energy while simple ones deepen the fatigue through the day — which is decided one meal at a time.' },
+    ],
+    quests: [
+      { id: 'q_healthcheck', because: 'The whole argument is that a single marker means nothing — which requires the panel to exist before any decision gets made from it.' },
+      { id: 'q_energyaudit', because: 'Chronic stress sits second in her sequence, and it is the step most likely to be skipped without a record of where the week goes.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Кононенко — Хроническая усталость, дефициты, теории старения и опасность избытка белка',
+  },
+
+  {
+    slug: 'message-in-a-bottle',
+    attr: 'career',
+    title: 'An agent has no intuition to fill your gaps',
+    origin: 'Jack Clark — on agentic tools, specification and what stays scarce',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The burden of detail moves entirely onto the instruction, because nothing on the other end will guess what you meant.',
+    thesis:
+      'The practical distinction is between something that responds in one exchange and something that takes an instruction and acts over time using tools. That shift moves the burden of specification: a human colleague fills gaps from context and shared intuition, and an agent does not, so vague instructions produce work that looks right and is not.',
+    ideas: [
+      {
+        name: 'Have it interview you into a spec',
+        body: 'His own fix for the gap problem: rather than issuing a casual instruction, he had the tool interview him about what he actually wanted, turned that interview into a detailed specification, and handed the specification over instead. The generalisable move is producing the spec through questioning rather than trying to write it cold.',
+      },
+      {
+        name: 'Where the apparent problem-solving comes from',
+        body: 'The account given is that training inside environments where problems must actually be solved — including hitting dead ends and resetting — is what produces behaviour resembling intuition, rather than scale alone.',
+      },
+      {
+        name: 'Delegate everything outside the two to four real hours',
+        body: 'The work-design filter that falls out of it: identify the hours in a day that are genuinely creative and high-value, and deliberately delegate the rest — scheduling, documentation, first-pass research — rather than spreading attention evenly across all of it.',
+      },
+      {
+        name: 'Judgement is the thing that gets scarcer',
+        body: 'Taste and judgement are named as what to protect and grow deliberately, precisely because this kind of automation devalues it fastest for people who have not developed it and rewards it most for those who have.',
+      },
+      {
+        name: 'The disruption does not have a natural end',
+        body: 'The tension the conversation keeps returning to: individual productivity gains are immediate and real, while the economic effects are diffuse, uneven and — unlike previous shocks — not time-limited, because the underlying capability keeps improving.',
+      },
+    ],
+    notes: [
+      'A senior insider with an obvious institutional interest in framing his own organisation favourably; claims about internal practice are self-reported and unaudited.',
+      'What makes this more balanced than a friendly interview: the interviewer pushes back substantively throughout — on incentives, on the claim that time does not heal a compounding disruption, on the absence of any public agenda — and the disagreements are left unresolved rather than smoothed over.',
+      'Predictions about which work is affected and on what timeline are speculative by nature, and both speakers say so.',
+    ],
+    practices: [
+      'Produce the specification by being interviewed into it, rather than writing a one-line instruction and hoping.',
+      'Name the two to four genuinely creative hours in your day and defend them; delegate the rest deliberately.',
+      'Invest in judgement as the durable skill, since it is the one that stops being cheap.',
+      'Assume no gap will be filled from context that you did not state.',
+    ],
+    habits: [
+      { id: 'c_deepblock', because: 'The two-to-four-hours filter is worthless as an observation and useful as a defended block in the calendar.' },
+      { id: 'c_plan', because: 'Deciding in advance what gets delegated is the only version of that decision that survives a busy morning.' },
+      { id: 'd_build', because: 'Judgement about these tools is not acquirable by reading about them — it comes from having built something and seen where it broke.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'If judgement is what stays scarce, it has to be deliberately trained on something concrete rather than accumulated by exposure.' },
+      { id: 'q_portfolio', because: 'Taste is demonstrated rather than asserted, which requires the work to be somewhere it can be seen.' },
+    ],
+    vaultSource: 'Business & career / Resource / Jack Clark — Agentic AI, the O-Ring Economy, and the Missing Public AI Agenda',
+  },
+
+  {
+    slug: 'against-essentialism',
+    attr: 'spirituality',
+    title: 'A tradition is not a set of rules everyone shares',
+    origin: 'Alekseev — historian, on Islam as a discursive tradition',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'The predictive power was never in the label. It is in the particular school, community and person.',
+    thesis:
+      'An academic rather than theological account of why explaining behaviour by group membership is methodologically risky. The unity of a large tradition is not found in shared practice or in a shared theological picture — the norms are understood differently and sometimes in mutually exclusive ways. The unity is that these varied and even contradictory practices are all made sense of by their holders through the tradition\'s own categories.',
+    ideas: [
+      {
+        name: 'The discursive tradition',
+        body: 'Different, even conflicting practices are related to one another not by a common canon but by all being understood in reference to the same tradition — either directly as belonging to it, or, where they look like they do not, still being evaluated against a personal sense of what it requires and approved or condemned on that basis.',
+      },
+      {
+        name: 'Why the label predicts nothing',
+        body: 'The practical consequence stated plainly: the tradition as such gives no predictive power. What predicts is the specific theological school, the specific community, the specific person. Any explanation that stops at the label has skipped the part doing the work.',
+      },
+      {
+        name: 'Effort, not war',
+        body: 'The term commonly translated as holy war literally means effort or striving, and classical jurisprudence recognises a broad concept — of the tongue, of the soul, of the heart, with the last named in several traditions as the greater form against the lesser one of the sword.',
+      },
+      {
+        name: 'Forced conversion is void',
+        body: 'Even restricting the term to its military sense, the doctrine does not permit compelling conversion: it is prohibited in the text, and an acceptance obtained by force is legally invalid. The stated aim of the doctrine is political dominance of the community rather than universal conversion by force.',
+      },
+      {
+        name: 'Protected status and religious autonomy',
+        body: 'Non-Muslims under Muslim rule retained internal religious autonomy and lived under their own law in exchange for a specific tax — assessed by the lecturer as an early case of tolerance fixed within a religious legal framework itself rather than arising situationally.',
+      },
+      {
+        name: 'The essentialism check',
+        body: 'Generalised beyond religion: before accepting "because that is how it is done among X", ask whether that is the only factor or one of several competing ones, and whether it has been tested against a comparison that isolates the variable.',
+      },
+    ],
+    notes: [
+      'The unity of worldly and religious life is traced to the structure of the pre-Islamic society the tradition emerged from rather than presented as an innovation.',
+      'On radicalisation the lecturer states directly that there is no scholarly consensus — an epistemically careful position rather than a settled answer, and worth taking at face value.',
+      'A named specialist affiliated with recognised research institutions, openly self-critical about his own discipline\'s history. The lecture also contains a political opinion on a European legal question which he himself qualifies as outside his expertise; it is left out here for that reason rather than reported as part of the scholarship.',
+    ],
+    practices: [
+      'Ask which school, community or person a claim actually comes from before treating it as what the tradition says.',
+      'Run the essentialism check on any explanation that rests on group membership, in any domain.',
+      'Look for the pre-existing structure a practice emerged from before calling it an innovation.',
+      'Accept "there is no consensus" as an answer where the specialist says so.',
+    ],
+    habits: [
+      { id: 'd_read', because: 'The whole argument is that the specific source is where the meaning sits — which requires reading it rather than the summary of it.' },
+      { id: 'd_notes', because: 'Restating a position in your own words is where you discover whether you have understood a school\'s view or a slogan about it.' },
+      { id: 'd_askquestion', because: 'The essentialism check is literally a question asked of a claim that would otherwise pass unexamined.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'His central point is that the label carries no information and the particular tradition carries all of it — which is an argument for studying one thing properly rather than collecting impressions.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Алексеев — Ислам как дискурсивная традиция, джихад без принуждения и ловушка эссенциализма',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
