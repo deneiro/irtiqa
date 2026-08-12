@@ -3857,7 +3857,7 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     notes: [
       'A basic panel worth having in hand is named — glucose, glycated haemoglobin, insulin, a lipid profile, total protein, urea and uric acid — as an addition to whatever a routine check already covers.',
-      'If protein intake is above average, the breakdown products are worth measuring rather than assumed harmless.',
+      'Worth reading against the strength-training entry in this sector, which gives a protein target as a general reference: this source raises the opposite concern, that intake above average warrants measuring the breakdown products rather than assuming them harmless. Neither is wrong — one is addressing training adaptation and the other cumulative load, and the right number depends on which problem you have.',
       'A practising physician with a doctorate and fifteen years of practice, citing studies and meta-analyses by year but without titles or authors — the specific percentages quoted cannot be independently checked from the conversation.',
       'She marks her own clinical observations as practical experience rather than controlled findings, and presents one aging theory as a competing position rather than consensus. That separation is worth noting as a mark of care, not a hedge.',
     ],
@@ -4390,63 +4390,6 @@ export const LIBRARY: LibraryEntry[] = [
       { id: 'q_learnfaith', because: 'Her own method is to name the reading she is using — which is only possible for someone who studied rather than absorbed it.' },
     ],
     vaultSource: 'Spirituality & Religion / Resource / Хайфа Юнис — Права супругов и богословие брака как института',
-  },
-
-  {
-    slug: 'excess-is-also-a-problem',
-    attr: 'health',
-    title: 'More of a good substance is its own kind of harm',
-    origin: 'Kononenko — physician, on fatigue, deficiency and the limits of supplementation',
-    medium: 'podcast',
-    minutes: 7,
-    hook: 'Almost every popular supplement advice works only if you actually have that deficiency.',
-    thesis:
-      'The methodological point is differential diagnosis rather than self-prescription: take iron, take omega-3, drop gluten — each works only where that specific deficiency has been identified, and an excess of a formally beneficial substance can itself become the harm. The body is treated as an interconnected system in which no single marker means anything in isolation.',
-    ideas: [
-      {
-        name: 'Fatigue is a sequence of exclusions',
-        body: 'The order she gives: rule out chronic viral load first, then chronic stress, then deficiencies — water, then macro- and micronutrients. Dehydration of even one or two per cent is cited as measurably reducing cognitive and physical function, and the individual water requirement is given per kilogram rather than as a universal two litres, with part of the intake arriving through food and metabolism.',
-      },
-      {
-        name: 'Why iron supplementation so often fails',
-        body: 'Before taking iron on one marker, she lists what else has to be checked: zinc, which antagonises it; total protein, since the carriers are proteins rather than iron itself; the B vitamins involved in producing red cells before iron is incorporated; stomach acidity, which governs absorption from plant sources; and gut flora, which can consume it. Without that, the familiar pattern follows — a course taken, the deficiency back within months.',
-      },
-      {
-        name: 'The reversal principle',
-        body: 'Any antioxidant taken past a threshold begins to behave in the opposite direction. The generalisation is the entry\'s title: the dose decides whether a beneficial substance is beneficial, and "more" is not a safe default for anything.',
-      },
-      {
-        name: 'Ageing theories have moved',
-        body: 'Away from damage and loss of function — oxidative stress, telomere shortening — toward excess function: overactive growth signalling. That shift changes the practical recommendations toward fewer eating occasions and attention to total intake, rather than only toward fighting free radicals.',
-      },
-      {
-        name: 'Cooking method as a lever',
-        body: 'Preferring boiling, stewing and lower-temperature baking over frying, and particularly avoiding prolonged frying of coated protein — offered as a systematic rather than occasional preference.',
-      },
-    ],
-    notes: [
-      'Worth reading against the strength-training entry in this sector, which gives a protein target as a general reference: this source raises the opposite concern, that intake above the average warrants checking the breakdown products. Neither is talking nonsense — one is addressing training adaptation and the other cumulative load, and the honest position is that the right number depends on which problem you have.',
-      'Two low-risk changes she names as available without any diagnostics: remove snacking, and move the last meal earlier.',
-      'A practising physician with a doctorate and long clinical experience who cites studies and meta-analyses by year but not by title or author, so the specific percentages cannot be checked from here.',
-      'She explicitly marks her own clinical observations — the timing of iron dosing, the effect of late meals — as practical experience rather than as controlled findings, and presents one ageing theory as a competing position rather than as consensus.',
-    ],
-    practices: [
-      'Check the adjacent markers before starting any supplement, rather than acting on one number.',
-      'If protein intake is above average, check the breakdown products at your next panel.',
-      'Prefer boiling, stewing and lower-temperature baking to frying, systematically.',
-      'Remove snacking and move the last meal earlier — both available without any testing.',
-      'Take the base panel to your next check-up rather than assembling a diagnosis from single tests.',
-    ],
-    habits: [
-      { id: 'h_water', because: 'Hydration is the first deficiency in her sequence, and the one with a measurable effect at a level most people would not notice.' },
-      { id: 'h_nolate', because: 'Moving the last meal earlier is one of the two changes she names as available with no diagnostics at all.' },
-      { id: 'h_realmeal', because: 'Fewer, more substantial eating occasions is the practical direction the shift in ageing theory points at.' },
-    ],
-    quests: [
-      { id: 'q_healthcheck', because: 'Her entire method is differential diagnosis, which needs an actual panel rather than a guess about which single thing is missing.' },
-      { id: 'q_energyaudit', because: 'Chronic stress sits second in her exclusion order, and it is the item that a blood test will not show you.' },
-    ],
-    vaultSource: 'Health & sport / Resource / Кононенко — Хроническая усталость, дефициты, теории старения и опасность избытка белка',
   },
 ];
 

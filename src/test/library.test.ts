@@ -17,6 +17,20 @@ describe('library data', () => {
     expect(new Set(slugs).size).toBe(slugs.length);
   });
 
+  /**
+   * Unique slugs are not enough: the same source distilled twice produces two
+   * different slugs and two near-identical entries, which is what happened once
+   * and is invisible to every other check here. One source, one entry.
+   */
+  it('distils each source exactly once', () => {
+    const seen = new Map<string, string>();
+    for (const e of LIBRARY) {
+      const prior = seen.get(e.vaultSource);
+      expect(prior, `${e.slug} and ${prior} both come from ${e.vaultSource}`).toBeUndefined();
+      seen.set(e.vaultSource, e.slug);
+    }
+  });
+
   it('files every entry under a real attribute', () => {
     for (const e of LIBRARY) expect(ATTR_KEYS).toContain(e.attr);
   });
