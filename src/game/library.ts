@@ -4619,6 +4619,238 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Social & friends / Resource / Шиманская — Красные флаги низкого EQ и эмоциональная честность с детьми',
   },
+
+  {
+    slug: 'you-cannot-write-to-a-trend',
+    attr: 'brightness',
+    title: 'The forklift lifts the weight, and you get no stronger',
+    origin: 'Bardugo & Sanderson — two working novelists, in conversation',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The discomfort is the mechanism, not a side effect to engineer away.',
+    thesis:
+      'Two arguments carry this one. You cannot write to a trend, because by the time the work is finished the market has moved — both describe being told what not to submit and watching the market swing the opposite way within a few years. And the case against handing the hard cognitive work to a tool: the difficulty of making something is specifically how the maker improves, not an obstacle in front of the output.',
+    ideas: [
+      {
+        name: 'The forklift',
+        body: 'Using a tool to do the hard part is compared to having a forklift lift your weights at the gym. The weight goes up and you get nothing, because the resistance was the entire point. A second objection is named alongside it — the loss of the pleasure of having done it — which she treats as the less discussed of the two.',
+      },
+      {
+        name: 'A heist has two marks',
+        body: 'The character being fooled, and the reader, who has to be genuinely fooled by the same misdirection. The fantastical element then has to be a constraint or one additional tool rather than a solution to any problem, or nothing in the plot feels earned.',
+      },
+      {
+        name: 'Street level versus world-altering',
+        body: 'The parallel distinction: some work operates at a scale where the extraordinary drives everything, while heist structure works best where the plot runs on character talent and cunning with the extraordinary as an accent.',
+      },
+      {
+        name: 'Define tomorrow\'s question before you stop',
+        body: 'Finish a session by writing down the specific question the next one opens with. Directly usable in any short or interrupted work, not only writing.',
+      },
+      {
+        name: 'Three kinds of stuck',
+        body: 'A fixable problem in the work; a possibly unfixable one; or a problem with your own capacity right now. They are not the same and do not respond to the same treatment, and the first move is deciding which one you are in.',
+      },
+      {
+        name: 'The second idea may belong inside the first',
+        body: 'When a new idea intrudes on a stalled project, ask whether it belongs in the stalled thing before discarding it as distraction. Often the intrusion is the missing piece rather than an escape from it.',
+      },
+    ],
+    notes: [
+      'A concrete vetting question for anyone whose changes you will rely on: where do they see this sitting on the shelf? An answer reveals whether they understand what it is.',
+      'This is the second entry in this sector featuring one of these authors; the earlier one covers promises, escalation and finishing. What is new here is the collaboration and career material, and the argument about tools.',
+      'Two commercially successful novelists talking candidly rather than teaching — strong on lived specifics, weaker as generalisable method than the structured craft sources already in this sector. They flag the limit themselves: on the mechanics of breaking in, they say plainly not to ask them, because they did it a decade ago.',
+    ],
+    practices: [
+      'Write the book you believe in, because the trend you are chasing will have turned by the time you finish.',
+      'Keep the hard part yours — the resistance is where the improvement comes from.',
+      'End every session by writing the question the next one starts with.',
+      'Diagnose which of the three kinds of stuck you are in before trying to fix it.',
+      'Ask a prospective collaborator where they see the thing on the shelf.',
+    ],
+    habits: [
+      { id: 's_makecreate', because: 'The forklift argument only means anything if there is a regular session where the resistance is actually met.' },
+      { id: 'd_notes', because: 'Defining tomorrow\'s question before stopping is a written act — held in the head it does not survive the night.' },
+      { id: 'c_ship', because: 'The reader is the second mark, and whether the misdirection worked is not knowable from the inside.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'Their three-way diagnosis of stuck only becomes available to someone who has carried enough things to done to tell the kinds apart.' },
+      { id: 'q_portfolio', because: 'Both describe the market moving under them — which is an argument for the work existing publicly rather than waiting for the right moment.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Bardugo & Sanderson — Fantasy Heist Craft, the AI-as-Forklift Argument and Outlining as the Career Unlock',
+  },
+
+  {
+    slug: 'three-positions',
+    attr: 'family',
+    title: 'Separation and completion are not the same thing',
+    origin: 'Khlomov — gestalt therapist, on positions, contact and love',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Withdrawing to be alone is read as punishment. Constant attention is read as invasion. Both are wrong.',
+    thesis:
+      'Personality is treated as a dynamic system of habits and directions continuously adapting to changing conditions rather than as a fixed thing. Three positions run inside one person at once — orienting toward safety, relating toward attachment, and achieving toward a goal — and moving through life healthily means switching between them rather than getting stuck in one.',
+    ideas: [
+      {
+        name: 'Three heads, in different proportions',
+        body: 'The orienting position assesses safety and needs distance and solitude; the relating position weighs attachment and closeness; the achieving position moves toward a goal and wants recognition. Everyone has all three in different proportion, and progress requires changing which one is leading rather than staying in the same one.',
+      },
+      {
+        name: 'Creative adaptation',
+        body: 'What suited someone at twenty may be genuinely inadequate to their capacities and risks at fifty. The move is finding a new form for the same drive rather than simply forbidding it to yourself — the drive is not the problem, the unchanged form is.',
+      },
+      {
+        name: 'The contact cycle',
+        body: 'Pre-contact is checking yourself and the situation for safety and finding enough energy to act. Full contact is the point where the checking is dropped and the thing can actually be received. Post-contact is assimilation rather than parting — and confusing parting with completion is named as the common error: a relationship can end while the connection and part of the experience stay.',
+      },
+      {
+        name: 'The mismatch that generates the fight',
+        body: 'The relating partner reads withdrawal as aggression or punishment; the orienting partner reads intense attention as invasion. Neither need is the wrong one, and the resolution is not suppressing either but agreeing an explicit code — if I have gone to sit alone, that is not a statement about you.',
+      },
+      {
+        name: 'Solitude as a physiological requirement',
+        body: 'Social load has a ceiling of roughly six hours a day before overload, on the study he cites, and a couple of hours of solitude after intensive contact is treated as a physiological need rather than as unsociability.',
+      },
+      {
+        name: 'Jealousy read as unexpressed love',
+        body: 'His reframe: treat jealousy not as evidence that the partner does not love you but as a signal that you are currently not managing to love as much as you could — and look for where the unexpressed part should go, rather than increasing control.',
+      },
+    ],
+    notes: [
+      'On small discomforts: say them immediately rather than accumulating, which is the same conclusion several other sources here reach from different directions.',
+      'A gestalt therapist of long standing working within his own theoretical frame and terminology. Read it as one school of psychological thought rather than as empirically settled — the material is clinical hypothesis, not quantitative research.',
+      'The conversation also contains a cross-cultural claim relayed second-hand and a sharp biological account of sexual strategy; both are flagged in the source itself as personal opinion or unverified extrapolation, and neither is carried here.',
+    ],
+    practices: [
+      'Say the code out loud: what your withdrawal means, and what it does not mean.',
+      'Notice which of the three positions you have been stuck in, and what switching would require.',
+      'Find a new form for a drive that no longer fits, rather than banning it.',
+      'Treat solitude after heavy contact as a requirement rather than a preference.',
+      'When jealous, look for where your own unexpressed care should be going.',
+    ],
+    habits: [
+      { id: 'f_voice', because: 'The code only works if it is actually said — and tone is what distinguishes an explanation from a rejection.' },
+      { id: 'f_meet', because: 'Full contact in his sense is the part that cannot be reached through checking and managing at a distance.' },
+      { id: 'f_remember', because: 'Assimilation rather than parting means what someone told you stays available afterwards, which requires having held it.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Agreeing the code is a conversation held before the next withdrawal, not during it.' },
+      { id: 'q_reconnect', because: 'His distinction between ending and completing implies some connections are still there to be picked up rather than mourned.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Хломов — Личность, циклы контакта и любовь',
+  },
+
+  {
+    slug: 'ask-for-the-number',
+    attr: 'career',
+    title: 'Make them say a number',
+    origin: 'Jesse Zhang — founder, on discovery and where value actually lands',
+    medium: 'podcast',
+    minutes: 6,
+    hook: '"That would be cool" is not data. A figure, an approval chain, and how they would justify it — that is data.',
+    thesis:
+      'The idea was not chosen up front; it emerged from deliberately uncomfortable questions asked directly to prospective customers. If we built this, exactly what would you pay? Would someone have to approve it? How would you present the return to your leadership? A founder can ask these bluntly in a way a salesperson cannot, and the questions force concrete numbers where enthusiasm would otherwise sit.',
+    ideas: [
+      {
+        name: 'Aggregate the figures rather than trusting a conversation',
+        body: 'Tally the amounts named across every idea being explored. The one whose total is an order of magnitude above the rest is the signal — not intuition, and not which felt most obvious. "Build something people want" is true and unusable; extracting a number is what makes it actionable.',
+      },
+      {
+        name: 'The uncomfortable question opens the bigger door',
+        body: 'Putting a customer into a concrete frame of mind frequently surfaces a larger adjacent opportunity they volunteer themselves. Their own real opportunity appeared only because a smaller conversation had already got the customer thinking in specifics.',
+      },
+      {
+        name: 'Two ends of the labour spectrum',
+        body: 'Map the cost of the human work being touched. At the expensive, skilled end the effect is augmentation — the work is effectively unbounded, so nobody reduces headcount, they multiply leverage. At the low-paid, high-turnover end it is replacement, because the work is tokenisable and the return is a straightforward cost line. The two areas with clearest traction sit at these extremes precisely for that reason.',
+      },
+      {
+        name: 'Why one category broke out first',
+        body: 'Two properties: the return is trivially quantifiable because the organisation already tracks the relevant numbers, and the work was already high-turnover. Where a buyer can compute the saving without being persuaded of it, the sale is a different kind of conversation.',
+      },
+      {
+        name: 'Watch the effort before the commitment',
+        body: 'How much work someone puts in while still courting you is the best available signal of how much they will put in afterwards. Stated about investors, but it generalises to any partner or collaborator.',
+      },
+    ],
+    notes: [
+      'On pricing early: do not run negative, and do not over-optimise margin before the thing is established.',
+      'A named founder with verifiable traction, interviewed by a host willing to push back, making specific and falsifiable claims rather than vague ones.',
+      'Naturally self-serving in places — his own margin philosophy is presented as obviously correct and the standard critique of his category is waved off. Take the strategy as one practitioner\'s working model rather than as settled.',
+    ],
+    practices: [
+      'Ask for the exact figure, the approval chain, and how they would justify it upward.',
+      'Tally willingness-to-pay across every idea and follow the order-of-magnitude gap.',
+      'Before building, place the work on the labour spectrum and decide whether you are augmenting or replacing.',
+      'Prefer the case where the buyer can compute the return without being convinced of it.',
+      'Judge a prospective partner by their effort before they have committed.',
+    ],
+    habits: [
+      { id: 'd_askquestion', because: 'The entire method is one uncomfortable question asked to a real person, repeatedly, rather than a better internal analysis.' },
+      { id: 'c_onelesson', because: 'The signal only appears once figures from many conversations are tallied — which requires them to have been written down.' },
+      { id: 'd_build', because: 'The bigger opportunity surfaced because something concrete already existed to talk about.' },
+    ],
+    quests: [
+      { id: 'q_skill', because: 'Asking for a number without flinching is a skill people avoid rather than lack, and it improves only with reps.' },
+      { id: 'q_raise', because: 'Naming a figure and holding the pause is the same muscle, pointed at your own work rather than at a product.' },
+    ],
+    vaultSource: 'Business & career / Resource / Jesse Zhang — Building an AI Agent Company (Decagon)',
+  },
+
+  {
+    slug: 'five-components',
+    attr: 'development',
+    title: 'To succeed you have to run. To be content you have to stop.',
+    origin: 'Seisembay — on the components of a good life and acceptance',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'The narrowest constraint for most people is not external. It is the permission they never gave themselves.',
+    thesis:
+      'Contentment is distinguished from joy: joy is a short hormonal spike, while the state being described is balance and acceptance. The claimed proportion is roughly sixty-forty good to bad, and that proportion is normal rather than a problem to solve. Five components — health, safety, freedom, people you love, work you love — do not guarantee it between them, but the absence of any one of them guarantees its opposite.',
+    ideas: [
+      {
+        name: 'Where the bottleneck usually is',
+        body: 'Each component divides further — freedom into physical, financial, legal and mental. For most people the narrowest is the last: self-built constraints made of fear of other people\'s judgement, of making the call, of being seen wanting something. The external barriers are rarely the binding ones.',
+      },
+      {
+        name: 'Noticed only in its absence',
+        body: 'Like health and safety, this state is felt most sharply when it is missing and is invisible while present — which is why it is chronically under-defended and over-postponed.',
+      },
+      {
+        name: 'Acceptance comes first, not last',
+        body: 'Accepting the world as it is — including unfairness, loss and failure — is treated as a precondition rather than a result. While something in the world should not be the way it is, it will keep arriving and keep interfering.',
+      },
+      {
+        name: 'The chase is self-defeating',
+        body: 'The paradox stated: pursuing success directly lowers the odds of reaching it, because hurry creates vulnerability to circumstance and to other people, and burns energy on cleaning up what haste produced. Stopping means ceasing to want only the good outcomes.',
+      },
+      {
+        name: 'Gratitude against the fear that follows good news',
+        body: 'A specific pattern he names in people who have done well: the arrival of something good produces dread that payment is coming. The tool offered is deliberate gratitude at the moment of the good thing rather than waiting for the reckoning. It is a practitioner\'s device, not a clinically tested one.',
+      },
+    ],
+    notes: [
+      'The five components are offered as a quick self-check between fuller reviews rather than as a replacement for one.',
+      'An informal group conversation which describes itself in its own opening as kitchen-table talk rather than an expert forum.',
+      'Several attributions are paraphrased from memory and at least two of the quotations he uses are widely repeated but probably apocryphal. One cited posture-and-hormone study is named without reference. Treat the framework as his, and the supporting citations as decoration rather than evidence.',
+    ],
+    practices: [
+      'Run the five components as a fast check: which one is actually missing right now?',
+      'Look for the constraint in mental freedom before looking for it outside.',
+      'Practise gratitude at the moment something good arrives, rather than bracing.',
+      'Accept the proportion instead of treating the bad forty per cent as a fault to be fixed.',
+      'Write down the recurring pattern and test whether the belief under it is necessarily true.',
+    ],
+    habits: [
+      { id: 's_gratitude', because: 'His one concrete device is gratitude aimed at the good thing as it happens, which only works if the habit already exists.' },
+      { id: 'b_morningjoy', because: 'A state noticed only in its absence needs something small and deliberate to make it visible while present.' },
+      { id: 'd_review', because: 'Which of the five is actually missing is not answerable in the moment it is missed.' },
+    ],
+    quests: [
+      { id: 'q_wheel', because: 'He offers the five components explicitly as the quick version — the full audit is the thing they are meant to sit between.' },
+      { id: 'q_energyaudit', because: 'The claim that hurry is self-defeating is checkable only against a record of where the week actually went.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Сейсембай — Пять компонентов счастья и благодарность как антидот',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
