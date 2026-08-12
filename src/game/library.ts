@@ -4851,6 +4851,231 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Personal growth / Resource / Сейсембай — Пять компонентов счастья и благодарность как антидот',
   },
+
+  {
+    slug: 'contempt-not-anger',
+    attr: 'family',
+    title: 'Anger is survivable. Contempt is the warning.',
+    origin: 'Arthur Brooks — social scientist, on love\'s stages and what ends it',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The couples who leave at year three are rarely disappointed by fading passion. They discover they were never friends.',
+    thesis:
+      'The aim of a relationship is not to stay in its early chemistry but to arrive, over roughly two to five years, at companionate love — a friendship-based bond with passion inside it rather than passion as the foundation. And what ends marriages is less an absence of chemistry than contempt: disgust fused with anger, which is a different and far more corrosive thing than ordinary conflict.',
+    ideas: [
+      {
+        name: 'Anger and contempt are not the same signal',
+        body: 'Drawing on the marriage-research literature: anger is not the predictor people assume — it often means I care and want this to change. Contempt is the one that forecasts the end. The self-check is whether a recurring conflict is hot anger or has shaded into eye-rolling, sarcasm and treating the other person\'s traits as beneath you.',
+      },
+      {
+        name: 'What the third year actually reveals',
+        body: 'Couples separating at three to five years are usually not mourning the chemistry. They discover they were never compatible as friends — they slept together and travelled together and do not much like each other. The inverse case he cites is couples with little sex who describe each other as their closest friend, reporting the more durable satisfaction.',
+      },
+      {
+        name: 'Why early infatuation resembles depression',
+        body: 'In the rumination stage serotonin drops, activating the structure the brain uses for not letting things go — the same one implicated in clinical depression, and the same one that drives creative work. Obsessive thinking about someone is that generic mechanism running, not a pathology and not a measure of how right the person is.',
+      },
+      {
+        name: 'Emotions are for survival, not for truth',
+        body: 'The limbic system exists to signal approach or avoid so you do not die, not to deliver accurate information about what you should do. That is what makes the prefrontal override a skill rather than a betrayal of feeling.',
+      },
+      {
+        name: 'Practice approach when you feel avoidance',
+        body: 'The direct application: when you notice the impulse to withdraw from someone close, treat it as the cue for a small connecting gesture rather than as instruction to withdraw.',
+      },
+    ],
+    notes: [
+      'The stage model here overlaps the entry in this sector drawn from Fisher\'s three-system account; what is new is companionate love as the stated destination, the anger-versus-contempt distinction, and the approach-on-avoidance move.',
+      'He describes a pattern of falling in love disproportionately fast and running the whole sequence almost at once, and argues it acts as a signal that attracts exploitative partners. His accompanying claim about how this distributes by sex is a clinical impression rather than a finding, and is not carried here.',
+      'Expect several failed attempts as the ordinary cost of looking for a real relationship rather than as evidence of a fault in you.',
+      'A credentialed social scientist who is also explicit about a religious lens shaping his reading — a stated bias rather than a hidden one. The marriage-lab findings on contempt are well established; where he moves into theological territory, that is where the stated lens is doing the work.',
+    ],
+    practices: [
+      'Audit a recurring conflict for contempt rather than for volume.',
+      'Ask whether you would choose this person as a friend, separately from anything else.',
+      'When you want to withdraw from someone close, make one small approach instead.',
+      'Treat an emotion as a signal about survival rather than as a report on reality.',
+      'Keep one or two friends who will tell you that you are wrong.',
+    ],
+    habits: [
+      { id: 'f_meet', because: 'Companionate love is friendship, and friendship is built by ordinary shared time rather than by resolving things.' },
+      { id: 'f_thanks', because: 'Contempt grows in the space where nothing specific is appreciated out loud — this is the cheapest available counterweight.' },
+      { id: 'f_remember', because: 'Practising approach when you feel avoidance needs something concrete to approach with, and last week\'s detail is it.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Naming contempt where it has appeared is the conversation that anger, however loud, keeps postponing.' },
+      { id: 'q_reconnect', because: 'His own prescription includes people who will contradict you — which requires having them close enough to bother.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Brooks — Neurochemistry of Falling in Love and the Discipline of Staying in It',
+  },
+
+  {
+    slug: 'five-pillars-of-resilience',
+    attr: 'development',
+    title: 'When one pillar goes down, deliberately raise the other four',
+    origin: 'Julie Smith — clinical psychologist, on the physiological base',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'If you set out to break someone psychologically, you would attack exactly these five.',
+    thesis:
+      'Her blunt framing: to break a person you would disturb their routine, deprive them of sleep, isolate them, and disrupt their eating — and that is precisely what happens in some unavoidable life circumstances, while being attributed to hormones rather than recognised as a structural assault on the base. The five supports are nutrition, routine and daylight, movement, sleep, and social connection.',
+    ideas: [
+      {
+        name: 'The rule that makes it usable',
+        body: 'When one support is unavoidably down — sleep during a period when sleep is not available — the move is to consciously strengthen the other four. It does not remove the problem; it creates enough stability to hold until the temporary situation changes. The failure mode is trying to compensate for a collapsed physiological base with psychological work.',
+      },
+      {
+        name: 'Why the base is invisible as a cause',
+        body: 'Anxious and catastrophising thoughts occur statistically more often in states of tiredness, hunger and stress — meaning the propensity itself is situational rather than a fixed trait. That reframes a bad fortnight of thinking as a question about the base rather than about the person.',
+      },
+      {
+        name: 'An emotion is information, not a fact about you',
+        body: 'The brain assembles an emotional state from a limited set of signals — breath, pulse, external stimulus — and that state may or may not accurately reflect the situation. So an emotion is never an objective fact, because fatigue and hunger are among its inputs.',
+      },
+      {
+        name: 'External focus against social anxiety',
+        body: 'A concrete task in the room — recording facts, noting something specific — moves attention from self-monitoring outward, and lowers the anxiety in the moment rather than after it.',
+      },
+      {
+        name: 'A test for guilt',
+        body: 'Was something you actually value violated? If yes, the guilt is informative and asks for a change in behaviour. If not, it is not reporting on anything and does not need to be resolved before acting.',
+      },
+    ],
+    notes: [
+      'The distancing technique she teaches — I notice the thought that, rather than I am — is already covered in this sector by a separate entry from a different source. What this entry adds is the five supports and the substitution rule when one of them fails.',
+      'On comparison with someone further ahead, the question offered is not whether you will catch up but what of what they do you could start doing now.',
+      'A clinical psychologist with long public-health and private practice, in an interview rather than a publication. One study on attention and social anxiety is cited without sample details, and the five-support model is her own adaptation of a supervisor\'s teaching frame rather than a validated protocol — though each of the five separately has a broad evidence base elsewhere.',
+    ],
+    practices: [
+      'Name which of the five is currently down, and raise the other four on purpose.',
+      'Check the base before interrogating the thought — tiredness and hunger are inputs to it.',
+      'In a socially anxious moment, give yourself a concrete external task.',
+      'Test guilt against whether something you actually value was violated.',
+      'Ask what of theirs you could start doing, rather than whether you will catch up.',
+    ],
+    habits: [
+      { id: 'h_lightsout', because: 'Sleep is the support most often unavoidably lost, and the one whose absence most reliably degrades the other four.' },
+      { id: 'b_outside', because: 'Routine and daylight are one support in her list, and this is the version of it that survives a bad week.' },
+      { id: 'f_reachout', because: 'Social connection is a pillar rather than a luxury — and isolation is named as a method of breaking someone, not a side effect.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'Raising four supports deliberately is a structural act, and structure decided during a hard stretch does not get built.' },
+      { id: 'q_sleepreset', because: 'The support she names as most commonly collapsed is the one that needs rebuilding rather than tolerating.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Julie Smith — Постнатальная уязвимость, пять опор защиты и переход от осуждения к любопытству',
+  },
+
+  {
+    slug: 'the-personality-layer',
+    attr: 'money',
+    title: 'Tools and tactics move you a fifth. The rest is the person.',
+    origin: 'Dmitrieva — a second conversation, on the layers growth happens in',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'The angle of the torch decides how many tools you can even see.',
+    thesis:
+      'Change happens in five layers — tools, actions, configurations, relationships, and the person. The last is the source of the torch: the angle of light set by your own development decides how many tools and configurations are visible and available at all. Ten or twenty per cent of growth is available in the first two layers; anything multiplicative comes only through the last.',
+    ideas: [
+      {
+        name: 'Student mode is a precondition for insight',
+        body: 'Insight is only available to someone open to the idea that the source of new knowledge could be anyone rather than only a recognised authority. In teacher mode — I already know this — even the most valuable ideas pass by unheard.',
+      },
+      {
+        name: 'Rest is not the same as contentment',
+        body: 'From the middle of a year without obligations: passive rest did not appear among the genuinely happy moments; every peak she recalls involved realising some capacity. And the paradox she reports — without a work load you get less done rather than more, because the brain calibrates energy to perceived urgency.',
+      },
+      {
+        name: 'Do not fear the hard stretch at the start',
+        body: 'Against the framing that money should arrive easily: a period of intense work at the beginning is often required and is not evidence the path is wrong. Her method for handling such periods is to conscript yourself for a defined term — two weeks of intense effort, everything else switched off — and then deliberately discharge yourself.',
+      },
+      {
+        name: 'A belief was once a defence',
+        body: 'Any limiting belief was adaptive at some point — a protection, a way of staying loyal to a parent, a response to something a child could not carry. Which yields the working metaphor: beliefs as clothing you can consciously select for the situation rather than errors to be ashamed of.',
+      },
+      {
+        name: 'Testing whether a want is yours',
+        body: 'A bodily test for authenticity of desire — the physical response when looking at something with no intention of buying it. Offered as a calibration usable at any income.',
+      },
+    ],
+    notes: [
+      'Her observation that the capacity for joy on a small budget is a skill worth training now rather than after the money arrives — it does not appear automatically with income.',
+      'This is the second conversation with the same author in this sector; the first covers money shame and the belief-rewriting protocol. What is new here is the layer model, student mode, and the authenticity test.',
+      'A practising psychologist and entrepreneur speaking from her own verifiable experience of scaling. The claim that money is proportional to willingness to take responsibility is presented explicitly as a personal hypothesis rather than as established.',
+    ],
+    practices: [
+      'Ask which layer a problem actually sits in before reaching for another tool.',
+      'Stay in student mode, including with people who do not look like sources.',
+      'Conscript yourself for a defined intense stretch, then deliberately end it.',
+      'Test a want by the physical response when you have no intention of buying.',
+      'Train the capacity for joy at the budget you have now.',
+    ],
+    habits: [
+      { id: 'm_waitlist', because: 'A day\'s gap is where the bodily test can actually run, since it requires not being about to buy the thing.' },
+      { id: 'b_morningjoy', because: 'Joy on a small budget is named as a trainable skill that does not arrive with income — which makes it a daily practice rather than a stage.' },
+      { id: 'm_log', because: 'Which layer a problem sits in is not answerable from impression, and spending is the layer most easily mistaken for the others.' },
+    ],
+    quests: [
+      { id: 'q_raise', because: 'Her claim is that multiplicative change comes through the person rather than the tactics — and asking is the act that tests which layer you are actually stuck in.' },
+      { id: 'q_skill', because: 'The defined intense stretch is her own method, and it needs one concrete thing to be aimed at.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Дмитриева — Пять слоёв трансформации, разумное потребление и деньги как функция ответственности',
+  },
+
+  {
+    slug: 'the-soul-of-the-intention',
+    attr: 'spirituality',
+    title: 'Praised once, and the fruit stops there',
+    origin: 'A lecture on sincerity, permanence and what a deed is worth',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'The size of an act is not what decides its weight.',
+    thesis:
+      'The formula the theological section turns on: the soul of any action is the intention, and the soul of the intention is sincerity. A good deed performed for people\'s praise has had its own lifespan set by the doer — the praise arrives and the fruit stops there. Done for its own proper end, the consequences are treated as effectively unbounded.',
+    ideas: [
+      {
+        name: 'The shadow of a shadow',
+        body: 'Everything beautiful in the world is treated as a faint reflection of a permanent source rather than as the source. The image used is bubbles on a wave, each catching the same sunlight and bursting — the light never belonged to the bubbles. The consequence drawn for grief: loss is softened not by denying it but by moving the attachment from the temporary to what it was reflecting.',
+      },
+      {
+        name: 'Why sincerity is a lifespan',
+        body: 'The claim is mechanical rather than moral: an act aimed at recognition is complete when recognition arrives. An act not aimed there has no such stopping point, and its consequences continue through everything they touch.',
+      },
+      {
+        name: 'The chain from one small thing',
+        body: 'Illustrated with a single raindrop and the endless sequence of what grows from it and what follows from that. A secular parallel is offered from a nature documentary tracing an ecological chain from one animal\'s waste — the same structure of consequence, made visible.',
+      },
+      {
+        name: 'Scale is not weight',
+        body: 'The transmitted story of a scholar whose weightiest deed turned out not to be his books but a small unremarked kindness — used to argue that the visible scale of an act is not what determines what it is worth.',
+      },
+      {
+        name: 'Continuous creation',
+        body: 'The reading offered of the creation account is not that it happened and finished but that it is ongoing, with the word for a period not meaning a day and time described elsewhere in relative terms. That continuity is then used as the argument for resurrection: what you see renewed daily is the same act.',
+      },
+    ],
+    notes: [
+      'On debt, the position given is not only prohibition but a psychological argument: a debt is a condition imposed on a future you do not control.',
+      'This is the second entry in this sector from the same channel; the first covers the prayer of Yunus and self-justification. What is new here is the sincerity formula and the treatment of loss.',
+      'The theological portion is a structured transmission of a recognised tradition with direct references to specific texts. The live question-and-answer portion that follows is quick personal positioning that does not necessarily reflect consensus across schools — the speaker flags one such position as his own.',
+      'The parables are given as instructive stories without primary sources or firm attribution — useful as teaching material rather than as documented events.',
+    ],
+    practices: [
+      'Ask what an act is aimed at before doing it, since that sets where its effect stops.',
+      'When something is lost, move the attachment to what it was reflecting rather than arguing with the loss.',
+      'Stop grading your acts by their visible size.',
+      'Treat a debt as a condition placed on a future you do not control.',
+    ],
+    habits: [
+      { id: 's_dhikr', because: 'Moving attachment from the reflection to the source is a daily orientation rather than a conclusion reached once.' },
+      { id: 'm_charity', because: 'The argument that scale is not weight only becomes real where small giving is ordinary rather than occasional.' },
+      { id: 's_gratitude', because: 'The bubbles image is about noticing the light rather than the vessel, which is what naming what went right actually trains.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'The theological section works through specific numbered texts — the kind of material that rewards study rather than summary.' },
+      { id: 'q_debts', because: 'His argument against debt is about a claim on an uncontrollable future, which requires knowing what has already been claimed.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Из мрака к свету — Слова о смерти как переселении, искренность намерения и харам кредита',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
