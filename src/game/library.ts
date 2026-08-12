@@ -4391,6 +4391,234 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Spirituality & Religion / Resource / Хайфа Юнис — Права супругов и богословие брака как института',
   },
+
+  {
+    slug: 'are-you-in-the-boat',
+    attr: 'family',
+    title: 'Are you actually in the boat, or just hoping it works?',
+    origin: 'Robbins — one couple\'s account of thirty years',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'The diagnostic is not dramatic conflict. It is the quiet drift into being roommates.',
+    thesis:
+      'Before any technique matters, the question is whether you are actually choosing the relationship or standing outside it hoping it works. Her own admission: years spent in a raft alongside, complaining to friends, rather than in the boat — physically present and emotionally elsewhere, judging rather than committing. What signals it is not a fight but the slide into coexistence.',
+    ideas: [
+      {
+        name: 'Two people rowing, neither one looking up',
+        body: 'The failure mode described is not neglect but parallel effort: both partners working genuinely hard, each fully occupied by their own half of the load, each keeping score of their own contribution and quietly resentful that the other has not noticed. In their case one travelled constantly as the earner and one carried the home, both under real pressure, both invisible to the other.',
+      },
+      {
+        name: 'One question, asked daily',
+        body: 'The move out of that state is deliberately small: is there one thing I can do today that shows I had my partner in mind? It is a question about attention rather than about effort, which is why more effort had not been fixing it.',
+      },
+      {
+        name: 'Find out what actually reads as being thought of',
+        body: 'The story about flowers is the vehicle, not the lesson. He was making large, real contributions that did not land, while one small specific signal did. Both people have one, they are rarely the obvious thing, and neither can guess the other\'s.',
+      },
+      {
+        name: 'Explain the impact, not the behaviour',
+        body: 'Swap the always-and-never formulation for what actually happens: when this happens, it leaves me feeling that. It is the same information without the character verdict attached.',
+      },
+      {
+        name: 'Refuelling in ten seconds',
+        body: 'A brief deliberate contact — a hand on the shoulder, eye contact held a moment longer — offered as a specific low-cost ritual rather than a metaphor. The term itself comes from developmental attachment work rather than from them.',
+      },
+    ],
+    notes: [
+      'They also name the way role and money dynamics operate silently unless someone says them out loud, from a period where earning and caring were split unevenly and neither was acknowledging the other\'s position.',
+      'This is one couple\'s self-report of their own marriage, not clinical or research material. It is candid — including an unflattering account of heavy drinking during a financial crisis — and specific, and that is its value.',
+      'Read it as one successful couple\'s working framework worth testing item by item, and not as validated relationship science. The clinically grounded entries in this sector are the ones to weigh it against rather than to replace with it.',
+    ],
+    practices: [
+      'Ask honestly and periodically whether you are choosing this right now, or waiting to see.',
+      'Do one thing today that shows the other person was in your mind, and ask what actually reads that way to them.',
+      'Say the impact rather than the pattern — when this happens, this is what it does.',
+      'Try the ten-second contact deliberately rather than filing it as a nice idea.',
+      'Name the power and role dynamics out loud instead of letting them run silently.',
+    ],
+    habits: [
+      { id: 'f_remember', because: 'The whole repair is a question about attention rather than effort — and attention shows as remembering what they said last time.' },
+      { id: 'f_thanks', because: 'Naming the specific thing is how you find out what actually lands, which neither person can guess for the other.' },
+      { id: 'f_meet', because: 'The refuelling ritual is physical and brief, which makes it available only where you actually are in the same room.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'Asking what actually reads as being thought of is a conversation nobody starts, because nothing is visibly wrong.' },
+      { id: 'q_reconnect', because: 'Her own account of the drift includes complaining to friends instead of speaking to him — the circle is part of the mechanism.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Robbins — Being in the Boat, Loving the Person Over the Potential and Refueling Through Micro-Moments',
+  },
+
+  {
+    slug: 'calibrating-future-regret',
+    attr: 'money',
+    title: 'Calibrate the regret, do not optimise the formula',
+    origin: 'Morgan Housel — a second conversation, on regret, identity and extremes',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Every behaviour makes sense with enough information about the person doing it.',
+    thesis:
+      'Financial behaviour cannot be judged as sensible or foolish in a vacuum — it always follows from a personal history. The skill that matters is a well-calibrated sense of future regret rather than optimisation against a formula. And money makes people happier only indirectly, through independence and purpose; it becomes a weight the moment it turns into the core of an identity rather than an instrument.',
+    ideas: [
+      {
+        name: 'All behaviour makes sense given enough information',
+        body: 'A line borrowed from social work: apparently irrational financial behaviour is explained by upbringing, by what someone lived through, by the generation they formed in. The practical consequence is less cynicism about how other people spend and save — this is not arithmetic where the same answer holds for everyone.',
+      },
+      {
+        name: 'Regret is the thing to calibrate, and it moves',
+        body: 'Asked what it takes to handle money well, the answer he cites is an accurately calibrated sense of future regret. The difficulty is that the calibration shifts across a life — he describes himself as a committed saver who today would not regret a single unspent pound, while allowing that at eighty he might regret not having lived a little more. Someone else\'s calibration cannot be copied.',
+      },
+      {
+        name: 'The end-of-history illusion',
+        body: 'People can see how much they changed over twenty years and cannot imagine changing as much again — because that would mean conceding their current beliefs are wrong. It is what makes genuinely long-horizon decisions hard.',
+      },
+      {
+        name: 'Avoid both ends of the spectrum',
+        body: 'The practical antidote he offers: neither extreme saving toward very early retirement nor speculative all-in behaviour. Both are the positions most likely to produce future regret, and the cost of the same error is tolerable at twenty and not at forty-eight.',
+      },
+      {
+        name: 'Credit as a hole rather than a convenience',
+        body: 'Against the framing of credit as merely bringing consumption forward: it offers the false hope that a purchase will close a psychological gap, and because the gap does not close, the mechanism repeats.',
+      },
+      {
+        name: 'Identity as a verb, not a noun',
+        body: 'Defining yourself by what you do rather than by a title or a metric makes the identity less brittle when a particular attempt fails.',
+      },
+    ],
+    notes: [
+      'This is the second conversation with the same author in this sector; the first covers rich versus wealthy and savings as a bill. The overlap is real — independence as the goal appears in both — and what is new here is regret calibration, the extremes argument, and the identity framing.',
+      'Environment design over willpower is restated here with supporting examples: the automatic transfer works because it does not require a decision later.',
+      'A practitioner and writer rather than a researcher. Several anecdotes are retold from memory at second hand, and two widely quoted statistics are given as common knowledge without a source — treat them as orders of magnitude rather than as figures.',
+    ],
+    practices: [
+      'Ask which choice you will regret from the far end, rather than which optimises now.',
+      'Stay off both extremes of the spectrum, because that is where regret concentrates.',
+      'Before borrowing, ask what gap the purchase is expected to close.',
+      'Describe yourself by what you do rather than by the title you are aiming at.',
+      'Change the environment rather than relying on deciding well later.',
+    ],
+    habits: [
+      { id: 'm_waitlist', because: 'A day\'s delay is where the question of which hole this is filling can actually get asked.' },
+      { id: 'm_payday', because: 'Environment design over willpower, in its cheapest form: the decision is made once rather than every month.' },
+      { id: 'm_log', because: 'Regret is calibrated against what actually happened, and a year of spending is not reconstructable from memory.' },
+    ],
+    quests: [
+      { id: 'q_emergencyfund', because: 'The buffer is the position furthest from both extremes — neither speculation nor deprivation.' },
+      { id: 'q_raise', because: 'Independence and purpose are named as the two things money buys, and income is the constraint on the first.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Housel — Future Regret, Identity and Raising Kids With Money',
+  },
+
+  {
+    slug: 'i-notice-the-thought',
+    attr: 'development',
+    title: 'A belief is a thought repeated until it became the default',
+    origin: 'Zakhrai — behavioural researcher, on self-doubt and self-image',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'External success does not update the self-image, which is why it keeps not being enough.',
+    thesis:
+      'Four trainable attributes — self-acceptance, agency, locus of control, emotional adaptability — combine into how a person sees themselves. Following Maltz: fixing behaviour or accumulating external success does not change the underlying self-image, and people unconsciously seek confirmation of how they already see themselves, so a low estimate reproduces itself through selective attention.',
+    ideas: [
+      {
+        name: 'The anxious overachiever',
+        body: 'The most common profile described: low acceptance, so approval is sought externally and self-worth is tied to results; middling agency, confident in the skills until questioned; high autonomy, sometimes to the point of taking responsibility for what is outside their control; and low-to-middling adaptability, with background anxiety steering behaviour.',
+      },
+      {
+        name: 'Distinguishing doubt from a real mismatch',
+        body: 'The test: imagine you had none of the current feelings about it — would you still want to do this? If yes, it is growth through discomfort, which is where learning actually happens. If no, it is a signal about values rather than fear. His own example is physical illness before work at a firm, which turned out not to be impostor feeling but the body reporting the wrong place.',
+      },
+      {
+        name: 'Cognitive distancing',
+        body: 'A specific change of language: "I am a failure" becomes "I notice the thought that I am a failure"; "I am anxious" becomes "I notice anxiety in me". The shift is from identification to observation, on the reasoning that a belief is a thought repeated often enough to become the default — and what was written by repetition can be rewritten the same way.',
+      },
+      {
+        name: 'Why fixing the outside does not hold',
+        body: 'The surgeon whose patients corrected a visible flaw and soon returned to the previous self-perception, because the underlying blueprint of beliefs about their own worth had not moved. The practical conclusion is to work on the self-image directly rather than waiting for achievements to do it.',
+      },
+      {
+        name: 'Should, could, will',
+        body: 'A three-step replacement against getting stuck in guilt: move the sentence from should to could, and then to will.',
+      },
+    ],
+    notes: [
+      'Two immediate physical techniques are offered for the minutes before something stressful — both small postural interventions rather than mental ones.',
+      'For a recurring belittling remark from someone close, the recommended form is not a request but an if-then boundary with a consequence you will actually carry out.',
+      'A behavioural researcher and coach with a doctorate in the area, speaking to a general audience. The studies referenced come without methodology, sample sizes or citations, and his profile model is his own construction on top of a more widely accepted underlying construct rather than an independently validated instrument.',
+    ],
+    practices: [
+      'Run the test: without the feelings, would you still want this? Growth and mismatch need opposite responses.',
+      'Say "I notice the thought that…" instead of stating it as a fact about you.',
+      'Move a stuck sentence from should to could to will.',
+      'Set an if-then boundary with a consequence rather than making a request.',
+      'Work on the self-image directly instead of waiting for achievements to update it.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'Self-verification works by selective attention, which is invisible in the moment and visible across a week.' },
+      { id: 'b_nocompare', because: 'The external-approval loop is fed most efficiently by a feed of other people\'s results.' },
+      { id: 'c_onelesson', because: 'If achievements do not update the self-image on their own, then noticing what actually worked is the deliberate version of letting them.' },
+    ],
+    quests: [
+      { id: 'q_wheel', because: 'The four attributes are a self-assessment, and scoring yourself honestly is the same move at a different scale.' },
+      { id: 'q_skill', because: 'Growth through discomfort is his description of learning, which needs one thing you are genuinely bad at to practise on.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Захрай — Профили сомнения, самообраз по Мальцу и техники против самокритики',
+  },
+
+  {
+    slug: 'anger-with-a-function',
+    attr: 'friends',
+    title: 'The question is not whether it was too much',
+    origin: 'Shimanskaya — a second conversation, on emotion, cause and function',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'It is whether the emotion was pointed at a solution.',
+    thesis:
+      'The live demonstration is the substance here: a real episode of strong anger, worked through in the conversation itself as emotion, then cause, then function. The conclusion drawn is that the size of the reaction was not the problem — without that anger the situation would not have been resolved. What matters is whether the emotion was directed at a solution rather than at surrender or at a grievance.',
+    ideas: [
+      {
+        name: 'The worked case',
+        body: 'A long-postponed veterinary procedure, conditions changed at the last moment, and a burst of anger at the whole staff. Stepped through: the feeling named specifically as anger rather than diffuse stress; the cause identified as a prepared plan colliding with reality; and the function recognised — the anger was what drove the search that found another clinic the same day.',
+      },
+      {
+        name: 'Stress is a mismatch, not a substance',
+        body: 'The definition offered: there is no such thing as stress in itself, only the gap between expectation and what happened. The direct consequence is that the more precisely someone plans their life, the harder they will react when a plan breaks — which makes the skill more necessary, not less.',
+      },
+      {
+        name: 'Who actually shows the lowest emotional skill',
+        body: 'Not children, whose limits are developmental, and not senior people, whose difficulty is specifically control — but those who have played a work role long enough to lose themselves in it, or who have switched the feelings off entirely. The portrait given is of someone with no clear goals and no sense of meaning in the work, who nonetheless does not leave.',
+      },
+      {
+        name: 'Name the good ones out loud too',
+        body: 'The same formula applied in the other direction: saying gratitude, calm or tenderness aloud to the people close to you, rather than reserving the practice for anxiety and irritation.',
+      },
+      {
+        name: 'Two tools for rumination',
+        body: 'Widening to peripheral attention as a physically different intervention from breath work, and a timer every few hours as a plain diagnostic for whether the same thought has been running unnoticed.',
+      },
+    ],
+    notes: [
+      'On raising children, the claim is that emotional honesty in the adult is the foundation — children read the actual state rather than the words describing it.',
+      'This is the second conversation with the same specialist in this sector. The first covers the three-stage model and the "I feel X because Y" formula; what is new here is the cause-to-function reading of a real episode and the tools for rumination.',
+      'The headline comparison of emotional skill against IQ is attributed to a business-review study without year, authors or publication, and two efficiency figures are given the same way. Treat them as claimed rather than checked; the demonstration of the method in real time is the part that stands on its own.',
+      'One term used for the ideal state is her own coinage rather than an established concept.',
+    ],
+    practices: [
+      'Work a real flare-up backwards: name it, find the cause, then ask what it drove you to do.',
+      'Judge an emotion by whether it pointed at a solution, not by its size.',
+      'Say the positive states out loud as specifically as the negative ones.',
+      'Set a timer every few hours and check whether one thought has been running the whole time.',
+      'Expect stronger reactions to broken plans the more precisely you plan.',
+    ],
+    habits: [
+      { id: 'f_thanks', because: 'The formula applied to good states is exactly this — said out loud and specifically, rather than assumed to be understood.' },
+      { id: 'd_review', because: 'Cause and function are only visible after the fact, which makes the standing look-back the place the method actually runs.' },
+      { id: 'f_voice', because: 'Naming a state to someone carries in tone what the same sentence loses in text.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'An emotion pointed at a solution usually means saying the thing to the person it concerns rather than about them afterwards.' },
+    ],
+    vaultSource: 'Social & friends / Resource / Шиманская — Красные флаги низкого EQ и эмоциональная честность с детьми',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
