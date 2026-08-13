@@ -62,3 +62,14 @@ export function weekdayInitials(style: 'short' | 'narrow' = 'short'): string[] {
   // 2024-01-01 was a Monday; seven consecutive days give the whole cycle.
   return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2024, 0, 1 + i)));
 }
+
+/**
+ * Weekday names indexed the way `Date.getDay()` numbers them — 0 = Sunday. Habit
+ * schedules store those raw indices, so this ordering is the one they can be
+ * looked up with directly.
+ */
+export function weekdayNames(style: 'short' | 'long' | 'narrow' = 'short'): string[] {
+  const fmt = new Intl.DateTimeFormat(locale(), { weekday: style });
+  // 2023-01-01 was a Sunday.
+  return Array.from({ length: 7 }, (_, i) => fmt.format(new Date(2023, 0, 1 + i)));
+}

@@ -6,6 +6,7 @@ import { CLASSES, classAffinityLabel, ITEMS, THEMES } from '../game/constants';
 import { addDaysStr, fmtDayFull, isThemeUnlocked, itemPrice, journalLocked, todayStr } from '../game/engine';
 import type { ClassId, ItemDef, ItemId, ThemeDef } from '../game/types';
 import { spawnVFXAt } from '../lib/vfx';
+import { useT } from '../i18n';
 import { slotLabels } from './Onboarding';
 import { useGame } from '../store';
 
@@ -24,12 +25,6 @@ import { useGame } from '../store';
  */
 type PriceBand = 'everyday' | 'insurance' | 'rare';
 
-const BAND_LABEL: Record<PriceBand, string> = {
-  everyday: 'Everyday',
-  insurance: 'Insurance',
-  rare: 'Rare',
-};
-
 function priceBand(price: number): PriceBand {
   if (price <= 60) return 'everyday';
   if (price <= 110) return 'insurance';
@@ -40,6 +35,7 @@ function priceBand(price: number): PriceBand {
 const byPrice = (a: ItemDef, b: ItemDef) => a.price - b.price;
 
 export function Market() {
+  const t = useT();
   const s = useGame();
   const gold = s.character?.gold ?? 0;
   const consumables = ITEMS.filter(i => i.kind === 'consumable').sort(byPrice);
@@ -52,15 +48,15 @@ export function Market() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Market</h1>
-          <p className="muted">The only legal way to soften a consequence. Every coin here was earned the hard way.</p>
+          <h1>{t('market.title')}</h1>
+          <p className="muted">{t('market.subtitle')}</p>
         </div>
         <div className="gold-big"><Icon name="gold" size={26} /> {gold}</div>
       </div>
 
       {inventoryItems.length > 0 && (
         <section className="card">
-          <div className="card-head"><h2 className="heading-icon"><Icon name="chest" size={18} /> Your inventory</h2></div>
+          <div className="card-head"><h2 className="heading-icon"><Icon name="chest" size={18} /> {t('market.inventory')}</h2></div>
           <div className="inv-row">
             {inventoryItems.map(i => (
               <div key={i.id} className="inv-item">
@@ -75,30 +71,30 @@ export function Market() {
       )}
 
       <section>
-        <h2 className="section-title" data-tour="market-consumables">Consumables</h2>
-        <p className="muted market-note">Cheapest first — everyday relief, then the insurance, then the rare things.</p>
+        <h2 className="section-title" data-tour="market-consumables">{t('market.consumables')}</h2>
+        <p className="muted market-note">{t('market.consumablesNote')}</p>
         <div className="market-grid">
           {consumables.map(i => <ItemCard key={i.id} item={i} onNeedPayload={() => setUsing(i.id)} />)}
         </div>
       </section>
 
       <section>
-        <h2 className="section-title" data-tour="market-permanent">Permanent upgrades</h2>
+        <h2 className="section-title" data-tour="market-permanent">{t('market.permanent')}</h2>
         <div className="market-grid">
           {permanents.map(i => <ItemCard key={i.id} item={i} onNeedPayload={() => setUsing(i.id)} />)}
         </div>
       </section>
 
       <section>
-        <h2 className="section-title">Themes</h2>
+        <h2 className="section-title">{t('market.themes')}</h2>
         {s.adminUnlockAll && (
           <p className="muted market-note">
-            <Icon name="unlock" size={14} /> Owner mode is on — every theme is unlocked. Toggle it in{' '}
-            <Link to="/settings">Settings</Link> to preview the priced view.
+            <Icon name="unlock" size={14} /> {t('market.ownerModeOn')}{' '}
+            <Link to="/settings">{t('nav.settings')}</Link> {t('market.ownerModeTail')}
           </p>
         )}
         <div className="market-grid">
-          {THEMES.map(t => <ThemeCard key={t.id} theme={t} />)}
+          {THEMES.map(theme => <ThemeCard key={theme.id} theme={theme} />)}
         </div>
       </section>
 
@@ -113,13 +109,14 @@ export function Market() {
 const NEEDS_PAYLOAD: ItemId[] = ['habit_pardon', 'ghost_day', 'feather', 'identity_scroll'];
 
 function UseButton({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () => void }) {
+  const t = useT();
   const s = useGame();
   const owned = s.inventory[item.id] ?? 0;
   if (owned < 1) return null;
   if (item.id === 'streak_shield') {
     return (
-      <span className="muted inline-icon" title="Activates automatically when a streak would break">
-        <Icon name="shield" size={13} /> auto
+      <span className="muted inline-icon" title={t('market.autoShieldTitle')}>
+        <Icon name="shield" size={13} /> {t('market.auto')}
       </span>
     );
   }
@@ -128,7 +125,7 @@ function UseButton({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =
     <button
       className="btn btn-primary btn-sm"
       disabled={disabled}
-      title={disabled ? 'HP already full' : undefined}
+      title={disabled ? t('market.hpFull') : undefined}
       onClick={e => {
         if (NEEDS_PAYLOAD.includes(item.id)) return onNeedPayload();
         s.useItem(item.id);
@@ -136,12 +133,13 @@ function UseButton({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =
         else spawnVFXAt(e, 'item', 1, item.name);
       }}
     >
-      Use
+      {t('market.use')}
     </button>
   );
 }
 
 function ItemCard({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () => void }) {
+  const t = useT();
   const s = useGame();
   const gold = s.character?.gold ?? 0;
   const price = itemPrice(item);
@@ -151,17 +149,17 @@ function ItemCard({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =>
 
   return (
     <div className={`card item-card market-item band-${band}`}>
-      <div className="item-band">{BAND_LABEL[band]}</div>
+      <div className="item-band">{t(`market.band.${band}`)}</div>
       <div className="item-icon"><Icon name={item.icon} size={28} /></div>
       <div className="item-name">{item.name}</div>
       <div className="item-desc">{item.desc}</div>
       <div className="item-footer">
-        {owned > 0 && <span className="tag">{item.id === 'focus_unlock' ? 'owned' : `×${owned}`}</span>}
+        {owned > 0 && <span className="tag">{item.id === 'focus_unlock' ? t('market.owned') : `×${owned}`}</span>}
         {soldOut ? (
-          <span className="status status-done inline-icon"><Icon name="check" size={13} /> Active</span>
+          <span className="status status-done inline-icon"><Icon name="check" size={13} /> {t('market.activeItem')}</span>
         ) : (
           <button className="btn btn-gold btn-sm" disabled={gold < price} onClick={() => s.buyItem(item.id)}>
-            Buy · {price < item.price && <s className="muted">{item.price}</s>} {price} <Icon name="gold" size={13} />
+            {t('market.buy')} · {price < item.price && <s className="muted">{item.price}</s>} {price} <Icon name="gold" size={13} />
           </button>
         )}
         <UseButton item={item} onNeedPayload={onNeedPayload} />
@@ -171,6 +169,7 @@ function ItemCard({ item, onNeedPayload }: { item: ItemDef; onNeedPayload: () =>
 }
 
 function ThemeCard({ theme }: { theme: ThemeDef }) {
+  const t = useT();
   const s = useGame();
   const active = s.theme === theme.id;
   const unlocked = isThemeUnlocked(theme, { adminUnlockAll: s.adminUnlockAll, ownedThemes: s.ownedThemes });
@@ -185,12 +184,12 @@ function ThemeCard({ theme }: { theme: ThemeDef }) {
       </div>
       <div className="item-footer">
         {active ? (
-          <span className="status status-done inline-icon"><Icon name="check" size={13} /> Applied</span>
+          <span className="status status-done inline-icon"><Icon name="check" size={13} /> {t('market.applied')}</span>
         ) : unlocked ? (
-          <button className="btn btn-primary btn-sm" onClick={() => s.setTheme(theme.id)}>Apply</button>
+          <button className="btn btn-primary btn-sm" onClick={() => s.setTheme(theme.id)}>{t('market.apply')}</button>
         ) : (
           // Symbolic price, display-only — no purchase path yet (owner mode is the only unlock today).
-          <span className="status status-locked inline-icon" title="Locked — owner mode is off">
+          <span className="status status-locked inline-icon" title={t('market.lockedOwnerOff')}>
             <Icon name="lock" size={13} /> ${theme.price?.toFixed(2)}
           </span>
         )}
@@ -200,22 +199,23 @@ function ThemeCard({ theme }: { theme: ThemeDef }) {
 }
 
 function PardonModal({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const eligible = s.failures.filter(f => !f.pardoned && s.habitLog[f.habitId]?.[f.date] === 'failed').slice(-10).reverse();
   return (
-    <Modal title="Habit Pardon — choose a failure to forgive" onClose={onClose}>
+    <Modal title={t('market.pardonTitle')} onClose={onClose}>
       {eligible.length === 0 ? (
-        <p className="muted">No unpardoned failures on record. Your ledger is clean.</p>
+        <p className="muted">{t('market.pardonEmpty')}</p>
       ) : (
         <ul className="list">
           {eligible.map(f => {
             const h = s.habits.find(x => x.id === f.habitId);
             return (
               <li key={f.id} className="list-row">
-                <span className="list-title">{h?.name ?? 'Deleted habit'}</span>
-                <span className="muted">{fmtDayFull(f.date)} · -{f.damage} HP · {f.prevStreak}-day streak lost</span>
+                <span className="list-title">{h?.name ?? t('habits.deletedHabit')}</span>
+                <span className="muted">{fmtDayFull(f.date)} · -{f.damage} HP · {t('market.streakLost', { n: f.prevStreak })}</span>
                 <button className="btn btn-primary btn-sm" onClick={() => { s.useItem('habit_pardon', { failureId: f.id }); onClose(); }}>
-                  Pardon
+                  {t('habits.pardon')}
                 </button>
               </li>
             );
@@ -227,19 +227,17 @@ function PardonModal({ onClose }: { onClose: () => void }) {
 }
 
 function GhostModal({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const today = todayStr();
   const tomorrow = addDaysStr(today, 1);
   const [custom, setCustom] = useState('');
   return (
-    <Modal title="Ghost Day — freeze which day?" onClose={onClose}>
-      <p className="muted">
-        The chosen day is exempt from all penalties. Streaks pause, nothing breaks. For real sick days and travel —
-        buy one per travel day and pre-set them before you leave.
-      </p>
+    <Modal title={t('market.ghostTitle')} onClose={onClose}>
+      <p className="muted">{t('market.ghostDesc')}</p>
       <div className="modal-actions">
-        <button className="btn btn-primary" onClick={() => { s.useItem('ghost_day', { date: today }); onClose(); }}>Today ({today})</button>
-        <button className="btn btn-primary" onClick={() => { s.useItem('ghost_day', { date: tomorrow }); onClose(); }}>Tomorrow ({tomorrow})</button>
+        <button className="btn btn-primary" onClick={() => { s.useItem('ghost_day', { date: today }); onClose(); }}>{t('common.today')} ({today})</button>
+        <button className="btn btn-primary" onClick={() => { s.useItem('ghost_day', { date: tomorrow }); onClose(); }}>{t('market.tomorrow')} ({tomorrow})</button>
       </div>
       <div className="qt-row" style={{ marginTop: 10 }}>
         <input className="input" type="date" min={today} value={custom} onChange={e => setCustom(e.target.value)} />
@@ -248,23 +246,24 @@ function GhostModal({ onClose }: { onClose: () => void }) {
           disabled={!custom || custom < today}
           onClick={() => { s.useItem('ghost_day', { date: custom }); onClose(); }}
         >
-          Freeze that day
+          {t('market.freezeThatDay')}
         </button>
       </div>
       {s.effects.ghostDays.length > 0 && (
-        <p className="muted" style={{ marginTop: 10 }}>Already frozen: {s.effects.ghostDays.join(', ')}</p>
+        <p className="muted" style={{ marginTop: 10 }}>{t('market.alreadyFrozen', { days: s.effects.ghostDays.join(', ') })}</p>
       )}
     </Modal>
   );
 }
 
 function FeatherModal({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const locked = s.journal.filter(e => journalLocked(e)).sort((a, b) => b.date.localeCompare(a.date));
   return (
-    <Modal title="Feather of Time — unseal which entry?" onClose={onClose}>
+    <Modal title={t('market.featherTitle')} onClose={onClose}>
       {locked.length === 0 ? (
-        <p className="muted">No sealed entries. Time hasn't locked anything away from you yet.</p>
+        <p className="muted">{t('market.featherEmpty')}</p>
       ) : (
         <ul className="list">
           {locked.map(e => (
@@ -272,7 +271,7 @@ function FeatherModal({ onClose }: { onClose: () => void }) {
               <span className="list-title">{fmtDayFull(e.date)}</span>
               <span className="muted">{e.answers[0]?.a.slice(0, 40) ?? ''}…</span>
               <button className="btn btn-primary btn-sm" onClick={() => { s.useItem('feather', { entryId: e.id }); onClose(); }}>
-                Unseal
+                {t('market.unseal')}
               </button>
             </li>
           ))}
@@ -283,6 +282,7 @@ function FeatherModal({ onClose }: { onClose: () => void }) {
 }
 
 function IdentityModal({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const [name, setName] = useState(s.character?.name ?? '');
   const [classes, setClasses] = useState<ClassId[]>(s.character?.classes ?? []);
@@ -290,13 +290,13 @@ function IdentityModal({ onClose }: { onClose: () => void }) {
     setClasses(prev => (prev.includes(id) ? prev.filter(c => c !== id) : prev.length < 3 ? [...prev, id] : prev));
   const weights = slotLabels(classes.length);
   return (
-    <Modal title="Identity Scroll — rewrite yourself" onClose={onClose} wide>
+    <Modal title={t('market.identityTitle')} onClose={onClose} wide>
       <label className="field">
-        <span>Character name</span>
+        <span>{t('market.characterName')}</span>
         <input className="input" value={name} onChange={e => setName(e.target.value)} maxLength={40} />
       </label>
       <div className="field">
-        <span>Radicals — pick up to three, in order</span>
+        <span>{t('market.pickRadicals')}</span>
         <div className="class-grid class-grid-sm">
           {CLASSES.map(c => {
             const rank = classes.indexOf(c.id);
@@ -315,13 +315,13 @@ function IdentityModal({ onClose }: { onClose: () => void }) {
         </div>
       </div>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={!name.trim() || !classes.length}
           onClick={() => { s.useItem('identity_scroll', { name, classes }); onClose(); }}
         >
-          Consume scroll
+          {t('market.consumeScroll')}
         </button>
       </div>
     </Modal>

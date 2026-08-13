@@ -6,16 +6,13 @@ import { AttrPicker, AttrTags, Bar, Empty, Modal } from '../components/ui';
 import { QUEST_DURATIONS, QUEST_DURATION_KEYS } from '../game/constants';
 import { addDaysStr, fmtDay, fmtDayFull, fmtMinutes, parseDay, questDeadlineProgress, questMinutes, questPayout, questTargetDate, todayStr } from '../game/engine';
 import type { AttributeKey, Goal, QuestDuration } from '../game/types';
+import { plural, useT } from '../i18n';
 import { useGame } from '../store';
 
-const GOAL_HORIZONS = [
-  { label: '30 days', days: 30 },
-  { label: '60 days', days: 60 },
-  { label: '90 days', days: 90 },
-  { label: '180 days', days: 180 },
-];
+const GOAL_HORIZON_DAYS = [30, 60, 90, 180];
 
 export function Quests() {
+  const t = useT();
   const s = useGame();
   const [creating, setCreating] = useState(false);
   const [attrFilter, setAttrFilter] = useState<AttributeKey[]>([]);
@@ -27,27 +24,22 @@ export function Quests() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Quests</h1>
-          <p className="muted">
-            Time-tracked work. Sessions log the grind; the single big payout comes only when the whole quest is done.
-          </p>
+          <h1>{t('quests.title')}</h1>
+          <p className="muted">{t('quests.subtitle')}</p>
         </div>
-        <button className="btn btn-primary" data-tour="new-quest" onClick={() => setCreating(true)}>+ New quest</button>
+        <button className="btn btn-primary" data-tour="new-quest" onClick={() => setCreating(true)}>{t('quests.new')}</button>
       </div>
 
       <GoalsSection />
 
       {active.length === 0 ? (
         <Empty>
-          <div>
-            No active quests. A quest is real work — pick one from the library or write your own,
-            then clock sessions until it's finished.
-          </div>
+          <div>{t('quests.emptyBody')}</div>
           {/* The modal opens on the library tab, so this button lands on the curated quests
               rather than on a blank title field nobody knows how to fill. */}
           <div style={{ marginTop: 12 }}>
             <button className="btn btn-primary" onClick={() => setCreating(true)}>
-              <Icon name="search" size={14} /> Browse the quest library
+              <Icon name="search" size={14} /> {t('quests.browseLibrary')}
             </button>
           </div>
         </Empty>
@@ -58,7 +50,7 @@ export function Quests() {
           </div>
 
           {visible.length === 0 ? (
-            <Empty>No quests match this attribute filter.</Empty>
+            <Empty>{t('quests.noneMatchFilter')}</Empty>
           ) : (
             <div className="quest-grid">
               {visible.map(q => {
@@ -78,26 +70,30 @@ export function Quests() {
                         </Link>
                       </h3>
                       {s.activeSession?.questId === q.id && (
-                        <span className="status status-live"><Icon name="play" size={11} /> recording</span>
+                        <span className="status status-live"><Icon name="play" size={11} /> {t('quests.recording')}</span>
                       )}
                     </div>
                     {q.description && <p className="muted clamp2">{q.description}</p>}
                     <div className="quest-meta">
                       <AttrTags attrs={q.attrs} linked />
-                      <span className="muted">{q.sessions.length} session{q.sessions.length === 1 ? '' : 's'}</span>
+                      <span className="muted">
+                        {q.sessions.length} {plural(q.sessions.length, t('quests.sessionOne'), t('quests.sessionFew'), t('quests.sessionMany'))}
+                      </span>
                     </div>
                     {progress !== null && target ? (
                       <Bar
                         value={progress}
                         max={100}
                         className={progress >= 100 ? 'bar-over' : 'bar-xp'}
-                        label={`${progress}% of the way to ${fmtDay(target)}`}
+                        label={t('quests.progressLabel', { pct: progress, date: fmtDay(target) })}
                       />
                     ) : null}
                     <div className="quest-meta">
-                      <span>{fmtMinutes(minutes)} logged</span>
+                      <span>{t('quests.logged', { time: fmtMinutes(minutes) })}</span>
                       <span className="muted">
-                        {target ? `${QUEST_DURATIONS[q.targetDuration].label} · by ${fmtDay(target)}` : 'No deadline'}
+                        {target
+                          ? `${QUEST_DURATIONS[q.targetDuration].label} · ${t('quests.by', { date: fmtDay(target) })}`
+                          : t('questDur.none')}
                       </span>
                     </div>
                   </div>
@@ -110,13 +106,13 @@ export function Quests() {
 
       {done.length > 0 && (
         <section className="card">
-          <div className="card-head"><h2>Completed ({done.length})</h2></div>
+          <div className="card-head"><h2>{t('quests.completed', { n: done.length })}</h2></div>
           <ul className="list">
             {done.map(q => (
               <li key={q.id} className="list-row">
                 <Icon name="flag" size={14} />
                 <Link to={`/quests/${q.id}`} className="list-title">{q.title}</Link>
-                <span className="muted">{fmtMinutes(questMinutes(q))} total · paid {questPayout(q, s.character?.classes).xp} XP</span>
+                <span className="muted">{t('quests.totalPaid', { time: fmtMinutes(questMinutes(q)), xp: questPayout(q, s.character?.classes).xp })}</span>
               </li>
             ))}
           </ul>
@@ -130,6 +126,7 @@ export function Quests() {
 
 /** The layer above quests: a long-horizon "why" that links the daily grind to something bigger. */
 function GoalsSection() {
+  const t = useT();
   const s = useGame();
   const today = todayStr();
   const [creating, setCreating] = useState(false);
@@ -140,14 +137,11 @@ function GoalsSection() {
   return (
     <section className="card goals-card">
       <div className="card-head">
-        <h2 className="heading-icon"><Icon name="target" size={18} /> Long-term goals</h2>
-        <button className="btn btn-ghost btn-sm" onClick={() => setCreating(true)}>+ New goal</button>
+        <h2 className="heading-icon"><Icon name="target" size={18} /> {t('quests.goalsTitle')}</h2>
+        <button className="btn btn-ghost btn-sm" onClick={() => setCreating(true)}>{t('quests.newGoal')}</button>
       </div>
       {open.length === 0 && achieved.length === 0 ? (
-        <p className="muted">
-          A goal is the campaign your quests fight for — "in 90 days I want X." Link quests to it;
-          the milestone can only be claimed once at least one linked quest is actually finished.
-        </p>
+        <p className="muted">{t('quests.goalsEmpty')}</p>
       ) : (
         <div className="goal-grid">
           {open.map(goal => {
@@ -162,12 +156,14 @@ function GoalsSection() {
                   <div className="quest-meta">
                     <AttrTags attrs={goal.attrs} linked />
                     <span className={`muted ${daysLeft < 0 ? 'goal-overdue' : ''}`}>
-                      {daysLeft >= 0 ? `${daysLeft} days left · by ${fmtDay(goal.targetDate)}` : `${-daysLeft} days past ${fmtDay(goal.targetDate)}`}
+                      {daysLeft >= 0
+                        ? t('quests.daysLeft', { n: daysLeft, date: fmtDay(goal.targetDate) })
+                        : t('quests.daysPast', { n: -daysLeft, date: fmtDay(goal.targetDate) })}
                     </span>
                   </div>
                   {linked.length > 0 ? (
                     <>
-                      <Bar value={doneCount} max={linked.length} className="bar-xp" label={`${doneCount}/${linked.length} linked quests done`} />
+                      <Bar value={doneCount} max={linked.length} className="bar-xp" label={t('quests.linkedDone', { done: doneCount, total: linked.length })} />
                       <div className="muted goal-linked">
                         {linked.map(q => (
                           <Link key={q!.id} to={`/quests/${q!.id}`} className={q!.completedAt ? 'cal-done' : ''}>
@@ -177,26 +173,26 @@ function GoalsSection() {
                       </div>
                     </>
                   ) : (
-                    <p className="muted">No quests linked yet — a goal without quests is just a wish.</p>
+                    <p className="muted">{t('quests.noLinked')}</p>
                   )}
                 </div>
                 <div className="goal-actions">
                   <button className="btn btn-ghost btn-sm" onClick={() => setLinking(goal)}>
-                    <Icon name="link" size={13} /> Link quests
+                    <Icon name="link" size={13} /> {t('quests.linkQuests')}
                   </button>
                   <button
                     className="btn btn-gold btn-sm"
                     disabled={doneCount === 0}
-                    title={doneCount === 0 ? 'Finish at least one linked quest first' : 'Claim the milestone: +100 XP and +50 gold'}
+                    title={doneCount === 0 ? t('quests.finishOneFirst') : t('quests.claimMilestone')}
                     onClick={() => s.completeGoal(goal.id)}
                   >
-                    <Icon name="flag" size={13} /> Achieved
+                    <Icon name="flag" size={13} /> {t('quests.achieved')}
                   </button>
                   <button
                     className="btn btn-ghost btn-sm"
-                    title="Delete this goal"
-                    aria-label="Delete this goal"
-                    onClick={() => confirm('Delete this goal? Linked quests stay.') && s.deleteGoal(goal.id)}
+                    title={t('quests.deleteGoal')}
+                    aria-label={t('quests.deleteGoal')}
+                    onClick={() => confirm(t('quests.deleteGoalConfirm')) && s.deleteGoal(goal.id)}
                   >
                     <Icon name="trash" size={13} />
                   </button>
@@ -208,7 +204,7 @@ function GoalsSection() {
             <div key={goal.id} className="goal-row goal-achieved">
               <div className="goal-main">
                 <div className="goal-title"><Icon name="flag" size={14} /> {goal.title}</div>
-                <span className="muted">Achieved {fmtDayFull(goal.completedAt!.slice(0, 10))}</span>
+                <span className="muted">{t('quests.achievedOn', { date: fmtDayFull(goal.completedAt!.slice(0, 10)) })}</span>
               </div>
             </div>
           ))}
@@ -221,6 +217,7 @@ function GoalsSection() {
 }
 
 function GoalForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const addGoal = useGame(s => s.addGoal);
   const [title, setTitle] = useState('');
   const [why, setWhy] = useState('');
@@ -229,31 +226,31 @@ function GoalForm({ onClose }: { onClose: () => void }) {
   const valid = title.trim() && attrs.length > 0;
 
   return (
-    <Modal title="New long-term goal" onClose={onClose}>
+    <Modal title={t('quests.goalFormTitle')} onClose={onClose}>
       <label className="field">
-        <span>In {days} days, I want…</span>
-        <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="…to have launched my business site" autoFocus />
+        <span>{t('quests.goalInDays', { n: days })}</span>
+        <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('quests.goalPlaceholder')} autoFocus />
       </label>
       <label className="field">
-        <span>Why does it matter? (optional, future-you will read this)</span>
-        <textarea className="input" rows={2} value={why} onChange={e => setWhy(e.target.value)} placeholder="Because…" />
+        <span>{t('quests.goalWhy')}</span>
+        <textarea className="input" rows={2} value={why} onChange={e => setWhy(e.target.value)} placeholder={t('quests.goalWhyPlaceholder')} />
       </label>
       <div className="field">
-        <span>Horizon</span>
+        <span>{t('quests.horizon')}</span>
         <div className="duration-grid">
-          {GOAL_HORIZONS.map(h => (
-            <button type="button" key={h.days} className={`chip ${days === h.days ? 'chip-on' : ''}`} onClick={() => setDays(h.days)}>
-              {h.label}
+          {GOAL_HORIZON_DAYS.map(d => (
+            <button type="button" key={d} className={`chip ${days === d ? 'chip-on' : ''}`} onClick={() => setDays(d)}>
+              {d} {plural(d, t('onb.dayOne'), t('onb.dayFew'), t('onb.dayMany'))}
             </button>
           ))}
         </div>
       </div>
       <div className="field">
-        <span>Life attributes it serves</span>
+        <span>{t('quests.goalAttrs')}</span>
         <AttrPicker value={attrs} onChange={setAttrs} />
       </div>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={!valid}
@@ -262,7 +259,7 @@ function GoalForm({ onClose }: { onClose: () => void }) {
             onClose();
           }}
         >
-          Set the goal
+          {t('quests.setGoal')}
         </button>
       </div>
     </Modal>
@@ -270,14 +267,15 @@ function GoalForm({ onClose }: { onClose: () => void }) {
 }
 
 function LinkQuestsModal({ goal, onClose }: { goal: Goal; onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const [selected, setSelected] = useState<string[]>(goal.questIds);
   const candidates = s.quests; // completed quests can be linked too — retroactive credit is honest, the work happened
 
   return (
-    <Modal title={`Link quests to: ${goal.title}`} onClose={onClose}>
+    <Modal title={t('quests.linkTo', { goal: goal.title })} onClose={onClose}>
       {candidates.length === 0 ? (
-        <p className="muted">No quests exist yet. Forge one first — goals are won through quests.</p>
+        <p className="muted">{t('quests.noQuestsYet')}</p>
       ) : (
         <ul className="list">
           {candidates.map(q => (
@@ -294,9 +292,9 @@ function LinkQuestsModal({ goal, onClose }: { goal: Goal; onClose: () => void })
         </ul>
       )}
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button className="btn btn-primary" onClick={() => { s.updateGoal(goal.id, { questIds: selected }); onClose(); }}>
-          Save links
+          {t('quests.saveLinks')}
         </button>
       </div>
     </Modal>
@@ -312,6 +310,7 @@ function LinkQuestsModal({ goal, onClose }: { goal: Goal; onClose: () => void })
  * everything the empty form asks you to invent on the spot.
  */
 function QuestForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const addQuest = s.addQuest;
   const [tab, setTab] = useState<'library' | 'own'>('library');
@@ -326,21 +325,23 @@ function QuestForm({ onClose }: { onClose: () => void }) {
   // quietly letting you start the same quest twice.
   const addedTitles = useMemo(() => new Set(s.quests.map(q => q.title)), [s.quests]);
 
-  const addFromTemplate = (t: AnyTemplate) => {
-    if (isHabitTemplate(t)) return; // this browser is quest-only; the guard is for the union type
+  const addFromTemplate = (tpl: AnyTemplate) => {
+    if (isHabitTemplate(tpl)) return; // this browser is quest-only; the guard is for the union type
     // The steps are the part that makes a template a quest rather than a wish,
     // so they ride along in the description instead of being lost on the way in.
-    const steps = t.steps.length ? ` First sessions: ${t.steps.map((step, i) => `${i + 1}) ${step}`).join(' ')}` : '';
-    addQuest({ title: t.title, description: `${t.description}${steps}`, targetDuration: t.targetDuration, attrs: t.attrs });
+    const steps = tpl.steps.length
+      ? ` ${t('quests.firstSessions')} ${tpl.steps.map((step, i) => `${i + 1}) ${step}`).join(' ')}`
+      : '';
+    addQuest({ title: tpl.title, description: `${tpl.description}${steps}`, targetDuration: tpl.targetDuration, attrs: tpl.attrs });
   };
 
   return (
-    <Modal title="New quest" onClose={onClose} wide>
+    <Modal title={t('quests.newQuestTitle')} onClose={onClose} wide>
       <span data-tour="quest-form" hidden />
       <div className="field">
         <div className="seg">
-          <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>Browse library</button>
-          <button type="button" className={tab === 'own' ? 'seg-on' : ''} onClick={() => setTab('own')}>Write my own</button>
+          <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>{t('habits.tabLibrary')}</button>
+          <button type="button" className={tab === 'own' ? 'seg-on' : ''} onClick={() => setTab('own')}>{t('habits.tabOwn')}</button>
         </div>
       </div>
 
@@ -351,12 +352,12 @@ function QuestForm({ onClose }: { onClose: () => void }) {
             mode="add"
             profile={s.character?.profile}
             addedTitles={addedTitles}
-            onPick={t => addFromTemplate(t)}
-            emptyHint="Nothing matches that. Clear a filter, or write your own."
+            onPick={tpl => addFromTemplate(tpl)}
+            emptyHint={t('quests.libraryEmptyHint')}
           />
           <div className="modal-actions">
-            <button className="btn btn-ghost" onClick={() => setTab('own')}>Write my own</button>
-            <button className="btn btn-primary" onClick={onClose}>Done</button>
+            <button className="btn btn-ghost" onClick={() => setTab('own')}>{t('habits.tabOwn')}</button>
+            <button className="btn btn-primary" onClick={onClose}>{t('common.done')}</button>
           </div>
         </>
       ) : (
@@ -406,18 +407,19 @@ function QuestFields({
   onClose: () => void;
   onCreate: () => void;
 }) {
+  const t = useT();
   return (
     <>
       <label className="field">
-        <span>What is the quest?</span>
-        <input className="input" data-tour="quest-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Launch my portfolio site" autoFocus />
+        <span>{t('quests.whatIsIt')}</span>
+        <input className="input" data-tour="quest-title" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('quests.titlePlaceholder')} autoFocus />
       </label>
       <label className="field">
-        <span>Details (optional)</span>
-        <textarea className="input" rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder="What does 'done' look like?" />
+        <span>{t('quests.details')}</span>
+        <textarea className="input" rows={3} value={description} onChange={e => setDescription(e.target.value)} placeholder={t('quests.detailsPlaceholder')} />
       </label>
       <div className="field">
-        <span>How long do you think this'll take? — a pacing reference, not a hard deadline</span>
+        <span>{t('quests.howLong')}</span>
         <div className="duration-grid">
           {QUEST_DURATION_KEYS.map(k => (
             <button
@@ -432,16 +434,16 @@ function QuestFields({
         </div>
       </div>
       <div className="field">
-        <span>Life attributes it feeds</span>
+        <span>{t('habits.fieldAttrs')}</span>
         <AttrPicker value={attrs} onChange={setAttrs} />
       </div>
       <div className="modal-actions">
         <button className="btn btn-ghost" onClick={onBrowse}>
-          <Icon name="search" size={13} /> Browse library
+          <Icon name="search" size={13} /> {t('habits.tabLibrary')}
         </button>
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button className="btn btn-primary" disabled={!valid} onClick={onCreate}>
-          Create quest
+          {t('quests.create')}
         </button>
       </div>
     </>
