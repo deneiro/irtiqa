@@ -5076,6 +5076,228 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Spirituality & Religion / Resource / Из мрака к свету — Слова о смерти как переселении, искренность намерения и харам кредита',
   },
+
+  {
+    slug: 'when-a-symptom-stops-on-its-own',
+    attr: 'health',
+    title: 'A symptom that resolves by itself is the alarming one',
+    origin: 'Vyalov — gastroenterologist, on reading signals and preparing for a doctor',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Relief is the wrong reading. The tissue may simply have stopped reporting.',
+    thesis:
+      'The counterintuitive claim at the centre: when a chronic symptom disappears without treatment, that is not recovery but a sign the organ has begun adapting pathologically — the lining has coarsened and lost sensitivity, in the same way skin does. The signal stopped; the process did not. The same applies elsewhere, where suddenly normal function after a long disturbance can mean the system has settled into a chronically inflamed state rather than a resolved one.',
+    ideas: [
+      {
+        name: 'The case that makes the point',
+        body: 'He recounts a relative in whom gallstones were found painlessly, and in whom a further condition was discovered incidentally before surgery — one that reliably progresses but is fully reversible with about six months of treatment. Treatment was postponed. Five years later it had progressed to cancer, and then to death. Both findings were preventable at the point they were discovered.',
+      },
+      {
+        name: 'A timing map you can use yourself',
+        body: 'Rough transit times by segment: seconds through the oesophagus, one to two hours in the stomach, around two hours for the biliary and pancreatic response, and ten to twenty hours through the intestine after that. Where discomfort falls in that window points at which segment is involved — though the map becomes unreliable in specific conditions that alter motility.',
+      },
+      {
+        name: 'Being a professional customer of your own care',
+        body: 'The patient\'s job, stated as an obligation rather than a courtesy: write down beforehand what hurts, where, when, and its relation to food, to bowel habit, and to time of day. Reconstructing that during the appointment produces a worse consultation than arriving with it.',
+      },
+      {
+        name: 'A fibre test as an objective marker',
+        body: 'Rather than judging by how you feel, take a full day at the reference fibre intake and observe the response — offered as a way to get an objective read on the state of the gut instead of a subjective one.',
+      },
+      {
+        name: 'A date rather than a symptom',
+        body: 'Colonoscopy at forty to forty-five regardless of whether anything is wrong — the whole argument being that the early phase produces nothing to react to.',
+      },
+    ],
+    notes: [
+      'This is the third entry in this sector from the same gastroenterologist. The first covers digestion myths and counting in grams; what is new here is the self-resolving-symptom claim, the timing map, and the preparation discipline. Where this source repeats itself across episodes, the repetition is consistency rather than new evidence.',
+      'An ultrasound of the gallbladder before any deliberate weight loss is named as a specific precaution.',
+      'Several figures — risk multiples, annual case counts, a placebo percentage — are given without in-episode citation and are working estimates from a practising clinician rather than verified numbers.',
+      'His positions on gluten and lactose in the absence of a diagnosed intolerance, and against megadosing vitamins, align with mainstream gastroenterology. One historical aside carries an audible national-pride framing worth separating from the medical content.',
+    ],
+    practices: [
+      'Treat the disappearance of a long-standing symptom without treatment as a reason to investigate, not to relax.',
+      'Write down what, where, when and in what relation to eating — before the appointment, not during it.',
+      'Use where discomfort falls in the timing window to say which segment you mean.',
+      'Put the screening date in the calendar rather than waiting for a symptom to justify it.',
+    ],
+    habits: [
+      { id: 'd_notes', because: 'Arriving as a professional customer means the record exists before the appointment, and memory reconstructed in the room is the thing he says produces a worse consultation.' },
+      { id: 'h_realmeal', because: 'The fibre test is a deliberate day of eating rather than a supplement, which only works from a base of actual meals.' },
+      { id: 'h_nolate', because: 'The reflux mechanism he describes is what coarsens the lining in the first place — this is the version of the fix that costs nothing.' },
+    ],
+    quests: [
+      { id: 'q_healthcheck', because: 'His hardest instruction is a date rather than a reaction: the screening happens because of age, not because something started hurting.' },
+      { id: 'q_energyaudit', because: 'The relation of symptoms to food, sleep and time of day is exactly the pattern a week\'s record makes visible and memory does not.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Вялов — Ловушка самопроходящих симптомов, хронометраж ЖКТ и правда о голодании',
+  },
+
+  {
+    slug: 'separate-the-three',
+    attr: 'health',
+    title: 'Two hours apart is the whole intervention',
+    origin: 'Vyalov — gastroenterologist, on how acute pancreatitis is actually triggered',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Not alcohol, not fat, not nicotine. The simultaneity.',
+    thesis:
+      'Acute pancreatitis is described as triggered not by any one of alcohol, a large fat load, or nicotine, but by their combination and simultaneity. Each independently thickens the pancreatic secretion; arriving together, they block the duct so the enzyme cannot leave, and the gland begins digesting itself from the tail. Spreading the three across time — roughly two-hour intervals — removes most of the risk without changing the totals.',
+    ideas: [
+      {
+        name: 'Why simultaneity is the variable',
+        body: 'Alcohol and nicotine each thicken the secretion, the latter through compounds reaching the blood; a large quantity of fat eaten at once adds the third load. Individually the system copes with each. Together the duct occludes.',
+      },
+      {
+        name: 'Divide rather than abstain',
+        body: 'The practical instruction is not removal but separation — about two hours between episodes of each factor, which he says takes out the main part of the risk even across a long evening.',
+      },
+      {
+        name: 'The organ prepares weeks in advance',
+        body: 'The enzymes used today were synthesised two to three weeks ago from signals about the previous diet. A sudden change — a lot of rich food after months of light eating — is a load on biochemistry that has not had time to prepare, rather than a failure of restraint. Hence preparing weeks ahead rather than hours.',
+      },
+      {
+        name: 'Capacity is not the constraint',
+        body: 'Daily enzyme production runs far above what an ordinary meal consumes, so a single episode of overeating is not itself the threat to a healthy pancreas. The threat is the duct blocking, which is a different failure entirely.',
+      },
+      {
+        name: 'Why the pharmacy enzymes do not do what people think',
+        body: 'A tablet contains a small fraction of daily natural production; an uncoated one is destroyed by stomach acid before arriving; and by the time a coated form dissolves, the discomfort has passed on its own. They have real uses under a diagnosis — insurance against overeating is not one of them.',
+      },
+    ],
+    notes: [
+      'This is the fourth entry in this sector from the same clinician, and the second in this batch. The mechanism here is genuinely separate from the others — it concerns one organ and one failure mode — but the density is worth knowing: a large share of this sector now rests on one practitioner\'s account.',
+      'For sudden sharp pain under the right ribs, his instruction is an antispasmodic and a pause rather than pushing through.',
+      'Specific numbers — the alcohol thresholds, the daily enzyme figure — are given without in-episode sourcing. He does not promote a supplement of his own, which removes the conflict of interest that made another nutrition source in this vault unusable.',
+    ],
+    practices: [
+      'Separate alcohol, nicotine and a heavy fat load by about two hours rather than taking them together.',
+      'Prepare for a change of diet weeks ahead, not hours.',
+      'Do not treat pharmacy enzymes as insurance against a single excess.',
+      'Treat sharp pain under the right ribs as a stop, not something to sit through.',
+    ],
+    habits: [
+      { id: 'h_nosmoke', because: 'Nicotine is one of the three factors by mechanism rather than by general disapproval — removing it takes a leg off the triple load.' },
+      { id: 'h_water', because: 'The failure is a secretion becoming too thick to move, which makes ordinary hydration the least glamorous protective input available.' },
+      { id: 'c_plan', because: 'The organ adapts on a two-to-three week lag, so a heavy occasion is prepared for in advance or not at all.' },
+    ],
+    quests: [
+      { id: 'q_healthcheck', because: 'The distinction between a healthy pancreas coping and a damaged one failing is not self-assessable — it needs the actual examination.' },
+      { id: 'q_habitsystem', because: 'Separating the three by two hours is a structural rule set before the evening rather than a decision made during it.' },
+    ],
+    vaultSource: 'Health & sport / Resource / Вялов — Тройной удар по поджелудочной (алкоголь, жир, никотин)',
+  },
+
+  {
+    slug: 'expectations-as-a-joint-project',
+    attr: 'family',
+    title: 'Say it as something to build together, not as a requirement',
+    origin: 'Baranov — psychologist, on partner choice and unspoken expectations',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'The window where everything feels compatible is the window where compatibility cannot be assessed.',
+    thesis:
+      'The central claim is that partner choice is not random but follows an unconscious pattern relative to an earlier attachment injury — either a close repetition of it or its mirror image. Around that sit the more practically useful pieces: why the early period systematically distorts the assessment, and why expectations have to be a continuing conversation rather than one settled discussion.',
+    ideas: [
+      {
+        name: 'Five fears underneath',
+        body: 'The working typology he uses: rejection, betrayal, loneliness, error, abandonment. Which one dominates is treated as the thing to identify before trying to explain why the same pattern of choice keeps recurring.',
+      },
+      {
+        name: 'The early window is hormonal, not diagnostic',
+        body: 'The initial period is described as a chemically driven state of fusion that systematically distorts the perception of compatibility. The risk named is specific: if goals are not stated explicitly during it, the mismatch surfaces only once it has passed, when discovering it is far more expensive.',
+      },
+      {
+        name: 'A scar rather than a filled hole',
+        body: 'On the pattern of using partners, objects or achievements to fill an internal emptiness: the therapeutic aim offered is not to close it but to end up with a scar — to live with it and reframe it as part of who you are rather than as a defect awaiting repair.',
+      },
+      {
+        name: 'Expectations, phrased as a joint build',
+        body: 'The reframe that does the most work: say what you want as something you would like to build together rather than as a requirement placed on the other person. It lowers the defensive response and distributes the responsibility instead of assigning it.',
+      },
+      {
+        name: 'What do I give, rather than what do I want',
+        body: 'Offered as a compact test of whether a request about a relationship is mature — asked of yourself before the conversation rather than during it.',
+      },
+    ],
+    notes: [
+      'A quick honest check he suggests: draw the relationship. It applies as readily to family and friendships as to a partner.',
+      'The archetype framework presented alongside this is the speaker\'s own commercial product, offered as a finished instrument without reference to research or any wider consensus, and the live demonstrations are single illustrative cases rather than controlled ones. The psychological theses — the pattern of choice, the early window, responsibility for expectations — hold up alongside better-grounded sources already in this sector; the archetype model should be treated as his own.',
+      'An entertainment-format conversation with open promotion in it, in an expressive and at times provocative register that does not undermine the substantive points but is worth separating from them.',
+    ],
+    practices: [
+      'State goals explicitly early, rather than trusting the feeling of compatibility.',
+      'Phrase what you want as something to build together, not as a requirement.',
+      'Ask what you are giving before asking what you want to receive.',
+      'Identify which of the five fears is actually driving the recurring pattern.',
+      'Keep the conversation about expectations running rather than settling it once.',
+    ],
+    habits: [
+      { id: 'f_thanks', because: 'A joint build is expressed in specifics rather than in position statements, and this is the low-stakes version of saying one.' },
+      { id: 'f_remember', because: 'Expectations as a continuing conversation only works if the previous instalment was retained.' },
+      { id: 'd_review', because: 'A recurring pattern of choice is only visible across time, which is not where it is ever noticed in the moment.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The goals conversation he says to have early is precisely the one the early period makes feel unnecessary.' },
+      { id: 'q_reconnect', because: 'The pattern he describes runs through every close relationship, and the honest drawing test applies to all of them.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Баранов — Травма-выбор партнёра, архетипы и невысказанные ожидания',
+  },
+
+  {
+    slug: 'no-one-left-to-blame',
+    attr: 'career',
+    title: 'A failed business has no cover story',
+    origin: 'Gary Vaynerchuk — operator, on exposure, fit and reaction',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Being fired comes with a narrative everyone accepts. Losing does not.',
+    thesis:
+      'Entrepreneurial failure is uniquely exposing because there is no external party left to blame — losing a job carries a ready-made explanation that people accept, and a failed business does not. Most of what follows is technique for absorbing that exposure, in yourself and in the people you lead, without becoming defensive or dependent on other people\'s opinions.',
+    ideas: [
+      {
+        name: 'Why the halo is dangerous',
+        body: 'Going in under a cultural halo rather than as a clear-eyed contest leaves people with no framework for absorbing public failure when it arrives. His concern is not the difficulty of the work but the oversupply of people chasing the identity rather than the work.',
+      },
+      {
+        name: 'The pedestal moves; fit does not',
+        body: 'He refuses to rank the roles — founder above franchisee, either above employee or parent — and notes that which role is admired is era-dependent, with professions that once drew admiration now drawing complaints. What does not move is whether a particular role suits a particular person.',
+      },
+      {
+        name: 'The franchisee reframe',
+        body: 'Argued as underrated: it retains most of the texture of running something — operations, staffing, the numbers — while trading brand-building risk for a working playbook and existing demand. Which makes it, in his framing, a serious option rather than a lesser one.',
+      },
+      {
+        name: 'Your reaction is the outcome',
+        body: 'Interpretation is treated as the controllable upstream variable: decide the situation is hopeless and nothing that subsequently happens will move you off it. The claim is not that circumstances are irrelevant but that the reading of them is where the leverage sits.',
+      },
+      {
+        name: 'Set the intention, not only the number',
+        body: 'A standard of behaviour or quality holds up under pressure better than a revenue target, and narrows the gap between missing a number and having done poor work — which are not the same thing and get conflated.',
+      },
+    ],
+    notes: [
+      'A concrete phrasing device he recommends for critical feedback — explicitly marking a judgement as your own subjective opinion — on the claim that the exact framing, not merely a softer tone, reduces defensiveness.',
+      'A long-standing and highly public figure whose views here are consistent with his wider output, so this is a reliable record of what he thinks. It is unstructured panel talk — personal philosophy and anecdote rather than research — and the business figures mentioned by participants are self-reported.',
+    ],
+    practices: [
+      'Enter on the merits rather than on the identity, and know which one is pulling you.',
+      'Judge the role by fit rather than by how admired it currently is.',
+      'Set a standard of work alongside the number, so a missed target is not read as bad work.',
+      'Mark a critical judgement as your own opinion when you give it.',
+      'Treat your reading of a situation as the part you actually control.',
+    ],
+    habits: [
+      { id: 'c_onelesson', because: 'Absorbing a loss without a cover story requires knowing specifically what happened, which is only available if it was recorded.' },
+      { id: 'c_ship', because: 'Exposure is the thing being trained for, and it is trained in small doses rather than saved up for one public failure.' },
+      { id: 'd_askquestion', because: 'The subjective-opinion framing is a way of speaking to people, and it needs occasions where you actually say the uncomfortable thing.' },
+    ],
+    quests: [
+      { id: 'q_promise', because: 'His whole point is that a stated intention is what you are held to when the number does not arrive.' },
+      { id: 'q_skill', because: 'Fit is discovered by doing the work rather than by deciding in advance which role deserves the pedestal.' },
+    ],
+    vaultSource: 'Business & career / Resource / Gary Vaynerchuk — Business Tactics and Lessons (Podcast With Friends)',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
