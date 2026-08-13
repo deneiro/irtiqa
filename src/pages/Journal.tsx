@@ -5,9 +5,11 @@ import { Empty, Modal } from '../components/ui';
 import { MOODS, reflectionQuestions } from '../game/constants';
 import { fmtDayFull, journalEditable, journalXp, questionsForDay, todayStr } from '../game/engine';
 import type { JournalEntry } from '../game/types';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 
 export function Journal() {
+  const t = useT();
   const s = useGame();
   const today = todayStr();
   const todayEntry = s.journal.find(e => e.date === today);
@@ -26,19 +28,19 @@ export function Journal() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Journal</h1>
-          <p className="muted">Daily reflection. Entries seal after 72 hours — the past is not for retouching.</p>
+          <h1>{t('journal.title')}</h1>
+          <p className="muted">{t('journal.subtitle')}</p>
         </div>
       </div>
 
       {!todayEntry ? (
         <section className="card">
           <div className="card-head">
-            <h2>Today's entry</h2>
+            <h2>{t('journal.todayEntry')}</h2>
             <span className="muted heading-icon">
               +{journalXp(s.character?.classes)} XP →
-              <Icon name="spirituality" size={13} /> Spirituality
-              <Icon name="development" size={13} /> Development
+              <Icon name="spirituality" size={13} /> {t('attr.spirituality.label')}
+              <Icon name="development" size={13} /> {t('attr.development.label')}
             </span>
           </div>
           <EntryForm
@@ -49,10 +51,10 @@ export function Journal() {
       ) : (
         <section className="card">
           <div className="card-head">
-            <h2 className="heading-icon">Today's entry <Icon name="check" size={16} /></h2>
+            <h2 className="heading-icon">{t('journal.todayEntry')} <Icon name="check" size={16} /></h2>
             {journalEditable(todayEntry) && (
               <button className="btn btn-ghost btn-sm heading-icon" onClick={() => setEditing(todayEntry)}>
-                <Icon name="edit" size={13} /> Edit
+                <Icon name="edit" size={13} /> {t('common.edit')}
               </button>
             )}
           </div>
@@ -62,15 +64,11 @@ export function Journal() {
 
       <section className="card">
         <div className="card-head">
-          <h2>Archive ({s.journal.length})</h2>
-          <input className="input input-sm" placeholder="Search entries…" value={search} onChange={e => setSearch(e.target.value)} />
+          <h2>{t('journal.archive', { n: s.journal.length })}</h2>
+          <input className="input input-sm" placeholder={t('journal.searchPh')} value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         {archive.length === 0 ? (
-          <Empty>
-            {search
-              ? 'No entries match that search. Try a single word — a name, a place, a feeling.'
-              : "The archive fills itself as you write. Today's entry is at the top of this page — one answer is enough to start it."}
-          </Empty>
+          <Empty>{search ? t('journal.noMatch') : t('journal.archiveEmpty')}</Empty>
         ) : (
           <div className="journal-archive">
             {archive.filter(e => e.date !== today).map(e => {
@@ -80,29 +78,31 @@ export function Journal() {
                   <summary>
                     <span className="mood">{MOODS[e.mood - 1]}</span>
                     <span className="list-title">{fmtDayFull(e.date)}</span>
-                    <span className="muted">stress {e.stress}/10</span>
+                    <span className="muted">{t('journal.stress')} {e.stress}/10</span>
                     {editable ? (
                       e.unlocked
-                        ? <span className="status status-live heading-icon"><Icon name="feather" size={12} /> unlocked</span>
-                        : <span className="status heading-icon"><Icon name="edit" size={12} /> editable</span>
+                        ? <span className="status status-live heading-icon"><Icon name="feather" size={12} /> {t('journal.unlocked')}</span>
+                        : <span className="status heading-icon"><Icon name="edit" size={12} /> {t('journal.editable')}</span>
                     ) : (
-                      <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> sealed</span>
+                      <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> {t('journal.sealed')}</span>
                     )}
                   </summary>
                   <EntryView entry={e} />
                   <div className="journal-item-actions">
                     {editable && (
                       <button className="btn btn-ghost btn-sm heading-icon" onClick={() => setEditing(e)}>
-                        <Icon name="edit" size={13} /> Edit
+                        <Icon name="edit" size={13} /> {t('common.edit')}
                       </button>
                     )}
                     {!editable && feathers > 0 && (
                       <button className="btn btn-ghost btn-sm heading-icon" onClick={() => s.useItem('feather', { entryId: e.id })}>
-                        <Icon name="feather" size={13} /> Unseal with Feather of Time ({feathers} owned)
+                        <Icon name="feather" size={13} /> {t('journal.unsealWith', { n: feathers })}
                       </button>
                     )}
                     {!editable && feathers === 0 && (
-                      <span className="muted">Sealed. A <Link to="/market">Feather of Time</Link> can unseal it — for a price.</span>
+                      <span className="muted">
+                        {t('journal.sealedHint')} <Link to="/market">{t('item.feather.name')}</Link> {t('journal.sealedHintTail')}
+                      </span>
                     )}
                   </div>
                 </details>
@@ -113,7 +113,7 @@ export function Journal() {
       </section>
 
       {editing && (
-        <Modal title={`Edit entry — ${fmtDayFull(editing.date)}`} onClose={() => setEditing(null)} wide>
+        <Modal title={t('journal.editEntry', { date: fmtDayFull(editing.date) })} onClose={() => setEditing(null)} wide>
           <EntryForm
             initial={editing}
             onSave={(mood, stress, answers) => { s.updateJournalEntry(editing.id, mood, stress, answers); setEditing(null); }}
@@ -125,9 +125,10 @@ export function Journal() {
 }
 
 function EntryView({ entry }: { entry: JournalEntry }) {
+  const t = useT();
   return (
     <div className="entry-view">
-      <p><span className="mood">{MOODS[entry.mood - 1]}</span> mood {entry.mood}/5 · stress {entry.stress}/10</p>
+      <p><span className="mood">{MOODS[entry.mood - 1]}</span> {t('journal.mood')} {entry.mood}/5 · {t('journal.stress')} {entry.stress}/10</p>
       {entry.answers.map((a, i) => (
         // Same measure as the writing box, so an entry reads back the way it was written.
         <div key={i} className="entry-qa" style={{ maxWidth: '66ch' }}>
@@ -146,6 +147,7 @@ function EntryForm({
   initial: JournalEntry | null;
   onSave: (mood: number, stress: number, answers: { q: string; a: string }[]) => void;
 }) {
+  const t = useT();
   const classes = useGame(x => x.character?.classes);
   // Today's form and the edit modal can be mounted at once, so the hint's id has to be
   // per-instance or aria-describedby would point at whichever one rendered first.
@@ -164,7 +166,7 @@ function EntryForm({
   return (
     <div className="entry-form" data-tour="journal-form">
       <div className="field">
-        <span>Mood</span>
+        <span>{t('journal.moodField')}</span>
         <div className="mood-row">
           {MOODS.map((m, i) => (
             <button key={i} type="button" className={`mood-btn ${mood === i + 1 ? 'mood-on' : ''}`} onClick={() => setMood(i + 1)}>
@@ -174,7 +176,7 @@ function EntryForm({
         </div>
       </div>
       <label className="field">
-        <span>Stress level: {stress}/10</span>
+        <span>{t('journal.stressLevel')}: {stress}/10</span>
         <input type="range" min={1} max={10} value={stress} onChange={e => setStress(Number(e.target.value))} />
       </label>
       {questions.map((q, i) => (
@@ -193,9 +195,7 @@ function EntryForm({
       ))}
       <div className="modal-actions" style={{ maxWidth: '66ch', alignItems: 'center', flexWrap: 'wrap' }}>
         {!valid && (
-          <span className="muted" id={hintId}>
-            Answer at least one question — a mood and a stress number aren't an entry yet.
-          </span>
+          <span className="muted" id={hintId}>{t('journal.needOneAnswer')}</span>
         )}
         <button
           className="btn btn-primary"
@@ -203,7 +203,7 @@ function EntryForm({
           aria-describedby={!valid ? hintId : undefined}
           onClick={() => onSave(mood, stress, questions.map((q, i) => ({ q, a: answers[i].trim() })))}
         >
-          {initial ? 'Save changes' : `Save entry (+${journalXp(classes)} XP)`}
+          {initial ? t('journal.saveChanges') : t('journal.saveEntry', { xp: journalXp(classes) })}
         </button>
       </div>
     </div>

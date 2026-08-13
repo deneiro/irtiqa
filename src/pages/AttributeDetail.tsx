@@ -6,6 +6,7 @@ import { attrLevelProgress } from '../game/engine';
 import { MEDIUM_LABEL, libraryFor } from '../game/library';
 import { ATTRIBUTE_CONTENT } from '../game/wheel';
 import type { AttributeKey } from '../game/types';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 
 /**
@@ -22,6 +23,7 @@ import { useGame } from '../store';
  * by the source you just read, which is a better recommendation than a search box.
  */
 export function AttributeDetail() {
+  const t = useT();
   const { key } = useParams<{ key: string }>();
   const attr = key as AttributeKey;
   const attrs = useGame(s => s.attrs);
@@ -53,20 +55,20 @@ export function AttributeDetail() {
       <section className="card attr-hero" data-tour="attr-bar">
         <p className="attr-definition">{content.definition}</p>
         <Bar value={lp.into} max={lp.need} className="bar-attr" label={`${lp.into}/${lp.need} XP`} />
-        <p className="muted center attr-hero-xp">{lp.into}/{lp.need} XP to level {lp.level + 1}</p>
+        <p className="muted center attr-hero-xp">{t('layout.xpToLevel', { into: lp.into, need: lp.need, level: lp.level + 1 })}</p>
       </section>
 
       <div className="attr-essay">
         <section className="card">
-          <h2>Why it's on the wheel</h2>
+          <h2>{t('attrDetail.why')}</h2>
           <p>{content.why}</p>
         </section>
         <section className="card">
-          <h2>What it pulls on</h2>
+          <h2>{t('attrDetail.connection')}</h2>
           <p>{content.connection}</p>
         </section>
         <section className="card">
-          <h2>What neglect looks like</h2>
+          <h2>{t('attrDetail.neglect')}</h2>
           <p>{content.neglect}</p>
         </section>
       </div>
@@ -74,13 +76,10 @@ export function AttributeDetail() {
       {entries.length > 0 && (
         <>
           <h2 className="lib-label lib-label-page">
-            The Library
-            {unread > 0 && <span className="lib-unread">{unread} unread</span>}
+            {t('lib.title')}
+            {unread > 0 && <span className="lib-unread">{t('lib.unread', { n: unread })}</span>}
           </h2>
-          <p className="lib-section-note">
-            A source per card, distilled and read in full — then the habits and quests it argues for,
-            waiting at the bottom of it.
-          </p>
+          <p className="lib-section-note">{t('lib.sectionNote')}</p>
           <div className="lib-grid">
             {entries.map(e => {
               const read = libraryRead[e.slug];
@@ -94,9 +93,9 @@ export function AttributeDetail() {
                     <span className="tag tag-icon">
                       <Icon name="book" size={12} /> {MEDIUM_LABEL[e.medium]}
                     </span>
-                    <span className="muted lib-card-time">{e.minutes} min</span>
+                    <span className="muted lib-card-time">{e.minutes} {t('lib.min')}</span>
                     {read && (
-                      <span className="lib-card-check" title="Read">
+                      <span className="lib-card-check" title={t('lib.readTitle')}>
                         <Icon name="check" size={13} />
                       </span>
                     )}
@@ -105,7 +104,7 @@ export function AttributeDetail() {
                   <p className="lib-card-hook">{e.hook}</p>
                   <p className="muted lib-card-origin">{e.origin}</p>
                   <span className="lib-card-go">
-                    Read <Icon name="chevronRight" size={13} />
+                    {t('lib.read')} <Icon name="chevronRight" size={13} />
                   </span>
                 </Link>
               );

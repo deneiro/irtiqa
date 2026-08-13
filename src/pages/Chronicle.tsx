@@ -9,6 +9,7 @@ import {
   type Chronicle as ChronicleWeek,
 } from '../game/chronicle';
 import { fmtDayFull, todayStr } from '../game/engine';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 
 /**
@@ -53,6 +54,7 @@ function ChronicleBody({ chronicle }: { chronicle: ChronicleWeek }) {
 }
 
 export function Chronicle() {
+  const t = useT();
   const s = useGame();
   const today = todayStr();
   const [openWeek, setOpenWeek] = useState<string | null>(null);
@@ -88,10 +90,8 @@ export function Chronicle() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>The Chronicle</h1>
-          <p className="muted">
-            Your week, written back to you. Assembled from what you logged — nothing invented.
-          </p>
+          <h1>{t('nav.chronicle')}</h1>
+          <p className="muted">{t('chron.subtitle')}</p>
         </div>
       </div>
 
@@ -115,7 +115,7 @@ export function Chronicle() {
         )}
       </section>
 
-      <h2 className="section-title">Earlier weeks</h2>
+      <h2 className="section-title">{t('chron.earlierWeeks')}</h2>
       {archive.length === 0 ? (
         <Empty>
           No earlier weeks on record yet — they accumulate on their own as you go. Meanwhile,{' '}
@@ -139,7 +139,7 @@ export function Chronicle() {
                 {open && (
                   <div className="chron-entry-body">
                     <ChronicleBody chronicle={c} />
-                    <p className="muted chron-filed">Filed {fmtDayFull(c.week)}</p>
+                    <p className="muted chron-filed">{t('chron.filed', { date: fmtDayFull(c.week) })}</p>
                   </div>
                 )}
               </div>

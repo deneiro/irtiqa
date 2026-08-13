@@ -6,6 +6,7 @@ import { ATTRIBUTES } from '../game/constants';
 import { attrLevelProgress } from '../game/engine';
 import { habitTemplatesFor, questTemplatesFor } from '../game/templates';
 import { ATTRIBUTE_CONTENT, WHEEL_ORDER, WHEEL_RULE, WHEEL_SOURCE } from '../game/wheel';
+import { plural, useT } from '../i18n';
 import { useGame } from '../store';
 
 /**
@@ -14,6 +15,7 @@ import { useGame } from '../store';
  * found by looking, which is the diagnostic working as intended.
  */
 export function Attributes() {
+  const t = useT();
   const attrs = useGame(s => s.attrs);
 
   const levels = WHEEL_ORDER.map(k => ({ key: k, ...attrLevelProgress(attrs[k]) }));
@@ -23,11 +25,8 @@ export function Attributes() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>The Wheel</h1>
-          <p className="muted">
-            Eight sectors of life, scored by what you actually did. Tap one to see what it means and
-            what to put in it.
-          </p>
+          <h1>{t('nav.wheel')}</h1>
+          <p className="muted">{t('attrs.subtitle')}</p>
         </div>
       </div>
 
@@ -37,13 +36,13 @@ export function Attributes() {
           are links (see RadarChart), so this doubles as the fastest way into a sector. */}
       <section className="card">
         <div className="card-head">
-          <h2>Your wheel right now</h2>
-          <span className="muted">level per sector</span>
+          <h2>{t('attrs.wheelNow')}</h2>
+          <span className="muted">{t('attrs.levelPerSector')}</span>
         </div>
         <div data-tour="radar"><RadarChart /></div>
         <p className="muted center">
-          Shortest spoke: <Link to={`/attributes/${lowest.key}`}>{ATTRIBUTES[lowest.key].label}</Link>,
-          level {lowest.level}. Tap any spoke to open its sector.
+          {t('attrs.shortestSpoke')} <Link to={`/attributes/${lowest.key}`}>{ATTRIBUTES[lowest.key].label}</Link>
+          {t('attrs.shortestSpokeTail', { level: lowest.level })}
         </p>
       </section>
 
@@ -74,16 +73,18 @@ export function Attributes() {
                   <span className="attr-card-name">{meta.label}</span>
                   <span className="muted attr-card-sector">{content.wheelName}</span>
                 </div>
-                <span className="attr-card-level">Lv {level}</span>
+                <span className="attr-card-level">{t('common.lv')} {level}</span>
               </div>
 
-              <Bar value={into} max={need} className="bar-attr" label={`${into}/${need} XP to level ${level + 1}`} />
+              <Bar value={into} max={need} className="bar-attr" label={t('layout.xpToLevel', { into, need, level: level + 1 })} />
 
               <p className="attr-card-def">{content.definition}</p>
 
               <div className="attr-card-foot">
                 <span className="muted">
-                  {habits} habit{habits === 1 ? '' : 's'} · {quests} quest{quests === 1 ? '' : 's'}
+                  {habits} {plural(habits, t('onb.habitOne'), t('onb.habitFew'), t('onb.habitMany'))}
+                  {' · '}
+                  {quests} {plural(quests, t('attrs.questOne'), t('attrs.questFew'), t('attrs.questMany'))}
                 </span>
                 {/* A word alone read as a verdict on the player. Paired with the target glyph it
                     reads as what it is: the sector with the most room, and the cheapest place to
@@ -91,7 +92,7 @@ export function Attributes() {
                     inline pill in the shared stylesheet and can't be changed in this pass. */}
                 {isLowest && (
                   <span className="attr-card-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <Icon name="target" size={10} /> thinnest
+                    <Icon name="target" size={10} /> {t('attrs.thinnest')}
                   </span>
                 )}
               </div>

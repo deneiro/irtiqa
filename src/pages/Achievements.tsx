@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { Icon } from '../components/Icon';
 import { ACHIEVEMENTS, TIER_LABEL, TIER_REWARDS } from '../game/constants';
+import { useT } from '../i18n';
+import { fmtDate } from '../lib/format';
 import { useGame } from '../store';
 
 /**
@@ -13,6 +15,7 @@ import { useGame } from '../store';
  * away for anyone who wants to see where it goes.
  */
 export function Achievements() {
+  const t = useT();
   const unlocked = useGame(s => s.unlocked);
   const [showAll, setShowAll] = useState(false);
   const total = ACHIEVEMENTS.length;
@@ -31,13 +34,13 @@ export function Achievements() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Achievements</h1>
-          <p className="muted">Trophies for the grind. Early ones come fast — the last ones cost you years. Worth it.</p>
+          <h1>{t('ach.title')}</h1>
+          <p className="muted">{t('ach.subtitle')}</p>
         </div>
         <div className="ach-head-right">
           <div className="ach-progress"><Icon name="trophy" size={22} /> {got} / {total}</div>
           <button className="btn btn-ghost btn-sm" onClick={() => setShowAll(v => !v)}>
-            {showAll ? 'Show what’s next' : `Show all ${total}`}
+            {showAll ? t('ach.showNext') : t('ach.showAll', { n: total })}
           </button>
         </div>
       </div>
@@ -57,7 +60,7 @@ export function Achievements() {
                 <Icon name={achs[0].familyIcon} size={16} /> {family}
               </h2>
               <span className={`ach-family-count ${complete ? 'ach-family-done' : ''}`}>
-                {complete && <Icon name="check" size={12} />} {earned.length} of {achs.length}
+                {complete && <Icon name="check" size={12} />} {t('ach.xOfY', { got: earned.length, total: achs.length })}
               </span>
             </div>
             <div className="ach-grid">
@@ -79,7 +82,7 @@ export function Achievements() {
                     <div className="ach-reward">
                       +{r.xp} XP · +{r.gold} <Icon name="gold" size={12} className="ach-gold" />
                     </div>
-                    {at && <div className="ach-date">{new Date(at).toLocaleDateString()}</div>}
+                    {at && <div className="ach-date">{fmtDate(at)}</div>}
                   </div>
                 );
               })}
