@@ -5519,6 +5519,224 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Personal growth / Resource / Мужицкая — Три оси, папки подсознания и калибровка своей скорости',
   },
+
+  {
+    slug: 'trauma-as-a-marketing-term',
+    attr: 'family',
+    title: 'Could you be all right without it?',
+    origin: 'A staged debate between two practitioners who disagree',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'One of them argues the word "trauma" has been borrowed from the clinic and sold back to you.',
+    thesis:
+      'This is a deliberate confrontation between two incompatible positions rather than a synthesis, and it earns its place as a counterweight: much of this sector is written in the language of attachment injury, and one participant argues that popular usage of "trauma" is a diffuse appropriation of a real diagnostic term, sold as courses to an audience whose vulnerability is the product.',
+    ideas: [
+      {
+        name: 'What the clinical term actually requires',
+        body: 'His correction is technically accurate: the diagnosis turns on a flashback to a specific trigger — the person bitten in a lift who then physically cannot enter one. "Fear of closeness because a parent left" is a different kind of claim, and marketing programmes in that vocabulary is what he calls fraud rather than therapy. The other participant agrees with him here almost entirely.',
+      },
+      {
+        name: 'A more useful axis than trauma',
+        body: 'He offers the level of personality organisation — neurotic versus borderline — as the distinction that actually predicts what goes wrong in relationships, on the basis that the difficulties differ in kind. He also notes that a standard psychology degree supplies diagnosis rather than treatment, and that real help requires training in a specific modality suited to that register.',
+      },
+      {
+        name: 'Relationships as a side effect',
+        body: 'His central claim: good relationships are a by-product of a developed person rather than the output of a method for entering them. Setting "I want a relationship" as the goal is itself the signal, because it makes emotional wellbeing conditional on another person being present.',
+      },
+      {
+        name: 'The readiness test',
+        body: 'Before any large step — a relationship, marriage, children — ask whether you could be all right without it. Where the foundation is there, changes and endings are survivable; where it is not, the relationship gets used to hold the person together.',
+      },
+      {
+        name: 'Where they agree despite themselves',
+        body: 'Both name deliberate techniques for making someone attach to you by working their psychological weak points as harmful and as not being love. That agreement is the most reliable part of the exchange precisely because it does not serve either of their commercial positions.',
+      },
+    ],
+    notes: [
+      'The other participant\'s position is that personality is the foundation and specific communication and self-presentation skills are still worth learning deliberately — a pragmatic coaching stance rather than a rejection of the first.',
+      'Both have a direct commercial interest in the position they hold, and the format is billed as a debate rather than a neutral examination. Read both as advertised viewpoints; the agreement noted above is the exception.',
+      'His broader claim that almost no relationships are love but mutual filling of psychological gaps is rhetoric rather than a finding, and is not carried here as one.',
+      'Observing someone under stress, in anger, or drinking is offered as a more concrete test of knowing a person than general advice not to rush.',
+    ],
+    practices: [
+      'Ask whether you would be all right without the thing before taking the large step toward it.',
+      'Be precise about the word: a diffuse "trauma" story and a clinical diagnosis are not the same claim.',
+      'If you are looking for help, know whether you need diagnosis or a specific modality of treatment.',
+      'Watch how someone behaves under stress rather than only how they behave with you.',
+    ],
+    habits: [
+      { id: 'd_review', because: 'Whether your wellbeing is currently conditional on another person is not a question you can answer honestly in the middle of a good week.' },
+      { id: 'f_meet', because: 'The proposed test is observation across ordinary and unflattering conditions, which requires actually being around someone.' },
+      { id: 'b_nocompare', because: 'The market he is criticising runs on the feeling that everyone else has resolved something you have not.' },
+    ],
+    quests: [
+      { id: 'q_hardconversation', because: 'The readiness question is worth asking out loud with someone rather than settling privately in your own favour.' },
+      { id: 'q_wheel', because: 'Personality as the foundation is a claim about the whole of a life, and the audit is where that gets scored rather than asserted.' },
+    ],
+    vaultSource: 'Family & relationship / Resource / Красиков vs Силко — Психотравма как маркетинг, личность как фундамент и теневая мотивация',
+  },
+
+  {
+    slug: 'equity-instead-of-collateral',
+    attr: 'career',
+    title: 'When there is no collateral, reputation is the collateral',
+    origin: 'Sultanov & Abdrazakov — on venture and non-collateral financing',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'They check how you parted with your last partners. That is not a character question — it is the underwriting.',
+    thesis:
+      'Where banks are structurally uninterested in lending to smaller businesses — risk is high, collateral is thin, and consumer lending pays better — two alternatives fill the gap: equity investment, which takes a share instead of security and makes the investor a partner rather than a creditor, and non-collateral platform financing for businesses with demonstrated turnover. In both, the founder\'s reputation and personal guarantee weigh more than the company\'s assets.',
+    ideas: [
+      {
+        name: 'Partner rather than creditor',
+        body: 'A bank lends against security; an equity investor buys a share, typically a modest one, and is therefore personally exposed to whether it works — which is why the useful part is often the introductions and partnerships rather than the money.',
+      },
+      {
+        name: 'Reputation is the first screen',
+        body: 'Assessment covers how the founder behaves with employees in hiring and firing, and specifically how they separated from previous partners and co-founders — on the explicit reasoning that someone who handles one set of obligations badly will handle the next set the same way. This is stated as an operative criterion rather than a sentiment.',
+      },
+      {
+        name: 'The one that got away',
+        body: 'He recounts turning down what became the country\'s first billion-dollar startup two years earlier, because he did not understand how it would make money, while a colleague invested. The admission is the point: recognising what will work is partly judgement rather than only metrics, and experienced investors get it wrong.',
+      },
+      {
+        name: 'Two different products for two different stages',
+        body: 'Equity suits an idea or an early product. Non-collateral platform financing suits an operating business with verified turnover and a period of trading behind it — no hard security required, but a personal guarantee and a clean credit history are.',
+      },
+      {
+        name: 'The relay metaphor',
+        body: 'An early investor\'s job is to carry the company to the stage where larger international funds take over — the baton has to reach the finish rather than the first runner having to run the whole distance.',
+      },
+    ],
+    notes: [
+      'Portfolio figures cited are self-reported within the conversation — specific and internally consistent, but not independently verified here. Sector-level statistics are given as common industry knowledge without a source.',
+      'Two identifiable professionals speaking about their own products and portfolios, which makes the factual core reliable and the framing naturally favourable to those products.',
+      'The conversation also contains personal generalisations about categories of borrower that are subjective impressions from experience rather than data, and those are not carried here.',
+    ],
+    practices: [
+      'Assume how you ended the last partnership is being read as underwriting information.',
+      'Document equity cleanly before money moves, not after.',
+      'Match the instrument to the stage: a share for an idea, turnover-based finance for a running business.',
+      'Expect judgement to be part of the assessment, including when it goes against you.',
+    ],
+    habits: [
+      { id: 'c_onelesson', because: 'The story he tells against himself is a missed judgement he can still articulate years later — which is only possible for someone who recorded it.' },
+      { id: 'm_log', because: 'Non-collateral finance is granted against demonstrated turnover and a clean history, both of which are records rather than claims.' },
+      { id: 'd_askquestion', because: 'Which instrument fits which stage is knowable by asking the people who issue them rather than by inferring it.' },
+    ],
+    quests: [
+      { id: 'q_raise', because: 'Every route described here starts with asking a specific person for a specific amount and being able to justify it.' },
+      { id: 'q_portfolio', because: 'If reputation is the first screen, then what can be found about your previous work is doing the underwriting before you arrive.' },
+    ],
+    vaultSource: 'Business & career / Resource / Султанов и Абдразаков — Венчурное и альтернативное финансирование МСБ в Казахстане',
+  },
+
+  {
+    slug: 'stand-where-you-are-placed',
+    attr: 'spirituality',
+    title: 'Stand where you are placed',
+    origin: 'Haifaa Younis — a second conversation, on roles and sincerity',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'The overload does not come from the number of roles. It comes from holding all of them at once.',
+    thesis:
+      'The exhaustion of carrying many roles is attributed not to the roles themselves but to trying to hold all of them in mind simultaneously. The correction offered is a change of frame rather than of workload: attend to the single role you are actually in right now, treated as service in itself — which makes preparing a meal no less weighty than the work you are credentialed for.',
+    ideas: [
+      {
+        name: 'Priority as a skill, not a list',
+        body: 'The worked example from jurisprudence: if a child cries during an obligatory prayer and you can reach them, the prayer is interrupted and the child attended to — and that is itself compliance rather than a failure of duty. Priorities are determined by the moment rather than by an abstract ranking made in advance.',
+      },
+      {
+        name: 'Worship defined broadly',
+        body: 'On the definition she cites, it covers everything God loves and is pleased by — words and acts, outward and inward — rather than the ritual obligations alone. Answering a greeting, or cooking for your family with the intention of care, falls inside it. The practical effect is that the religiously significant surface expands to cover ordinary life rather than being confined to a few appointments in it.',
+      },
+      {
+        name: 'Self-care as an obligation',
+        body: 'Stated directly: your body and your soul have rights over you. Refusing care for yourself in order to carry more of everyone else is named as an injustice rather than a virtue, and time spent on yourself does not require guilt.',
+      },
+      {
+        name: 'Diagnosing sincerity through criticism',
+        body: 'The practical test she offers: if being criticised or not being praised upsets you, that is a signal to re-examine the intention behind the act — it may not have been done only for the reason you told yourself. The reframe attached is that criticism is a gift showing a blind spot rather than an attack.',
+      },
+    ],
+    notes: [
+      'This is the second conversation with the same speaker in this sector; the first covers marriage as an institution and agreeing a procedure in advance. What is new here is the single-role frame, the expanded definition of worship, and the sincerity test.',
+      'An identifiable specialist working within mainstream scholarship with explicit references to specific reports and named jurists, which makes it more checkable than an anonymous account.',
+      'Some illustrative remarks touch on medical territory and are used rhetorically rather than as clinical claims, despite her background — not something to rely on without separate checking.',
+    ],
+    practices: [
+      'Attend to the role you are actually in, rather than holding all of them at once.',
+      'Let the moment set the priority rather than a ranking decided in advance.',
+      'Take the time your body and mind require without treating it as a debt to someone.',
+      'When criticism stings disproportionately, treat that as information about the intention rather than about the critic.',
+    ],
+    habits: [
+      { id: 's_dhikr', because: 'The single-role frame is a returning-to rather than a decision, and five quiet minutes is where the returning gets practised.' },
+      { id: 'f_thanks', because: 'If ordinary acts of care count as worship, then naming someone else\'s specifically is the version that is available all day.' },
+      { id: 'd_review', because: 'The sincerity test asks about a pattern of reactions to criticism, which is visible over weeks rather than in the moment of stinging.' },
+    ],
+    quests: [
+      { id: 'q_anchor', because: 'A frame that has to be returned to constantly needs one fixed practice in the day to return to it from.' },
+      { id: 'q_learnfaith', because: 'Both the priority ruling and the definition of worship she uses come from named scholarship rather than from intuition.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Хайфа Юнис — Роли, искренность и брак с точки зрения ислама',
+  },
+
+  {
+    slug: 'take-it-to-the-end',
+    attr: 'development',
+    title: 'Run the success all the way out and see what frightens you',
+    origin: 'MacDonald — on identity, procrastination and cheap reward',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Often it is not fear of failing. It is fear of what succeeding would require you to become.',
+    thesis:
+      'Three causes are offered for being stuck, and the one worth the entry is the first: a mismatch between the identity you hold and the behaviour the goal requires. If the self-narrative does not include being the sort of person who does this, the behaviour does not get promoted — so the shift has to be made before the result rather than as its reward.',
+    ideas: [
+      {
+        name: 'Identity before result',
+        body: 'The recommendation is a deliberate shift in self-description ahead of the evidence — I am already someone who does this. The analogy given is falling asleep: you close your eyes, slow the breathing and act as though it is happening until it becomes true.',
+      },
+      {
+        name: 'Take it all the way to the end',
+        body: 'The diagnostic that gives the entry its title: run the goal out to its fullest realisation and notice what surfaces. Her own example is not fear of failing but the exposure that a larger audience would bring. Naming the specific fear is described as the move that reduces its grip, rather than resolving to be braver.',
+      },
+      {
+        name: 'Withholding the reward',
+        body: 'A concrete rule against cheap reward: the small pleasure comes after the task you are avoiding, not instead of it. Free to apply, and it works on the ordering rather than on the wanting.',
+      },
+      {
+        name: 'The evening compounds into the morning',
+        body: 'The reward system recovers during sleep, so late scrolling and late eating do both things at once — they degrade the sleep and blunt the system that recovers in it. Which is offered as the explanation for low motivation specifically in the mornings after such an evening.',
+      },
+      {
+        name: 'Discipline as care for a future self',
+        body: 'Motivation does not hold; what holds better is clarity about who you will have become. The question she substitutes for the goal: who is this asking me to become?',
+      },
+    ],
+    notes: [
+      'This sector already holds several accounts of the same reward mechanism from different directions — the pleasure-pain balance, the accumulation model of ending a habit, and capture of the reward system. What is new here is the identity framing and the take-it-to-the-end diagnostic; the dopamine material overlaps and is not independent confirmation of it.',
+      'She holds a doctorate in the pharmacology of addiction but appears here as a coach and content-maker rather than as a researcher, and the transcript contains no citations.',
+      'More importantly, manifestation and law-of-attraction vocabulary is mixed with established neuroscience terms without the boundary being drawn by the speaker. The techniques above stand on their own; the framing around them should not be taken as carrying the same evidential weight as the terminology it borrows.',
+    ],
+    practices: [
+      'Describe yourself as the person who does this before you have the result to justify it.',
+      'Run the success out to the end and name what specifically frightens you there.',
+      'Put the small pleasure after the avoided task rather than instead of it.',
+      'Protect the evening, because the morning motivation is decided there.',
+      'Ask who the goal is asking you to become, not only what it gets you.',
+    ],
+    habits: [
+      { id: 'c_plan', because: 'Acting as the person before the evidence needs the day arranged as that person would arrange it, which is decided the night before.' },
+      { id: 'd_build', because: 'The identity shift stays a slogan unless something is actually being made by the person you are claiming to be.' },
+      { id: 'h_lightsout', because: 'Her mechanism puts the recovery in the sleep, which makes the bedtime the lever on the next morning rather than the morning itself.' },
+    ],
+    quests: [
+      { id: 'q_promise', because: 'An identity claimed only privately is easy to withdraw; said out loud to someone, it has to be lived with.' },
+      { id: 'q_habitsystem', because: 'Ordering the reward after the task is a rule about structure, and it only survives if built rather than intended.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Макдональд — Идентичность, дешёвый дофамин и нейронаука манифестации',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
