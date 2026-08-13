@@ -410,6 +410,8 @@ export interface Effects {
   ghostDays: string[]; // dates fully frozen
   /** Set after a long absence: check in `remaining` habits before `expiresDay` to restore HP. */
   comeback?: { remaining: number; expiresDay: string } | null;
+  /** Warden's ward: week key (Monday) in which the free streak save was last spent. */
+  wardWeek?: string | null;
 }
 
 export interface ThemeDef {

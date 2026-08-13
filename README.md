@@ -46,7 +46,7 @@ Copy [`.env.example`](.env.example) → `.env`, fill in the same two values, and
 
 | System | How it works |
 |---|---|
-| **Character** | Level + XP (steady curve), HP 0–100, Gold, rank titles from Seeker → Legend. HP is a condition readout, not a tax: low HP never reduces a payout and never locks anything. Effort is worth the same on your worst day as your best |
+| **Character** | Level + XP (steady curve), HP 0–100, Gold, rank titles from Seeker → Legend. **Nothing gates on HP** — not payouts, not the chest, not priority quests, not the boss. It is a readout of the last rough stretch and nothing else; effort is worth the same at 3 HP as at 100 |
 | **The Sigil** | The character as an emblem, drawn entirely from real state (`src/game/sigil.ts`): eight petals sized by attribute level so the asymmetry *is* your Wheel, overall size from character level, one ring per rank tier, inner facets every 5 levels, and a gold glow while a perfect-day streak runs. It cannot look earned unless it was. Shown large on the Profile, small in the sidebar, and exportable as a 1024px PNG |
 | **7 classes** | Chosen at creation; each gives a permanent +10% XP boost to its life areas (e.g. Magician boosts Spirituality & Family). Changeable only via the Identity Scroll item |
 | **8 attributes** | Health, Friends, Family, Money, Career, Spirituality, Development, Brightness — the eight sectors of the Wheel of Life from *Extreme Time Management* (Mrochkovskiy & Tolkachev, 2012), mapped 1:1. Every action is tagged, XP flows to both character and attributes, imbalance shows on the dashboard radar |
@@ -59,7 +59,7 @@ Copy [`.env.example`](.env.example) → `.env`, fill in the same two values, and
 | **The Chronicle** | Every Monday, last week written back to you as prose — the strongest thread named, the one that slipped, your own journal and session notes quoted, where the week's weight landed. Assembled entirely from logged data (`src/game/chronicle.ts`), no AI and no network. Every beat self-suppresses when the data is too thin to say anything true, and a week with nothing in it is reported as empty rather than narrated. The one surface that gives instead of asks |
 | **Social Hub** | Contacts with groups/notes/birthdays, netted debts per person, events. All of it earns XP |
 | **Finances** | Accounts, transactions, categories, auto-posting subscriptions, live net worth. Blowing a monthly category budget deals HP damage scaled to the overshoot |
-| **Market** | 14 items, every one buyable **and** usable: potions, Streak Shield (auto-protects), Habit Pardon, Indulgence, Ghost Day, Feather of Time, Focus Unlock, Attribute Boost, Identity Scroll, and 3 purchasable UI themes |
+| **Market** | Every item buyable **and** usable: potions, Streak Shield (auto-protects), Habit Pardon, Indulgence, Ghost Day, Feather of Time, Focus Unlock, Attribute Boost, Identity Scroll. Priced by what they save — a streak costs about a day of play (shield 30g, pardon 45g); HP is pocket change (potions 10/20/40g), because HP gates nothing |
 | **Achievements** | 56 across 14 families, bronze/silver/gold/platinum, front-loaded so the early game showers you — each pays XP + Gold with a popup |
 | **Themes** | Midnight (default), Parchment, Neon Grid, Sakura — bought with Gold, switchable anytime. Adding a theme = one CSS variable block in `src/styles.css` |
 | **Juice** | XP/Gold toasts on every action, LEVEL UP / RANK UP / ACHIEVEMENT popup animations with spark bursts |
@@ -71,13 +71,22 @@ Copy [`.env.example`](.env.example) → `.env`, fill in the same two values, and
 - **Supabase cloud sync** (`src/lib/sync.ts`) — email/password auth; the whole save is one JSONB row per user in a `saves` table guarded by row-level security. Debounced push on change; on login the newer side wins (cloud if another device wrote since this one last synced, local otherwise). Game rules still run client-side — the cloud is a mirror, not a referee
 - `src/game/engine.ts` — pure game math (leveling curves, damage formulas, payouts, date logic)
 - `src/game/constants.ts` — classes, ranks, items, achievements, themes (data-driven; extend here)
-- **Reconciliation** (`reconcile()` in the store) runs on load, on tab focus, and every minute: auto-fails missed habits for every unprocessed day, consumes Streak Shields/Indulgences/Ghost Days, and posts due subscriptions
+- **Reconciliation** (`reconcile()` in the store) runs on load, on tab focus, and every minute: auto-fails missed habits for every unprocessed day, spends the Warden's weekly ward and then any Streak Shields/Indulgences/Ghost Days, and posts due subscriptions
 
 ## Design rules the code enforces
 
 - **Integrity lives in what you earn, not in what gets taken away.** No reward without
   an action; no HP restoration except items bought with earned Gold. But nothing you
   earn is ever reduced or locked because of a bad stretch
+- **HP is a readout, and that is the whole design.** It is the one number that moves
+  down, so a rough fortnight stays visible instead of averaging away — but nothing
+  reads it back. Any gate on HP is a punishment wearing a different hat, and framing
+  it as a bonus above 75 rather than a penalty below 25 does not change how it lands
+  on someone having a bad week. The bar diagnoses; it never charges
+- **Prices track the stake, not the flavour.** A missed day costs a streak and a
+  couple of HP. Only one of those is worth insuring, so the streak items sit near a
+  day of play and the potions near nothing — a Streak Shield at 1.5 days to save two
+  hit points is an item nobody would buy, which is worse than not shipping it
 - **A bad day never makes the app worse to open.** Low HP costs nothing mechanically;
   a broken streak is cushioned by how long it ran; an unslain weekly boss just leaves
 - **The Chronicle never invents.** Every sentence traces to logged data. A thin week

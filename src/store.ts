@@ -58,7 +58,8 @@ import {
   PERFECT_DAY_HP,
   questPayout,
   rankFor,
-  reduceDamage,
+  SHIELD_MIN_STREAK,
+  wardsStreak,
   sentinelBudgetMult,
   todayStr,
   uid,
@@ -432,7 +433,7 @@ function postTxD(d: D, tx: Omit<Tx, 'id'>, reward: boolean) {
         .filter(t => t.type === 'expense' && t.category === tx.category && monthKey(t.date) === mk)
         .reduce((a, t) => a + t.amount, 0);
       const spentBefore = spentAfter - tx.amount;
-      const dmg = reduceDamage(overspendDamage(budget, spentBefore, spentAfter), d.character?.classes);
+      const dmg = overspendDamage(budget, spentBefore, spentAfter);
       if (dmg > 0) {
         damageD(d, dmg, `Over budget: ${tx.category}`);
         return;
@@ -551,7 +552,7 @@ const initialData = () => ({
     career: 0, spirituality: 0, development: 0, brightness: 0,
   } as Record<AttributeKey, number>,
   inventory: {} as Partial<Record<ItemId, number>>,
-  effects: { indulgence: 0, xpBoostCharges: 0, maxPriority: 1, ghostDays: [] as string[] },
+  effects: { indulgence: 0, xpBoostCharges: 0, maxPriority: 1, ghostDays: [] as string[], wardWeek: null as string | null },
   ownedThemes: ['midnight'],
   theme: 'midnight',
   adminUnlockAll: true, // owner mode on by default — everything free to test
@@ -731,7 +732,7 @@ export const useGame = create<GameState>()(
             day = cutoff; // the sleep itself is not judged
           }
 
-          let missed = 0, dmgTotal = 0, shields = 0, indulged = 0, perfectDays = 0, regen = 0;
+          let missed = 0, dmgTotal = 0, shields = 0, indulged = 0, perfectDays = 0, regen = 0, wards = 0;
           let guard = 0;
 
           while (day < cutoff && guard < 400) {
@@ -744,7 +745,19 @@ export const useGame = create<GameState>()(
               const log = (d.habitLog[h.id] ??= {});
               if (isGhost) { log[day] = 'ghost'; continue; }
 
-              if (h.kind === 'good' && h.streak >= 3 && (d.inventory.streak_shield ?? 0) > 0) {
+              // Warden's ward: one free save a week, spent before any item the player paid for.
+              // Kind-agnostic — the perk guards the streak, and a bad habit's streak is a streak.
+              if (
+                h.streak >= SHIELD_MIN_STREAK &&
+                wardsStreak(d.character.classes) &&
+                d.effects.wardWeek !== weekKey(day)
+              ) {
+                d.effects.wardWeek = weekKey(day);
+                log[day] = 'shielded'; // same status as a shield: the streak simply survives
+                wards++;
+                continue;
+              }
+              if (h.kind === 'good' && h.streak >= SHIELD_MIN_STREAK && (d.inventory.streak_shield ?? 0) > 0) {
                 d.inventory.streak_shield!--;
                 d.stats.itemsUsed++;
                 log[day] = 'shielded';
@@ -759,7 +772,7 @@ export const useGame = create<GameState>()(
               }
               // An unlogged day is not a confessed relapse: both habit kinds take the lighter miss damage here.
               // The heavier bad-habit damage applies only to explicit relapses (relapseHabit).
-              const dmg = reduceDamage(missDamage('good', h.streak), d.character.classes);
+              const dmg = missDamage('good', h.streak);
               d.failures.push({ id: uid(), habitId: h.id, date: day, prevStreak: h.streak, damage: dmg });
               h.streak = 0;
               log[day] = 'failed';
@@ -837,6 +850,7 @@ export const useGame = create<GameState>()(
           }
 
           if (missed > 0) pushCeleb(d, { type: 'damage', title: `-${dmgTotal} HP`, subtitle: `${missed} habit${missed > 1 ? 's' : ''} went unlogged. Today starts clean.` });
+          if (wards > 0) pushCeleb(d, { type: 'item', title: "Warden's ward held", icon: 'shield', subtitle: `${wards} streak${wards > 1 ? 's' : ''} survived the miss, free. The ward returns next week.` });
           if (shields > 0) pushCeleb(d, { type: 'item', title: 'Streak Shield activated', icon: 'shield', subtitle: `${shields} streak${shields > 1 ? 's' : ''} protected automatically` });
           if (indulged > 0) pushCeleb(d, { type: 'item', title: 'Indulgence consumed', icon: 'indulgence', subtitle: `${indulged} relapse${indulged > 1 ? 's' : ''} forgiven` });
           checkAchievementsD(d);
@@ -914,7 +928,7 @@ export const useGame = create<GameState>()(
             pushCeleb(d, { type: 'item', title: 'Indulgence consumed', icon: 'indulgence', subtitle: `${h.name}: relapse forgiven, no damage.` });
             return;
           }
-          const dmg = reduceDamage(missDamage('bad', h.streak), d.character?.classes);
+          const dmg = missDamage('bad', h.streak);
           d.failures.push({ id: uid(), habitId: h.id, date: t, prevStreak: h.streak, damage: dmg });
           h.streak = 0;
           log[t] = 'failed';

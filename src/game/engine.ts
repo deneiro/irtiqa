@@ -191,12 +191,33 @@ export function classWeight(classes: ClassId[] | undefined, id: ClassId): number
   return attunements(classes).find(a => a.id === id)?.weight ?? 0;
 }
 
+/** A streak worth insuring. Below this, neither a Streak Shield nor the Warden's ward fires — it is not worth spending on a one-day run. */
+export const SHIELD_MIN_STREAK = 3;
+
 // ---------- Class perks (all scaled by attunement weight) ----------
-/** Warden absorbs damage, up to −25% at full attunement. Applied where damage is COMPUTED (not in damageD) so failure records store the value actually lost — pardons then refund exactly that. */
-export function reduceDamage(raw: number, classes?: ClassId[]): number {
-  if (raw <= 0) return 0;
-  const w = classWeight(classes, 'warden');
-  return w > 0 ? Math.max(1, Math.round(raw * (1 - 0.25 * w))) : raw;
+/**
+ * Removed: Warden used to absorb up to 25% of all HP damage.
+ *
+ * That perk was written when a miss cost 6-16 HP, where it saved around four.
+ * A miss now costs 2-4 (see missDamage), so at full attunement it saved one, at
+ * partial attunement nothing, and the Math.max(1, …) floor took the rest. One of
+ * seven classes had an implemented perk that rounded away.
+ *
+ * Restoring it would mean making damage hurt again, which this design will not do.
+ * So Warden now guards the thing a miss actually costs — the streak — which is
+ * also what its Signature already promised and the code never delivered.
+ */
+
+/**
+ * Whether this loadout wards a broken streak: a Warden at mastery attunement.
+ *
+ * Mastery rather than any attunement, because the ward is binary — it either saves
+ * the streak or it does not, and there is no honest way to give someone 35% of a
+ * save. This is exactly what MASTERY_THRESHOLD is for, and it keeps the loadout
+ * trade real: a solo Warden or a lead Warden gets it, a third slot does not.
+ */
+export function wardsStreak(classes?: ClassId[]): boolean {
+  return attunements(classes).some(a => a.id === 'warden' && a.mastered);
 }
 
 export function itemPrice(item: ItemDef): number {

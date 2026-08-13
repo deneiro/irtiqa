@@ -62,8 +62,12 @@ export const CLASSES: ClassDef[] = [
     tagline: 'There is a right way, and no exceptions.',
     radical: 'R2 · The Systematizer',
     affinity: ['health', 'money'],
-    perk: 'Reduces all HP damage you take — order absorbs the blow',
-    signature: 'Standing Order — every stretch of exception-free days mints a free Streak Shield',
+    // Was "Reduces all HP damage you take". Worth ~4 HP a miss when misses cost 6-16,
+    // worth 0-1 once they cost 2-4 — see the note in engine.ts. The Warden now guards
+    // the streak, which is the part of a missed day that was ever really at stake, and
+    // which this class's Signature had already been promising.
+    perk: 'Once a week, one 3+ day streak survives a missed day — free and automatic',
+    signature: 'Standing Order — the ward returns every week, and no exception costs you the run',
   },
   {
     id: 'sovereign',
@@ -293,21 +297,28 @@ export const THEME_BASE_COLORS: Record<string, { '--bg': string; '--accent': str
 // One unit of measure keeps every number honest: a SOLID DAY of play
 // (5 habits ≈ 25g, journal 8g, a couple of quick tasks ≈ 4g) earns ~35-40 Gold,
 // plus ~15-30 more from the daily chest on a contract-complete day.
-// Prices are set against that:
-//   · small consumables  ≈ half a day  (potion_s)
-//   · insurance items    ≈ 1-2 days    (shield, indulgence, pardon, potion_m)
-//   · emergency / luxury ≈ 2.5-3 days  (potion_l, ghost_day, identity_scroll, themes)
-//   · permanents         ≈ 5+ days     (focus_unlock)
+//
+// What a price BUYS decides the band, and there are only two things a miss can
+// take from you: a couple of HP off a bar that gates nothing (see the note on
+// HP in engine.ts), and a streak. The streak is the whole stake, so that is what
+// the insurance items are priced against. They used to be priced against 6-16 HP
+// of damage that no longer exists, which put a Streak Shield at 1.5 days of play
+// to avoid losing two hit points — an item nobody would ever rationally buy.
+//   · readout relief     ≈ ¼–1 day    (potions — HP gates nothing, so they are cheap)
+//   · streak insurance   ≈ 1 day      (shield, indulgence, pardon)
+//   · a whole day saved  ≈ 2.5 days   (ghost_day: every streak at once, momentum included)
+//   · luxury             ≈ 1.5-3 days (feather, attr_boost, identity_scroll)
+//   · permanents         ≈ 5+ days    (focus_unlock)
 // Cosmetics are NOT sold here — they drop only from daily chests, so the
 // chest stays the reason to finish the day and gold keeps a real exchange rate.
 export const ITEMS: ItemDef[] = [
-  { id: 'potion_s', name: 'Small Health Potion', icon: 'potionSmall', price: 25, kind: 'consumable', heal: 15, desc: 'Restores 15 HP. A sip of courage.' },
-  { id: 'potion_m', name: 'Medium Health Potion', icon: 'potionMedium', price: 55, kind: 'consumable', heal: 35, desc: 'Restores 35 HP. Brewed for rough weeks.' },
-  { id: 'potion_l', name: 'Large Health Potion', icon: 'potionLarge', price: 110, kind: 'consumable', heal: 75, desc: 'Restores 75 HP. Emergency reserves.' },
-  { id: 'streak_shield', name: 'Streak Shield', icon: 'shield', price: 60, kind: 'consumable', desc: 'Automatically protects your longest streak (3+ days) the next time you miss a day. No HP damage, streak survives.' },
-  { id: 'habit_pardon', name: 'Habit Pardon', icon: 'pardon', price: 80, kind: 'consumable', desc: 'Retroactively forgive one missed habit: heals the damage and reconnects the broken streak.' },
-  { id: 'indulgence', name: 'Indulgence', icon: 'indulgence', price: 70, kind: 'consumable', desc: 'Activate to forgive your next bad-habit relapse — no damage, streak survives.' },
-  { id: 'ghost_day', name: 'Ghost Day', icon: 'ghost', price: 120, kind: 'consumable', desc: 'Freeze a whole day — today, tomorrow, or any future date. No penalties, streaks paused. For real sick days and trips.' },
+  { id: 'potion_s', name: 'Small Health Potion', icon: 'potionSmall', price: 10, kind: 'consumable', heal: 15, desc: 'Restores 15 HP. A sip of courage — HP is a readout, not a leash, so this is priced like the small comfort it is.' },
+  { id: 'potion_m', name: 'Medium Health Potion', icon: 'potionMedium', price: 20, kind: 'consumable', heal: 35, desc: 'Restores 35 HP. Clears a rough fortnight off the bar in one go.' },
+  { id: 'potion_l', name: 'Large Health Potion', icon: 'potionLarge', price: 40, kind: 'consumable', heal: 75, desc: 'Restores 75 HP. Wipes the slate — for when you want the bar to match how you actually feel.' },
+  { id: 'streak_shield', name: 'Streak Shield', icon: 'shield', price: 30, kind: 'consumable', desc: 'Automatically saves your longest streak (3+ days) the next time you miss a day. The streak survives untouched — that is what you are buying.' },
+  { id: 'habit_pardon', name: 'Habit Pardon', icon: 'pardon', price: 45, kind: 'consumable', desc: 'Reach back and undo one missed day: the broken streak reconnects as if you never missed, and the HP comes back with it.' },
+  { id: 'indulgence', name: 'Indulgence', icon: 'indulgence', price: 30, kind: 'consumable', desc: 'Activate to forgive your next bad-habit relapse — the streak survives, nothing is recorded against it.' },
+  { id: 'ghost_day', name: 'Ghost Day', icon: 'ghost', price: 90, kind: 'consumable', desc: 'Freeze a whole day — today, tomorrow, or any future date. No penalties, streaks paused. For real sick days and trips.' },
   { id: 'feather', name: 'Feather of Time', icon: 'feather', price: 50, kind: 'consumable', desc: 'Unlock one locked journal entry for a single edit.' },
   { id: 'focus_unlock', name: 'Focus Unlock', icon: 'focus', price: 200, kind: 'permanent', desc: 'Permanently allows marking TWO priority quests at once instead of one.' },
   { id: 'attr_boost', name: 'Attribute Boost', icon: 'boost', price: 75, kind: 'consumable', desc: '+50% XP on your next 5 XP-earning actions.' },

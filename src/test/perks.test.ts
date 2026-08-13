@@ -14,7 +14,7 @@ import {
   journalXp,
   momentumMult,
   questPayout,
-  reduceDamage,
+  wardsStreak,
   sentinelBudgetMult,
   todayStr,
 } from '../game/engine';
@@ -66,16 +66,18 @@ describe('attunement budget (engine)', () => {
 });
 
 describe('class perk math (engine)', () => {
-  it('Warden absorbs damage scaled by attunement, floored at 1', () => {
-    expect(reduceDamage(10, ['warden'])).toBe(8); // solo: round(10 × 0.75)
-    expect(reduceDamage(10, ['magician', 'warden'])).toBe(9); // 35%: round(10 × (1 − 0.0875))
-    expect(reduceDamage(10, ['magician'])).toBe(10); // not a Warden
-    expect(reduceDamage(1, ['warden'])).toBe(1); // floor
+  it('the Warden ward needs mastery, not merely a Warden in the loadout', () => {
+    expect(wardsStreak(['warden'])).toBe(true); // solo: 100%
+    expect(wardsStreak(['warden', 'magician'])).toBe(true); // lead: 65%
+    expect(wardsStreak(['magician', 'warden'])).toBe(false); // second: 35%, below mastery
+    expect(wardsStreak(['magician', 'warden', 'bard'])).toBe(false); // 30%
+    expect(wardsStreak(['magician'])).toBe(false); // not a Warden
+    expect(wardsStreak()).toBe(false);
   });
 
   it('itemPrice is the flat listed price (no class discount)', () => {
-    const potion = { id: 'potion_s', price: 25 } as Parameters<typeof itemPrice>[0];
-    expect(itemPrice(potion)).toBe(25);
+    const potion = { id: 'potion_s', price: 10 } as Parameters<typeof itemPrice>[0];
+    expect(itemPrice(potion)).toBe(10);
   });
 
   it('Magician journals for up to +50% XP; boost charges are flat 5', () => {
@@ -105,11 +107,42 @@ describe('class perk math (engine)', () => {
 });
 
 describe('class perks (store)', () => {
-  it('Warden relapse damage is reduced', () => {
+  /** A habit due on exactly one past day, so reconcile judges that day and nothing else. */
+  const oneDayHabit = (name: string, streak: number) => {
+    g().addHabit({ name, kind: 'good', freq: 'dates', attrs: ['development'], weekdays: [], dates: [daysAgo(2)] });
+    const h = g().habits[g().habits.length - 1];
+    useGame.setState({ habits: g().habits.map(x => (x.id === h.id ? { ...x, createdAt: daysAgo(10), streak } : x)) });
+    return h.id;
+  };
+
+  it('the Warden ward saves a streak for free, without spending a paid Shield', () => {
     g().createCharacter('T', ['warden']);
+    const id = oneDayHabit('Read', 9);
+    useGame.setState({ inventory: { streak_shield: 1 }, lastProcessedDay: daysAgo(3) });
+    g().reconcile();
+
+    expect(g().habitLog[id][daysAgo(2)]).toBe('shielded');
+    expect(g().habits[0].streak).toBe(9); // the streak is what the perk protects
+    expect(g().character!.hp).toBe(100);
+    expect(g().inventory.streak_shield).toBe(1); // free ward spends first — the item is untouched
+    expect(g().stats.itemsUsed).toBe(0);
+    expect(g().failures.length).toBe(0); // nothing to pardon — the miss never landed
+  });
+
+  it('the ward is once a week, and a relapse still costs a non-Warden', () => {
+    g().createCharacter('T', ['warden']);
+    const long = oneDayHabit('Long run', 9);
+    const other = oneDayHabit('Other run', 4);
+    useGame.setState({ lastProcessedDay: daysAgo(3) });
+    g().reconcile();
+    expect(g().habitLog[long][daysAgo(2)]).toBe('shielded'); // longest streak wins the ward
+    expect(g().habitLog[other][daysAgo(2)]).toBe('failed'); // one ward a week, and it is spent
+
+    g().resetGame();
+    g().createCharacter('T', ['magician']);
     g().addHabit({ name: 'No smoking', kind: 'bad', freq: 'daily', attrs: ['health'], weekdays: [], dates: [] });
     g().relapseHabit(g().habits[0].id);
-    expect(g().character!.hp).toBe(95); // raw 6 → round(6 × 0.75) = 5
+    expect(g().character!.hp).toBe(94); // base 6 for a confessed relapse, no reduction anywhere
   });
 
   it('Bard earns bonus gold per check-in at full attunement', () => {
