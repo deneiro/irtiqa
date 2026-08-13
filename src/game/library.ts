@@ -5298,6 +5298,227 @@ export const LIBRARY: LibraryEntry[] = [
     ],
     vaultSource: 'Business & career / Resource / Gary Vaynerchuk — Business Tactics and Lessons (Podcast With Friends)',
   },
+
+  {
+    slug: 'independence-plus-purpose',
+    attr: 'money',
+    title: 'What you display is usually what you once lacked',
+    origin: 'Morgan Housel — a third conversation, on spending as a window',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Independence without purpose turns out to be emptiness, not freedom.',
+    thesis:
+      'Spending is treated as a window into the person and often into an unhealed part of them: what someone displays conspicuously usually points at what they did not have. And the one formula he says he allowed into his book is that a good life needs both independence and purpose — either alone fails, and the failure mode of independence without purpose is specific and documented.',
+    ideas: [
+      {
+        name: 'Retributive materialism',
+        body: 'A line from a newspaper headline a century ago: the more you were looked down on while poor, the more you enjoy displaying wealth. The display is frequently aimed at yourself rather than at anyone else — proof that the child from the bottom got here. The general pattern he draws: chasing money often follows having felt unfree, chasing beauty follows having felt unattractive, chasing power follows having felt powerless.',
+      },
+      {
+        name: 'The large house as a burden',
+        body: 'From an industrialist\'s memoir: every wealthy person he knew bought an enormous house, and every one of them found it a weight. In practice the occupants contract into one or two rooms that feel like home, and the rest becomes an uninhabited museum of status.',
+      },
+      {
+        name: 'Independence without purpose',
+        body: 'The failure is concrete rather than theoretical: people who reached early financial independence and stopped working describe sliding into serious depression within months and returning to work, because the work had been supplying meaning rather than only money. The purpose can be anything — children, work, faith — but it is not optional.',
+      },
+      {
+        name: 'Trajectory beats position',
+        body: 'The skier who moved from a hundred and fiftieth to a hundredth feels better than the one who was first and is now second. He extends it with a finding from evolutionary psychology: the more attractive prospect is the one with the potential to acquire resources rather than the one who already has them — people value the getting more than the having.',
+      },
+      {
+        name: 'Wealth is relative, and the comparison set exploded',
+        body: 'There is no objective version of it. What changed is scale: the comparison used to run against neighbours and colleagues, and now runs against an algorithmically assembled feed of the most successful people alive.',
+      },
+    ],
+    notes: [
+      'This is the third conversation with the same author in this sector. The first covers rich versus wealthy and savings as a bill; the second, calibrating regret. What is new here is spending as a window into an old wound, the independence-and-purpose formula with its documented failure mode, and trajectory over position.',
+      'Temperament is treated as largely fixed: the task is not to reform yourself but to build a plan around who you actually are.',
+      'A practitioner and writer rather than a researcher, in a long informal format. Two experiments he cites are recalled without attribution and function as illustration rather than evidence, and one quotation is paraphrased from memory.',
+      'Also present in the source and not carried here: claims about risk appetite differing by sex, given as personal opinion without any reference.',
+    ],
+    practices: [
+      'Before a status purchase, ask what it is proving and to whom — including to yourself.',
+      'Plan for both independence and purpose, and treat reaching the first without the second as a known failure.',
+      'Build the plan around your actual temperament rather than the one you think you should have.',
+      'Notice that nobody is watching as closely as it feels, and price the display accordingly.',
+    ],
+    habits: [
+      { id: 'b_nocompare', because: 'Wealth is only ever relative, and the feed is what expanded the comparison set from a neighbourhood to the planet.' },
+      { id: 'm_nospend', because: 'The display purchase is the one that needs a gap between impulse and payment, because its real audience is internal.' },
+      { id: 'm_charity', because: 'Giving is the version of using money that cannot double as proof of anything to yourself.' },
+    ],
+    quests: [
+      { id: 'q_wheel', because: 'Purpose is the half of the formula that no financial decision supplies, and it has to be located somewhere specific.' },
+      { id: 'q_emergencyfund', because: 'Independence is the other half, and it starts as a concrete number rather than as an aspiration.' },
+    ],
+    vaultSource: 'Finance & money / Resource / Housel — Financial Psychology, Independence and Identity',
+  },
+
+  {
+    slug: 'push-them-to-the-wall',
+    attr: 'brightness',
+    title: 'Give them two real values, then make both impossible',
+    origin: 'Richard Powers — novelist, on voice, character and conflict',
+    medium: 'podcast',
+    minutes: 6,
+    hook: 'Drama grows out of character, character out of voice, and voice out of word choice.',
+    thesis:
+      'One chain runs through the whole account: drama grows out of character, character grows out of voice, and voice grows out of choices at the level of the word and the sentence. Structure, tension and pacing are built from that chain rather than imposed on it — which makes the smallest decisions the load-bearing ones.',
+    ideas: [
+      {
+        name: 'The character onion',
+        body: 'The outer shell is what is visible — clothing, appearance. Beneath it are mannerisms, habitual ways of behaving, such as reflexively undercutting people by asking what they mean by that. Beneath those sit core values, a handful of words rather than a list. Several mannerisms can come from one value, and the same mannerism from different values.',
+      },
+      {
+        name: 'Push them to the wall',
+        body: 'The craft move that generates drama: give a character two genuine core values, then engineer a situation in which both cannot be honoured. The forced choice is the story. Left alone, values coexist quietly and nothing happens — which is the diagnostic for a scene that feels flat.',
+      },
+      {
+        name: 'Three levels of conflict',
+        body: 'Against yourself, where two incompatible values collide — what he calls the drama of being alive. Against another person, where each holds a different value and the reader rather than the author has to judge. And against the elements, the oldest kind, which he argues nearly vanished from serious literary fiction for over a century while people assumed that war had been won, survived in genres treated as lesser, and is returning now that it is clear it is being lost.',
+      },
+      {
+        name: 'Voice is built at word level',
+        body: 'English carries a built-in doubleness from its history, so house against mansion, or freedom against liberty, carry different registers of class and formality. Character reaches a reader largely through how someone explains and performs themselves in speech, which makes register a characterisation tool rather than a stylistic preference.',
+      },
+      {
+        name: 'Read it aloud',
+        body: 'A cheap and immediate check on dialogue before finalising anything — the ear catches what the eye has stopped seeing.',
+      },
+    ],
+    notes: [
+      'A four-part scaffolding — hook, exposition, rising action, climax and resolution — is offered as reusable for anything that has to hold attention across time, not only for fiction.',
+      'His own practice has shifted over decades from disciplined word counts toward disciplined attention to the living world as the actual source material.',
+      'A publicly verifiable, prize-winning novelist who taught writing for years, describing his own method — which is exactly what this kind of source is good for. The single empirical claim in the conversation is recalled without citation and points at a real research tradition rather than establishing a specific finding.',
+    ],
+    practices: [
+      'Name two real values for the character, then build the situation where both cannot hold.',
+      'When a scene is flat, check whether anything is actually in irreconcilable conflict yet.',
+      'Choose the register at word level — it is doing characterisation whether you intend it or not.',
+      'Read the dialogue out loud before you call it finished.',
+    ],
+    habits: [
+      { id: 'c_ship', because: 'Reading aloud is the cheap check, and reading aloud to a person is the version that also tells you whether it landed.' },
+      { id: 'd_notes', because: 'His shift was from word counts toward attention to the world, which only accumulates if what is noticed gets written down.' },
+      { id: 's_makecreate', because: 'The chain from word to voice to character is only trainable at the level of sentences actually written.' },
+    ],
+    quests: [
+      { id: 'q_makeweekly', because: 'Pushing a character to the wall is a structural decision that only gets tested by carrying something to done.' },
+      { id: 'q_portfolio', because: 'Whether the reader judged rather than the author decided is not answerable without readers.' },
+    ],
+    vaultSource: 'Memories & Fun / Resource / Richard Powers — Writing Process and the Craft of Fiction',
+  },
+
+  {
+    slug: 'context-before-the-verse',
+    attr: 'spirituality',
+    title: 'Arranged by length, not by chronology',
+    origin: 'A religious-studies lecture on the sources of Islamic doctrine',
+    medium: 'lecture',
+    minutes: 6,
+    hook: 'The first revealed chapter sits near the end of the book. That fact alone changes how a quotation should be read.',
+    thesis:
+      'This is structural and historical rather than devotional: how the two sources of doctrine are composed, how the text was fixed, and how authority is assessed. The single most practically useful fact is that the chapters are ordered by descending length rather than chronologically — the earliest revealed material sits near the end — so a verse quoted without its circumstances is being read out of the sequence it belongs to.',
+    ideas: [
+      {
+        name: 'Structure and ordering',
+        body: 'One hundred and fourteen chapters, arranged longest to shortest. Because the ordering is not chronological, the sequence of revelation is known from the tradition rather than from the text itself — which makes the discipline of the circumstances of revelation a prerequisite for reading a passage rather than an optional refinement.',
+      },
+      {
+        name: 'Chronology as an anchor',
+        body: 'The calendar begins from the migration; revelation ran from roughly a decade before it until the Prophet\'s death. The Meccan and Medinan periods divide the chapters accordingly, and knowing which period a passage belongs to is part of reading it.',
+      },
+      {
+        name: 'The doctrine of uncreatedness, and the dispute it produced',
+        body: 'The text is held to be the uncreated direct speech of God rather than a formulation of the Prophet. The lecture traces the theological problem that produced, the movement that denied it, and the historical episode in which scholars were compelled to affirm the opposite — offered as an example of doctrine having a contested history rather than arriving settled.',
+      },
+      {
+        name: 'Abrogation as a reading tool',
+        body: 'The principle that a passage may have been superseded means the first question about any categorical quotation is whether it still stands in the form being quoted. Presented as a general critical instrument against decontextualised citation.',
+      },
+      {
+        name: 'Chain and content',
+        body: 'Reports are assessed on both the text itself and the chain of transmitters. Beyond its own subject this is a transferable epistemology: authority derived from a traceable line of transmission rather than from the content sounding right.',
+      },
+    ],
+    notes: [
+      'The vantage point matters and should be stated: this is a comparative religious-studies lecture given from outside the tradition, drawing explicit parallels to Christian theology. That makes it useful for structural understanding and unsuitable as a normative account of the faith — for that, sources from within are the ones to read.',
+      'The factual scaffolding — chronology, structure, the mechanics of assessing reports — is specific and checkable. The lecturer\'s evaluative asides, including scepticism about numerological claims and remarks on internal tensions, are his own judgements and worth separating from that scaffolding.',
+    ],
+    practices: [
+      'Ask what the circumstances of a passage were before accepting a reading of it.',
+      'Check whether a categorical quotation still stands in the form being quoted.',
+      'Assess a report on both its content and the line it came through.',
+      'For normative understanding, read from inside the tradition as well as about it.',
+    ],
+    habits: [
+      { id: 's_quran', because: 'Reading a page at a time is what builds the sense of sequence that the ordering by length otherwise hides.' },
+      { id: 'd_read', because: 'The circumstances of revelation are a separate literature, and reading about the text is a different act from reading it.' },
+      { id: 'd_notes', because: 'Chain-and-content assessment is a habit of recording where something came from, not only what it said.' },
+    ],
+    quests: [
+      { id: 'q_learnfaith', because: 'The lecture\'s own conclusion is that the structure has to be understood before the content can be, which is the definition of studying rather than sampling.' },
+      { id: 'q_anchor', because: 'Structural knowledge from outside becomes practice only when something regular is anchored to the day.' },
+    ],
+    vaultSource: 'Spirituality & Religion / Resource / Основы ислама — Коран и Сунна как источники вероучения',
+  },
+
+  {
+    slug: 'energy-relationships-tasks',
+    attr: 'development',
+    title: 'Energy, then relationships, then tasks — in that order',
+    origin: 'Muzhitskaya — trainer, on the three axes and procrastination',
+    medium: 'podcast',
+    minutes: 5,
+    hook: 'Most productivity problems are an attempt to start on the third axis.',
+    thesis:
+      'Every interaction and every morning decomposes into three parallel layers: tasks, which carry the information; relationships, which carry who you are to each other; and energy, which carries what state each of you is in. The practical claim is that they have to be taken in reverse order — start with energy, not with tasks — and that most difficulty with discipline and balance comes from starting at the wrong end.',
+    ideas: [
+      {
+        name: 'The three axes, illustrated',
+        body: 'Listening to voice messages at double speed saves time on the task axis while damaging the other two: the speaker sounds unserious, and a sped-up voice is hard to respect. Her conclusion is to use native speed when the relationship and state matter, and convert to text when only the information does.',
+      },
+      {
+        name: 'The order of a morning',
+        body: 'Energy first — let the body and mind load after sleep, by whatever means. Then relationships: contact with a living creature, partner, child, even an animal. Only then tasks. Which specific technique is used is treated as secondary to the order.',
+      },
+      {
+        name: 'Procrastination as a desync, not laziness',
+        body: 'It begins at the moment attention switches from the goal, which you like, to the process, which you have labelled unpleasant. The cortisol route — frightening yourself with the worst case to generate action — works and is expensive, and she voices the body\'s objection to it directly. The alternative is the question of what this is for, which restores contact with the goal.',
+      },
+      {
+        name: 'Stopwatch before timer',
+        body: 'For the chronic sense of not having enough time: measure how long the task actually takes at a comfortable pace before imposing a deadline on it. A reproducible diagnostic rather than an exhortation.',
+      },
+      {
+        name: 'Selection rather than balance',
+        body: 'Under overload the question she substitutes is not how to balance everything but which of these you actually want to be working with — reducing the number of obligatory contexts rather than distributing yourself across all of them.',
+      },
+    ],
+    notes: [
+      'An alternative to the unpleasant alarm: go to sleep having formulated what tomorrow is for, rather than relying on a morning fright to start the motivation.',
+      'A long-practising trainer and author, in a conversational format with substantial self-promotion. Her techniques come from an NLP lineage whose standing in academic psychology is contested — worth holding separately from whether a specific technique is useful to you in practice, which only your own use can establish.',
+      'Her rejection of the balance-wheel framing and her distinction between two kinds of time are her own formulations rather than established constructs, and the neuroscience references are gestural rather than mechanistic.',
+    ],
+    practices: [
+      'Run the morning in the order: energy, then people, then work.',
+      'When procrastinating, notice the switch from goal to process and restate what it is for.',
+      'Time the task at a comfortable pace before setting any deadline for it.',
+      'Under overload, cut the number of contexts rather than trying to balance them.',
+      'Decide tonight what tomorrow is for, so the alarm is not doing the motivating.',
+    ],
+    habits: [
+      { id: 'c_plan', because: 'Deciding tonight what tomorrow is for is the version of her morning order that gets made while you still have capacity.' },
+      { id: 'b_morningjoy', because: 'The energy axis comes first and is satisfied by something small and deliberate rather than by a regime.' },
+      { id: 'd_review', because: 'Which contexts to cut is a selection question, and it is not answerable inside the week that is overloading you.' },
+    ],
+    quests: [
+      { id: 'q_habitsystem', because: 'The order of the axes is a structure rather than an intention, and it survives only if it is built once.' },
+      { id: 'q_energyaudit', because: 'The stopwatch-before-timer method is an audit in miniature — measure what is actually happening before prescribing.' },
+    ],
+    vaultSource: 'Personal growth / Resource / Мужицкая — Три оси, папки подсознания и калибровка своей скорости',
+  },
 ];
 
 /** Entries filed under a sector, in listing order. */
