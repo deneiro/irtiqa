@@ -21,6 +21,7 @@ import { Settings } from './pages/Settings';
 import { Social } from './pages/Social';
 import { contractStatus } from './game/contract';
 import { applyThemeOverrides, habitDueOn, todayStr } from './game/engine';
+import { t, useLang } from './i18n';
 import { initSync } from './lib/sync';
 import { useGame } from './store';
 
@@ -41,15 +42,13 @@ function checkReminder() {
     try {
       // Invitation, not a threat. "Streaks are on the line" makes the notification
       // something to dismiss; naming what's left makes it something to act on.
-      new Notification('IrtiQa', {
-        body: dueLeft > 0
-          ? `${dueLeft} habit${dueLeft > 1 ? 's' : ''} left today. Even one counts.`
-          : 'Two of the Daily Three are done. One more opens today’s chest.',
+      new Notification(t('app.name'), {
+        body: dueLeft > 0 ? t('reminder.habitsLeft', { n: dueLeft }) : t('reminder.contractOpen'),
       });
     } catch {
       // Some platforms (e.g. Android Chrome) only allow notifications via a service worker
       void navigator.serviceWorker?.ready.then(reg =>
-        reg.showNotification('IrtiQa', { body: 'Still time to log something today.' }),
+        reg.showNotification(t('app.name'), { body: t('reminder.fallback') }),
       );
     }
   }
@@ -69,6 +68,7 @@ function ScrollToTop() {
 }
 
 export default function App() {
+  const lang = useLang();
   const character = useGame(s => s.character);
   const theme = useGame(s => s.theme);
   const themeOverrides = useGame(s => s.themeOverrides);
@@ -109,15 +109,19 @@ export default function App() {
 
   if (!character) {
     return (
-      <>
+      <div key={lang}>
         <Onboarding />
         <CelebrationLayer />
-      </>
+      </div>
     );
   }
 
+  // Keying the router on the language remounts the tree when it changes. Components
+  // that call useT re-render on their own, but ones that only read a translated
+  // constant (ATTRIBUTES[k].label and friends) never subscribed to anything — a
+  // remount is the cheap, total guarantee, and switching language is a rare click.
   return (
-    <HashRouter>
+    <HashRouter key={lang}>
       <ScrollToTop />
       <Routes>
         <Route element={<Layout />}>

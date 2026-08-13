@@ -2,7 +2,7 @@ import { useId, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '../components/Icon';
 import { Empty, Modal } from '../components/ui';
-import { MOODS, REFLECTION_QUESTIONS } from '../game/constants';
+import { MOODS, reflectionQuestions } from '../game/constants';
 import { fmtDayFull, journalEditable, journalXp, questionsForDay, todayStr } from '../game/engine';
 import type { JournalEntry } from '../game/types';
 import { useGame } from '../store';
@@ -150,7 +150,7 @@ function EntryForm({
   // Today's form and the edit modal can be mounted at once, so the hint's id has to be
   // per-instance or aria-describedby would point at whichever one rendered first.
   const hintId = useId();
-  const questions = initial ? initial.answers.map(a => a.q) : questionsForDay(todayStr(), REFLECTION_QUESTIONS);
+  const questions = initial ? initial.answers.map(a => a.q) : questionsForDay(todayStr(), reflectionQuestions());
   const [mood, setMood] = useState(initial?.mood ?? 3);
   const [stress, setStress] = useState(initial?.stress ?? 5);
   const [answers, setAnswers] = useState<string[]>(initial ? initial.answers.map(a => a.a) : questions.map(() => ''));

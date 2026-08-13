@@ -18,6 +18,7 @@ import {
   TRANSFER_CATEGORY,
 } from './game/constants';
 import { LIBRARY_READ_REWARD, libraryEntry } from './game/library';
+import { detectLang, setLang, type Lang } from './i18n';
 import { CURRENCIES, DEFAULT_CURRENCY } from './game/money';
 import { HABIT_TEMPLATES, QUEST_TEMPLATES } from './game/templates';
 import { TUTORIAL_STEP_COUNT } from './game/tutorial';
@@ -104,6 +105,13 @@ export interface GameState {
   effects: Effects;
   ownedThemes: string[];
   theme: string;
+  /**
+   * UI language. Seeded from the browser locale on a brand-new save and persisted
+   * from then on, so a switch survives reloads. The i18n module keeps its own copy
+   * (it cannot import this store without a cycle) — setLanguage pushes into it, and
+   * the rehydrate hook below re-pushes on load.
+   */
+  lang: Lang;
   /**
    * Owner/admin mode. On (the default) → every theme is unlocked for the owner to test.
    * Off → only free + already-owned themes apply, and locked themes show their symbolic price.
@@ -242,6 +250,7 @@ export interface GameState {
   buyItem: (id: ItemId) => void;
   useItem: (id: ItemId, payload?: UseItemPayload) => void;
   setTheme: (themeId: string) => void;
+  setLanguage: (lang: Lang) => void;
   setAdminUnlockAll: (on: boolean) => void;
   setThemeColor: (themeId: string, token: string, value: string) => void;
   resetThemeColors: (themeId: string) => void;
@@ -555,6 +564,7 @@ const initialData = () => ({
   effects: { indulgence: 0, xpBoostCharges: 0, maxPriority: 1, ghostDays: [] as string[], wardWeek: null as string | null },
   ownedThemes: ['midnight'],
   theme: 'midnight',
+  lang: detectLang(),
   adminUnlockAll: true, // owner mode on by default — everything free to test
   themeOverrides: {} as Record<string, Record<string, string>>,
 
@@ -1408,6 +1418,12 @@ export const useGame = create<GameState>()(
           }
         }),
 
+      setLanguage: lang =>
+        set(d => {
+          d.lang = lang;
+          setLang(lang); // push into the i18n module so t() switches immediately
+        }),
+
       setAdminUnlockAll: on =>
         set(d => {
           d.adminUnlockAll = on;
@@ -1592,7 +1608,8 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 12, // v12: the sector Library (libraryRead)
+      version: 13, // v13: UI language (lang)
+      // v12: the sector Library (libraryRead)
       // v11: guided tour (tutorialStep, seenPages)
       // v10: currency, retired themes, wishlist removed, one identity
       // Older saves get new fields filled with defaults instead of being discarded
@@ -1624,8 +1641,18 @@ export const useGame = create<GameState>()(
         const { celebrations, ...rest } = state;
         return { ...rest, celebrations: [] } as GameState;
       },
+      // The i18n module holds the language it renders in, and it cannot read this
+      // store without an import cycle. Push the loaded value across as soon as the
+      // save lands, before the first render reads any translated constant.
+      onRehydrateStorage: () => state => {
+        if (state?.lang) setLang(state.lang);
+      },
     },
   ),
 );
+
+// Covers the fresh-save path, where nothing is rehydrated and the language came
+// straight from the browser locale.
+setLang(useGame.getState().lang);
 
 export const SAVE_KEY = 'irtiqa-save';

@@ -16,12 +16,15 @@ import {
 import { CUSTOM_THEME_TOKENS, charLevel, isThemeUnlocked, rankFor } from '../game/engine';
 import { CURRENCIES, fmtMoney } from '../game/money';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
+import { LANGS, LANG_LABEL, type Lang, useLang, useT } from '../i18n';
+import { fmtDate, fmtDateTime } from '../lib/format';
 import { playSound } from '../lib/sound';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { signOutUser, syncNow, useSync } from '../lib/sync';
 import { SAVE_KEY, useGame } from '../store';
 
 export function Settings() {
+  const t = useT();
   const s = useGame();
   const character = s.character!;
   const cls = CLASSES.find(c => c.id === character.classId);
@@ -58,7 +61,7 @@ export function Settings() {
         localStorage.setItem(SAVE_KEY, text);
         location.reload();
       } catch {
-        alert('That file is not a valid IrtiQa save.');
+        alert(t('settings.badSave'));
       }
     };
     reader.readAsText(file);
@@ -68,28 +71,31 @@ export function Settings() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Settings</h1>
-          <p className="muted">The meta-menu of your life.</p>
+          <h1>{t('settings.title')}</h1>
+          <p className="muted">{t('settings.subtitle')}</p>
         </div>
       </div>
 
       <AccountCard />
 
+      <LanguageCard />
+
       <section className="card">
-        <div className="card-head"><h2>Character</h2></div>
+        <div className="card-head"><h2>{t('settings.character')}</h2></div>
         <p className="settings-char-line">
-          {cls && <Icon name={cls.id} size={16} />} <strong>{character.name}</strong> the {cls?.name} · Level {level} ·{' '}
+          {cls && <Icon name={cls.id} size={16} />}{' '}
+          {t('settings.charLine', { name: character.name, cls: cls?.name ?? '', level })} ·{' '}
           <Icon name={rank.icon} size={15} /> {rank.name}
         </p>
         <p className="muted">
-          Playing since {new Date(character.createdAt).toLocaleDateString()}.
-          Want a new name or class? That's what the <Icon name="identity" size={13} />{' '}
-          <Link to="/market">Identity Scroll</Link> is for — identity changes aren't free.
+          {t('settings.playingSince', { date: fmtDate(character.createdAt) })}{' '}
+          {t('settings.identityHint')} <Icon name="identity" size={13} />{' '}
+          <Link to="/market">{t('item.identity_scroll.name')}</Link>{t('settings.identityHintTail')}
         </p>
       </section>
 
       <section className="card">
-        <div className="card-head"><h2>Theme</h2></div>
+        <div className="card-head"><h2>{t('settings.theme')}</h2></div>
         <label className="toggle-row">
           <input
             type="checkbox"
@@ -97,41 +103,42 @@ export function Settings() {
             onChange={e => s.setAdminUnlockAll(e.target.checked)}
           />
           <span>
-            <Icon name="unlock" size={14} /> <strong>Owner mode</strong> — unlock every theme so you
-            can test them all. Turn it off to preview what a normal user sees: locked themes show
-            their price.
+            <Icon name="unlock" size={14} /> <strong>{t('settings.ownerMode')}</strong>
+            {' — '}{t('settings.ownerModeDesc')}
           </span>
         </label>
         <div className="theme-row">
-          {THEMES.map(t => {
-            const unlocked = isThemeUnlocked(t, { adminUnlockAll: s.adminUnlockAll, ownedThemes: s.ownedThemes });
-            const active = s.theme === t.id;
+          {THEMES.map(theme => {
+            const unlocked = isThemeUnlocked(theme, { adminUnlockAll: s.adminUnlockAll, ownedThemes: s.ownedThemes });
+            const active = s.theme === theme.id;
             return (
               <button
-                key={t.id}
-                className={`theme-pick theme-preview-${t.id} ${active ? 'theme-active' : ''}`}
+                key={theme.id}
+                className={`theme-pick theme-preview-${theme.id} ${active ? 'theme-active' : ''}`}
                 disabled={!unlocked}
-                onClick={() => s.setTheme(t.id)}
-                title={unlocked ? t.desc : `Locked — $${t.price?.toFixed(2)}`}
+                onClick={() => s.setTheme(theme.id)}
+                title={unlocked ? theme.desc : t('settings.themeLocked', { price: theme.price?.toFixed(2) })}
               >
-                <span className="theme-pick-emoji"><Icon name={t.icon} size={26} /></span>
-                <span>{t.name}</span>
+                <span className="theme-pick-emoji"><Icon name={theme.icon} size={26} /></span>
+                <span>{theme.name}</span>
                 {active
-                  ? <span className="status status-done heading-icon"><Icon name="check" size={12} /> active</span>
+                  ? <span className="status status-done heading-icon"><Icon name="check" size={12} /> {t('settings.active')}</span>
                   : !unlocked
-                    ? <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> ${t.price?.toFixed(2)}</span>
+                    ? <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> ${theme.price?.toFixed(2)}</span>
                     : null}
               </button>
             );
           })}
         </div>
-        <p className="muted">Free while you're testing. Later, premium styles will cost a small one-time price — no payment is wired up yet. Browse them all in the <Link to="/market">Market</Link>.</p>
+        <p className="muted">
+          {t('settings.themeFree')} <Link to="/market">{t('nav.market')}</Link>.
+        </p>
 
         <ThemeColorPicker />
       </section>
 
       <section className="card">
-        <div className="card-head"><h2 className="heading-icon"><Icon name="sound" size={18} /> Sound</h2></div>
+        <div className="card-head"><h2 className="heading-icon"><Icon name="sound" size={18} /> {t('settings.sound')}</h2></div>
         <label className="toggle-row">
           <input
             type="checkbox"
@@ -141,7 +148,7 @@ export function Settings() {
               if (e.target.checked) playSound('reward'); // instant preview
             }}
           />
-          <span>Game sounds — coin chimes, level-up fanfares, damage thuds. Synthesized on the fly, nothing to download.</span>
+          <span>{t('settings.soundDesc')}</span>
         </label>
       </section>
 
@@ -156,14 +163,14 @@ export function Settings() {
       <CurrencyCard />
 
       <section className="card">
-        <div className="card-head"><h2>Save data</h2></div>
-        <p className="muted">Cloud sync covers you when signed in. Export is still handy for offline backups or moving a save by hand.</p>
+        <div className="card-head"><h2>{t('settings.saveData')}</h2></div>
+        <p className="muted">{t('settings.saveDataDesc')}</p>
         <div className="btn-pair">
           <button className="btn btn-primary heading-icon" onClick={exportSave}>
-            <Icon name="download" size={14} /> Export save
+            <Icon name="download" size={14} /> {t('settings.exportSave')}
           </button>
           <button className="btn btn-ghost heading-icon" onClick={() => fileRef.current?.click()}>
-            <Icon name="upload" size={14} /> Import save
+            <Icon name="upload" size={14} /> {t('settings.importSave')}
           </button>
           <input
             ref={fileRef}
@@ -176,21 +183,59 @@ export function Settings() {
       </section>
 
       <section className="card card-danger">
-        <div className="card-head"><h2>Danger zone</h2></div>
-        <p className="muted">Erase the character, all progress, all history — and if you're signed in, the wiped state syncs to the cloud too. This is the permadeath button.</p>
+        <div className="card-head"><h2>{t('settings.dangerZone')}</h2></div>
+        <p className="muted">{t('settings.dangerDesc')}</p>
         <button
           className="btn btn-danger heading-icon"
           onClick={() => {
-            if (confirm('Erase EVERYTHING? Character, streaks, gold, journal — all of it.') && confirm('Last chance. Really start over from nothing?')) {
+            if (confirm(t('settings.eraseConfirm1')) && confirm(t('settings.eraseConfirm2'))) {
               s.resetGame();
             }
           }}
         >
           {/* famBossHunter is the app's only skull glyph — IconName has no standalone `skull`. */}
-          <Icon name="famBossHunter" size={15} /> Erase everything
+          <Icon name="famBossHunter" size={15} /> {t('settings.eraseEverything')}
         </button>
       </section>
     </div>
+  );
+}
+
+/**
+ * The language the interface is written in.
+ *
+ * Switching remounts the whole tree (see the key in App.tsx), so every screen —
+ * including generated chronicle text and the template library — redraws in the
+ * new language immediately. Anything the player typed themselves (habit names,
+ * journal entries, contacts) is their own words and is never touched.
+ */
+function LanguageCard() {
+  const t = useT();
+  const lang = useLang();
+  const setLanguage = useGame(s => s.setLanguage);
+
+  return (
+    <section className="card">
+      <div className="card-head"><h2 className="heading-icon"><Icon name="learn" size={18} /> {t('settings.language')}</h2></div>
+      <p className="muted">{t('settings.languageDesc')}</p>
+      <div className="theme-row">
+        {LANGS.map((code: Lang) => (
+          <button
+            key={code}
+            className={`theme-pick ${lang === code ? 'theme-active' : ''}`}
+            onClick={() => setLanguage(code)}
+          >
+            <span>{LANG_LABEL[code]}</span>
+            {lang === code && (
+              <span className="status status-done heading-icon">
+                <Icon name="check" size={12} /> {t('settings.active')}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+      <p className="muted">{t('settings.languageNote')}</p>
+    </section>
   );
 }
 
@@ -202,18 +247,18 @@ export function Settings() {
  * player suddenly has dollars. Said plainly on the card so nobody expects a rate.
  */
 function CurrencyCard() {
+  const t = useT();
   const currency = useGame(s => s.currency);
   const setCurrency = useGame(s => s.setCurrency);
 
   return (
     <section className="card">
-      <div className="card-head"><h2 className="heading-icon"><Icon name="banknote" size={18} /> Currency</h2></div>
+      <div className="card-head"><h2 className="heading-icon"><Icon name="banknote" size={18} /> {t('settings.currency')}</h2></div>
       <p className="muted">
-        The currency the <Link to="/finances">Finances</Link> page writes real amounts in — balances,
-        debts, budgets. Gold is the game's own currency and never changes.
+        {t('settings.currencyDesc1')} <Link to="/finances">{t('nav.finances')}</Link>{t('settings.currencyDesc2')}
       </p>
       <label className="field" style={{ maxWidth: 320 }}>
-        <span>Real money is shown in</span>
+        <span>{t('settings.currencyShownIn')}</span>
         <select className="input" value={currency} onChange={e => setCurrency(e.target.value)}>
           {CURRENCIES.map(c => (
             <option key={c.code} value={c.code}>
@@ -223,8 +268,7 @@ function CurrencyCard() {
         </select>
       </label>
       <p className="muted">
-        Amounts already recorded keep their numbers — this changes how they're written, not what
-        they're worth. A balance of 25000 reads as <strong>{fmtMoney(25000, currency)}</strong>.
+        {t('settings.currencyNote')} <strong>{fmtMoney(25000, currency)}</strong>.
       </p>
     </section>
   );
@@ -237,8 +281,9 @@ function CurrencyCard() {
  * switching themes and back keeps each one's tweak.
  */
 function ThemeColorPicker() {
+  const t = useT();
   const s = useGame();
-  const activeTheme = THEMES.find(t => t.id === s.theme)!;
+  const activeTheme = THEMES.find(th => th.id === s.theme)!;
   const overrides = s.themeOverrides[s.theme] ?? {};
   const hasOverrides = Object.keys(overrides).length > 0;
   const base = THEME_BASE_COLORS[s.theme];
@@ -253,22 +298,22 @@ function ThemeColorPicker() {
     <div className="theme-color-picker">
       <div className="card-head" style={{ marginTop: 14 }}>
         <h3 className="heading-icon" style={{ fontSize: 'var(--fs-body)' }}>
-          <Icon name="palette" size={16} /> Recolor "{activeTheme.name}"
+          <Icon name="palette" size={16} /> {t('settings.recolor', { theme: activeTheme.name })}
         </h3>
         {hasOverrides && (
-          <button className="btn btn-ghost btn-sm" onClick={() => s.resetThemeColors(s.theme)}>Reset to default</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => s.resetThemeColors(s.theme)}>{t('settings.resetDefault')}</button>
         )}
       </div>
-      <p className="muted">Tweak this theme's key colors live. Saved per theme — switch away and back and it's still yours.</p>
+      <p className="muted">{t('settings.recolorDesc')}</p>
       <div className="theme-color-row">
-        {CUSTOM_THEME_TOKENS.map(({ token, label }) => (
+        {CUSTOM_THEME_TOKENS.map(({ token }) => (
           <label key={token} className="theme-color-field">
             <input
               type="color"
               value={currentValue(token)}
               onChange={e => s.setThemeColor(s.theme, token, e.target.value)}
             />
-            <span>{label}</span>
+            <span>{t(`themeToken.${token}`)}</span>
           </label>
         ))}
       </div>
@@ -279,6 +324,7 @@ function ThemeColorPicker() {
 /** Replay the guided tour. Kept next to the Wheel Check because both are
  *  "run the first-session thing again" — neither destroys anything you earned. */
 function TutorialCard() {
+  const t = useT();
   const tutorialStep = useGame(s => s.tutorialStep);
   const replayTutorial = useGame(s => s.replayTutorial);
   const running = tutorialStep !== null && tutorialStep >= 0;
@@ -286,15 +332,14 @@ function TutorialCard() {
   return (
     <section className="card">
       <div className="card-head">
-        <h2 className="heading-icon"><Icon name="learn" size={18} /> Tutorial</h2>
+        <h2 className="heading-icon"><Icon name="learn" size={18} /> {t('settings.tutorial')}</h2>
       </div>
       <p className="muted">
-        The guided first session — every screen, and every core action done once for real.
-        Replaying it changes nothing you have earned; it only walks you through again.
-        {tutorialStep === -1 && ' You skipped it last time.'}
+        {t('settings.tutorialDesc')}
+        {tutorialStep === -1 && ` ${t('settings.tutorialSkipped')}`}
       </p>
       <button className="btn btn-primary" disabled={running} onClick={replayTutorial}>
-        {running ? 'Tour in progress' : 'Replay the tutorial'}
+        {running ? t('settings.tourRunning') : t('settings.replayTutorial')}
       </button>
     </section>
   );
@@ -305,6 +350,7 @@ function TutorialCard() {
  * now) — it stores a fresh subjective snapshot so the arc of declared-vs-lived can be seen over time.
  */
 function WheelCard() {
+  const t = useT();
   const snapshots = useGame(s => s.wheelSnapshots);
   const recordWheelCheck = useGame(s => s.recordWheelCheck);
   const [open, setOpen] = useState(false);
@@ -312,24 +358,20 @@ function WheelCard() {
 
   return (
     <section className="card">
-      <div className="card-head"><h2 className="heading-icon"><Icon name="wheel" size={18} /> Wheel of Life</h2></div>
-      <p className="muted">
-        A quick self-audit of your eight life sectors. The first one, at character creation, seeded
-        your starting wheel. Retaking it now records a snapshot — it won't touch the levels you've
-        earned, it just tracks how your own read of your life shifts over time.
-      </p>
+      <div className="card-head"><h2 className="heading-icon"><Icon name="wheel" size={18} /> {t('settings.wheelOfLife')}</h2></div>
+      <p className="muted">{t('settings.wheelDesc')}</p>
       {last
-        ? <p className="muted">Last taken {new Date(last.date).toLocaleDateString()} · {snapshots.length} on record.</p>
-        : <p className="muted">No audit on record yet — you started with a flat wheel.</p>}
+        ? <p className="muted">{t('settings.wheelLastTaken', { date: fmtDate(last.date), n: snapshots.length })}</p>
+        : <p className="muted">{t('settings.wheelNone')}</p>}
       <button className="btn btn-primary heading-icon" onClick={() => setOpen(true)}>
-        <Icon name="wheel" size={14} /> Retake the audit
+        <Icon name="wheel" size={14} /> {t('settings.wheelRetake')}
       </button>
 
       {open && (
-        <Modal title="Wheel Check" onClose={() => setOpen(false)} wide>
+        <Modal title={t('settings.wheelCheck')} onClose={() => setOpen(false)} wide>
           <WheelSurvey
             initial={last?.scores}
-            submitLabel="Save this Wheel Check"
+            submitLabel={t('settings.wheelSave')}
             onSubmit={(scores: Record<AttributeKey, number>) => { recordWheelCheck(scores); setOpen(false); }}
           />
         </Modal>
@@ -339,6 +381,7 @@ function WheelCard() {
 }
 
 function ReminderCard() {
+  const t = useT();
   const s = useGame();
   const supported = typeof Notification !== 'undefined';
   const [permission, setPermission] = useState(supported ? Notification.permission : 'unsupported');
@@ -356,18 +399,18 @@ function ReminderCard() {
 
   return (
     <section className="card">
-      <div className="card-head"><h2 className="heading-icon"><Icon name="bell" size={18} /> Evening reminder</h2></div>
+      <div className="card-head"><h2 className="heading-icon"><Icon name="bell" size={18} /> {t('settings.reminder')}</h2></div>
       {!supported ? (
-        <p className="muted">This browser doesn't support notifications.</p>
+        <p className="muted">{t('settings.reminderUnsupported')}</p>
       ) : (
         <>
           <label className="toggle-row">
             <input type="checkbox" checked={s.reminder.enabled} onChange={e => void enable(e.target.checked)} />
-            <span>Remind me if habits or the Daily Three are still open</span>
+            <span>{t('settings.reminderToggle')}</span>
           </label>
           {s.reminder.enabled && (
             <label className="field" style={{ maxWidth: 200 }}>
-              <span>Remind at</span>
+              <span>{t('settings.reminderAt')}</span>
               <input
                 className="input"
                 type="time"
@@ -378,14 +421,10 @@ function ReminderCard() {
           )}
           {permission === 'denied' && (
             <p className="muted">
-              <Icon name="warning" size={14} /> Notifications are blocked for this site — allow them
-              in your browser's site settings first.
+              <Icon name="warning" size={14} /> {t('settings.reminderBlocked')}
             </p>
           )}
-          <p className="muted">
-            Honest limitation: the reminder fires while IrtiQa is open in a tab (even a background one).
-            True push-while-closed needs the mobile app — it's on the roadmap.
-          </p>
+          <p className="muted">{t('settings.reminderLimit')}</p>
         </>
       )}
     </section>
@@ -393,50 +432,44 @@ function ReminderCard() {
 }
 
 function AccountCard() {
+  const t = useT();
   const sync = useSync();
   return (
     <section className="card">
       <div className="card-head">
-        <h2 className="heading-icon"><Icon name="subscription" size={18} /> Account &amp; cloud sync</h2>
+        <h2 className="heading-icon"><Icon name="subscription" size={18} /> {t('settings.account')}</h2>
         {sync.user && (
           <span className={`status heading-icon ${sync.status === 'error' ? 'status-failed' : sync.status === 'synced' ? 'status-done' : ''}`}>
-            {sync.status === 'syncing' ? <><Icon name="subscription" size={12} /> syncing…</>
-              : sync.status === 'synced' ? <><Icon name="check" size={12} /> synced</>
-                : sync.status === 'error' ? <><Icon name="close" size={12} /> sync error</>
+            {sync.status === 'syncing' ? <><Icon name="subscription" size={12} /> {t('settings.syncing')}</>
+              : sync.status === 'synced' ? <><Icon name="check" size={12} /> {t('settings.synced')}</>
+                : sync.status === 'error' ? <><Icon name="close" size={12} /> {t('settings.syncError')}</>
                   : sync.status}
           </span>
         )}
       </div>
       {!isSupabaseConfigured ? (
-        <p className="muted">
-          Cloud sync isn't enabled on this build, so your save lives in this browser only — clearing
-          site data or switching devices loses it. Use <strong>Export</strong> below to keep a backup.
-          To turn on accounts and cross-device sync, set the Supabase env vars and redeploy (see the README).
-        </p>
+        <p className="muted">{t('settings.noCloud')}</p>
       ) : sync.user ? (
         <>
-          <p>Signed in as <strong>{sync.user.email}</strong></p>
+          <p>{t('settings.signedInAs')} <strong>{sync.user.email}</strong></p>
           <p className="muted">
             {sync.status === 'error'
-              ? `Sync error: ${sync.error}`
+              ? t('settings.syncErrorDetail', { error: sync.error })
               : sync.lastSyncedAt
-                ? `Last synced ${new Date(sync.lastSyncedAt).toLocaleString()}. Changes upload automatically a few seconds after you make them.`
-                : 'Waiting for the first sync…'}
+                ? t('settings.lastSynced', { time: fmtDateTime(sync.lastSyncedAt) })
+                : t('settings.awaitingSync')}
           </p>
           <div className="btn-pair">
             <button className="btn btn-primary heading-icon" onClick={() => void syncNow()}>
-              <Icon name="subscription" size={13} /> Sync now
+              <Icon name="subscription" size={13} /> {t('settings.syncNow')}
             </button>
-            <button className="btn btn-ghost" onClick={() => void signOutUser()}>Sign out</button>
+            <button className="btn btn-ghost" onClick={() => void signOutUser()}>{t('settings.signOut')}</button>
           </div>
-          <p className="muted">Signing out keeps the local copy on this device. Sign in on another device to continue your journey there.</p>
+          <p className="muted">{t('settings.signOutNote')}</p>
         </>
       ) : (
         <>
-          <p className="muted">
-            Sign in to back your save up to the cloud and play across devices.
-            Without an account, everything lives in this browser only — and browsers forget.
-          </p>
+          <p className="muted">{t('settings.signInPitch')}</p>
           <AuthPanel />
         </>
       )}
@@ -459,6 +492,7 @@ function AccountCard() {
  * with, and a driver that is genuinely in play but wasn't worth a class slot.
  */
 function ProfileCard() {
+  const t = useT();
   const character = useGame(s => s.character!);
   const setProfile = useGame(s => s.setProfile);
   const profile = character.profile ?? [];
@@ -485,26 +519,23 @@ function ProfileCard() {
   return (
     <section className="card">
       <div className="card-head">
-        <h2 className="heading-icon"><Icon name="brain" size={18} /> Your radicals</h2>
+        <h2 className="heading-icon"><Icon name="brain" size={18} /> {t('settings.radicals')}</h2>
         <div className="btn-pair">
           {edited && loadout.length > 0 && (
             <button className="btn btn-ghost btn-sm" onClick={() => setProfile(fromLoadout)}>
-              Reset to loadout
+              {t('settings.resetToLoadout')}
             </button>
           )}
           {profile.length > 0 && (
-            <button className="btn btn-ghost btn-sm" onClick={() => setProfile([])}>Clear</button>
+            <button className="btn btn-ghost btn-sm" onClick={() => setProfile([])}>{t('settings.clear')}</button>
           )}
         </div>
       </div>
       <p className="muted">
-        Your classes are your radicals — a Bard <em>is</em> the hysteroid driver, a Warden the
-        epileptoid one. Choosing your loadout set this, so there's nothing to answer here. The
-        order decides which habits and quests the{' '}
-        <Link to="/attributes">sector pages</Link> put in front of you: a habit built on sustained
-        willpower suits an epileptoid and quietly defeats someone without one. Reorder or correct
-        it below if the fit is wrong. Changing the classes themselves is the{' '}
-        <Link to="/market">Identity Scroll</Link>'s job.
+        {t('settings.radicalsDesc1')}{' '}
+        <Link to="/attributes">{t('settings.sectorPages')}</Link>{' '}
+        {t('settings.radicalsDesc2')}{' '}
+        <Link to="/market">{t('item.identity_scroll.name')}</Link>{t('settings.radicalsDesc3')}
       </p>
 
       {profile.length > 0 ? (
@@ -518,14 +549,14 @@ function ProfileCard() {
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ fontWeight: 600, color: ARCHETYPES[r].color }}>{ARCHETYPES[r].label}</span>
                   <span className="muted">
-                    {' · '}the {c?.name}
-                    {fromLoadout.includes(r) ? '' : ', added here'}
+                    {' · '}{c?.name}
+                    {fromLoadout.includes(r) ? '' : t('settings.addedHere')}
                   </span>
                 </span>
-                <button className="btn btn-ghost btn-sm" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move ${ARCHETYPES[r].label} up`}>
+                <button className="btn btn-ghost btn-sm" onClick={() => move(i, -1)} disabled={i === 0} aria-label={t('settings.moveUp', { name: ARCHETYPES[r].label })}>
                   <Icon name="arrowUp" size={13} />
                 </button>
-                <button className="btn btn-ghost btn-sm" onClick={() => move(i, 1)} disabled={i === profile.length - 1} aria-label={`Move ${ARCHETYPES[r].label} down`}>
+                <button className="btn btn-ghost btn-sm" onClick={() => move(i, 1)} disabled={i === profile.length - 1} aria-label={t('settings.moveDown', { name: ARCHETYPES[r].label })}>
                   <Icon name="arrowDown" size={13} />
                 </button>
               </div>
@@ -533,13 +564,10 @@ function ProfileCard() {
           })}
         </div>
       ) : (
-        <p className="muted">
-          Cleared — every sector page shows its full library, unranked. Pick a radical below, or
-          put your loadout's back with <em>Reset to loadout</em>.
-        </p>
+        <p className="muted">{t('settings.radicalsCleared')}</p>
       )}
 
-      <p className="muted" style={{ marginTop: 12 }}>All seven, in case one belongs and isn't here:</p>
+      <p className="muted" style={{ marginTop: 12 }}>{t('settings.allSeven')}</p>
       <div className="profile-order">
         {ARCHETYPE_KEYS.map(r => {
           const on = profile.includes(r);
@@ -550,7 +578,7 @@ function ProfileCard() {
               className={`chip chip-icon ${on ? 'chip-on' : ''}`}
               onClick={() => toggle(r)}
               style={on ? { borderColor: ARCHETYPES[r].color, color: ARCHETYPES[r].color } : undefined}
-              title={`${ARCHETYPES[r].label} — the ${c?.name} class`}
+              title={t('settings.radicalChip', { archetype: ARCHETYPES[r].label, cls: c?.name ?? '' })}
             >
               {c && <Icon name={c.id} size={13} />} {ARCHETYPES[r].label}
             </button>

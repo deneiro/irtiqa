@@ -490,6 +490,8 @@ textarea.input { resize: vertical; }
 }
 .onb-logo img { border-radius: 10px; }
 .onb-tag { color: var(--muted); margin-bottom: 34px; }
+/* Language toggle on the first onboarding screen — Settings isn't reachable yet. */
+.onb-lang { display: flex; justify-content: center; gap: 8px; margin-bottom: 26px; }
 .onb-step h2 { font-size: 24px; margin-bottom: 4px; }
 .onb-step .input-lg { max-width: 420px; margin: 18px auto; display: block; text-align: center; }
 .onb-actions { display: flex; justify-content: center; gap: 12px; margin-top: 22px; }
