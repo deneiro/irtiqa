@@ -211,4 +211,31 @@ export const EN_GAME: Dict = {
   'medium.podcast': 'Podcast',
   'medium.lecture': 'Lecture',
   'medium.paper': 'Paper',
+
+  // ---------- Sigil / calendar items / sync / currencies ----------
+  'sigil.unformed': 'Unformed. Every sector still at one — the shape is waiting for you.',
+  'sigil.nearlyRound': v => `Nearly round. ${v.strongest} leads, but nothing is being left behind.`,
+  'sigil.leaning': v => `Leaning toward ${v.strongest}. ${v.thinnest} is the short petal.`,
+  'sigil.lopsided': v => `Badly lopsided — ${v.strongest} has run far ahead of ${v.thinnest}.`,
+
+  'calItem.habitsDue': v => `${v.n} habit${Number(v.n) === 1 ? '' : 's'} due`,
+  'calItem.habitsDone': v => `${v.done} of ${v.total} habit${Number(v.total) === 1 ? '' : 's'} done`,
+  'calItem.birthday': v => `${v.name}'s birthday`,
+  'calItem.journalWritten': 'Journal written',
+  'calItem.subBills': v => `${v.name} bills (${v.amount})`,
+
+  'sync.notEnabled': 'Cloud sync is not enabled on this build. Your progress is saved in this browser.',
+  'sync.signedIn': 'Signed in — syncing your save.',
+  'sync.confirmEmail': 'Account created — confirm it from the email we sent, then sign in.',
+  'sync.createdSignedIn': 'Account created and signed in.',
+
+  'currency.KZT': 'Kazakhstani tenge',
+  'currency.USD': 'US dollar',
+  'currency.EUR': 'Euro',
+  'currency.RUB': 'Russian rouble',
+  'currency.GBP': 'Pound sterling',
+  'currency.TRY': 'Turkish lira',
+  'currency.AED': 'UAE dirham',
+  'currency.KGS': 'Kyrgyzstani som',
+  'currency.UZS': 'Uzbekistani som',
 };

@@ -1,4 +1,5 @@
 import { addDaysStr, addMonthsClamp, habitDueOn, questTargetDate, todayStr } from '../game/engine';
+import { t } from '../i18n';
 import type { Contact, Habit, HabitDayStatus, JournalEntry, Quest, QuickTask, SocialEvent, Subscription } from '../game/types';
 
 export type CalendarItemType = 'event' | 'birthday' | 'quickTask' | 'journal' | 'questTarget' | 'subscription' | 'habit';
@@ -79,7 +80,7 @@ function habitItemsInRange(src: CalendarSource, rangeStart: string, rangeEnd: st
     // result — and today counts as "result" on purpose: the day's progress is the useful read
     // while it is still in play.
     if (day > today) {
-      out.push({ id: `habits-${day}`, date: day, type: 'habit', title: `${due.length} ${plural} due`, link: '/habits' });
+      out.push({ id: `habits-${day}`, date: day, type: 'habit', title: t('calItem.habitsDue', { n: due.length }), link: '/habits' });
       continue;
     }
 
@@ -90,7 +91,7 @@ function habitItemsInRange(src: CalendarSource, rangeStart: string, rangeEnd: st
       id: `habits-${day}`,
       date: day,
       type: 'habit',
-      title: `${done} of ${due.length} ${plural} done`,
+      title: t('calItem.habitsDone', { done, total: due.length }),
       link: '/habits',
       done: done === due.length,
     });
@@ -114,7 +115,7 @@ export function buildCalendarItems(src: CalendarSource, rangeStart: string, rang
   for (const c of src.contacts) {
     if (!c.birthday) continue;
     for (const date of birthdaysInRange(c.birthday, rangeStart, rangeEnd)) {
-      items.push({ id: `birthday-${c.id}-${date}`, date, type: 'birthday', title: `${c.name}'s birthday`, link: '/social' });
+      items.push({ id: `birthday-${c.id}-${date}`, date, type: 'birthday', title: t('calItem.birthday', { name: c.name }), link: '/social' });
     }
   }
 
@@ -125,7 +126,7 @@ export function buildCalendarItems(src: CalendarSource, rangeStart: string, rang
 
   for (const j of src.journal) {
     if (j.date < rangeStart || j.date > rangeEnd) continue;
-    items.push({ id: `journal-${j.id}`, date: j.date, type: 'journal', title: 'Journal written', link: '/journal' });
+    items.push({ id: `journal-${j.id}`, date: j.date, type: 'journal', title: t('calItem.journalWritten'), link: '/journal' });
   }
 
   for (const q of src.quests) {
@@ -138,7 +139,7 @@ export function buildCalendarItems(src: CalendarSource, rangeStart: string, rang
   for (const sub of src.subs ?? []) {
     if (!sub.active) continue;
     for (const date of subscriptionOccurrencesInRange(sub, rangeStart, rangeEnd)) {
-      items.push({ id: `sub-${sub.id}-${date}`, date, type: 'subscription', title: `${sub.name} bills (${sub.amount.toLocaleString()})`, link: '/finances' });
+      items.push({ id: `sub-${sub.id}-${date}`, date, type: 'subscription', title: t('calItem.subBills', { name: sub.name, amount: sub.amount.toLocaleString() }), link: '/finances' });
     }
   }
 

@@ -224,4 +224,33 @@ export const RU_GAME: Dict = {
   'medium.podcast': 'Подкаст',
   'medium.lecture': 'Лекция',
   'medium.paper': 'Статья',
+
+  // ---------- Сигил / элементы календаря / синхронизация / валюты ----------
+  'sigil.unformed': 'Бесформенный. Все сферы ещё на единице — форма ждёт вас.',
+  'sigil.nearlyRound': v => `Почти круглый. ${v.strongest} ведёт, но ничего не остаётся позади.`,
+  'sigil.leaning': v => `Клонится к сфере «${v.strongest}». ${v.thinnest} — короткий лепесток.`,
+  'sigil.lopsided': v => `Сильно перекошен — ${v.strongest} ушла далеко вперёд от сферы «${v.thinnest}».`,
+
+  'calItem.habitsDue': v =>
+    `${v.n} ${plural(Number(v.n), 'привычка', 'привычки', 'привычек')} на сегодня`,
+  'calItem.habitsDone': v =>
+    `${v.done} из ${v.total} ${plural(Number(v.total), 'привычки', 'привычек', 'привычек')} сделано`,
+  'calItem.birthday': v => `День рождения: ${v.name}`,
+  'calItem.journalWritten': 'Дневник написан',
+  'calItem.subBills': v => `Списание «${v.name}» (${v.amount})`,
+
+  'sync.notEnabled': 'Облачная синхронизация в этой сборке не включена. Прогресс сохраняется в этом браузере.',
+  'sync.signedIn': 'Вы вошли — синхронизируем сохранение.',
+  'sync.confirmEmail': 'Аккаунт создан — подтвердите его по письму, которое мы отправили, затем войдите.',
+  'sync.createdSignedIn': 'Аккаунт создан, вы вошли.',
+
+  'currency.KZT': 'Казахстанский тенге',
+  'currency.USD': 'Доллар США',
+  'currency.EUR': 'Евро',
+  'currency.RUB': 'Российский рубль',
+  'currency.GBP': 'Фунт стерлингов',
+  'currency.TRY': 'Турецкая лира',
+  'currency.AED': 'Дирхам ОАЭ',
+  'currency.KGS': 'Киргизский сом',
+  'currency.UZS': 'Узбекский сум',
 };
