@@ -1,4 +1,6 @@
 import { ATTRIBUTES } from './constants';
+import { t } from '../i18n';
+import { weekdayNames } from '../lib/format';
 import { addDaysStr, fmtDay, habitDueOn, parseDay, weekKey } from './engine';
 import type {
   AttributeKey,
@@ -46,7 +48,7 @@ export interface ChronicleSource {
   dayLog: Record<string, { xp: number; gold: number }>;
 }
 
-const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WEEKDAY = () => weekdayNames('long');
 
 /** Minimum real activity before the week is worth narrating at all. */
 const THIN_THRESHOLD = 3;
@@ -68,7 +70,7 @@ export function lastCompleteWeek(today: string): string {
 function fmtHours(minutes: number): string {
   const h = Math.floor(minutes / 60);
   const m = Math.round(minutes % 60);
-  if (h === 0) return `${m} minutes`;
+  if (h === 0) return t('chr.minutes', { m });
   if (m === 0) return `${h} hour${h > 1 ? 's' : ''}`;
   return `${h}h ${m}m`;
 }
@@ -77,7 +79,7 @@ function list(items: string[]): string {
   if (items.length === 0) return '';
   if (items.length === 1) return items[0];
   if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+  return t('chr.listAnd', { head: items.slice(0, -1).join(', '), last: items[items.length - 1] });
 }
 
 /** Trims a journal answer to a quotable clause without cutting mid-word. */
@@ -223,18 +225,18 @@ function openingParagraph(f: WeekFacts): string {
     return 'A quiet week — nothing logged. Some weeks are like that, and the record keeps them honestly rather than pretending otherwise.';
   }
   if (perfect >= 5) {
-    return `This was one of the good ones. ${perfect} days where everything you asked of yourself actually happened — that is not a streak you stumble into.`;
+    return t('chr.openGood', { n: perfect });
   }
   if (rate >= 0.8) {
-    return `A week that mostly held. ${f.checkins} of ${f.due} habits landed, and the days you missed were the exception rather than the shape of the week.`;
+    return t('chr.openHeld', { done: f.checkins, due: f.due });
   }
   if (rate >= 0.5) {
-    return `A mixed week — ${f.checkins} of ${f.due} habits done. Not the week you drew up, but not a lost one either.`;
+    return t('chr.openMixed', { done: f.checkins, due: f.due });
   }
   if (f.checkins > 0) {
-    return `A hard week. ${f.checkins} of ${f.due} habits made it through. Worth reading what else was going on before calling it a failure.`;
+    return t('chr.openHard', { done: f.checkins, due: f.due });
   }
-  return 'The habits went untouched this week. What follows is what did happen — because something usually did.';
+  return t('chr.openUntouched');
 }
 
 /** The strongest thread, named. */
@@ -243,12 +245,12 @@ function heldParagraph(f: WeekFacts): string | null {
   const { habit, due } = f.bestHabit;
   const streakNote =
     habit.streak >= 14
-      ? ` It is at ${habit.streak} days now — long past the point where it needs deciding each morning.`
+      ? t('chr.streakLong', { n: habit.streak })
       : habit.streak >= 5
-        ? ` That is ${habit.streak} days running.`
+        ? t('chr.streakShort', { n: habit.streak })
         : '';
-  const verb = habit.kind === 'bad' ? 'held the line on' : 'kept';
-  return `You ${verb} **${habit.name}** every one of the ${due} days it was due.${streakNote}`;
+  const verb = habit.kind === 'bad' ? t('chr.verbHeldLine') : t('chr.verbKept');
+  return `${t('chr.heldEvery', { verb, name: habit.name, due })}${streakNote}`;
 }
 
 /** The thread that slipped — reported, never scolded. */
@@ -256,10 +258,10 @@ function slippedParagraph(f: WeekFacts): string | null {
   if (!f.slippedHabit) return null;
   const { habit, done, due } = f.slippedHabit;
   if (done === 0 && due >= 3) {
-    return `**${habit.name}** did not happen at all this week — ${due} days, none of them. That is information, not a verdict: either the week was wrong for it, or the habit is.`;
+    return t('chr.slippedAll', { name: habit.name, due });
   }
   const missed = due - done;
-  return `**${habit.name}** slipped ${missed} time${missed > 1 ? 's' : ''} out of ${due}.`;
+  return t('chr.slippedSome', { name: habit.name, missed, due });
 }
 
 /** What the work actually was, in the player's own session notes. */
@@ -270,23 +272,23 @@ function workParagraph(f: WeekFacts): string | null {
   const parts: string[] = [];
 
   if (f.questWork.length === 1) {
-    parts.push(`You put ${fmtHours(top.minutes)} into **${top.quest.title}**.`);
+    parts.push(t('chr.workOne', { time: fmtHours(top.minutes), title: top.quest.title }));
   } else {
     parts.push(
-      `${fmtHours(f.totalMinutes)} of tracked work across ${f.questWork.length} quests, most of it — ${fmtHours(top.minutes)} — on **${top.quest.title}**.`,
+      t('chr.workMany', { total: fmtHours(f.totalMinutes), n: f.questWork.length, top: fmtHours(top.minutes), title: top.quest.title }),
     );
   }
 
   // Quote their own words about the work rather than paraphrasing it
   const note = top.notes[top.notes.length - 1];
-  if (note) parts.push(`Your last note on it: ${quote(note)}`);
+  if (note) parts.push(t('chr.lastNote', { note: quote(note) }));
 
   if (f.questsCompleted.length > 0) {
     const names = f.questsCompleted.map(q => `**${q.title}**`);
     parts.push(
       f.questsCompleted.length === 1
-        ? `You finished ${names[0]} this week.`
-        : `You closed out ${list(names)}.`,
+        ? t('chr.finishedOne', { name: names[0] })
+        : t('chr.finishedMany', { list: list(names) }),
     );
   }
 
@@ -299,7 +301,7 @@ function voiceParagraph(f: WeekFacts): string | null {
 
   const withAnswers = f.entries.filter(e => e.answers.some(a => a.a.trim()));
   if (withAnswers.length === 0) {
-    return `You checked in to the journal ${f.entries.length} time${f.entries.length > 1 ? 's' : ''} but left the questions blank. The mood is on record even when the words aren't.`;
+    return t('chr.journalBlank', { n: f.entries.length });
   }
 
   // Pick the day that carried the most weight, not the latest one and not
@@ -309,9 +311,9 @@ function voiceParagraph(f: WeekFacts): string | null {
   const weight = (e: JournalEntry) => Math.abs(e.mood - 3) + Math.abs(e.stress - 5) / 3;
   const pick = withAnswers.reduce((best, e) => (weight(e) > weight(best) ? e : best));
   const answer = pick.answers.find(a => a.a.trim())!;
-  const day = WEEKDAY[parseDay(pick.date).getDay()];
+  const day = WEEKDAY()[parseDay(pick.date).getDay()];
 
-  return `On ${day} you wrote, on "${answer.q}": ${quote(answer.a)}`;
+  return t('chr.onDayWrote', { day, q: answer.q, a: quote(answer.a) });
 }
 
 /** Mood and stress as a trend line, not a score. */
@@ -326,20 +328,20 @@ function feelingParagraph(f: WeekFacts): string | null {
   const first = f.moods[0];
   const last = f.moods[f.moods.length - 1];
   const arc =
-    last - first >= 1.5 ? ' It ended better than it started.'
-      : first - last >= 1.5 ? ' It got harder as it went.'
+    last - first >= 1.5 ? t('chr.arcUp')
+      : first - last >= 1.5 ? t('chr.arcDown')
         : '';
 
   const stressNote = s !== null && s >= 7
-    ? ` Stress averaged ${r1(s)}/10 — high enough to be worth naming.`
+    ? t('chr.stressHigh', { s: r1(s) })
     : s !== null && s <= 3
-      ? ` Stress stayed low, averaging ${r1(s)}/10.`
+      ? t('chr.stressLow', { s: r1(s) })
       : '';
 
   // A swinging week and a flat week can share an average. Reporting only the
   // mean would erase both the good days and the bad one — say the range instead.
   if (hi - lo >= 2) {
-    return `Mood ran the whole range this week — ${lo}/5 at the bottom, ${hi}/5 at the top, across ${f.moods.length} entries. Averaging that would hide both ends.${arc}${stressNote}`;
+    return `${t('chr.moodRange', { lo, hi, n: f.moods.length })}${arc}${stressNote}`;
   }
 
   const moodPhrase =
@@ -348,7 +350,7 @@ function feelingParagraph(f: WeekFacts): string | null {
         : m >= 2.6 ? 'level, without much lift'
           : 'heavy';
 
-  return `Across ${f.moods.length} entries, mood averaged ${r1(m)}/5 — ${moodPhrase}.${arc}${stressNote}`;
+  return `${t('chr.moodAvg', { n: f.moods.length, m: r1(m), phrase: moodPhrase })}${arc}${stressNote}`;
 }
 
 /** Where the week's effort actually landed across the eight attributes. */
@@ -359,44 +361,44 @@ function balanceParagraph(f: WeekFacts): string | null {
   const untouched = (Object.keys(ATTRIBUTES) as AttributeKey[]).filter(k => !f.attrTouched.has(k));
 
   if (f.attrTouched.size === 1) {
-    return `Everything you did this week fed one thing: ${top[0]}.`;
+    return t('chr.balanceOne', { top: top[0] });
   }
-  const lead = `The week's weight went to ${list(top)}.`;
+  const lead = t('chr.balanceLead', { list: list(top) });
   if (untouched.length >= 5) {
-    return `${lead} ${untouched.length} of the eight attributes got nothing at all.`;
+    return `${lead} ${t('chr.balanceUntouchedN', { n: untouched.length })}`;
   }
   if (untouched.length > 0) {
-    return `${lead} Nothing reached ${list(untouched.map(k => ATTRIBUTES[k].label))}.`;
+    return `${lead} ${t('chr.balanceNothingReached', { list: list(untouched.map(k => ATTRIBUTES[k].label)) })}`;
   }
-  return `${lead} Every one of the eight got something — a rare week.`;
+  return `${lead} ${t('chr.balanceAllEight')}`;
 }
 
 /** Closing line. Never a verdict, never a prescription. */
 function closingParagraph(f: WeekFacts): string {
   if (f.perfectDays.length >= 5) {
-    return 'Whatever you were doing this week, the record says it worked.';
+    return t('chr.closeWorked');
   }
   if (f.missedDays.length >= 5) {
-    return 'Weeks like this are part of the record too. The next one starts clean.';
+    return t('chr.closeHard');
   }
   if (f.totalMinutes >= 300) {
-    return 'The hours are the part nobody sees. They are here.';
+    return t('chr.closeHours');
   }
   if (f.entries.length >= 5) {
-    return 'You kept writing, even through the parts that were not going well. That is the archive earning its keep.';
+    return t('chr.closeWriting');
   }
-  return 'Filed. The next week starts clean.';
+  return t('chr.closeFiled');
 }
 
 function titleFor(f: WeekFacts): string {
   if (f.due === 0 && f.totalMinutes === 0 && f.entries.length === 0) return 'A quiet week';
-  if (f.perfectDays.length >= 5) return 'The week that held';
-  if (f.questsCompleted.length > 0) return `The week you finished ${f.questsCompleted[0].title}`;
-  if (f.totalMinutes >= 600) return 'The week of the long hours';
-  if (f.missedDays.length >= 5) return 'The week that got away';
-  if (f.bestHabit) return `The week of ${f.bestHabit.habit.name}`;
+  if (f.perfectDays.length >= 5) return t('chr.titleHeld');
+  if (f.questsCompleted.length > 0) return t('chr.titleFinished', { title: f.questsCompleted[0].title });
+  if (f.totalMinutes >= 600) return t('chr.titleLongHours');
+  if (f.missedDays.length >= 5) return t('chr.titleGotAway');
+  if (f.bestHabit) return t('chr.titleOfHabit', { name: f.bestHabit.habit.name });
   if (f.moods.length >= 3 && avg(f.moods) >= 4.2) return 'A good week';
-  return 'The week in the record';
+  return t('chr.titleRecord');
 }
 
 /**
@@ -420,9 +422,9 @@ export function buildChronicle(src: ChronicleSource, week: string): Chronicle {
   ].filter((p): p is string => p !== null);
 
   const stats: ChronicleStat[] = [];
-  if (f.due > 0) stats.push({ label: 'habits', value: `${f.checkins}/${f.due}` });
-  if (f.perfectDays.length > 0) stats.push({ label: 'perfect days', value: String(f.perfectDays.length) });
-  if (f.totalMinutes > 0) stats.push({ label: 'tracked work', value: fmtHours(f.totalMinutes) });
+  if (f.due > 0) stats.push({ label: t('chr.statHabits'), value: `${f.checkins}/${f.due}` });
+  if (f.perfectDays.length > 0) stats.push({ label: t('chr.statPerfectDays'), value: String(f.perfectDays.length) });
+  if (f.totalMinutes > 0) stats.push({ label: t('chr.statTrackedWork'), value: fmtHours(f.totalMinutes) });
   if (f.tasksDone > 0) stats.push({ label: 'tasks', value: String(f.tasksDone) });
   if (f.entries.length > 0) stats.push({ label: 'entries', value: String(f.entries.length) });
   if (f.xp > 0) stats.push({ label: 'XP', value: `+${f.xp}` });
