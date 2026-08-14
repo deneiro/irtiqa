@@ -97,4 +97,56 @@ export const EN_GAME: Dict = {
   'boss.development.taunt': 'An unsharpened blade dulls all on its own.',
   'boss.brightness.name': 'The Grey Fog',
   'boss.brightness.taunt': 'It drains the color out of days you never claim.',
+
+  // ---------- Wheel sector essays ----------
+  'wheelc.rule': 'Only when your wheel is round can you move through life smoothly. Dips in one area hold back even a strong career — they are like weights tied to your arms and legs.',
+  'wheelc.source': 'Extreme Time Management — Mrochkovskiy & Tolkachev (2012), ch. 1',
+
+  'wheelc.health.wheelName': 'Health & Sport',
+  'wheelc.health.definition': 'Wellbeing, tone, energy. Your physical condition and the habits that maintain it.',
+  'wheelc.health.why': 'The book puts this sector first for a reason: it feeds every other one. Energy is the currency the other seven sectors spend. When health drops, everything else costs more effort to do at the same level.',
+  'wheelc.health.connection': 'Nothing else on the wheel is independent of this. Career work needs stamina, relationships need presence, and the spiritual practices that ask you to get up early need a body that can.',
+  'wheelc.health.neglect': 'It rarely announces itself. It shows up as everything else being slightly harder than it used to be — shorter temper, worse sleep, work that takes longer for the same output.',
+
+  'wheelc.friends.wheelName': 'Environment',
+  'wheelc.friends.definition': 'Friends and the people around you — the circle you actually spend your hours with.',
+  'wheelc.friends.why': 'The book is blunt about this: "the people you spend the most time with are who you become." Your environment is not a backdrop to your habits, it is one of their strongest inputs.',
+  'wheelc.friends.connection': 'This sector quietly sets the ceiling on the others. A circle where a given behaviour is normal makes that behaviour cheap for you; a circle where it is strange makes it expensive, however much you want it.',
+  'wheelc.friends.neglect': 'Contact thins out without a decision ever being made. The friendships do not end, they just stop being maintained, and the circle narrows to whoever happens to be nearby.',
+
+  'wheelc.family.wheelName': 'Relationships',
+  'wheelc.family.definition': 'Family and close relationships — parents, siblings, and a partner if you have one.',
+  'wheelc.family.why': 'Separate from Environment because it works differently. These are the relationships you do not choose and cannot replace, which makes them both the most durable support available and the easiest to take for granted.',
+  'wheelc.family.connection': 'It is the sector most often sacrificed to Career, and the one that takes longest to rebuild afterwards. Unlike work, there is no way to catch up on it later at higher intensity.',
+  'wheelc.family.neglect': 'Silence that becomes routine. Nothing is wrong, nobody has argued, and the gap between calls just keeps getting longer until reaching out feels like an event.',
+
+  'wheelc.career.wheelName': 'Career & Business',
+  'wheelc.career.definition': 'Skills, professional standing, and the way you earn.',
+  'wheelc.career.why': 'The sector most people already over-invest in — which is why the book uses the one-sector "careerist" as its portrait of a broken wheel, not a successful one.',
+  'wheelc.career.connection': 'It converts into Money, but only through skill, which comes from Development. Career growth that skips Development is just more hours at the same rate.',
+  'wheelc.career.neglect': 'Drift. The work continues but the skills stop compounding, and a year passes that is functionally the same as the one before it.',
+
+  'wheelc.money.wheelName': 'Finances',
+  'wheelc.money.definition': 'Your level of financial freedom, what you owe, and what earns without your time.',
+  'wheelc.money.why': 'Distinct from Career: income is what you earn, this sector is what you keep and what you owe. High earnings with debt is a low score here, not a high one.',
+  'wheelc.money.connection': 'Debt is the clearest case of one sector taxing the rest. The book treats what you owe as something that "pulls you backwards and stops you developing freely" — it costs attention every day, not only money.',
+  'wheelc.money.neglect': 'Not knowing the numbers. The balance goes unchecked because checking it is unpleasant, which is precisely when it most needs checking.',
+
+  'wheelc.spirituality.wheelName': 'Spirituality & Creativity',
+  'wheelc.spirituality.definition': 'Faith, prayer, meditation, art, and your inner life.',
+  'wheelc.spirituality.why': 'The sector that answers "what is this all for". The book pairs spirituality with creativity deliberately: both are about producing meaning rather than consuming it.',
+  'wheelc.spirituality.connection': 'It is the sector that makes the others survivable. Career and Money have no built-in stopping point — this one supplies the frame that decides when enough is enough.',
+  'wheelc.spirituality.neglect': 'The practice does not stop all at once, it degrades. Same intention, later and later, until it is being fitted around the day instead of anchoring it.',
+
+  'wheelc.development.wheelName': 'Personal Growth',
+  'wheelc.development.definition': 'Learning, reading, courses, languages, and work on your own effectiveness.',
+  'wheelc.development.why': 'The compounding sector. It rarely produces a visible result this month, which is exactly why it loses every scheduling contest to something more urgent.',
+  'wheelc.development.connection': 'It is upstream of Career and Money. Skill is the mechanism by which effort turns into income, and this is the sector where skill is built.',
+  'wheelc.development.neglect': 'Consumption replaces learning. Hours still go to content, but nothing is practised, so nothing transfers.',
+
+  'wheelc.brightness.wheelName': 'Vividness of Life',
+  'wheelc.brightness.definition': 'Hobbies, adventure, and whatever supplies drive and adrenaline.',
+  'wheelc.brightness.why': 'The sector most likely to be dismissed as unserious, and the one whose absence is felt as "everything is fine, so why does nothing feel like anything."',
+  'wheelc.brightness.connection': 'It refills what the demanding sectors drain. Without it, discipline in Career and Health has nothing to spend itself on and quietly turns into grind.',
+  'wheelc.brightness.neglect': 'Weeks become interchangeable. Nothing goes wrong, but nothing is memorable either, and the year compresses into a handful of recalled days.',
 };

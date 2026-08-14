@@ -5,7 +5,7 @@ import { Bar } from '../components/ui';
 import { ATTRIBUTES } from '../game/constants';
 import { attrLevelProgress } from '../game/engine';
 import { habitTemplatesFor, questTemplatesFor } from '../game/templates';
-import { ATTRIBUTE_CONTENT, WHEEL_ORDER, WHEEL_RULE, WHEEL_SOURCE } from '../game/wheel';
+import { ATTRIBUTE_CONTENT, WHEEL_ORDER, wheelRule, wheelSource } from '../game/wheel';
 import { plural, useT } from '../i18n';
 import { useGame } from '../store';
 
@@ -47,8 +47,8 @@ export function Attributes() {
       </section>
 
       <blockquote className="wheel-rule">
-        {WHEEL_RULE}
-        <cite>{WHEEL_SOURCE}</cite>
+        {wheelRule()}
+        <cite>{wheelSource()}</cite>
       </blockquote>
 
       <div className="attr-grid">
