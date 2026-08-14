@@ -34,6 +34,7 @@ import {
 import { buildCalendarItems, type CalendarItemType } from '../lib/calendar';
 import { spawnVFXAt } from '../lib/vfx';
 import type { AttributeKey, DashboardWidgetId } from '../game/types';
+import { plural, t as tr, useT } from '../i18n';
 import { useGame } from '../store';
 
 const CAL_TYPE_ICON: Record<CalendarItemType, IconName> = {
@@ -87,6 +88,7 @@ export function reconcileOrder(saved: DashboardWidgetId[]): DashboardWidgetId[] 
 }
 
 export function Dashboard() {
+  const t = useT();
   const s = useGame();
   const character = s.character!;
   const today = todayStr();
@@ -177,21 +179,18 @@ export function Dashboard() {
     chronicle: (
       <section className={`card chron-widget ${chronicleFresh ? 'card-hero chron-fresh' : 'card-muted'}`}>
         <div className="card-head">
-          <h2><span className="heading-icon"><Icon name="chronicle" size={16} /> The Chronicle</span></h2>
+          <h2><span className="heading-icon"><Icon name="chronicle" size={16} /> {t('widget.chronicle')}</span></h2>
           {chronicleFresh && <span className="chron-new">NEW</span>}
         </div>
         {chronicle.thin ? (
-          <p className="muted">
-            Last week was too quiet to write about. The Chronicle assembles itself from habits,
-            quest sessions and journal entries — give it something to work with.
-          </p>
+          <p className="muted">{t('dash.chronThin')}</p>
         ) : (
           <>
             <div className="chron-widget-title">{chronicle.title}</div>
             <p className="muted chron-widget-range">{chronicle.range}</p>
             <p className="chron-widget-lede">{chronicle.paragraphs[0].replace(/\*\*/g, '')}</p>
             <Link to="/chronicle" className={chronicleFresh ? 'btn btn-primary' : 'btn btn-ghost btn-sm'}>
-              {chronicleFresh ? 'Read last week →' : 'Open the Chronicle →'}
+              {chronicleFresh ? t('dash.readLastWeek') : t('dash.openChronicle')}
             </Link>
           </>
         )}
@@ -204,10 +203,10 @@ export function Dashboard() {
       // the Chronicle; the rest of the week it's this.
       <section className={`card contract-card ${chronicleFresh || coldStart ? '' : 'card-hero'}`}>
         <div className="card-head">
-          <h2>Daily Three</h2>
+          <h2>{t('widget.dailyContract')}</h2>
           {/* "Daily Three" over "0/2" reads as an off-by-one. Naming the count as
               today's makes the shortened contract deliberate rather than broken. */}
-          <span className="muted">{legsDone}/{legsTotal}{legsTotal < 3 ? ' today' : ''}</span>
+          <span className="muted">{legsDone}/{legsTotal}{legsTotal < 3 ? ` ${t('dash.todaySuffix')}` : ''}</span>
         </div>
         <ul className="contract-list">
           {/* Three rows over a "/2" counter needs the third row to look like what it is.
@@ -217,21 +216,21 @@ export function Dashboard() {
             <ContractCheck ok={habitsLegOk} />
             <span className="contract-text">
               {habitsLegLive ? (
-                <>All due habits done ({contract.habitsDone}/{contract.habitsDue})</>
+                <>{t('dash.allDueDone', { done: contract.habitsDone, due: contract.habitsDue })}</>
               ) : s.habits.length === 0 ? (
-                <>No habits yet — <Link to="/habits">add your first one</Link> and this becomes the daily anchor.</>
+                <>{t('dash.noHabitsYet')} <Link to="/habits">{t('dash.addFirstOne')}</Link> {t('dash.noHabitsYetTail')}</>
               ) : (
-                <>Nothing scheduled today — the chest rests on the other two.</>
+                <>{t('dash.nothingToday')}</>
               )}
             </span>
           </li>
           <li className={contract.journalOk ? 'contract-ok' : ''}>
             <ContractCheck ok={contract.journalOk} />
-            <span className="contract-text">Journal written</span>
+            <span className="contract-text">{t('dash.journalWritten')}</span>
           </li>
           <li className={contract.extraOk ? 'contract-ok' : ''}>
             <ContractCheck ok={contract.extraOk} />
-            <span className="contract-text">One extra push — a quick task or a quest session</span>
+            <span className="contract-text">{t('dash.extraPush')}</span>
           </li>
         </ul>
         {chestOpenedToday ? (
@@ -241,10 +240,10 @@ export function Dashboard() {
               {chestLoot.crit && <strong className="chest-crit">CRITICAL! </strong>}
               +{chestLoot.gold + (chestLoot.bonus.kind === 'gold' ? chestLoot.bonus.amount : 0)}{' '}
               <Icon name="gold" size={14} className="dash-inline-icon" />
-              {chestLoot.bonus.kind === 'boost' && <> · <Icon name="boost" size={14} className="dash-inline-icon" /> +{chestLoot.bonus.charges} boost charges</>}
-              {chestLoot.bonus.kind === 'shield' && <> · <Icon name="shield" size={14} className="dash-inline-icon" /> Streak Shield</>}
+              {chestLoot.bonus.kind === 'boost' && <> · <Icon name="boost" size={14} className="dash-inline-icon" /> {t('dash.boostCharges', { n: chestLoot.bonus.charges })}</>}
+              {chestLoot.bonus.kind === 'shield' && <> · <Icon name="shield" size={14} className="dash-inline-icon" /> {t('item.streak_shield.name')}</>}
               {chestLoot.bonus.kind === 'cosmetic' && <> · <Icon name="sparkles" size={14} className="dash-inline-icon" /> <Link to="/profile">{chestLoot.bonus.cosmetic.name}</Link></>}
-              <span className="muted"> — next chest tomorrow</span>
+              <span className="muted"> {t('dash.nextChestTomorrow')}</span>
             </div>
           ) : (
             <div className="chest-opened muted">
@@ -276,11 +275,11 @@ export function Dashboard() {
     weeklyBoss: (
       <section className="card boss-card">
         <div className="card-head">
-          <h2>Weekly boss</h2>
+          <h2>{t('widget.weeklyBoss')}</h2>
           <span className="muted">{bossDaysLeft} day{bossDaysLeft > 1 ? 's' : ''} left</span>
         </div>
         {!boss || !bossDef ? (
-          <Empty>The next boss rises on Monday.</Empty>
+          <Empty>{t('dash.nextBoss')}</Empty>
         ) : (
           <>
             <div className="boss-head">
@@ -313,11 +312,11 @@ export function Dashboard() {
     todayHabits: (
       <section className="card">
         <div className="card-head">
-          <h2>Today's habits</h2>
+          <h2>{t('widget.todayHabits')}</h2>
           <span className="muted">{doneCount}/{dueHabits.length}</span>
         </div>
         {dueHabits.length === 0 ? (
-          <Empty>Nothing scheduled today. <Link to="/habits">Create a habit</Link> to start the engine.</Empty>
+          <Empty>{t('dash.nothingTodayShort')} <Link to="/habits">{t('dash.createHabit')}</Link> {t('dash.startEngine')}</Empty>
         ) : (
           <ul className="list">
             {dueHabits.map(h => {
@@ -326,7 +325,7 @@ export function Dashboard() {
                 <li key={h.id} className="list-row">
                   <span className={`habit-kind ${h.kind}`} />
                   <span className="list-title">{h.name}</span>
-                  <span className="streak" title={`Best: ${h.best}`}>
+                  <span className="streak" title={t('dash.bestTitle', { n: h.best })}>
                     <Icon name="flame" size={13} className="dash-inline-icon" /> {h.streak}
                   </span>
                   {status ? (
@@ -386,7 +385,7 @@ export function Dashboard() {
                       spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', h.kind === 'good' ? 5 : 3);
                     }}
                   >
-                    <Icon name="check" size={14} /> {h.kind === 'good' ? 'Did it yesterday' : 'Resisted yesterday'}
+                    <Icon name="check" size={14} /> {h.kind === 'good' ? t('dash.didYesterday') : t('dash.resistedYesterday')}
                   </button>
                 </li>
               ))}
@@ -399,7 +398,7 @@ export function Dashboard() {
     lifeBalance: (
       <section className="card">
         <div className="card-head">
-          <h2>Life balance</h2>
+          <h2>{t('widget.lifeBalance')}</h2>
           <span className="muted">8 attributes</span>
         </div>
         <RadarChart />
@@ -409,7 +408,7 @@ export function Dashboard() {
     attributes: (
       <section className="card">
         <div className="card-head">
-          <h2>Attributes</h2>
+          <h2>{t('widget.attributes')}</h2>
           <span className="muted">XP progress</span>
         </div>
         <AttributeProgress />
@@ -419,31 +418,31 @@ export function Dashboard() {
     quickTasks: (
       <section className="card">
         <div className="card-head">
-          <h2>Quick tasks</h2>
+          <h2>{t('widget.quickTasks')}</h2>
           <span className="muted">{openTasks.length} open</span>
         </div>
         <QuickTaskAdd />
         {openTasks.length === 0 ? (
-          <Empty>No open tasks. Add a one-off above — small XP, no session tracking.</Empty>
+          <Empty>{t('dash.noOpenTasks')}</Empty>
         ) : (
           <ul className="list">
-            {openTasks.map(t => (
-              <li key={t.id} className="list-row">
+            {openTasks.map(qt => (
+              <li key={qt.id} className="list-row">
                 <button
                   className="check"
-                  onClick={e => { s.completeQuickTask(t.id); spawnVFXAt(e, 'xp', 8); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 2); }}
-                  title="Complete (+8 XP, +2 Gold)"
-                  aria-label={`Complete "${t.title}" (+8 XP, +2 Gold)`}
+                  onClick={e => { s.completeQuickTask(qt.id); spawnVFXAt(e, 'xp', 8); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 2); }}
+                  title={t('dash.completeTaskShort')}
+                  aria-label={t('dash.completeTask', { title: qt.title })}
                 >
                   <Icon name="check" size={14} />
                 </button>
-                <span className="list-title">{t.title}</span>
-                {t.dueDate && <span className="muted">{fmtDay(t.dueDate)}</span>}
-                <AttrTags attrs={[t.attr]} linked />
+                <span className="list-title">{qt.title}</span>
+                {qt.dueDate && <span className="muted">{fmtDay(qt.dueDate)}</span>}
+                <AttrTags attrs={[qt.attr]} linked />
                 <button
                   className="btn btn-ghost btn-sm"
-                  onClick={() => s.deleteQuickTask(t.id)}
-                  aria-label={`Delete "${t.title}"`}
+                  onClick={() => s.deleteQuickTask(qt.id)}
+                  aria-label={t('dash.deleteTask', { title: qt.title })}
                 >
                   <Icon name="trash" size={14} />
                 </button>
@@ -457,17 +456,17 @@ export function Dashboard() {
     quests: (
       <section className="card">
         <div className="card-head">
-          <h2>Quests</h2>
+          <h2>{t('widget.quests')}</h2>
           <Link to="/quests" className="muted">all →</Link>
         </div>
         {activeQuests.length === 0 ? (
-          <Empty>No active quests. <Link to="/quests">Forge one</Link> — the payout scales with the hours you put in.</Empty>
+          <Empty>{t('dash.noActiveQuests')} <Link to="/quests">{t('dash.forgeOne')}</Link> {t('dash.forgeOneTail')}</Empty>
         ) : (
           <ul className="list">
             {(priorityQuests.length > 0 ? priorityQuests : activeQuests.slice(0, 3)).map(q => (
               <li key={q.id} className="list-row">
                 {q.priority && (
-                  <span className="quest-priority" title="Priority quest" aria-label="Priority quest">
+                  <span className="quest-priority" title={t('dash.priorityQuest')} aria-label={t('dash.priorityQuest')}>
                     <Icon name="starFilled" size={14} />
                   </span>
                 )}
@@ -484,7 +483,7 @@ export function Dashboard() {
     journal: (
       <section className="card">
         <div className="card-head">
-          <h2>Journal</h2>
+          <h2>{t('widget.journal')}</h2>
           <Link to="/journal" className="muted">archive →</Link>
         </div>
         {journalDone ? (
@@ -494,9 +493,9 @@ export function Dashboard() {
           </div>
         ) : (
           <div className="journal-cta">
-            <p className="muted">You haven't reflected today. Mood, stress, three questions — a solid chunk of XP.</p>
+            <p className="muted">{t('dash.noReflection')}</p>
             <Link to="/journal" className="btn btn-primary btn-icon-label">
-              <Icon name="write" size={15} /> Write today's entry
+              <Icon name="write" size={15} /> {t('dash.fs3Title')}
             </Link>
           </div>
         )}
@@ -506,11 +505,11 @@ export function Dashboard() {
     calendar: (
       <section className="card">
         <div className="card-head">
-          <h2>Calendar</h2>
+          <h2>{t('widget.calendar')}</h2>
           <Link to="/calendar" className="muted">full calendar →</Link>
         </div>
         {calendarPreview.length === 0 ? (
-          <Empty>Nothing in the next 7 days. Add events, birthdays, or a due date on a quick task.</Empty>
+          <Empty>{t('dash.nothingNext7')}</Empty>
         ) : (
           <ul className="list">
             {calendarPreview.map(it => (
@@ -533,7 +532,7 @@ export function Dashboard() {
           <h1>
             {/* "Welcome back" to someone who arrived ninety seconds ago is the first
                 thing a new player notices being wrong. Day one gets its own line. */}
-            {firstDay ? 'Welcome' : 'Welcome back'}, {character.name}
+            {firstDay ? t('dash.welcome') : t('dash.welcomeBack')}, {character.name}
             {titleCosmetic && <span className="char-title"> {titleCosmetic.name}</span>}
           </h1>
           <p className="muted">
@@ -541,10 +540,10 @@ export function Dashboard() {
           </p>
         </div>
         <div className="quick-actions">
-          <Link className="btn btn-ghost btn-icon-label" to="/habits"><Icon name="plus" size={14} /> Habit</Link>
-          <Link className="btn btn-ghost btn-icon-label" to="/quests"><Icon name="plus" size={14} /> Quest</Link>
-          <Link className="btn btn-ghost btn-icon-label" to="/journal"><Icon name="write" size={14} /> Journal</Link>
-          <button className="btn btn-ghost btn-customize btn-icon-label" onClick={() => setCustomizing(true)} title="Choose which cards show and reorder them">
+          <Link className="btn btn-ghost btn-icon-label" to="/habits"><Icon name="plus" size={14} /> {t('dash.qaHabit')}</Link>
+          <Link className="btn btn-ghost btn-icon-label" to="/quests"><Icon name="plus" size={14} /> {t('dash.qaQuest')}</Link>
+          <Link className="btn btn-ghost btn-icon-label" to="/journal"><Icon name="write" size={14} /> {t('widget.journal')}</Link>
+          <button className="btn btn-ghost btn-customize btn-icon-label" onClick={() => setCustomizing(true)} title={t('dash.customizeTitle')}>
             <Icon name="grip" size={14} /> Customize
           </button>
         </div>
@@ -554,18 +553,18 @@ export function Dashboard() {
           it just tells you the last stretch was rough and offers a way back. */}
       {character.hp === 0 ? (
         <div className="banner banner-info">
-          <Icon name="health" size={15} className="dash-inline-icon" /> Running on empty ({character.hp}/100 HP) — it's been a hard stretch. Everything still pays full;
-          today counts as much as any other day. Potions are in the <Link to="/market">Market</Link> when you want one.
+          <Icon name="health" size={15} className="dash-inline-icon" /> {t('dash.hpEmptyBanner', { hp: character.hp })}{' '}
+          <Link to="/market">{t('nav.market')}</Link> {t('dash.hpEmptyBannerTail')}
         </div>
       ) : character.hp <= 25 ? (
         <div className="banner banner-info">
-          <Icon name="health" size={15} className="dash-inline-icon" /> Low reserves ({character.hp}/100 HP) — a few things slipped recently. One check-in today starts the climb back;
-          potions are in the <Link to="/market">Market</Link>.
+          <Icon name="health" size={15} className="dash-inline-icon" /> {t('dash.hpLowBanner', { hp: character.hp })}{' '}
+          <Link to="/market">{t('nav.market')}</Link>.
         </div>
       ) : null}
       {ghostToday && (
         <div className="banner banner-info">
-          <Icon name="ghost" size={15} className="dash-inline-icon" /> Ghost Day active — today is frozen. No penalties, streaks paused. Rest well.
+          <Icon name="ghost" size={15} className="dash-inline-icon" /> {t('dash.ghostBanner')}
         </div>
       )}
       {s.effects.comeback && (
@@ -589,7 +588,7 @@ export function Dashboard() {
           the only cards still showing were the four history widgets — and the first-steps
           hero above is already carrying that screen, so it gets no message, just no grid. */}
       {shownOrder.length === 0 && (
-        <Empty>Every card is hidden. <button className="btn btn-ghost btn-sm" onClick={() => setCustomizing(true)}>Customize</button> to bring some back.</Empty>
+        <Empty>{t('dash.allHidden')} <button className="btn btn-ghost btn-sm" onClick={() => setCustomizing(true)}>{t('dash.customize')}</button> {t('dash.allHiddenTail')}</Empty>
       )}
       {visibleOrder.length > 0 && (
         <div className="dash-grid">
@@ -614,25 +613,24 @@ export function Dashboard() {
  * and "add a habit, it pays 12 XP and fills a leg of the Daily Three" is a reason.
  */
 function FirstSteps({ habitXp, habitGold, journalPay }: { habitXp: number; habitGold: number; journalPay: number }) {
+  const t = useT();
   return (
     <section className="card card-hero first-steps">
       <div className="card-head">
-        <h2><span className="heading-icon"><Icon name="flag" size={16} /> Start here</span></h2>
-        <span className="muted">3 steps</span>
+        <h2><span className="heading-icon"><Icon name="flag" size={16} /> {t('dash.startHere')}</span></h2>
+        <span className="muted">{t('dash.threeSteps')}</span>
       </div>
-      <p className="muted first-steps-lede">
-        Nothing is tracked yet, so most cards below are still waiting. Any one of these fills them.
-      </p>
+      <p className="muted first-steps-lede">{t('dash.fsLede')}</p>
       <ol className="first-steps-list">
         <li className="first-steps-row">
           <span className="first-steps-num">1</span>
           <span className="first-steps-body">
             <Link to="/habits" className="first-steps-link">
-              <Icon name="habits" size={15} /> Add your first habit
+              <Icon name="habits" size={15} /> {t('dash.fs1Title')}
             </Link>
             <span className="muted">
-              Something small you'll repeat. Every check-in pays {habitXp} XP and {habitGold}{' '}
-              <Icon name="gold" size={13} className="dash-inline-icon" />, and it becomes the first leg of the Daily Three.
+              {t('dash.fs1a', { xp: habitXp, gold: habitGold })}
+              <Icon name="gold" size={13} className="dash-inline-icon" />{t('dash.fs1b')}
             </span>
           </span>
         </li>
@@ -640,12 +638,9 @@ function FirstSteps({ habitXp, habitGold, journalPay }: { habitXp: number; habit
           <span className="first-steps-num">2</span>
           <span className="first-steps-body">
             <Link to="/quests" className="first-steps-link">
-              <Icon name="quests" size={15} /> Forge a quest
+              <Icon name="quests" size={15} /> {t('dash.fs2Title')}
             </Link>
-            <span className="muted">
-              A project worth hours. Log sessions as you go — finishing pays 80 XP plus 40 an hour, and one
-              session covers the third leg.
-            </span>
+            <span className="muted">{t('dash.fs2Body')}</span>
           </span>
         </li>
         <li className="first-steps-row">
@@ -654,9 +649,7 @@ function FirstSteps({ habitXp, habitGold, journalPay }: { habitXp: number; habit
             <Link to="/journal" className="first-steps-link">
               <Icon name="write" size={15} /> Write today's entry
             </Link>
-            <span className="muted">
-              Mood, stress, three questions — five minutes. {journalPay} XP and the second leg of the Daily Three.
-            </span>
+            <span className="muted">{t('dash.fs3Body', { xp: journalPay })}</span>
           </span>
         </li>
       </ol>
@@ -671,6 +664,7 @@ function ContractCheck({ ok }: { ok: boolean }) {
 
 /** End-of-day closure: the first visit on a new day replays what yesterday earned. */
 function RecapModal({ day }: { day: string }) {
+  const t = useT();
   const s = useGame();
   const log = s.dayLog[day] ?? { xp: 0, gold: 0 };
   const due = s.habits.filter(h => habitDueOn(h, day));
@@ -681,28 +675,28 @@ function RecapModal({ day }: { day: string }) {
   const momentumPct = Math.round((momentumMult(s.momentum.streak) - 1) * 100);
 
   return (
-    <Modal title={`Yesterday — ${fmtDayFull(day)}`} onClose={s.dismissRecap}>
+    <Modal title={t('dash.yesterdayTitle', { date: fmtDayFull(day) })} onClose={s.dismissRecap}>
       <div className="recap-grid">
         <div className="recap-stat"><span className="stat-big">+{log.xp}</span><span className="muted">XP earned</span></div>
-        <div className="recap-stat"><span className="stat-big">+{log.gold}</span><span className="muted">Gold earned</span></div>
+        <div className="recap-stat"><span className="stat-big">+{log.gold}</span><span className="muted">{t('dash.goldEarned')}</span></div>
         {due.length > 0 && (
-          <div className="recap-stat"><span className="stat-big">{done}/{due.length}</span><span className="muted">habits done</span></div>
+          <div className="recap-stat"><span className="stat-big">{done}/{due.length}</span><span className="muted">{t('dash.habitsDone')}</span></div>
         )}
         {minutes > 0 && (
-          <div className="recap-stat"><span className="stat-big">{fmtMinutes(minutes)}</span><span className="muted">quest work</span></div>
+          <div className="recap-stat"><span className="stat-big">{fmtMinutes(minutes)}</span><span className="muted">{t('dash.questWork')}</span></div>
         )}
       </div>
       {perfect ? (
         <p className="recap-perfect">
-          <Icon name="flame" size={15} className="dash-inline-icon" /> Perfect day! Momentum is at {s.momentum.streak} — everything you do now earns +{momentumPct}% XP.
+          <Icon name="flame" size={15} className="dash-inline-icon" /> {t('dash.perfectDay', { streak: s.momentum.streak, pct: momentumPct })}
         </p>
       ) : due.length > 0 && done < due.length ? (
-        <p className="muted">Some habits slipped yesterday. Today is a clean page.</p>
+        <p className="muted">{t('dash.someSlipped')}</p>
       ) : null}
-      {!journalWritten && <p className="muted">No journal entry yesterday — the archive keeps what you give it.</p>}
+      {!journalWritten && <p className="muted">{t('dash.noJournalYesterday')}</p>}
       <div className="modal-actions">
         <button className="btn btn-primary btn-icon-label" onClick={s.dismissRecap}>
-          Onward <Icon name="chevronRight" size={15} />
+          {t('dash.onward')} <Icon name="chevronRight" size={15} />
         </button>
       </div>
     </Modal>
@@ -710,14 +704,15 @@ function RecapModal({ day }: { day: string }) {
 }
 
 function CustomizeDashboardModal({ order, onClose }: { order: DashboardWidgetId[]; onClose: () => void }) {
+  const t = useT();
   const hidden = useGame(s => s.dashboardHidden);
   const setDashboardOrder = useGame(s => s.setDashboardOrder);
   const toggleDashboardWidget = useGame(s => s.toggleDashboardWidget);
   const resetDashboardLayout = useGame(s => s.resetDashboardLayout);
 
   return (
-    <Modal title="Customize dashboard" onClose={onClose}>
-      <p className="muted">Drag to reorder. Click the eye to show or hide a card.</p>
+    <Modal title={t('dash.customizeModal')} onClose={onClose}>
+      <p className="muted">{t('dash.dragReorder')}</p>
       <Reorder.Group as="ul" axis="y" values={order} onReorder={setDashboardOrder} className="dash-customize-list">
         {order.map(id => (
           <Reorder.Item key={id} value={id} as="li" className="dash-customize-row">
@@ -726,7 +721,7 @@ function CustomizeDashboardModal({ order, onClose }: { order: DashboardWidgetId[
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => toggleDashboardWidget(id)}
-              title={hidden.includes(id) ? 'Hidden — click to show' : 'Visible — click to hide'}
+              title={hidden.includes(id) ? t('dash.hiddenClickShow') : t('dash.visibleClickHide')}
             >
               <Icon name={hidden.includes(id) ? 'eyeOff' : 'eye'} size={16} />
             </button>
@@ -734,8 +729,8 @@ function CustomizeDashboardModal({ order, onClose }: { order: DashboardWidgetId[
         ))}
       </Reorder.Group>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={resetDashboardLayout}>Reset to default</button>
-        <button className="btn btn-primary" onClick={onClose}>Done</button>
+        <button className="btn btn-ghost" onClick={resetDashboardLayout}>{t('settings.resetDefault')}</button>
+        <button className="btn btn-primary" onClick={onClose}>{t('common.done')}</button>
       </div>
     </Modal>
   );
@@ -744,17 +739,18 @@ function CustomizeDashboardModal({ order, onClose }: { order: DashboardWidgetId[
 /** A logged habit day, as glyph plus word — the glyph carries the state, the word names it. */
 function statusLabel(status: string): { icon: IconName; label: string } {
   switch (status) {
-    case 'done': return { icon: 'check', label: 'done' };
-    case 'failed': return { icon: 'minus', label: 'missed' };
-    case 'pardoned': return { icon: 'pardon', label: 'pardoned' };
-    case 'shielded': return { icon: 'shield', label: 'shielded' };
-    case 'ghost': return { icon: 'ghost', label: 'frozen' };
-    case 'indulged': return { icon: 'indulgence', label: 'indulged' };
+    case 'done': return { icon: 'check', label: tr('hh.outcome.done') };
+    case 'failed': return { icon: 'minus', label: tr('hh.outcome.failed') };
+    case 'pardoned': return { icon: 'pardon', label: tr('hh.outcome.pardoned') };
+    case 'shielded': return { icon: 'shield', label: tr('hh.outcome.shielded') };
+    case 'ghost': return { icon: 'ghost', label: tr('hh.outcome.ghost') };
+    case 'indulged': return { icon: 'indulgence', label: tr('hh.outcome.indulged') };
     default: return { icon: 'info', label: status };
   }
 }
 
 function StatusPill({ status }: { status: string }) {
+  const t = useT();
   const { icon, label } = statusLabel(status);
   return (
     <span className={`status status-pill status-${status}`}>
@@ -764,6 +760,7 @@ function StatusPill({ status }: { status: string }) {
 }
 
 function QuickTaskAdd() {
+  const t = useT();
   const addQuickTask = useGame(s => s.addQuickTask);
   const [title, setTitle] = useState('');
   const [attr, setAttr] = useState<AttributeKey[]>(['development']);
@@ -782,7 +779,7 @@ function QuickTaskAdd() {
       <div className="qt-row">
         <input
           className="input"
-          placeholder="Quick one-off task…"
+          placeholder={t('dash.quickTaskPh')}
           value={title}
           onChange={e => setTitle(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && submit()}
@@ -792,9 +789,9 @@ function QuickTaskAdd() {
           type="date"
           value={dueDate}
           onChange={e => setDueDate(e.target.value)}
-          title="Due date (optional) — shows the task on the Calendar"
+          title={t('dash.dueDateTitle')}
         />
-        <button className="btn btn-ghost btn-sm" onClick={() => setShowAttr(v => !v)} title="Tag attribute">
+        <button className="btn btn-ghost btn-sm" onClick={() => setShowAttr(v => !v)} title={t('dash.tagAttribute')}>
           <Icon name={attr[0]} size={14} />
         </button>
         <button className="btn btn-primary btn-sm" onClick={submit} disabled={!title.trim()}>Add</button>
