@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import type { AttributeKey } from '../game/types';
+import { t } from '../i18n';
 import { Icon } from './Icon';
 
 export function Modal({ title, children, onClose, wide }: { title: string; children: ReactNode; onClose: () => void; wide?: boolean }) {
@@ -10,7 +11,7 @@ export function Modal({ title, children, onClose, wide }: { title: string; child
       <div className={`modal-card ${wide ? 'modal-wide' : ''}`}>
         <div className="modal-head">
           <h3>{title}</h3>
-          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close"><Icon name="close" size={14} /></button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label={t('common.close')}><Icon name="close" size={14} /></button>
         </div>
         <div className="modal-body">{children}</div>
       </div>
@@ -67,7 +68,7 @@ export function AttrTags({ attrs, linked }: { attrs: AttributeKey[]; linked?: bo
             key={a}
             to={`/attributes/${a}`}
             className="tag tag-icon tag-link"
-            title={`${ATTRIBUTES[a].label} — open the sector`}
+            title={t('ui.openSector', { name: ATTRIBUTES[a].label })}
             style={{ ['--attr-color' as string]: ATTRIBUTES[a].color }}
           >
             <Icon name={a} size={13} />
@@ -92,7 +93,7 @@ export function AttrLink({ attr, showLabel = true }: { attr: AttributeKey; showL
     <Link
       to={`/attributes/${attr}`}
       className="attr-link"
-      title={`${meta.label} — open the sector`}
+      title={t('ui.openSector', { name: meta.label })}
       style={{ ['--attr-color' as string]: meta.color }}
     >
       <Icon name={attr} size={13} />

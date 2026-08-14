@@ -1,10 +1,12 @@
 import { habitDueOn, addDaysStr, todayStr, fmtDay } from '../game/engine';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 
 const DONE: string[] = ['done', 'shielded', 'pardoned', 'indulged', 'ghost'];
 
 /** Last ~12 weeks of habit completion, GitHub-style. */
 export function Heatmap() {
+  const t = useT();
   const habits = useGame(s => s.habits);
   const habitLog = useGame(s => s.habitLog);
   const today = todayStr();
@@ -31,7 +33,7 @@ export function Heatmap() {
   };
 
   return (
-    <div className="heatmap" title="Habit completion — last 12 weeks">
+    <div className="heatmap" title={t('heatmap.title')}>
       {days.map(({ day, ratio }) => {
         // Today is still in progress. Painting it with the 0%-done red the instant a
         // habit is created — which is what happened — reports a failure for a day that
@@ -43,10 +45,10 @@ export function Heatmap() {
             className={`hm-cell ${open ? 'hm-today' : `hm-${level(ratio)}`}`}
             title={
               ratio === null
-                ? `${fmtDay(day)}: nothing scheduled`
+                ? t('heatmap.nothingScheduled', { day: fmtDay(day) })
                 : open
-                  ? `${fmtDay(day)}: today — ${Math.round(ratio * 100)}% done so far`
-                  : `${fmtDay(day)}: ${Math.round(ratio * 100)}% done`
+                  ? t('heatmap.todaySoFar', { day: fmtDay(day), pct: Math.round(ratio * 100) })
+                  : t('heatmap.pctDone', { day: fmtDay(day), pct: Math.round(ratio * 100) })
             }
           />
         );

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { COACH_TIPS } from '../game/tutorial';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 import { Icon } from './Icon';
 
@@ -15,6 +16,7 @@ const DISMISS_MS = 8000;
  * because a tip that reappears is an annoyance rather than an explanation.
  */
 export function CoachTip() {
+  const t = useT();
   const { pathname } = useLocation();
   const seenPages = useGame(s => s.seenPages);
   const markPageSeen = useGame(s => s.markPageSeen);
@@ -54,7 +56,7 @@ export function CoachTip() {
     <div className={`coach-tip ${leaving ? 'coach-leaving' : ''}`} role="status">
       <span className="coach-icon"><Icon name={tip.icon} size={16} /></span>
       <p className="coach-text">{tip.text}</p>
-      <button className="coach-close" onClick={() => setShown(null)} aria-label="Dismiss tip">
+      <button className="coach-close" onClick={() => setShown(null)} aria-label={t('coach.dismiss')}>
         <Icon name="close" size={13} />
       </button>
     </div>

@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import { useT } from '../i18n';
 import { signIn, signUp } from '../lib/sync';
 
 export function AuthPanel() {
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -25,7 +27,7 @@ export function AuthPanel() {
         className="input"
         type="email"
         autoComplete="email"
-        placeholder="you@example.com"
+        placeholder={t('auth.emailPh')}
         value={email}
         onChange={e => setEmail(e.target.value)}
       />
@@ -33,17 +35,17 @@ export function AuthPanel() {
         className="input"
         type="password"
         autoComplete="current-password"
-        placeholder="Password (6+ characters)"
+        placeholder={t('auth.passwordPh')}
         value={password}
         onChange={e => setPassword(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && valid && !busy && void go(signIn)}
       />
       <div className="btn-pair">
         <button className="btn btn-primary" disabled={busy || !valid} onClick={() => void go(signIn)}>
-          Sign in
+          {t('auth.signIn')}
         </button>
         <button className="btn btn-ghost" disabled={busy || !valid} onClick={() => void go(signUp)}>
-          Create account
+          {t('auth.createAccount')}
         </button>
       </div>
       {message && <p className={isError ? 'neg' : 'muted'}>{message}</p>}

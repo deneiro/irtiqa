@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { ATTR_KEYS, ATTRIBUTES, WHEEL_SURVEY } from '../game/constants';
 import { wheelScoreToLevel } from '../game/engine';
 import type { AttributeKey } from '../game/types';
+import { useT } from '../i18n';
 import { Icon } from './Icon';
 
 /** Which statements are ticked, per sector. Exported so a caller can hand the exact
@@ -37,6 +38,7 @@ export function WheelSurvey({
   onSubmit: (scores: Record<AttributeKey, number>) => void;
   onSkip?: () => void;
 }) {
+  const t = useT();
   const [ticks, setTicks] = useState<Ticks>(() => emptyTicks(initial));
 
   const levels = useMemo(() => {
@@ -99,7 +101,7 @@ export function WheelSurvey({
       </div>
 
       <div className="wheel-actions">
-        {onSkip && <button className="btn btn-ghost" onClick={onSkip}>Skip for now</button>}
+        {onSkip && <button className="btn btn-ghost" onClick={onSkip}>{t('wheel.skipForNow')}</button>}
         <button className="btn btn-primary btn-lg" onClick={submit}>{submitLabel}</button>
       </div>
     </div>
@@ -108,6 +110,7 @@ export function WheelSurvey({
 
 /** Live 8-spoke radar of the current starting levels (1–7 band). Pure geometry, no deps. */
 function WheelRadar({ levels }: { levels: Record<AttributeKey, number> }) {
+  const t = useT();
   const R = 92, CX = 130, CY = 130, MAXLVL = 7;
   const pt = (i: number, r: number): [number, number] => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / ATTR_KEYS.length;
@@ -118,7 +121,7 @@ function WheelRadar({ levels }: { levels: Record<AttributeKey, number> }) {
   const poly = ATTR_KEYS.map((k, i) => { const [x, y] = pt(i, (R * levels[k]) / MAXLVL); return `${x.toFixed(1)},${y.toFixed(1)}`; }).join(' ');
 
   return (
-    <svg className="wheel-radar" viewBox="0 0 260 260" width="260" height="260" role="img" aria-label="Starting wheel preview">
+    <svg className="wheel-radar" viewBox="0 0 260 260" width="260" height="260" role="img" aria-label={t('wheel.previewLabel')}>
       {[0.25, 0.5, 0.75, 1].map(f => (
         <path key={f} d={ring(R * f)} fill="none" stroke="var(--border)" strokeWidth="1" />
       ))}

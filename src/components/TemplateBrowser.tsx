@@ -9,6 +9,7 @@ import {
   type TemplateEffort,
 } from '../game/templates';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
+import { t as tr, useT } from '../i18n';
 import { spawnVFXAt } from '../lib/vfx';
 import { useGame } from '../store';
 import { Icon } from './Icon';
@@ -25,11 +26,8 @@ import { Icon } from './Icon';
  * "+ New habit / quest" modals, and each sector page.
  */
 
-const EFFORT_LABEL: Record<TemplateEffort, string> = {
-  micro: 'under 2 min',
-  moderate: 'moderate',
-  demanding: 'demanding',
-};
+// `t` is this file's name for a template, so the translator comes in as `tr`.
+const effortLabel = (e: TemplateEffort) => tr(`tpl.effort.${e}`);
 
 const EFFORT_ORDER: TemplateEffort[] = ['micro', 'moderate', 'demanding'];
 
@@ -129,7 +127,7 @@ export function TemplateCard({
       <div className="tpl-head">
         {habit && <span className={`habit-kind ${habit.kind}`} />}
         <h3 className="tpl-name">{title}</h3>
-        <span className={`tpl-effort tpl-effort-${t.effort}`}>{EFFORT_LABEL[t.effort]}</span>
+        <span className={`tpl-effort tpl-effort-${t.effort}`}>{effortLabel(t.effort)}</span>
       </div>
 
       <p className="tpl-why">{habit ? habit.why : quest!.description}</p>
@@ -157,17 +155,17 @@ export function TemplateCard({
             moved to a tooltip: a library where every card wears a source line reads
             as a book summary with checkboxes, which is not what this is for. */}
         <span className="tpl-technique" title={t.source}>
-          <Icon name="target" size={12} /> {habit ? habit.technique : `Target: ${quest!.targetDuration}`}
+          <Icon name="target" size={12} /> {habit ? habit.technique : tr('tpl.target', { d: quest!.targetDuration })}
         </span>
         {added ? (
-          <span className="tpl-added-label"><Icon name="check" size={13} /> Added</span>
+          <span className="tpl-added-label"><Icon name="check" size={13} /> {tr('tpl.added')}</span>
         ) : mode === 'select' ? (
           <span className={`tpl-tick ${selected ? 'on' : ''}`} aria-hidden="true">
             {selected ? <Icon name="check" size={14} /> : null}
           </span>
         ) : (
           <button className="btn btn-primary btn-sm" onClick={onPick}>
-            <Icon name="plus" size={13} /> Add
+            <Icon name="plus" size={13} /> {tr('common.add')}
           </button>
         )}
       </div>
@@ -206,6 +204,7 @@ export function TemplateBrowser({
    *  cards is a decision-making tax at the moment the player wants to be done. */
   limit?: number;
 }) {
+  useT(); // re-render this subtree when the language changes
   const [search, setSearch] = useState('');
   const [attrFilter, setAttrFilter] = useState<AttributeKey | null>(null);
   const [effortFilter, setEffortFilter] = useState<TemplateEffort | null>(null);
@@ -246,14 +245,14 @@ export function TemplateBrowser({
           <Icon name="search" size={14} />
           <input
             className="input input-sm"
-            placeholder={kind === 'habit' ? 'Search habits…' : 'Search quests…'}
+            placeholder={kind === 'habit' ? tr('tpl.searchHabits') : tr('tpl.searchQuests')}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </label>
         <div className="tpl-chip-row">
           <button className={`chip ${attrFilter === null ? 'chip-on' : ''}`} onClick={() => setAttrFilter(null)}>
-            All sectors
+            {tr('tpl.allSectors')}
           </button>
           {ATTR_KEYS.map(k => (
             <button
@@ -261,7 +260,7 @@ export function TemplateBrowser({
               className={`chip chip-icon ${attrFilter === k ? 'chip-on' : ''} ${focusAttrs?.includes(k) ? 'chip-focus' : ''}`}
               onClick={() => setAttrFilter(attrFilter === k ? null : k)}
               style={{ ['--attr-color' as string]: ATTRIBUTES[k].color }}
-              title={focusAttrs?.includes(k) ? `${ATTRIBUTES[k].label} — one of your thinnest sectors` : ATTRIBUTES[k].label}
+              title={focusAttrs?.includes(k) ? tr('tpl.thinnestSector', { name: ATTRIBUTES[k].label }) : ATTRIBUTES[k].label}
             >
               <Icon name={k} size={13} /> {ATTRIBUTES[k].label}
             </button>
@@ -274,12 +273,14 @@ export function TemplateBrowser({
               className={`chip ${effortFilter === e ? 'chip-on' : ''}`}
               onClick={() => setEffortFilter(effortFilter === e ? null : e)}
             >
-              {EFFORT_LABEL[e]}
+              {effortLabel(e)}
             </button>
           ))}
           {!!profile?.length && (
             <button className="chip chip-ghost" onClick={() => setShowAll(v => !v)}>
-              {showAll ? 'Fit my profile' : `Show all${hiddenByProfile > 0 ? ` (+${hiddenByProfile})` : ''}`}
+              {showAll
+                ? tr('tpl.fitProfile')
+                : `${tr('tpl.showAll')}${hiddenByProfile > 0 ? ` (+${hiddenByProfile})` : ''}`}
             </button>
           )}
         </div>
@@ -287,13 +288,12 @@ export function TemplateBrowser({
 
       {!!profile?.length && !showAll && (
         <p className="muted tpl-filter-note">
-          Ordered for {profile.slice(0, 3).map(r => ARCHETYPES[r].label).join(' · ')}.
-          Ones that reliably fail for that profile are hidden.
+          {tr('tpl.orderedFor', { profile: profile.slice(0, 3).map(r => ARCHETYPES[r].label).join(' · ') })}
         </p>
       )}
 
       {list.length === 0 ? (
-        <p className="muted tpl-empty">{emptyHint ?? 'Nothing matches that. Clear a filter, or write your own.'}</p>
+        <p className="muted tpl-empty">{emptyHint ?? tr('quests.libraryEmptyHint')}</p>
       ) : (
         <div className="tpl-grid">
           {list.map(t => (

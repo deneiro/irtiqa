@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 import { Modal } from './ui';
 
@@ -8,25 +9,26 @@ import { Modal } from './ui';
  * Insights engine can hold up as a mirror later. Failure as information.
  */
 export function RelapseReflect({ failureId, habitName, onClose }: { failureId: string; habitName: string; onClose: () => void }) {
+  const t = useT();
   const setFailureTrigger = useGame(s => s.setFailureTrigger);
   const [text, setText] = useState('');
 
   return (
-    <Modal title={`Relapse logged: ${habitName}`} onClose={onClose}>
+    <Modal title={t('relapse.title', { habit: habitName })} onClose={onClose}>
       <p className="muted">
-        Damage is dealt, streak is gone — that part is done. One optional question, for future-you:
-        <strong> what triggered it?</strong>
+        {t('relapse.intro')}
+        <strong> {t('relapse.question')}</strong>
       </p>
       <textarea
         className="input"
         rows={2}
         autoFocus
-        placeholder="e.g. stress after the meeting, boredom at night, drinks with friends…"
+        placeholder={t('relapse.placeholder')}
         value={text}
         onChange={e => setText(e.target.value)}
       />
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Skip</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('relapse.skip')}</button>
         <button
           className="btn btn-primary"
           disabled={!text.trim()}
@@ -35,7 +37,7 @@ export function RelapseReflect({ failureId, habitName, onClose }: { failureId: s
             onClose();
           }}
         >
-          Save the lesson
+          {t('relapse.save')}
         </button>
       </div>
     </Modal>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import { attrLevelProgress } from '../game/engine';
+import { t } from '../i18n';
 import { useGame } from '../store';
 import { Icon } from './Icon';
 
@@ -16,7 +17,7 @@ export function AttributeProgress() {
         const pct = Math.round((into / need) * 100);
         const style = { '--ac': meta.color } as React.CSSProperties;
         return (
-          <Link key={k} to={`/attributes/${k}`} className="attr-progress-row" style={style} title={`${meta.label} — open the sector`}>
+          <Link key={k} to={`/attributes/${k}`} className="attr-progress-row" style={style} title={t('ui.openSector', { name: meta.label })}>
             <span className="attr-progress-icon"><Icon name={k} size={19} /></span>
             <div className="attr-progress-body">
               <div className="attr-progress-head">
