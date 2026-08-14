@@ -163,7 +163,7 @@ export function Social() {
           <p className="muted">{t('soc.subtitle')}</p>
         </div>
         <button className="btn btn-primary soc-btn-ico" data-tour="new-contact" onClick={() => setEditing('new')}>
-          <Icon name="plus" size={15} /> Add contact
+          <Icon name="plus" size={15} /> {t('soc.addContact')}
         </button>
       </div>
 
@@ -188,7 +188,7 @@ export function Social() {
 
       <div className="filter-row">
         <input className="input input-sm" placeholder={t('soc.searchPh')} value={search} onChange={e => setSearch(e.target.value)} />
-        <button className={`chip ${groupFilter === null ? 'chip-on' : ''}`} onClick={() => setGroupFilter(null)}>All</button>
+        <button className={`chip ${groupFilter === null ? 'chip-on' : ''}`} onClick={() => setGroupFilter(null)}>{t('common.all')}</button>
         {PRIMARY_GROUP_KEYS.map(g => (
           <button key={g} className={`chip ${groupFilter === g ? 'chip-on' : ''}`} onClick={() => setGroupFilter(groupFilter === g ? null : g)}>
             {PRIMARY_GROUPS[g].label}

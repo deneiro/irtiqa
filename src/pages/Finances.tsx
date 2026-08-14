@@ -98,7 +98,7 @@ export function Finances() {
           </label>
           <button className="btn btn-ghost" data-tour="new-account" onClick={() => setAddingAccount(true)}><Icon name="plus" size={14} /> {t('fin.account')}</button>
           <button className="btn btn-primary" data-tour="new-tx" disabled={s.accounts.length === 0} onClick={() => setAddingTx(true)}>
-            <Icon name="plus" size={14} /> Transaction
+            <Icon name="plus" size={14} /> {t('fin.txShort')}
           </button>
         </div>
       </div>
@@ -194,7 +194,7 @@ export function Finances() {
         <div className="card-head">
           <h2>{t('cat.Subscriptions')}</h2>
           <button className="btn btn-ghost btn-sm" disabled={s.accounts.length === 0} onClick={() => setAddingSub(true)}>
-            <Icon name="plus" size={13} /> Add
+            <Icon name="plus" size={13} /> {t('common.add')}
           </button>
         </div>
         {activeSubs.length === 0 ? (

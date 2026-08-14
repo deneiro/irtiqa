@@ -312,6 +312,7 @@ export const RU_UI: Dict = {
   'fin.perMonth': v => `${v.amount} / мес`,
   'fin.next': v => `следующий ${v.date}`,
   'fin.cancelSub': 'Отменить',
+  'fin.txShort': 'Операция',
   'fin.transactions': 'Операции',
   'fin.totalCount': v => `всего ${v.n}`,
   'fin.noTxs': 'Пока ничего не записано. Доходы приносят XP в атрибут «Деньги», как и расходы, укладывающиеся в бюджет.',

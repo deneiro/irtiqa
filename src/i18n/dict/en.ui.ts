@@ -309,6 +309,7 @@ export const EN_UI: Dict = {
   'fin.perMonth': v => `${v.amount} / mo`,
   'fin.next': v => `next ${v.date}`,
   'fin.cancelSub': 'Cancel',
+  'fin.txShort': 'Transaction',
   'fin.transactions': 'Transactions',
   'fin.totalCount': v => `${v.n} total`,
   'fin.noTxs': 'Nothing logged yet. Income earns XP toward your Money attribute, and so do expenses that stay inside their budget.',
