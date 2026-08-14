@@ -6,6 +6,7 @@ import { LIBRARY_READ_REWARD, MEDIUM_LABEL, libraryEntry } from '../game/library
 import { HABIT_TEMPLATES, QUEST_TEMPLATES } from '../game/templates';
 import type { AttributeKey } from '../game/types';
 import { spawnVFXAt } from '../lib/vfx';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 
 /**
@@ -22,6 +23,7 @@ import { useGame } from '../store';
  * headings, and no boxes until the part that is genuinely interactive.
  */
 export function LibraryEntry() {
+  const t = useT();
   const { key, slug } = useParams<{ key: string; slug: string }>();
   const attr = key as AttributeKey;
   const entry = libraryEntry(slug ?? '');
@@ -61,7 +63,7 @@ export function LibraryEntry() {
           <span className="tag tag-icon">
             <Icon name="book" size={12} /> {MEDIUM_LABEL[entry.medium]}
           </span>
-          <span className="tag">{entry.minutes} min read</span>
+          <span className="tag">{t('libEntry.minRead', { n: entry.minutes })}</span>
           <span className="tag tag-icon">
             <Icon name={attr} size={12} /> {meta.label}
           </span>
@@ -76,7 +78,7 @@ export function LibraryEntry() {
       <article className="lib-read">
         <p className="lib-lead">{entry.thesis}</p>
 
-        <h2 className="lib-label">Ideas</h2>
+        <h2 className="lib-label">{t('libEntry.ideas')}</h2>
         {entry.ideas.map(idea => (
           <div className="lib-idea" key={idea.name}>
             <h3>{idea.name}</h3>
@@ -86,7 +88,7 @@ export function LibraryEntry() {
 
         {entry.notes.length > 0 && (
           <>
-            <h2 className="lib-label">Worth knowing</h2>
+            <h2 className="lib-label">{t('libEntry.worthKnowing')}</h2>
             <ul className="lib-notes">
               {entry.notes.map(n => (
                 <li key={n}>{n}</li>
@@ -95,7 +97,7 @@ export function LibraryEntry() {
           </>
         )}
 
-        <h2 className="lib-label">What to actually do</h2>
+        <h2 className="lib-label">{t('libEntry.whatToDo')}</h2>
         <ol className="lib-practices">
           {entry.practices.map(p => (
             <li key={p}>{p}</li>
@@ -104,7 +106,7 @@ export function LibraryEntry() {
       </article>
 
       <section className="lib-apply">
-        <h2 className="lib-label">Turn it into practice</h2>
+        <h2 className="lib-label">{t('libEntry.intoPractice')}</h2>
         <p className="lib-section-note">
           Everything below is already in the app's library — these are the ones this source stands
           behind. One tap adds it.
@@ -112,7 +114,7 @@ export function LibraryEntry() {
 
         {habitCards.length > 0 && (
           <div className="lib-practice-group">
-            <h3 className="lib-group-title">Habits</h3>
+            <h3 className="lib-group-title">{t('nav.habits')}</h3>
             <div className="tpl-grid">
               {habitCards.map(({ p, t }) => (
                 <div className="lib-practice" key={t.id}>
@@ -131,7 +133,7 @@ export function LibraryEntry() {
 
         {questCards.length > 0 && (
           <div className="lib-practice-group">
-            <h3 className="lib-group-title">Quests</h3>
+            <h3 className="lib-group-title">{t('nav.quests')}</h3>
             <div className="tpl-grid">
               {questCards.map(({ p, t }) => (
                 <div className="lib-practice" key={t.id}>
@@ -157,7 +159,7 @@ export function LibraryEntry() {
         ) : (
           <>
             <button className="btn btn-primary lib-done" onClick={finish}>
-              <Icon name="check" size={14} /> Mark as read
+              <Icon name="check" size={14} /> {t('libEntry.markRead')}
             </button>
             <p className="muted lib-done-note">
               +{LIBRARY_READ_REWARD.xp} XP · +{LIBRARY_READ_REWARD.gold} Gold to {meta.label}, once.

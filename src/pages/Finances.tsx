@@ -7,6 +7,8 @@ import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '../game/constants';
 import { debtPaid, debtRemaining, fmtDay, fmtDayFull, monthKey, todayStr } from '../game/engine';
 import { CURRENCIES, fmtMoney, fmtMoneyCompact } from '../game/money';
 import type { Debt } from '../game/types';
+import { plural, t as tr, useT } from '../i18n';
+import { locale } from '../lib/format';
 import { useGame } from '../store';
 
 /**
@@ -19,6 +21,7 @@ import { useGame } from '../store';
  * debt you carry). Colour repeats the same fact for anyone who reads shape slowly.
  */
 export function Finances() {
+  const t = useT();
   const s = useGame();
   const cur = s.currency;
   const money = (n: number) => fmtMoney(n, cur);
@@ -54,7 +57,7 @@ export function Finances() {
   );
   const debtNet = openDebts.reduce((a, d) => a + (d.direction === 'theyOwe' ? debtRemaining(d) : -debtRemaining(d)), 0);
   const netWorth = accountsTotal + debtNet;
-  const contactName = (id: string) => s.contacts.find(c => c.id === id)?.name ?? 'Deleted contact';
+  const contactName = (id: string) => s.contacts.find(c => c.id === id)?.name ?? tr('fin.deletedContact');
 
   const monthSpend = useMemo(() => {
     const map = new Map<string, number>();
@@ -74,17 +77,17 @@ export function Finances() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Finances</h1>
-          <p className="muted">Track it honestly. Going over budget hurts here the way it hurts out there.</p>
+          <h1>{t('nav.finances')}</h1>
+          <p className="muted">{t('fin.subtitle')}</p>
         </div>
         <div className="btn-pair fin-head-actions">
           {/* The currency belongs here rather than in Settings: this is the only page where
               it changes what you read, so it is set where it is felt. */}
           <label className="fin-currency">
-            <span className="muted">Currency</span>
+            <span className="muted">{t('settings.currency')}</span>
             <select
               className="input input-sm"
-              aria-label="Currency for every amount on this page"
+              aria-label={t('fin.currencyAria')}
               value={cur}
               onChange={e => s.setCurrency(e.target.value)}
             >
@@ -93,7 +96,7 @@ export function Finances() {
               ))}
             </select>
           </label>
-          <button className="btn btn-ghost" data-tour="new-account" onClick={() => setAddingAccount(true)}><Icon name="plus" size={14} /> Account</button>
+          <button className="btn btn-ghost" data-tour="new-account" onClick={() => setAddingAccount(true)}><Icon name="plus" size={14} /> {t('fin.account')}</button>
           <button className="btn btn-primary" data-tour="new-tx" disabled={s.accounts.length === 0} onClick={() => setAddingTx(true)}>
             <Icon name="plus" size={14} /> Transaction
           </button>
@@ -103,19 +106,19 @@ export function Finances() {
       <section className="card networth-card" data-tour="networth">
         <div className="networth-split">
           <div className="networth-block">
-            <div className="muted">Cash on hand</div>
+            <div className="muted">{t('fin.cashOnHand')}</div>
             {/* Headline figures are compacted — at 32px a seven-figure balance overflows its
                 block on a phone. The exact amount stays one hover away. */}
             <div className="networth" title={money(cash)}>{fmtMoneyCompact(cash, cur)}</div>
-            <div className="muted networth-sub">The actual money in your accounts, right now.</div>
+            <div className="muted networth-sub">{t('fin.cashSub')}</div>
           </div>
           <div className="networth-block">
-            <div className="muted">Net worth</div>
+            <div className="muted">{t('fin.netWorth')}</div>
             <div className={`networth ${netWorth < 0 ? 'neg' : ''}`} title={money(netWorth)}>{fmtMoneyCompact(netWorth, cur)}</div>
             <div className="muted networth-sub">
               {debtNet !== 0
-                ? `Cash ${money(accountsTotal)} ${debtNet > 0 ? '+' : '−'} debts ${money(Math.abs(debtNet))}`
-                : 'Includes debts — can go negative.'}
+                ? t('fin.netWorthBreakdown', { cash: money(accountsTotal), sign: debtNet > 0 ? '+' : '−', debts: money(Math.abs(debtNet)) })
+                : t('fin.netWorthSub')}
             </div>
           </div>
         </div>
@@ -124,15 +127,15 @@ export function Finances() {
             <div key={a.id} className="acct-chip">
               <span className="acct-name">{a.name}</span>
               <strong className={(balances.get(a.id) ?? 0) < 0 ? 'neg' : ''}>{money(balances.get(a.id) ?? 0)}</strong>
-              <button className="btn btn-ghost btn-sm" onClick={() => s.deleteAccount(a.id)} title={`Delete ${a.name}`} aria-label={`Delete ${a.name}`}>
+              <button className="btn btn-ghost btn-sm" onClick={() => s.deleteAccount(a.id)} title={t('fin.deleteAccount', { name: a.name })} aria-label={t('fin.deleteAccount', { name: a.name })}>
                 <Icon name="trash" size={13} />
               </button>
             </div>
           ))}
           {s.accounts.length === 0 && (
             <Empty>
-              Nothing to track yet. Add where your money actually sits — cash, a card, a bank account.{' '}
-              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>Add an account</button>
+              {t('fin.noAccounts')}{' '}
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>{t('fin.addAccount')}</button>
             </Empty>
           )}
         </div>
@@ -140,11 +143,11 @@ export function Finances() {
 
       <section className="card">
         <div className="card-head">
-          <h2>Debts</h2>
-          <span className="muted">{openDebts.length} open</span>
+          <h2>{t('fin.debts')}</h2>
+          <span className="muted">{t('fin.openCount', { n: openDebts.length })}</span>
         </div>
         {openDebts.length === 0 ? (
-          <Empty>No open debts. Track who owes whom in the <Link to="/social">Social Hub</Link> — they'll show up here too.</Empty>
+          <Empty>{t('fin.noDebts')} <Link to="/social">{t('fin.socialHub')}</Link>{t('fin.noDebtsTail')}</Empty>
         ) : (
           <ul className="list">
             {openDebts.map(d => {
@@ -155,12 +158,12 @@ export function Finances() {
                 <li key={d.id} className="list-row">
                   <Icon name={theyOwe ? 'arrowUp' : 'arrowDown'} size={15} className={theyOwe ? 'fin-in' : 'fin-out'} />
                   <span className="list-title">
-                    {contactName(d.contactId)} {theyOwe ? 'owes you' : '— you owe'} {money(remaining)}
-                    {paid > 0 && <span className="muted"> (paid {money(paid)} of {money(d.amount)})</span>}
+                    {contactName(d.contactId)} {theyOwe ? t('fin.owesYou') : t('fin.youOweDash')} {money(remaining)}
+                    {paid > 0 && <span className="muted"> {t('fin.paidOf', { paid: money(paid), total: money(d.amount) })}</span>}
                   </span>
                   <span className="muted">{d.note}</span>
-                  <button className="btn btn-ghost btn-sm" onClick={() => setPayingDebt(d)} title="Log a payment">
-                    <Icon name="card" size={13} /> Pay
+                  <button className="btn btn-ghost btn-sm" onClick={() => setPayingDebt(d)} title={t('fin.logPayment')}>
+                    <Icon name="card" size={13} /> {t('fin.pay')}
                   </button>
                 </li>
               );
@@ -170,7 +173,7 @@ export function Finances() {
         {settledDebts.length > 0 && (
           <>
             <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => setShowSettledDebts(v => !v)}>
-              {showSettledDebts ? 'Hide' : 'Show'} settled ({settledDebts.length})
+              {showSettledDebts ? t('habits.hide') : t('habits.show')} {t('fin.settledCount', { n: settledDebts.length })}
             </button>
             {showSettledDebts && (
               <ul className="list list-tight">
@@ -178,7 +181,7 @@ export function Finances() {
                   <li key={d.id} className="list-row">
                     <Icon name="check" size={14} className="fin-in" />
                     <span className="list-title">{contactName(d.contactId)} · {money(d.amount)}</span>
-                    <span className="muted">settled {d.settledAt ? fmtDayFull(d.settledAt.slice(0, 10)) : ''}</span>
+                    <span className="muted">{t('fin.settledOn', { date: d.settledAt ? fmtDayFull(d.settledAt.slice(0, 10)) : '' })}</span>
                   </li>
                 ))}
               </ul>
@@ -189,18 +192,18 @@ export function Finances() {
 
       <section className="card">
         <div className="card-head">
-          <h2>Subscriptions</h2>
+          <h2>{t('cat.Subscriptions')}</h2>
           <button className="btn btn-ghost btn-sm" disabled={s.accounts.length === 0} onClick={() => setAddingSub(true)}>
             <Icon name="plus" size={13} /> Add
           </button>
         </div>
         {activeSubs.length === 0 ? (
           <Empty>
-            Nothing recurring yet. Add a subscription and it posts itself on its charge day, every month.{' '}
+            {t('fin.noSubs')}{' '}
             {s.accounts.length === 0 ? (
-              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>Add an account first</button>
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>{t('fin.addAccountFirst')}</button>
             ) : (
-              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingSub(true)}>Add a subscription</button>
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingSub(true)}>{t('fin.addSub')}</button>
             )}
           </Empty>
         ) : (
@@ -209,8 +212,8 @@ export function Finances() {
               <li key={sub.id} className="list-row">
                 <Icon name="subscription" size={15} className="fin-out" />
                 <span className="list-title">{sub.name}</span>
-                <span className="muted">{money(sub.amount)} / mo · next {fmtDay(sub.nextDue)} · {s.accounts.find(a => a.id === sub.accountId)?.name}</span>
-                <button className="btn btn-ghost btn-sm" onClick={() => s.cancelSubscription(sub.id)}>Cancel</button>
+                <span className="muted">{t('fin.perMonth', { amount: money(sub.amount) })} · {t('fin.next', { date: fmtDay(sub.nextDue) })} · {s.accounts.find(a => a.id === sub.accountId)?.name}</span>
+                <button className="btn btn-ghost btn-sm" onClick={() => s.cancelSubscription(sub.id)}>{t('fin.cancelSub')}</button>
               </li>
             ))}
           </ul>
@@ -218,42 +221,42 @@ export function Finances() {
       </section>
 
       <section className="card">
-        <div className="card-head"><h2>Transactions</h2><span className="muted">{s.txs.length} total</span></div>
+        <div className="card-head"><h2>{t('fin.transactions')}</h2><span className="muted">{t('fin.totalCount', { n: s.txs.length })}</span></div>
         {recent.length === 0 ? (
           <Empty>
             {/* The Money attribute is named, not iconed: its icon is Coins, the same glyph as Gold,
                 and a coin on the Finances page reads as currency — the one confusion this page exists
                 to avoid. Everywhere else the attribute icon is unambiguous and still used. */}
-            Nothing logged yet. Income earns XP toward your Money attribute, and so do expenses that stay inside their budget.{' '}
+            {t('fin.noTxs')}{' '}
             {s.accounts.length === 0 ? (
-              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>Add an account first</button>
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingAccount(true)}>{t('fin.addAccountFirst')}</button>
             ) : (
-              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingTx(true)}>Log the first one</button>
+              <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setAddingTx(true)}>{t('fin.logFirst')}</button>
             )}
           </Empty>
         ) : (
           <ul className="list">
-            {recent.map(t => {
-              const income = t.type === 'income';
+            {recent.map(tx => {
+              const income = tx.type === 'income';
               return (
-                <li key={t.id} className="list-row">
+                <li key={tx.id} className="list-row">
                   {/* A transfer is neither income nor spending, so it gets its own mark rather
                       than a green/red arrow that would claim your total moved. */}
-                  {t.transferId
+                  {tx.transferId
                     ? <Icon name="banknote" size={15} className="muted" />
                     : <Icon name={income ? 'arrowUp' : 'arrowDown'} size={15} className={income ? 'fin-in' : 'fin-out'} />}
-                  <span className="list-title">{t.note || t.category}</span>
-                  <span className="tag">{t.category}</span>
-                  <span className="muted">{fmtDay(t.date)} · {s.accounts.find(a => a.id === t.accountId)?.name ?? '?'}</span>
+                  <span className="list-title">{tx.note || t(`cat.${tx.category}`)}</span>
+                  <span className="tag">{t(`cat.${tx.category}`)}</span>
+                  <span className="muted">{fmtDay(tx.date)} · {s.accounts.find(a => a.id === tx.accountId)?.name ?? '?'}</span>
                   <span className={income ? 'amount-pos' : 'amount-neg'}>
-                    {income ? '+' : '−'}{money(t.amount)}
+                    {income ? '+' : '−'}{money(tx.amount)}
                   </span>
-                  {t.date === today && (
+                  {tx.date === today && (
                     <button
                       className="btn btn-ghost btn-sm"
-                      onClick={() => s.deleteTransaction(t.id)}
-                      title="Delete (today's entries only)"
-                      aria-label="Delete this entry"
+                      onClick={() => s.deleteTransaction(tx.id)}
+                      title={t('fin.deleteTodayOnly')}
+                      aria-label={t('fin.deleteEntry')}
                     >
                       <Icon name="trash" size={13} />
                     </button>
@@ -270,19 +273,19 @@ export function Finances() {
       <details className="fin-advanced" data-tour="advanced">
         <summary className="fin-advanced-summary">
           <Icon name="chevronRight" size={14} className="fin-caret" />
-          <span>Advanced</span>
-          <span className="muted">budgets and transfers</span>
+          <span>{t('fin.advanced')}</span>
+          <span className="muted">{t('fin.advancedSub')}</span>
         </summary>
         <div className="fin-advanced-body">
           <section className="card">
             <div className="card-head">
-              <h2>Budgets — {new Date().toLocaleDateString(undefined, { month: 'long' })}</h2>
-              <button className="btn btn-ghost btn-sm" onClick={() => setEditBudgets(true)}><Icon name="edit" size={13} /> Set limits</button>
+              <h2>{t('fin.budgets')} — {new Date().toLocaleDateString(locale(), { month: 'long' })}</h2>
+              <button className="btn btn-ghost btn-sm" onClick={() => setEditBudgets(true)}><Icon name="edit" size={13} /> {t('fin.setLimits')}</button>
             </div>
             {budgeted.length === 0 ? (
               <Empty>
-                No limits set. Give a category a monthly cap and going over it costs HP, scaled to how far over you went.{' '}
-                <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setEditBudgets(true)}>Set limits</button>
+                {t('fin.noBudgets')}{' '}
+                <button className="btn btn-ghost btn-sm fin-empty-action" onClick={() => setEditBudgets(true)}>{t('fin.setLimits')}</button>
               </Empty>
             ) : (
               <div className="budget-list">
@@ -293,7 +296,7 @@ export function Finances() {
                   return (
                     <div key={cat} className="budget-row">
                       <div className="budget-head">
-                        <span>{cat}</span>
+                        <span>{t(`cat.${cat}`)}</span>
                         <span className={over ? 'neg' : 'muted'}>
                           {over && <Icon name="warning" size={13} />} {money(spent)} / {money(budget)}
                         </span>
@@ -307,12 +310,12 @@ export function Finances() {
           </section>
 
           <section className="card">
-            <div className="card-head"><h2>Transfer</h2></div>
-            <p className="muted">Move your own money between your own accounts. It's neither income nor spending, so it earns nothing and touches no budget.</p>
+            <div className="card-head"><h2>{t('fin.transfer')}</h2></div>
+            <p className="muted">{t('fin.transferDesc')}</p>
             <button className="btn btn-ghost" disabled={s.accounts.length < 2} onClick={() => setAddingTransfer(true)}>
-              <Icon name="banknote" size={14} /> Move money
+              <Icon name="banknote" size={14} /> {t('fin.moveMoney')}
             </button>
-            {s.accounts.length < 2 && <p className="muted fin-hint">Transfers need two accounts. Add another and this opens up.</p>}
+            {s.accounts.length < 2 && <p className="muted fin-hint">{t('fin.needTwoAccounts')}</p>}
           </section>
         </div>
       </details>
@@ -328,27 +331,29 @@ export function Finances() {
 }
 
 function AccountForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const addAccount = useGame(s => s.addAccount);
   const currency = useGame(s => s.currency);
   const [name, setName] = useState('');
   const [balance, setBalance] = useState(0);
   return (
-    <Modal title="New account" onClose={onClose}>
-      <label className="field"><span>Name</span>
-        <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="Cash / Kaspi / Bank…" autoFocus />
+    <Modal title={t('fin.newAccount')} onClose={onClose}>
+      <label className="field"><span>{t('habits.fieldName')}</span>
+        <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder={t('fin.accountPh')} autoFocus />
       </label>
-      <label className="field"><span>Current balance ({currency})</span>
+      <label className="field"><span>{t('fin.currentBalance', { currency })}</span>
         <input className="input" type="number" value={balance || ''} onChange={e => setBalance(Number(e.target.value))} />
       </label>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-        <button className="btn btn-primary" disabled={!name.trim()} onClick={() => { addAccount(name, balance || 0); onClose(); }}>Add</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
+        <button className="btn btn-primary" disabled={!name.trim()} onClick={() => { addAccount(name, balance || 0); onClose(); }}>{t('common.add')}</button>
       </div>
     </Modal>
   );
 }
 
 function TransferForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const [fromAccountId, setFromAccountId] = useState(s.accounts[0]?.id ?? '');
   const [toAccountId, setToAccountId] = useState(s.accounts[1]?.id ?? '');
@@ -358,9 +363,9 @@ function TransferForm({ onClose }: { onClose: () => void }) {
   const valid = amount > 0 && fromAccountId && toAccountId && fromAccountId !== toAccountId;
 
   return (
-    <Modal title="Transfer between accounts" onClose={onClose}>
-      <p className="muted">Moving your own money doesn't earn XP and never touches a budget — it's neither income nor spending.</p>
-      <label className="field"><span>From</span>
+    <Modal title={t('fin.transferTitle')} onClose={onClose}>
+      <p className="muted">{t('fin.transferModalDesc')}</p>
+      <label className="field"><span>{t('fin.from')}</span>
         <select
           className="input"
           value={fromAccountId}
@@ -373,7 +378,7 @@ function TransferForm({ onClose }: { onClose: () => void }) {
           {s.accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </label>
-      <label className="field"><span>To</span>
+      <label className="field"><span>{t('fin.to')}</span>
         <select className="input" value={toAccountId} onChange={e => setToAccountId(e.target.value)}>
           {s.accounts.filter(a => a.id !== fromAccountId).map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
@@ -381,17 +386,17 @@ function TransferForm({ onClose }: { onClose: () => void }) {
       <label className="field"><span>Amount ({s.currency})</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
-      <label className="field"><span>Note (optional)</span>
+      <label className="field"><span>{t('fin.noteOptional')}</span>
         <input className="input" value={note} onChange={e => setNote(e.target.value)} placeholder="optional" />
       </label>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={!valid}
           onClick={() => { s.transferMoney(fromAccountId, toAccountId, amount, note.trim() || undefined); onClose(); }}
         >
-          {amount > 0 ? `Transfer ${fmtMoney(amount, s.currency)}` : 'Transfer'}
+          {amount > 0 ? t('fin.transferAmount', { amount: fmtMoney(amount, s.currency) }) : t('fin.transfer')}
         </button>
       </div>
     </Modal>
@@ -399,6 +404,7 @@ function TransferForm({ onClose }: { onClose: () => void }) {
 }
 
 function TxForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [amount, setAmount] = useState(0);
@@ -410,45 +416,45 @@ function TxForm({ onClose }: { onClose: () => void }) {
   const cats = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   return (
-    <Modal title="New transaction" onClose={onClose}>
+    <Modal title={t('fin.newTx')} onClose={onClose}>
       <div className="field">
-        <span>Type</span>
+        <span>{t('habits.fieldType')}</span>
         <div className="seg">
           <button type="button" className={type === 'expense' ? 'seg-on' : ''} onClick={() => { setType('expense'); setCategory(EXPENSE_CATEGORIES[0]); }}>
-            <Icon name="arrowDown" size={13} /> Expense
+            <Icon name="arrowDown" size={13} /> {t('fin.expense')}
           </button>
           <button type="button" className={type === 'income' ? 'seg-on' : ''} onClick={() => { setType('income'); setCategory(INCOME_CATEGORIES[0]); }}>
-            <Icon name="arrowUp" size={13} /> Income
+            <Icon name="arrowUp" size={13} /> {t('fin.income')}
           </button>
         </div>
       </div>
       <label className="field"><span>Amount ({s.currency})</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
-      <label className="field"><span>Category</span>
+      <label className="field"><span>{t('fin.category')}</span>
         <select className="input" value={category} onChange={e => setCategory(e.target.value)}>
-          {cats.map(c => <option key={c}>{c}</option>)}
+          {cats.map(c => <option key={c} value={c}>{t(`cat.${c}`)}</option>)}
         </select>
       </label>
-      <label className="field"><span>Account</span>
+      <label className="field"><span>{t('fin.account')}</span>
         <select className="input" value={accountId} onChange={e => setAccountId(e.target.value)}>
           {s.accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </label>
-      <label className="field"><span>Note</span>
+      <label className="field"><span>{t('fin.note')}</span>
         <input className="input" value={note} onChange={e => setNote(e.target.value)} placeholder="optional" />
       </label>
-      <label className="field"><span>Date (this month only — budgets can't be dodged by backdating)</span>
+      <label className="field"><span>{t('fin.dateThisMonth')}</span>
         <input className="input" type="date" value={date} min={todayStr().slice(0, 8) + '01'} max={todayStr()} onChange={e => setDate(e.target.value)} />
       </label>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={amount <= 0 || !accountId || !date}
           onClick={() => { s.addTransaction({ type, amount, category, accountId, note: note.trim(), date }); onClose(); }}
         >
-          Log it
+          {t('fin.logIt')}
         </button>
       </div>
     </Modal>
@@ -456,6 +462,7 @@ function TxForm({ onClose }: { onClose: () => void }) {
 }
 
 function SubForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const [amount, setAmount] = useState(0);
   const [accountId, setAccountId] = useState(s.accounts[0]?.id ?? '');
@@ -463,13 +470,13 @@ function SubForm({ onClose }: { onClose: () => void }) {
   const [dayOfMonth, setDayOfMonth] = useState(1);
 
   return (
-    <Modal title="New subscription" onClose={onClose}>
-      <label className="field"><span>Amount per month ({s.currency})</span>
+    <Modal title={t('fin.newSub')} onClose={onClose}>
+      <label className="field"><span>{t('fin.amountPerMonth', { currency: s.currency })}</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
-      <label className="field"><span>Category</span>
+      <label className="field"><span>{t('fin.category')}</span>
         <select className="input" value={category} onChange={e => setCategory(e.target.value)}>
-          {EXPENSE_CATEGORIES.map(c => <option key={c}>{c}</option>)}
+          {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{t(`cat.${c}`)}</option>)}
         </select>
       </label>
       <label className="field"><span>Account</span>
@@ -477,18 +484,18 @@ function SubForm({ onClose }: { onClose: () => void }) {
           {s.accounts.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
         </select>
       </label>
-      <label className="field"><span>Charged on day of month (1–28)</span>
+      <label className="field"><span>{t('fin.chargedOnDay')}</span>
         <input className="input" type="number" min={1} max={28} value={dayOfMonth} onChange={e => setDayOfMonth(Math.min(28, Math.max(1, Number(e.target.value))))} />
       </label>
-      <p className="muted">It'll show up on the <Link to="/calendar">Calendar</Link> on its charge day every month.</p>
+      <p className="muted">{t('fin.subCalendarNote')} <Link to="/calendar">{t('nav.calendar')}</Link>{t('fin.subCalendarNoteTail')}</p>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={amount <= 0 || !accountId}
           onClick={() => { s.addSubscription({ name: category, amount, accountId, category, dayOfMonth }); onClose(); }}
         >
-          Add subscription
+          {t('fin.addSub')}
         </button>
       </div>
     </Modal>
@@ -496,33 +503,34 @@ function SubForm({ onClose }: { onClose: () => void }) {
 }
 
 function BudgetForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const s = useGame();
   const [values, setValues] = useState<Record<string, string>>(
     Object.fromEntries(EXPENSE_CATEGORIES.map(c => [c, s.budgets[c] ? String(s.budgets[c]) : ''])),
   );
   return (
-    <Modal title="Monthly budget limits" onClose={onClose}>
-      <p className="muted">Limits are in {s.currency}. Leave blank for no limit. Past the limit, every extra expense costs HP, scaled to the overshoot.</p>
+    <Modal title={t('fin.budgetTitle')} onClose={onClose}>
+      <p className="muted">{t('fin.budgetDesc', { currency: s.currency })}</p>
       {EXPENSE_CATEGORIES.map(c => (
         <label className="field field-inline" key={c}>
-          <span>{c}</span>
+          <span>{t(`cat.${c}`)}</span>
           <input
             className="input input-sm"
             type="number"
             min={0}
-            placeholder="no limit"
+            placeholder={t('fin.noLimit')}
             value={values[c]}
             onChange={e => setValues(v => ({ ...v, [c]: e.target.value }))}
           />
         </label>
       ))}
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           onClick={() => { for (const c of EXPENSE_CATEGORIES) s.setBudget(c, Number(values[c]) || 0); onClose(); }}
         >
-          Save limits
+          {t('fin.saveLimits')}
         </button>
       </div>
     </Modal>

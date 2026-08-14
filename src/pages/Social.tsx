@@ -6,6 +6,7 @@ import { ARCHETYPES, ARCHETYPE_KEYS, PRIMARY_GROUPS, PRIMARY_GROUP_KEYS } from '
 import { addDaysStr, debtPaid, debtRemaining, fmtDay, todayStr } from '../game/engine';
 import { fmtMoney } from '../game/money';
 import type { Contact, ContactChannels, Debt, PersonalityArchetype, PrimaryGroup, SocialEvent } from '../game/types';
+import { t as tr, useT } from '../i18n';
 import { useGame } from '../store';
 
 /**
@@ -108,6 +109,7 @@ type DateRow =
   | { kind: 'event'; key: string; date: string; title: string; event: SocialEvent };
 
 export function Social() {
+  const t = useT();
   const s = useGame();
   const [editing, setEditing] = useState<Contact | 'new' | null>(null);
   const [groupFilter, setGroupFilter] = useState<PrimaryGroup | null>(null);
@@ -157,8 +159,8 @@ export function Social() {
     <div className="page soc-page">
       <div className="page-head">
         <div>
-          <h1>Social Hub</h1>
-          <p className="muted">Your people, remembered properly. Private — nothing leaves this app.</p>
+          <h1>{t('soc.title')}</h1>
+          <p className="muted">{t('soc.subtitle')}</p>
         </div>
         <button className="btn btn-primary soc-btn-ico" data-tour="new-contact" onClick={() => setEditing('new')}>
           <Icon name="plus" size={15} /> Add contact
@@ -167,8 +169,8 @@ export function Social() {
 
       {unconfirmed.length > 0 && (
         <section className="card">
-          <div className="card-head"><h2>Did these happen?</h2></div>
-          <p className="muted soc-lede">These dates have passed. Mark the ones you kept — that's the part that counts.</p>
+          <div className="card-head"><h2>{t('soc.didHappen')}</h2></div>
+          <p className="muted soc-lede">{t('soc.didHappenLede')}</p>
           <ul className="list">
             {unconfirmed.map(r => <DateRowView key={r.key} row={r} />)}
           </ul>
@@ -177,7 +179,7 @@ export function Social() {
 
       {upcoming.length > 0 && (
         <section className="card">
-          <div className="card-head"><h2>Next 30 days</h2></div>
+          <div className="card-head"><h2>{t('soc.next30')}</h2></div>
           <ul className="list">
             {upcoming.map(r => <DateRowView key={r.key} row={r} />)}
           </ul>
@@ -185,7 +187,7 @@ export function Social() {
       )}
 
       <div className="filter-row">
-        <input className="input input-sm" placeholder="Search people…" value={search} onChange={e => setSearch(e.target.value)} />
+        <input className="input input-sm" placeholder={t('soc.searchPh')} value={search} onChange={e => setSearch(e.target.value)} />
         <button className={`chip ${groupFilter === null ? 'chip-on' : ''}`} onClick={() => setGroupFilter(null)}>All</button>
         {PRIMARY_GROUP_KEYS.map(g => (
           <button key={g} className={`chip ${groupFilter === g ? 'chip-on' : ''}`} onClick={() => setGroupFilter(groupFilter === g ? null : g)}>
@@ -200,20 +202,19 @@ export function Social() {
         // forty contacts and a typo in the search box would be wrong.
         filtering ? (
           <Empty>
-            <p className="soc-empty-line">No one matches that.</p>
-            <button className="btn btn-ghost btn-sm" onClick={() => { setSearch(''); setGroupFilter(null); }}>Clear the filters</button>
+            <p className="soc-empty-line">{t('soc.noMatch')}</p>
+            <button className="btn btn-ghost btn-sm" onClick={() => { setSearch(''); setGroupFilter(null); }}>{t('soc.clearFilters')}</button>
           </Empty>
         ) : (
           <Empty>
             <p className="soc-empty-line">
-              <Icon name="friends" size={16} className="soc-empty-ico" /> No contacts yet.
+              <Icon name="friends" size={16} className="soc-empty-ico" /> {t('soc.noContacts')}
             </p>
             <p className="soc-empty-line">
-              This is where birthdays, ways to reach someone, the notes you'd otherwise forget and who owes
-              whom all live — and where you mark the times you actually saw each other.
+              {t('soc.noContactsBody')}
             </p>
             <button className="btn btn-primary btn-sm soc-btn-ico" onClick={() => setEditing('new')}>
-              <Icon name="plus" size={14} /> Add your first contact
+              <Icon name="plus" size={14} /> {t('soc.addFirst')}
             </button>
           </Empty>
         )
@@ -233,6 +234,7 @@ export function Social() {
 /** One line in "Did these happen?" / "Next 30 days". Shared so a completed event looks
  *  identical wherever it turns up. */
 function DateRowView({ row }: { row: DateRow }) {
+  const t = useT();
   const completeEvent = useGame(s => s.completeEvent);
 
   if (row.kind === 'birthday') {
@@ -261,6 +263,7 @@ function DateRowView({ row }: { row: DateRow }) {
 }
 
 function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void }) {
+  const t = useT();
   const s = useGame();
   const [addingDebt, setAddingDebt] = useState(false);
   const [addingEvent, setAddingEvent] = useState(false);
@@ -338,7 +341,7 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
                 href={href}
                 target={m.key === 'phone' || m.key === 'email' ? undefined : '_blank'}
                 rel="noopener noreferrer"
-                title={`Open ${m.label}`}
+                title={t('soc.openChannel', { name: m.label })}
               >
                 <Icon name={m.icon} size={13} /> {value}
               </a>
@@ -355,11 +358,11 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
       {debts.length > 0 && (
         <div className={`debt-net ${net > 0 ? 'debt-pos' : net < 0 ? 'debt-neg' : ''}`}>
           {net === 0 ? (
-            <><Icon name="check" size={15} /> Settled up</>
+            <><Icon name="check" size={15} /> {t('soc.settledUp')}</>
           ) : net > 0 ? (
-            `They owe you ${money(net)}`
+            t('soc.netTheyOwe', { amount: money(net) })
           ) : (
-            `You owe ${money(-net)}`
+            t('soc.netYouOwe', { amount: money(-net) })
           )}
         </div>
       )}
@@ -379,12 +382,12 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
                   className={`soc-row-ico ${theyOwe ? 'soc-in' : 'soc-out'}`}
                 />
                 <span className="list-title">
-                  {theyOwe ? 'owes you' : 'you owe'} {money(remaining)}
-                  {paid > 0 && <span className="muted"> (paid {money(paid)} of {money(d.amount)})</span>}
+                  {theyOwe ? t('fin.owesYou') : t('soc.youOwe')} {money(remaining)}
+                  {paid > 0 && <span className="muted"> {t('fin.paidOf', { paid: money(paid), total: money(d.amount) })}</span>}
                   {d.note ? ` · ${d.note}` : ''}
                 </span>
-                <button className="btn btn-ghost btn-sm soc-btn-ico" onClick={() => setPayingDebt(d)} title="Log a payment">
-                  <Icon name="card" size={13} /> Pay
+                <button className="btn btn-ghost btn-sm soc-btn-ico" onClick={() => setPayingDebt(d)} title={t('fin.logPayment')}>
+                  <Icon name="card" size={13} /> {t('fin.pay')}
                 </button>
               </li>
             );
@@ -405,10 +408,10 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
                 <span className="muted">{fmtDay(e.date)}</span>
                 {!done && (
                   <button className="btn btn-ghost btn-sm soc-btn-ico" onClick={() => s.completeEvent(e.id)}>
-                    <Icon name="check" size={13} /> Happened
+                    <Icon name="check" size={13} /> {t('soc.happened')}
                   </button>
                 )}
-                <button className="btn btn-ghost btn-sm" onClick={() => s.deleteEvent(e.id)} aria-label={`Delete ${e.title}`}>
+                <button className="btn btn-ghost btn-sm" onClick={() => s.deleteEvent(e.id)} aria-label={t('soc.deleteEvent', { title: e.title })}>
                   <Icon name="trash" size={13} />
                 </button>
               </li>
@@ -419,10 +422,10 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
 
       <div className="btn-pair">
         <button className="btn btn-ghost btn-sm soc-btn-ico" onClick={() => setAddingDebt(true)}>
-          <Icon name="plus" size={13} /> Debt
+          <Icon name="plus" size={13} /> {t('soc.debt')}
         </button>
         <button className="btn btn-ghost btn-sm soc-btn-ico" onClick={() => setAddingEvent(true)}>
-          <Icon name="plus" size={13} /> Event
+          <Icon name="plus" size={13} /> {t('soc.event')}
         </button>
       </div>
 
@@ -434,6 +437,7 @@ function ContactCard({ contact, onEdit }: { contact: Contact; onEdit: () => void
 }
 
 function DebtForm({ contactId, name, onClose }: { contactId: string; name: string; onClose: () => void }) {
+  const t = useT();
   const addDebt = useGame(s => s.addDebt);
   const currency = useGame(s => s.currency);
   const [direction, setDirection] = useState<'iOwe' | 'theyOwe'>('theyOwe');
@@ -441,31 +445,31 @@ function DebtForm({ contactId, name, onClose }: { contactId: string; name: strin
   const [note, setNote] = useState('');
 
   return (
-    <Modal title={`Debt with ${name}`} onClose={onClose}>
+    <Modal title={t('soc.debtWith', { name })} onClose={onClose}>
       <div className="field">
-        <span>Direction</span>
+        <span>{t('soc.direction')}</span>
         <div className="seg">
-          <button type="button" className={direction === 'theyOwe' ? 'seg-on' : ''} onClick={() => setDirection('theyOwe')}>They owe me</button>
-          <button type="button" className={direction === 'iOwe' ? 'seg-on' : ''} onClick={() => setDirection('iOwe')}>I owe them</button>
+          <button type="button" className={direction === 'theyOwe' ? 'seg-on' : ''} onClick={() => setDirection('theyOwe')}>{t('soc.theyOweMe')}</button>
+          <button type="button" className={direction === 'iOwe' ? 'seg-on' : ''} onClick={() => setDirection('iOwe')}>{t('soc.iOweThem')}</button>
         </div>
       </div>
       <label className="field">
         {/* The unit is stated because this is real money and the box is a bare number. */}
-        <span>Amount ({currency})</span>
+        <span>{t('soc.amount', { currency })}</span>
         <input className="input" type="number" min={0} value={amount || ''} onChange={e => setAmount(Number(e.target.value))} autoFocus />
       </label>
       <label className="field">
-        <span>Note (optional)</span>
-        <input className="input" value={note} onChange={e => setNote(e.target.value)} placeholder="lunch, borrowed cash…" />
+        <span>{t('fin.noteOptional')}</span>
+        <input className="input" value={note} onChange={e => setNote(e.target.value)} placeholder={t('soc.debtNotePh')} />
       </label>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={amount <= 0}
           onClick={() => { addDebt({ contactId, direction, amount, note: note.trim() }); onClose(); }}
         >
-          Log debt
+          {t('soc.logDebt')}
         </button>
       </div>
     </Modal>
@@ -473,29 +477,30 @@ function DebtForm({ contactId, name, onClose }: { contactId: string; name: strin
 }
 
 function EventForm({ contactId, name, onClose }: { contactId: string; name: string; onClose: () => void }) {
+  const t = useT();
   const addEvent = useGame(s => s.addEvent);
   const [title, setTitle] = useState('');
   const [date, setDate] = useState(todayStr());
 
   return (
-    <Modal title={`Event with ${name}`} onClose={onClose}>
+    <Modal title={t('soc.eventWith', { name })} onClose={onClose}>
       <label className="field">
-        <span>What</span>
-        <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="Coffee catch-up" autoFocus />
+        <span>{t('soc.what')}</span>
+        <input className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder={t('soc.eventPh')} autoFocus />
       </label>
       <label className="field">
-        <span>When</span>
+        <span>{t('soc.when')}</span>
         <input className="input" type="date" value={date} onChange={e => setDate(e.target.value)} />
       </label>
-      <p className="muted soc-hint">Afterwards you'll mark it as happened — that's the moment that earns. Plans by themselves cost nothing and give nothing.</p>
+      <p className="muted soc-hint">{t('soc.eventHint')}</p>
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={!title.trim() || !date}
           onClick={() => { addEvent({ contactId, title: title.trim(), date }); onClose(); }}
         >
-          Add event
+          {t('soc.addEvent')}
         </button>
       </div>
     </Modal>
@@ -524,6 +529,7 @@ function IconField({
 }
 
 function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: () => void }) {
+  const t = useT();
   const addContact = useGame(s => s.addContact);
   const updateContact = useGame(s => s.updateContact);
 
@@ -556,16 +562,16 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
     e.target.value = '';
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      setPhotoNote('That file is not an image.');
+      setPhotoNote(tr('soc.notAnImage'));
       return;
     }
     // Checked before the read, not after: decoding an 80 MB file to base64 first would
     // freeze the tab for the time it takes to find out we don't want it.
     if (file.size > AVATAR_MAX_BYTES) {
-      setPhotoNote('That image is over 8 MB. Pick a smaller one.');
+      setPhotoNote(tr('soc.imageTooBig'));
       return;
     }
-    setPhotoNote('Resizing…');
+    setPhotoNote(tr('soc.resizing'));
     try {
       setAvatarUrl(await downscaleToDataUrl(file));
       setPhotoNote(null);
@@ -595,11 +601,11 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
   };
 
   return (
-    <Modal title={contact ? 'Edit contact' : 'New contact'} onClose={onClose} wide>
-      <div className="section-label">Name</div>
-      <IconField icon="people" placeholder="Their name" value={name} onChange={setName} />
+    <Modal title={contact ? t('soc.editContact') : t('soc.newContact')} onClose={onClose} wide>
+      <div className="section-label">{t('habits.fieldName')}</div>
+      <IconField icon="people" placeholder={t('soc.theirName')} value={name} onChange={setName} />
 
-      <div className="section-label">Photo</div>
+      <div className="section-label">{t('soc.photo')}</div>
       <div className="soc-photo">
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="contact-avatar soc-photo-preview" />
@@ -609,7 +615,7 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
         <div className="soc-photo-actions">
           <label className="btn btn-ghost btn-sm soc-btn-ico soc-photo-pick">
             <Icon name="upload" size={13} />
-            {avatarUrl ? 'Replace photo' : 'Choose photo'}
+            {avatarUrl ? t('soc.replacePhoto') : t('soc.choosePhoto')}
             <input type="file" accept="image/*" onChange={pickPhoto} />
           </label>
           {avatarUrl && (
@@ -629,34 +635,34 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
 
       <div className="form-grid-2">
         <div>
-          <div className="section-label">City</div>
+          <div className="section-label">{t('soc.city')}</div>
           {/* 'famErrands' is the pin glyph — the icon vocabulary has no location name of its own. */}
-          <IconField icon="famErrands" placeholder="San Francisco" value={city} onChange={setCity} />
+          <IconField icon="famErrands" placeholder={t('soc.cityPh')} value={city} onChange={setCity} />
         </div>
         <div>
-          <div className="section-label">Work</div>
-          <IconField icon="career" placeholder="Software architect" value={occupation} onChange={setOccupation} />
+          <div className="section-label">{t('soc.work')}</div>
+          <IconField icon="career" placeholder={t('soc.workPh')} value={occupation} onChange={setOccupation} />
         </div>
       </div>
 
       <div className="form-grid-2">
         <div>
-          <div className="section-label">Birthday</div>
+          <div className="section-label">{t('soc.birthday')}</div>
           <IconField icon="cake" type="date" placeholder="" value={birthday} onChange={setBirthday} />
         </div>
         <div>
-          <div className="section-label">Gender</div>
+          <div className="section-label">{t('soc.gender')}</div>
           <select className="input" value={gender} onChange={e => setGender(e.target.value as Contact['gender'])}>
-            <option value="">Unspecified</option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
+            <option value="">{t('soc.unspecified')}</option>
+            <option value="male">{t('soc.male')}</option>
+            <option value="female">{t('soc.female')}</option>
+            <option value="other">{t('soc.otherGender')}</option>
           </select>
         </div>
       </div>
 
-      <div className="section-label">Radicals</div>
-      <p className="muted soc-hint">The seven character types the app uses everywhere. Pick whichever fit — it's shorthand for how someone ticks, not a label you have to get right.</p>
+      <div className="section-label">{t('soc.radicals')}</div>
+      <p className="muted soc-hint">{t('soc.radicalsHint')}</p>
       <div className="archetype-picker">
         {ARCHETYPE_KEYS.map(a => (
           <button
@@ -671,7 +677,7 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
         ))}
       </div>
 
-      <div className="section-label">Group</div>
+      <div className="section-label">{t('soc.group')}</div>
       <div className="seg seg-5">
         {PRIMARY_GROUP_KEYS.map(g => (
           <button
@@ -685,7 +691,7 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
         ))}
       </div>
 
-      <div className="section-label">How to reach them</div>
+      <div className="section-label">{t('soc.howToReach')}</div>
       <div className="form-grid-2">
         {CHANNEL_META.map(m => (
           <IconField
@@ -699,13 +705,13 @@ function ContactForm({ contact, onClose }: { contact: Contact | null; onClose: (
       </div>
 
       <label className="field">
-        <span>Notes</span>
-        <textarea className="input" rows={3} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Loves chess, allergic to peanuts, ask about her thesis" />
+        <span>{t('soc.notes')}</span>
+        <textarea className="input" rows={3} value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('soc.notesPh')} />
       </label>
 
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-        <button className="btn btn-primary" disabled={!name.trim()} onClick={save}>{contact ? 'Save' : 'Add contact'}</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
+        <button className="btn btn-primary" disabled={!name.trim()} onClick={save}>{contact ? t('common.save') : t('soc.addContact')}</button>
       </div>
     </Modal>
   );

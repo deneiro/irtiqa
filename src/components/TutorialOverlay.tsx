@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { TUTORIAL_STEPS, type TutorialSnapshot } from '../game/tutorial';
+import { t as tr } from '../i18n';
 import { useGame, type GameState } from '../store';
 import { Icon } from './Icon';
 import { TutorialBubble, type Rect } from './TutorialBubble';
@@ -66,7 +67,7 @@ export function TutorialOverlay() {
     if (enteredRef.current === stepIndex) return;
     enteredRef.current = stepIndex;
     if (step?.onEnter === 'finishTutorialSession' && useGame.getState().activeSession) {
-      finishSession('First session — logged during the tour.');
+      finishSession(tr('tour.firstSessionNote'));
     }
   }, [active, stepIndex, step, finishSession]);
 
@@ -199,7 +200,7 @@ export function TutorialOverlay() {
   if (!active || !step) return null;
 
   const confirmSkip = () => {
-    if (confirm('Skip the rest of the tour? You will still get a one-line tip the first time you open each page.')) {
+    if (confirm(tr('tour.skipConfirm'))) {
       skip();
     }
   };
@@ -242,7 +243,7 @@ export function TutorialOverlay() {
         onSkip={confirmSkip}
       />
       {stepIndex! > 0 && (
-        <button className="tutorial-back" onClick={() => goToStep(stepIndex! - 1)} aria-label="Previous step">
+        <button className="tutorial-back" onClick={() => goToStep(stepIndex! - 1)} aria-label={tr('tour.prevStep')}>
           <Icon name="chevronLeft" size={14} /> Back
         </button>
       )}
