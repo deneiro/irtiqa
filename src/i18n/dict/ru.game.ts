@@ -219,4 +219,9 @@ export const RU_GAME: Dict = {
   'chr.statHabits': 'привычки',
   'chr.statPerfectDays': 'идеальных дней',
   'chr.statTrackedWork': 'учтённой работы',
+
+  'medium.book': 'Книга',
+  'medium.podcast': 'Подкаст',
+  'medium.lecture': 'Лекция',
+  'medium.paper': 'Статья',
 };

@@ -206,4 +206,9 @@ export const EN_GAME: Dict = {
   'chr.statHabits': 'habits',
   'chr.statPerfectDays': 'perfect days',
   'chr.statTrackedWork': 'tracked work',
+
+  'medium.book': 'Book',
+  'medium.podcast': 'Podcast',
+  'medium.lecture': 'Lecture',
+  'medium.paper': 'Paper',
 };

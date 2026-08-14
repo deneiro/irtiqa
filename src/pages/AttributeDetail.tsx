@@ -42,13 +42,13 @@ export function AttributeDetail() {
       <div className="page-head">
         <div>
           <Link to="/attributes" className="muted back-link">
-            <Icon name="chevronLeft" size={13} /> The Wheel
+            <Icon name="chevronLeft" size={13} /> {t('nav.wheel')}
           </Link>
           <h1 className="attr-detail-title">
             <span className="attr-detail-icon"><Icon name={attr} size={24} /></span>
             {meta.label}
           </h1>
-          <p className="muted">{content.wheelName} · Level {lp.level}</p>
+          <p className="muted">{content.wheelName} · {t('common.level')} {lp.level}</p>
         </div>
       </div>
 
