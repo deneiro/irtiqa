@@ -6,6 +6,7 @@ import { WheelSurvey } from '../components/WheelSurvey';
 import { ATTR_KEYS, ATTRIBUTES, CLASSES, CLASS_RADICAL, classAffinityLabel } from '../game/constants';
 import { attunements } from '../game/engine';
 import type { AttributeKey, ClassId } from '../game/types';
+import { LANGS, LANG_LABEL, type Lang, plural, useLang, useT } from '../i18n';
 import { isSupabaseConfigured } from '../lib/supabase';
 import { useSync } from '../lib/sync';
 import { useGame } from '../store';
@@ -28,8 +29,6 @@ function weakestTwo(scores: Record<AttributeKey, number>): AttributeKey[] {
  *  and few enough to read; the full library is one click away from the Habits page. */
 const KIT_LIMIT = 4;
 
-const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
-
 /**
  * Day One.
  *
@@ -43,6 +42,7 @@ const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
  * and tomorrow morning has something real on it.
  */
 export function Onboarding() {
+  const t = useT();
   const createCharacter = useGame(s => s.createCharacter);
   const syncUser = useSync(s => s.user);
   const syncStatus = useSync(s => s.status);
@@ -66,8 +66,8 @@ export function Onboarding() {
   // anything, rather than pointing at two sectors nobody actually reported on.
   const focus = useMemo(() => (wheel ? weakestTwo(wheel) : undefined), [wheel]);
 
-  const toggleId = (setPicks: typeof setHabitPicks) => (t: AnyTemplate) =>
-    setPicks(prev => (prev.includes(t.id) ? prev.filter(x => x !== t.id) : [...prev, t.id]));
+  const toggleId = (setPicks: typeof setHabitPicks) => (tpl: AnyTemplate) =>
+    setPicks(prev => (prev.includes(tpl.id) ? prev.filter(x => x !== tpl.id) : [...prev, tpl.id]));
 
   const begin = () => createCharacter(name, classes, wheel ?? undefined, habitPicks);
   // Skipping the kit must not also throw away the audit they just filled in.
@@ -80,15 +80,21 @@ export function Onboarding() {
         {/* The old third sentence was "Nothing is free", which the engine flatly contradicts:
             low HP costs nothing, a missed day is never charged forward, and streak damage
             scales down with the streak you broke. The promise has to match the machine. */}
-        <p className="onb-tag">Your real life, played as an RPG. Every action counts. A bad day never makes tomorrow harder.</p>
+        <p className="onb-tag">{t('onb.tagline')}</p>
+
+        {/* The language switch lives in Settings, which is behind a character that does
+            not exist yet. Auto-detection covers most arrivals, but anyone it guesses
+            wrong for would otherwise have to finish onboarding in the wrong language
+            before they could correct it. */}
+        {step === 0 && <LanguagePicker />}
 
         {step === 0 && (
           <div className="onb-step">
-            <h2>Name your character</h2>
-            <p className="muted">This is you. Choose a name worthy of the journey.</p>
+            <h2>{t('onb.nameTitle')}</h2>
+            <p className="muted">{t('onb.nameDesc')}</p>
             <input
               className="input input-lg"
-              placeholder="e.g. Eldar the Relentless"
+              placeholder={t('onb.namePlaceholder')}
               value={name}
               maxLength={40}
               autoFocus
@@ -96,23 +102,23 @@ export function Onboarding() {
               onKeyDown={e => e.key === 'Enter' && name.trim() && setStep(1)}
             />
             <button className="btn btn-primary btn-lg" disabled={!name.trim()} onClick={() => setStep(1)}>
-              Continue →
+              {t('onb.continue')}
             </button>
             {isSupabaseConfigured && (
               <div className="onb-returning">
                 {syncUser ? (
                   <p className="muted onb-cloud-line">
-                    <Icon name="link" size={14} /> Signed in as {syncUser.email}
-                    {syncStatus === 'syncing' ? ' — looking for your save…' : ' — no cloud save found. Forge a new character above.'}
+                    <Icon name="link" size={14} /> {t('onb.signedInAs', { email: syncUser.email })}
+                    {syncStatus === 'syncing' ? t('onb.lookingForSave') : t('onb.noCloudSave')}
                   </p>
                 ) : showLogin ? (
                   <>
-                    <p className="muted">Sign in and your character will be restored from the cloud.</p>
+                    <p className="muted">{t('onb.signInRestore')}</p>
                     <AuthPanel />
                   </>
                 ) : (
                   <button className="btn btn-ghost" onClick={() => setShowLogin(true)}>
-                    <Icon name="download" size={14} /> Returning player? Sign in to restore your save
+                    <Icon name="download" size={14} /> {t('onb.returningPlayer')}
                   </button>
                 )}
               </div>
@@ -122,13 +128,8 @@ export function Onboarding() {
 
         {step === 1 && (
           <div className="onb-step">
-            <h2>Choose your radicals</h2>
-            <p className="muted">
-              Seven drivers. Pick up to three, in the order that fits you — the first is who you
-              most are. Answer as the person you already are, not as the build you'd like to play:
-              what a driver gives you shows up once you've claimed it. Your attunement budget is
-              always 100%: pick one for the deepest power, or three for the widest reach.
-            </p>
+            <h2>{t('onb.radicalsTitle')}</h2>
+            <p className="muted">{t('onb.radicalsDesc')}</p>
             <div className="class-grid">
               {CLASSES.map(c => {
                 const rank = classes.indexOf(c.id);
@@ -161,15 +162,15 @@ export function Onboarding() {
                 );
               })}
             </div>
-            <p className="muted onb-note">An Identity Scroll rewrites this later if you get it wrong.</p>
+            <p className="muted onb-note">{t('onb.identityNote')}</p>
             <div className="onb-actions">
-              <button className="btn btn-ghost" onClick={() => setStep(0)}>← Back</button>
+              <button className="btn btn-ghost" onClick={() => setStep(0)}>{t('onb.back')}</button>
               <button
                 className="btn btn-primary btn-lg"
                 disabled={!classes.length}
                 onClick={() => classes.length && setStep(2)}
               >
-                Continue →
+                {t('onb.continue')}
               </button>
             </div>
           </div>
@@ -177,14 +178,10 @@ export function Onboarding() {
 
         {step === 2 && (
           <div className="onb-step">
-            <h2>Your life right now</h2>
-            <p className="muted">
-              Tick what's true today — no overthinking. This sets where your wheel starts, and the
-              next screen uses it to suggest what to begin with. You'll never be marked empty, and
-              you can retake it any time from Settings.
-            </p>
+            <h2>{t('onb.wheelTitle')}</h2>
+            <p className="muted">{t('onb.wheelDesc')}</p>
             <WheelSurvey
-              submitLabel="Continue →"
+              submitLabel={t('onb.continue')}
               onSubmit={(scores: Record<AttributeKey, number>) => {
                 setWheel(scores);
                 setStep(3);
@@ -197,31 +194,26 @@ export function Onboarding() {
               }}
             />
             <div className="onb-actions">
-              <button className="btn btn-ghost" onClick={() => setStep(1)}>← Back</button>
+              <button className="btn btn-ghost" onClick={() => setStep(1)}>{t('onb.back')}</button>
             </div>
           </div>
         )}
 
         {step === 3 && (
           <div className="onb-step dayone-kit">
-            <h2>Pick your starting kit</h2>
+            <h2>{t('onb.kitTitle')}</h2>
             {focus ? (
               <p className="muted">
-                Your answers came out thinnest in{' '}
+                {t('onb.kitThinnest')}{' '}
                 <strong className="dayone-focus" style={{ color: ATTRIBUTES[focus[0]].color }}>
                   <Icon name={focus[0]} size={14} /> {ATTRIBUTES[focus[0]].label}
-                </strong>{' '}and{' '}
+                </strong>{' '}{t('onb.and')}{' '}
                 <strong className="dayone-focus" style={{ color: ATTRIBUTES[focus[1]].color }}>
                   <Icon name={focus[1]} size={14} /> {ATTRIBUTES[focus[1]].label}
-                </strong>, so those are floated to the top. Around three is a
-                good first day — enough that tomorrow morning has something real on it. Add, swap or
-                drop any of it later.
+                </strong>{t('onb.kitFocusTail')}
               </p>
             ) : (
-              <p className="muted">
-                Start with things you could genuinely do today. Around three is a good first day — enough that tomorrow morning has something real on it. Add, swap
-                or drop any of it later.
-              </p>
+              <p className="muted">{t('onb.kitNoFocus')}</p>
             )}
 
             {/* One browser, capped. Forty cards on the last screen before the app opens is
@@ -230,7 +222,7 @@ export function Onboarding() {
                 they had seen a session timer. Quests move into the tour, where the timer
                 gets explained first. */}
             <div className="dayone-section">
-              <div className="section-label">Pick a few habits</div>
+              <div className="section-label">{t('onb.pickHabits')}</div>
               <TemplateBrowser
                 kind="habit"
                 mode="select"
@@ -239,29 +231,48 @@ export function Onboarding() {
                 profile={profile}
                 selectedIds={habitPicks}
                 onPick={toggleId(setHabitPicks)}
-                emptyHint="Nothing matches that. Clear a filter — or start with none and write your own on the Habits page."
+                emptyHint={t('onb.emptyHint')}
               />
-              <p className="muted dayone-hint">
-                Your first quest comes later — the tutorial introduces it once you have seen how
-                the session timer works.
-              </p>
+              <p className="muted dayone-hint">{t('onb.questLater')}</p>
             </div>
 
             {/* The library is long enough to scroll past the fold, so the way out travels
                 with the player instead of waiting at the bottom of forty cards. */}
             <div className="dayone-bar">
               <span className="dayone-count">
-                {habitPicks.length === 0 ? 'Nothing picked yet' : plural(habitPicks.length, 'habit')}
+                {habitPicks.length === 0
+                  ? t('onb.nothingPicked')
+                  : `${habitPicks.length} ${plural(habitPicks.length, t('onb.habitOne'), t('onb.habitFew'), t('onb.habitMany'))}`}
               </span>
               <div className="onb-actions">
-                <button className="btn btn-ghost" onClick={() => setStep(2)}>← Back</button>
-                <button className="btn btn-ghost" onClick={beginEmpty}>Skip — I'll add my own</button>
-                <button className="btn btn-primary btn-lg" onClick={begin}>Begin the journey</button>
+                <button className="btn btn-ghost" onClick={() => setStep(2)}>{t('onb.back')}</button>
+                <button className="btn btn-ghost" onClick={beginEmpty}>{t('onb.skipOwn')}</button>
+                <button className="btn btn-primary btn-lg" onClick={begin}>{t('onb.begin')}</button>
               </div>
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Language toggle for the pre-character screens. */
+function LanguagePicker() {
+  const lang = useLang();
+  const setLanguage = useGame(s => s.setLanguage);
+  return (
+    <div className="onb-lang">
+      {LANGS.map((code: Lang) => (
+        <button
+          key={code}
+          className={`chip ${lang === code ? 'chip-on' : ''}`}
+          onClick={() => setLanguage(code)}
+          aria-pressed={lang === code}
+        >
+          {LANG_LABEL[code]}
+        </button>
+      ))}
     </div>
   );
 }

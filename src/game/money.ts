@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 /**
  * Real money — deliberately separate from Gold.
  *
@@ -24,15 +25,15 @@ export interface CurrencyDef {
 }
 
 export const CURRENCIES: CurrencyDef[] = [
-  { code: 'KZT', symbol: '₸', name: 'Kazakhstani tenge', position: 'after', decimals: 0 },
-  { code: 'USD', symbol: '$', name: 'US dollar', position: 'before', decimals: 2 },
-  { code: 'EUR', symbol: '€', name: 'Euro', position: 'before', decimals: 2 },
-  { code: 'RUB', symbol: '₽', name: 'Russian rouble', position: 'after', decimals: 0 },
-  { code: 'GBP', symbol: '£', name: 'Pound sterling', position: 'before', decimals: 2 },
-  { code: 'TRY', symbol: '₺', name: 'Turkish lira', position: 'before', decimals: 2 },
-  { code: 'AED', symbol: 'AED', name: 'UAE dirham', position: 'after', decimals: 2 },
-  { code: 'KGS', symbol: 'сом', name: 'Kyrgyzstani som', position: 'after', decimals: 0 },
-  { code: 'UZS', symbol: "so'm", name: 'Uzbekistani som', position: 'after', decimals: 0 },
+  { code: 'KZT', symbol: '₸', get name() { return t('currency.KZT'); }, position: 'after', decimals: 0 },
+  { code: 'USD', symbol: '$', get name() { return t('currency.USD'); }, position: 'before', decimals: 2 },
+  { code: 'EUR', symbol: '€', get name() { return t('currency.EUR'); }, position: 'before', decimals: 2 },
+  { code: 'RUB', symbol: '₽', get name() { return t('currency.RUB'); }, position: 'after', decimals: 0 },
+  { code: 'GBP', symbol: '£', get name() { return t('currency.GBP'); }, position: 'before', decimals: 2 },
+  { code: 'TRY', symbol: '₺', get name() { return t('currency.TRY'); }, position: 'before', decimals: 2 },
+  { code: 'AED', symbol: 'AED', get name() { return t('currency.AED'); }, position: 'after', decimals: 2 },
+  { code: 'KGS', symbol: 'сом', get name() { return t('currency.KGS'); }, position: 'after', decimals: 0 },
+  { code: 'UZS', symbol: "so'm", get name() { return t('currency.UZS'); }, position: 'after', decimals: 0 },
 ];
 
 export const DEFAULT_CURRENCY = 'KZT';

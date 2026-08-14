@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import { CHAPTER_STEPS, openerFor, type TutorialStepDef } from '../game/tutorial';
 import type { ClassId } from '../game/types';
 import { Icon } from './Icon';
+import { useT } from '../i18n';
 import { Sigil } from './Sigil';
 
 const MOBILE_MAX = 768;
@@ -40,6 +41,7 @@ export function TutorialBubble({
   onNext: () => void;
   onSkip: () => void;
 }) {
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState<{ top: number; left: number; tail: 'up' | 'down' | 'none' }>({
     top: 0,
@@ -96,9 +98,9 @@ export function TutorialBubble({
       style={{ top: pos.top, left: pos.left }}
       role="dialog"
       aria-live="polite"
-      aria-label={`Tutorial: ${step.title}`}
+      aria-label={t('tour.bubbleLabel', { title: step.title })}
     >
-      <button className="tutorial-skip" onClick={onSkip}>Skip tour</button>
+      <button className="tutorial-skip" onClick={onSkip}>{t('tour.skipTour')}</button>
 
       <div className="tutorial-head">
         <span className="tutorial-sigil"><Sigil size={26} /></span>
@@ -127,7 +129,7 @@ export function TutorialBubble({
           // An active step advances on the real action. The button is a deliberate
           // escape hatch, not the intended path — a player who cannot complete a
           // step must never be trapped in the tour.
-          <button className="btn btn-ghost btn-sm" onClick={onNext}>Skip this step</button>
+          <button className="btn btn-ghost btn-sm" onClick={onNext}>{t('tour.skipStep')}</button>
         )}
       </div>
     </div>

@@ -9,9 +9,9 @@ import { AttrPicker, AttrTags, Empty, Modal } from '../components/ui';
 import { addDaysStr, fmtDayFull, habitDueOn, missDamage, todayStr } from '../game/engine';
 import { spawnVFXAt } from '../lib/vfx';
 import type { AttributeKey, Habit, HabitFreq, HabitKind } from '../game/types';
+import { plural, t as tr, useT } from '../i18n';
+import { weekdayNames } from '../lib/format';
 import { useGame } from '../store';
-
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 type HabitView = 'today' | 'all';
 
@@ -19,6 +19,7 @@ type HabitView = 'today' | 'all';
 const HEATMAP_MIN_DAYS = 7;
 
 export function Habits() {
+  const t = useT();
   const s = useGame();
   const today = todayStr();
   const [editing, setEditing] = useState<Habit | 'new' | null>(null);
@@ -54,40 +55,37 @@ export function Habits() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Habits</h1>
-          <p className="muted">The daily discipline engine. Miss a day and the app notices — automatically.</p>
+          <h1>{t('habits.title')}</h1>
+          <p className="muted">{t('habits.subtitle')}</p>
         </div>
-        <button className="btn btn-primary" data-tour="new-habit" onClick={() => setEditing('new')}><Icon name="plus" size={14} /> New habit</button>
+        <button className="btn btn-primary" data-tour="new-habit" onClick={() => setEditing('new')}><Icon name="plus" size={14} /> {t('habits.new')}</button>
       </div>
 
       {showHeatmap && (
         <section className="card">
-          <div className="card-head"><h2>Last 12 weeks</h2></div>
+          <div className="card-head"><h2>{t('habits.last12')}</h2></div>
           <Heatmap />
         </section>
       )}
 
       {active.length === 0 ? (
         <Empty>
-          <div>
-            No habits yet. Good habits are things to do (“read 20 min”); bad habits are things to avoid
-            (“no smoking”). Both build streaks.
-          </div>
+          <div>{t('habits.emptyBody')}</div>
           <div className="btn-pair" style={{ justifyContent: 'center', marginTop: 12 }}>
             <button className="btn btn-primary" onClick={() => setEditing('new')}>
-              <Icon name="search" size={14} /> Browse the habit library
+              <Icon name="search" size={14} /> {t('habits.browseLibrary')}
             </button>
           </div>
           <div style={{ marginTop: 10 }}>
-            Or open <Link to="/attributes">your life sectors</Link> to see what each one is asking for.
+            {t('habits.emptyOr')} <Link to="/attributes">{t('habits.lifeSectors')}</Link> {t('habits.emptyOrTail')}
           </div>
         </Empty>
       ) : (
         <>
           <div className="filter-row">
             <div className="seg">
-              <button type="button" className={view === 'today' ? 'seg-on' : ''} onClick={() => setView('today')}>Today</button>
-              <button type="button" className={view === 'all' ? 'seg-on' : ''} onClick={() => setView('all')}>All habits</button>
+              <button type="button" className={view === 'today' ? 'seg-on' : ''} onClick={() => setView('today')}>{t('common.today')}</button>
+              <button type="button" className={view === 'all' ? 'seg-on' : ''} onClick={() => setView('all')}>{t('habits.allHabits')}</button>
             </div>
             <AttrPicker value={attrFilter} onChange={setAttrFilter} />
           </div>
@@ -95,8 +93,8 @@ export function Habits() {
           {visible.length === 0 ? (
             <Empty>
               {view === 'today'
-                ? 'Nothing due today' + (attrFilter.length > 0 ? ' for this attribute filter.' : '.')
-                : 'No habits match this attribute filter.'}
+                ? attrFilter.length > 0 ? t('habits.noneDueFiltered') : t('habits.noneDue')
+                : t('habits.noneMatchFilter')}
             </Empty>
           ) : (
             <div className="habit-grid">
@@ -108,10 +106,10 @@ export function Habits() {
                     <div className="card-head">
                       <h3><span className={`habit-kind ${h.kind}`} /> {h.name}</h3>
                       <div className="btn-pair">
-                        <button className="btn btn-ghost btn-sm" onClick={() => setEditing(h)} title="Edit"><Icon name="edit" size={14} /></button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => setEditing(h)} title={t('common.edit')}><Icon name="edit" size={14} /></button>
                         {/* No 'archive' glyph exists in IconName; 'eyeOff' carries the actual meaning
                             here — the habit stops appearing, its history is kept. */}
-                        <button className="btn btn-ghost btn-sm" onClick={() => s.archiveHabit(h.id, true)} title="Archive"><Icon name="eyeOff" size={14} /></button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => s.archiveHabit(h.id, true)} title={t('habits.archive')}><Icon name="eyeOff" size={14} /></button>
                       </div>
                     </div>
                     <div className="habit-meta">
@@ -120,22 +118,22 @@ export function Habits() {
                     </div>
                     <div className="habit-streak" data-tour="habit-streak">
                       <span className="streak-big"><Icon name="flame" size={20} /> {h.streak}</span>
-                      <span className="muted">best {h.best}</span>
+                      <span className="muted">{t('habits.best', { n: h.best })}</span>
                     </div>
                     <div className="habit-action">
                       {!due ? (
-                        <span className="muted">Not scheduled today</span>
+                        <span className="muted">{t('habits.notToday')}</span>
                       ) : status ? (
                         <StatusLabel status={status} />
                       ) : ghostToday ? (
-                        <span className="status"><Icon name="ghost" size={13} /> Frozen today</span>
+                        <span className="status"><Icon name="ghost" size={13} /> {t('habits.frozenToday')}</span>
                       ) : h.kind === 'good' ? (
                         <button
                           className="btn btn-primary"
                           data-tour="habit-checkin"
                           onClick={e => { s.checkinHabit(h.id); spawnVFXAt(e, 'xp', 12); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 5); }}
                         >
-                          <Icon name="check" size={14} /> Done today · +12 XP · +5 <Icon name="gold" size={14} />
+                          <Icon name="check" size={14} /> {t('habits.doneToday')} · +12 XP · +5 <Icon name="gold" size={14} />
                         </button>
                       ) : (
                         <div className="btn-pair">
@@ -143,7 +141,7 @@ export function Habits() {
                             className="btn btn-primary"
                             onClick={e => { s.checkinHabit(h.id); spawnVFXAt(e, 'xp', 8); spawnVFXAt({ clientX: e.clientX + 24, clientY: e.clientY - 14 }, 'gold', 3); }}
                           >
-                            <Icon name="check" size={14} /> Resisted · +8 XP · +3 <Icon name="gold" size={14} />
+                            <Icon name="check" size={14} /> {t('habits.resisted')} · +8 XP · +3 <Icon name="gold" size={14} />
                           </button>
                           <button
                             className="btn btn-danger"
@@ -155,13 +153,13 @@ export function Habits() {
                               if (f) setReflect({ failureId: f.id, habitName: h.name });
                             }}
                           >
-                            <Icon name="close" size={14} /> Relapsed
+                            <Icon name="close" size={14} /> {t('habits.relapsed')}
                           </button>
                         </div>
                       )}
                     </div>
                     <details className="intel-toggle">
-                      <summary><Icon name="calendar" size={13} /> Progress intel</summary>
+                      <summary><Icon name="calendar" size={13} /> {t('habits.progressIntel')}</summary>
                       <HabitHeatmap habit={h} />
                     </details>
                   </div>
@@ -175,11 +173,11 @@ export function Habits() {
       {recentFailures.length > 0 && (
         <section className="card">
           <div className="card-head">
-            <h2>Recent failures</h2>
+            <h2>{t('habits.recentFailures')}</h2>
             <span className="muted">
               {pardons > 0
-                ? <><Icon name="pardon" size={13} /> {pardons} pardon{pardons > 1 ? 's' : ''} available</>
-                : 'Habit Pardons are sold in the Market'}
+                ? <><Icon name="pardon" size={13} /> {t('habits.pardonsAvailable', { n: pardons })}</>
+                : t('habits.pardonsSold')}
             </span>
           </div>
           <ul className="list">
@@ -188,11 +186,11 @@ export function Habits() {
               return (
                 <li key={f.id} className="list-row">
                   <Icon name="close" size={14} />
-                  <span className="list-title">{h?.name ?? 'Deleted habit'}</span>
-                  <span className="muted">{fmtDayFull(f.date)} · -{f.damage} HP · broke a {f.prevStreak}-day streak</span>
+                  <span className="list-title">{h?.name ?? t('habits.deletedHabit')}</span>
+                  <span className="muted">{fmtDayFull(f.date)} · -{f.damage} HP · {t('habits.brokeStreak', { n: f.prevStreak })}</span>
                   {pardons > 0 && h && (
                     <button className="btn btn-ghost btn-sm" onClick={() => s.useItem('habit_pardon', { failureId: f.id })}>
-                      <Icon name="pardon" size={13} /> Pardon
+                      <Icon name="pardon" size={13} /> {t('habits.pardon')}
                     </button>
                   )}
                 </li>
@@ -205,16 +203,16 @@ export function Habits() {
       {archived.length > 0 && (
         <section className="card">
           <div className="card-head">
-            <h2>Archived ({archived.length})</h2>
-            <button className="btn btn-ghost btn-sm" onClick={() => setShowArchived(v => !v)}>{showArchived ? 'hide' : 'show'}</button>
+            <h2>{t('habits.archived', { n: archived.length })}</h2>
+            <button className="btn btn-ghost btn-sm" onClick={() => setShowArchived(v => !v)}>{showArchived ? t('habits.hide') : t('habits.show')}</button>
           </div>
           {showArchived && (
             <ul className="list">
               {archived.map(h => (
                 <li key={h.id} className="list-row">
                   <span className="list-title">{h.name}</span>
-                  <button className="btn btn-ghost btn-sm" onClick={() => s.archiveHabit(h.id, false)}>Restore</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => confirm(`Delete "${h.name}" and its history forever?`) && s.deleteHabit(h.id)}>Delete</button>
+                  <button className="btn btn-ghost btn-sm" onClick={() => s.archiveHabit(h.id, false)}>{t('habits.restore')}</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => confirm(t('habits.deleteConfirm', { name: h.name })) && s.deleteHabit(h.id)}>{t('common.delete')}</button>
                 </li>
               ))}
             </ul>
@@ -234,27 +232,33 @@ export function Habits() {
 }
 
 function freqLabel(h: Habit): string {
-  if (h.freq === 'daily') return 'Every day';
-  if (h.freq === 'weekly') return (h.weekdays ?? []).map(d => WEEKDAYS[d]).join(', ') || 'No days set';
-  return `${(h.dates ?? []).length} specific date${(h.dates ?? []).length === 1 ? '' : 's'}`;
+  if (h.freq === 'daily') return tr('habits.everyDay');
+  if (h.freq === 'weekly') {
+    const names = weekdayNames();
+    return (h.weekdays ?? []).map(d => names[d]).join(', ') || tr('habits.noDaysSet');
+  }
+  const n = (h.dates ?? []).length;
+  return `${n} ${plural(n, tr('habits.dateOne'), tr('habits.dateFew'), tr('habits.dateMany'))}`;
 }
 
-const STATUS_META: Record<string, { icon: IconName; label: string }> = {
-  done: { icon: 'check', label: 'Completed today' },
-  failed: { icon: 'close', label: 'Missed today' },
-  pardoned: { icon: 'pardon', label: 'Pardoned' },
-  shielded: { icon: 'shield', label: 'Shielded' },
-  ghost: { icon: 'ghost', label: 'Frozen' },
-  indulged: { icon: 'indulgence', label: 'Indulged' },
+/** Status key → icon. The label is looked up as `habits.status.<key>`. */
+const STATUS_ICON: Record<string, IconName> = {
+  done: 'check',
+  failed: 'close',
+  pardoned: 'pardon',
+  shielded: 'shield',
+  ghost: 'ghost',
+  indulged: 'indulgence',
 };
 
 function StatusLabel({ status }: { status: string }) {
-  const meta = STATUS_META[status];
+  const t = useT();
+  const icon = STATUS_ICON[status];
   // Unknown statuses come from future engine states; show the raw key rather than nothing.
-  if (!meta) return <span className={`status status-${status}`}>{status}</span>;
+  if (!icon) return <span className={`status status-${status}`}>{status}</span>;
   return (
     <span className={`status status-${status}`}>
-      <Icon name={meta.icon} size={13} /> {meta.label}
+      <Icon name={icon} size={13} /> {t(`habits.status.${status}`)}
     </span>
   );
 }
@@ -272,6 +276,7 @@ type NewHabitTab = 'library' | 'own';
  * Editing an existing habit skips the tabs entirely: there is nothing to browse.
  */
 function HabitModal({ habit, onClose }: { habit: Habit | null; onClose: () => void }) {
+  const t = useT();
   const addHabit = useGame(s => s.addHabit);
   const habits = useGame(s => s.habits);
   const profile = useGame(s => s.character?.profile);
@@ -286,11 +291,11 @@ function HabitModal({ habit, onClose }: { habit: Habit | null; onClose: () => vo
   return (
     // Stays wide on both tabs: the grid needs the room, and a modal that resizes
     // under the cursor when you switch tabs is unpleasant.
-    <Modal title={isNew ? 'New habit' : 'Edit habit'} onClose={onClose} wide={isNew}>
+    <Modal title={isNew ? t('habits.new') : t('habits.edit')} onClose={onClose} wide={isNew}>
       {isNew && (
         <div className="seg" data-tour="habit-tabs" style={{ marginBottom: 14 }}>
-          <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>Browse library</button>
-          <button type="button" className={tab === 'own' ? 'seg-on' : ''} onClick={() => setTab('own')}>Write my own</button>
+          <button type="button" className={tab === 'library' ? 'seg-on' : ''} onClick={() => setTab('library')}>{t('habits.tabLibrary')}</button>
+          <button type="button" className={tab === 'own' ? 'seg-on' : ''} onClick={() => setTab('own')}>{t('habits.tabOwn')}</button>
         </div>
       )}
 
@@ -300,23 +305,23 @@ function HabitModal({ habit, onClose }: { habit: Habit | null; onClose: () => vo
           mode="add"
           profile={profile}
           addedTitles={addedTitles}
-          onPick={t => {
+          onPick={tpl => {
             // kind="habit" only ever yields habit templates; the guard narrows the union.
-            if (!isHabitTemplate(t)) return;
+            if (!isHabitTemplate(tpl)) return;
             addHabit({
-              name: t.name,
-              kind: t.kind,
-              freq: t.freq,
+              name: tpl.name,
+              kind: tpl.kind,
+              freq: tpl.freq,
               // A weekly template with no days would never come due, so it falls back
               // to weekdays rather than landing in the list already dead.
-              weekdays: t.weekdays ?? [1, 2, 3, 4, 5],
+              weekdays: tpl.weekdays ?? [1, 2, 3, 4, 5],
               dates: [],
-              attrs: t.attrs,
+              attrs: tpl.attrs,
               archived: false,
             });
             onClose();
           }}
-          emptyHint="Nothing matches that. Clear a filter, or switch to “Write my own”."
+          emptyHint={t('habits.libraryEmptyHint')}
         />
       ) : (
         <HabitFields habit={habit} onClose={onClose} />
@@ -326,6 +331,7 @@ function HabitModal({ habit, onClose }: { habit: Habit | null; onClose: () => vo
 }
 
 function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => void }) {
+  const t = useT();
   const addHabit = useGame(s => s.addHabit);
   const updateHabit = useGame(s => s.updateHabit);
 
@@ -350,37 +356,37 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
   return (
     <>
       <label className="field">
-        <span>Name</span>
-        <input className="input" data-tour="habit-name" value={name} onChange={e => setName(e.target.value)} placeholder={kind === 'good' ? 'Read for 20 minutes' : 'No smoking'} autoFocus />
+        <span>{t('habits.fieldName')}</span>
+        <input className="input" data-tour="habit-name" value={name} onChange={e => setName(e.target.value)} placeholder={kind === 'good' ? t('habits.phGood') : t('habits.phBad')} autoFocus />
       </label>
 
       <label className="field">
-        <span>Type</span>
+        <span>{t('habits.fieldType')}</span>
         {/* The same good/bad dot the habit cards use, so the colour means one thing app-wide. */}
         <div className="seg" data-tour="habit-kind">
           <button type="button" className={kind === 'good' ? 'seg-on' : ''} onClick={() => setKind('good')}>
-            <span className="habit-kind good" /> Good — do it
+            <span className="habit-kind good" /> {t('habits.kindGood')}
           </button>
           <button type="button" className={kind === 'bad' ? 'seg-on' : ''} onClick={() => setKind('bad')}>
-            <span className="habit-kind bad" /> Bad — avoid it
+            <span className="habit-kind bad" /> {t('habits.kindBad')}
           </button>
         </div>
       </label>
 
       <label className="field">
-        <span>Frequency</span>
+        <span>{t('habits.fieldFreq')}</span>
         <div className="seg" data-tour="habit-freq">
-          <button type="button" className={freq === 'daily' ? 'seg-on' : ''} onClick={() => setFreq('daily')}>Daily</button>
-          <button type="button" className={freq === 'weekly' ? 'seg-on' : ''} onClick={() => setFreq('weekly')}>Days of week</button>
-          <button type="button" className={freq === 'dates' ? 'seg-on' : ''} onClick={() => setFreq('dates')}>Specific dates</button>
+          <button type="button" className={freq === 'daily' ? 'seg-on' : ''} onClick={() => setFreq('daily')}>{t('habits.freqDaily')}</button>
+          <button type="button" className={freq === 'weekly' ? 'seg-on' : ''} onClick={() => setFreq('weekly')}>{t('habits.freqWeekly')}</button>
+          <button type="button" className={freq === 'dates' ? 'seg-on' : ''} onClick={() => setFreq('dates')}>{t('habits.freqDates')}</button>
         </div>
       </label>
 
       {freq === 'weekly' && (
         <div className="field">
-          <span>Days</span>
+          <span>{t('habits.fieldDays')}</span>
           <div className="weekday-row">
-            {WEEKDAYS.map((w, i) => (
+            {weekdayNames().map((w, i) => (
               <button
                 type="button"
                 key={w}
@@ -396,7 +402,7 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
 
       {freq === 'dates' && (
         <div className="field">
-          <span>Dates</span>
+          <span>{t('habits.fieldDates')}</span>
           <div className="qt-row">
             <input type="date" className="input" value={dateInput} onChange={e => setDateInput(e.target.value)} />
             <button
@@ -404,12 +410,12 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
               className="btn btn-ghost btn-sm"
               onClick={() => { if (dateInput && !dates.includes(dateInput)) setDates(v => [...v, dateInput].sort()); setDateInput(''); }}
             >
-              Add
+              {t('common.add')}
             </button>
           </div>
           <div className="weekday-row">
             {dates.map(dd => (
-              <button type="button" key={dd} className="chip chip-on chip-icon" onClick={() => setDates(v => v.filter(x => x !== dd))} title="Remove">
+              <button type="button" key={dd} className="chip chip-on chip-icon" onClick={() => setDates(v => v.filter(x => x !== dd))} title={t('habits.remove')}>
                 {dd} <Icon name="close" size={12} />
               </button>
             ))}
@@ -418,13 +424,13 @@ function HabitFields({ habit, onClose }: { habit: Habit | null; onClose: () => v
       )}
 
       <div className="field">
-        <span>Life attributes it feeds</span>
+        <span>{t('habits.fieldAttrs')}</span>
         <span data-tour="habit-attrs"><AttrPicker value={attrs} onChange={setAttrs} /></span>
       </div>
 
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
-        <button className="btn btn-primary" data-tour="habit-save" disabled={!valid} onClick={save}>{habit ? 'Save' : 'Create habit'}</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
+        <button className="btn btn-primary" data-tour="habit-save" disabled={!valid} onClick={save}>{habit ? t('common.save') : t('habits.create')}</button>
       </div>
     </>
   );

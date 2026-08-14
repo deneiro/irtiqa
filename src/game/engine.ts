@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+import { locale } from '../lib/format';
 import { ATTR_KEYS, QUEST_DURATIONS, RANKS, THEMES } from './constants';
 import type { AttributeKey, ClassId, Debt, Habit, ItemDef, JournalEntry, Metrics, Quest, RankDef, ThemeDef, Tx } from './types';
 
@@ -46,18 +48,19 @@ export function addMonthsClamp(s: string, months: number, dayOfMonth: number): s
   return toDayStr(target);
 }
 
+// These follow the app's language, not the browser's — see lib/format.
 export function fmtDay(s: string): string {
-  return parseDay(s).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  return parseDay(s).toLocaleDateString(locale(), { month: 'short', day: 'numeric' });
 }
 
 export function fmtDayFull(s: string): string {
-  return parseDay(s).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  return parseDay(s).toLocaleDateString(locale(), { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 export function fmtMinutes(min: number): string {
   const h = Math.floor(min / 60);
   const m = Math.round(min % 60);
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  return h > 0 ? `${h}${t('unit.hShort')} ${m}${t('unit.mShort')}` : `${m}${t('unit.mShort')}`;
 }
 
 // ---------- Leveling ----------
@@ -254,10 +257,11 @@ export function motionForTheme(themeId: string): string {
  * Deliberately limited to accent/secondary/background so text and surface tokens
  * keep their contrast — recolouring can restyle a theme but not make it unreadable.
  */
-export const CUSTOM_THEME_TOKENS: { token: string; label: string }[] = [
-  { token: '--accent', label: 'Accent' },
-  { token: '--accent2', label: 'Secondary' },
-  { token: '--bg', label: 'Background' },
+// Labels are resolved at the call site from `themeToken.<token>`.
+export const CUSTOM_THEME_TOKENS: { token: string }[] = [
+  { token: '--accent' },
+  { token: '--accent2' },
+  { token: '--bg' },
 ];
 
 /**

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { CLASSES, COSMETICS } from '../game/constants';
 import { charLevelProgress, fmtMinutes, momentumMult, rankFor } from '../game/engine';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 import { CelebrationLayer } from './CelebrationLayer';
 import { CoachTip } from './CoachTip';
@@ -11,6 +12,8 @@ import { Sigil } from './Sigil';
 import { Bar } from './ui';
 import { VFXLayer } from './VFXLayer';
 
+// `label` is a dictionary key, resolved at render time rather than here — these
+// arrays are module-level constants and would otherwise freeze the first language.
 type NavLeaf = { to: string; icon: IconName; label: string };
 type NavGroup = { id: string; icon: IconName; label: string; children: NavLeaf[] };
 
@@ -20,10 +23,10 @@ type NavGroup = { id: string; icon: IconName; label: string; children: NavLeaf[]
  * you go looking for, which is what the groups below are for.
  */
 const PRIMARY: NavLeaf[] = [
-  { to: '/', icon: 'dashboard', label: 'Today' },
-  { to: '/habits', icon: 'habits', label: 'Habits' },
-  { to: '/quests', icon: 'quests', label: 'Quests' },
-  { to: '/journal', icon: 'journal', label: 'Journal' },
+  { to: '/', icon: 'dashboard', label: 'nav.today' },
+  { to: '/habits', icon: 'habits', label: 'nav.habits' },
+  { to: '/quests', icon: 'quests', label: 'nav.quests' },
+  { to: '/journal', icon: 'journal', label: 'nav.journal' },
 ];
 
 /**
@@ -36,30 +39,30 @@ const GROUPS: NavGroup[] = [
   {
     id: 'life',
     icon: 'life',
-    label: 'Life',
+    label: 'nav.life',
     children: [
-      { to: '/attributes', icon: 'wheel', label: 'The Wheel' },
-      { to: '/chronicle', icon: 'chronicle', label: 'Chronicle' },
-      { to: '/achievements', icon: 'achievements', label: 'Achievements' },
+      { to: '/attributes', icon: 'wheel', label: 'nav.wheel' },
+      { to: '/chronicle', icon: 'chronicle', label: 'nav.chronicle' },
+      { to: '/achievements', icon: 'achievements', label: 'nav.achievements' },
     ],
   },
   {
     id: 'people',
     icon: 'people',
-    label: 'People & Money',
+    label: 'nav.peopleMoney',
     children: [
-      { to: '/social', icon: 'social', label: 'Social' },
-      { to: '/finances', icon: 'finances', label: 'Finances' },
+      { to: '/social', icon: 'social', label: 'nav.social' },
+      { to: '/finances', icon: 'finances', label: 'nav.finances' },
     ],
   },
   {
     id: 'more',
     icon: 'more',
-    label: 'More',
+    label: 'nav.more',
     children: [
-      { to: '/calendar', icon: 'calendar', label: 'Calendar' },
-      { to: '/market', icon: 'market', label: 'Market' },
-      { to: '/settings', icon: 'settings', label: 'Settings' },
+      { to: '/calendar', icon: 'calendar', label: 'nav.calendar' },
+      { to: '/market', icon: 'market', label: 'nav.market' },
+      { to: '/settings', icon: 'settings', label: 'nav.settings' },
     ],
   },
 ];
@@ -73,6 +76,7 @@ function isUnder(pathname: string, to: string) {
 }
 
 export function Layout() {
+  const t = useT();
   const character = useGame(s => s.character);
   const momentum = useGame(s => s.momentum);
   const equipped = useGame(s => s.equippedCosmetics);
@@ -89,9 +93,9 @@ export function Layout() {
   // tooltip on the whole cluster rather than as a second glyph repeating the same signal.
   const hpNote =
     character.hp === 0
-      ? 'Running on empty — nothing is locked and everything still pays full'
+      ? t('layout.hpEmpty')
       : character.hp <= 25
-        ? 'Low reserves — a few things slipped recently'
+        ? t('layout.hpLow')
         : undefined;
 
   return (
@@ -100,7 +104,7 @@ export function Layout() {
       <div className="neon-scanline" aria-hidden="true" />
       <aside className="sidebar">
         <div className="logo"><img src="/logo-sigil.png" alt="" className="logo-mark" width={26} height={26} /> IrtiQa</div>
-        <Link to="/profile" className="side-char" title="Open profile">
+        <Link to="/profile" className="side-char" title={t('layout.openProfile')}>
           {/* The sigil, not a flat class icon — the sidebar is the one place it's
               seen every session, so it's where its growth is most likely noticed. */}
           <span className="side-sigil"><Sigil size={42} /></span>
@@ -124,21 +128,21 @@ export function Layout() {
       <div className="main-col">
         <header className="topbar">
           <div className="stat stat-level" data-tour="xp">
-            <span className="stat-label">Lv {lp.level}</span>
-            <Bar value={lp.into} max={lp.need} className="bar-xp" label={`${lp.into}/${lp.need} XP to level ${lp.level + 1}`} />
+            <span className="stat-label">{t('common.lv')} {lp.level}</span>
+            <Bar value={lp.into} max={lp.need} className="bar-xp" label={t('layout.xpToLevel', { into: lp.into, need: lp.need, level: lp.level + 1 })} />
             <span className="stat-num">{lp.into}/{lp.need}</span>
           </div>
           {momentum.streak > 0 && (
-            <span className="stat momentum-flame" title={`Perfect-day momentum: ${momentum.streak} day${momentum.streak > 1 ? 's' : ''} → +${momentumPct}% XP on everything`}>
+            <span className="stat momentum-flame" title={t('layout.momentum', { streak: momentum.streak, pct: momentumPct })}>
               <Icon name="flame" size={14} /> {momentum.streak}
             </span>
           )}
           <div className="stat stat-hp" title={hpNote} data-tour="hp">
-            <span className="stat-label"><Icon name="health" size={14} /> HP</span>
-            <Bar value={character.hp} max={100} className={`bar-hp ${hpTone}`} label={`${character.hp}/100 HP`} />
+            <span className="stat-label"><Icon name="health" size={14} /> {t('common.hp')}</span>
+            <Bar value={character.hp} max={100} className={`bar-hp ${hpTone}`} label={t('layout.hpOf', { hp: character.hp })} />
             <span className="stat-num">{character.hp}/100</span>
           </div>
-          <div className="stat stat-gold" title="Gold" data-tour="gold">
+          <div className="stat stat-gold" title={t('common.gold')} data-tour="gold">
             <Icon name="gold" size={20} className="gold-coin" /> {character.gold}
           </div>
         </header>
@@ -163,13 +167,14 @@ export function Layout() {
  * /attributes/:key) to keep the parent row lit rather than blanking the nav.
  */
 function NavLeafLink({ leaf }: { leaf: NavLeaf }) {
+  const t = useT();
   return (
     <NavLink
       to={leaf.to}
       end={leaf.to === '/'}
       className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
     >
-      <span className="nav-emoji"><Icon name={leaf.icon} size={17} /></span> {leaf.label}
+      <span className="nav-emoji"><Icon name={leaf.icon} size={17} /></span> {t(leaf.label)}
     </NavLink>
   );
 }
@@ -183,6 +188,7 @@ function NavLeafLink({ leaf }: { leaf: NavLeaf }) {
  * half-open sidebar from three sessions ago is noise rather than help.
  */
 function NavGroupSection({ group }: { group: NavGroup }) {
+  const t = useT();
   const { pathname } = useLocation();
   const holdsCurrent = group.children.some(c => isUnder(pathname, c.to));
   const [open, setOpen] = useState(holdsCurrent);
@@ -202,7 +208,7 @@ function NavGroupSection({ group }: { group: NavGroup }) {
         aria-controls={panelId}
       >
         <span className="nav-emoji"><Icon name={group.icon} size={17} /></span>
-        <span className="nav-group-label">{group.label}</span>
+        <span className="nav-group-label">{t(group.label)}</span>
         <Icon name="chevronDown" size={15} className="nav-group-chevron" />
       </button>
       {open && (
@@ -222,6 +228,7 @@ function NavGroupSection({ group }: { group: NavGroup }) {
  * scrolled off with the page. Hidden on desktop by CSS; the sidebar takes over there.
  */
 function TabBar() {
+  const t = useT();
   const [moreOpen, setMoreOpen] = useState(false);
   const location = useLocation();
   const classId = useGame(s => s.character?.classId);
@@ -247,13 +254,13 @@ function TabBar() {
       {moreOpen && (
         <>
           <div className="tabbar-sheet-overlay" onClick={() => setMoreOpen(false)} aria-hidden="true" />
-          <div className="tabbar-sheet" role="dialog" aria-label="More navigation">
+          <div className="tabbar-sheet" role="dialog" aria-label={t('nav.moreLabel')}>
             <div className="tabbar-sheet-grab" aria-hidden="true" />
             <nav>
               {/* Profile has no group of its own: on desktop it hangs off the character
                   card, which the sidebar hides here, so the sheet carries it instead. */}
               <NavLink to="/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                <span className="nav-emoji"><Icon name={classId ?? 'magician'} size={17} /></span> Profile
+                <span className="nav-emoji"><Icon name={classId ?? 'magician'} size={17} /></span> {t('nav.profile')}
               </NavLink>
               {GROUPS.map(group => (
                 <NavGroupSection key={group.id} group={group} />
@@ -262,11 +269,11 @@ function TabBar() {
           </div>
         </>
       )}
-      <nav className="tabbar" aria-label="Main">
+      <nav className="tabbar" aria-label={t('nav.main')}>
         {PRIMARY.map(leaf => (
           <NavLink key={leaf.to} to={leaf.to} end={leaf.to === '/'} className={({ isActive }) => `tabbar-item ${isActive ? 'active' : ''}`}>
             <span className="tabbar-icon"><Icon name={leaf.icon} size={21} /></span>
-            {leaf.label}
+            {t(leaf.label)}
           </NavLink>
         ))}
         <button
@@ -274,10 +281,10 @@ function TabBar() {
           className={`tabbar-item ${moreActive || moreOpen ? 'active' : ''}`}
           onClick={() => setMoreOpen(v => !v)}
           aria-expanded={moreOpen}
-          aria-label="More navigation"
+          aria-label={t('nav.moreLabel')}
         >
           <span className="tabbar-icon"><Icon name="grip" size={21} /></span>
-          More
+          {t('nav.more')}
         </button>
       </nav>
     </>
@@ -285,6 +292,7 @@ function TabBar() {
 }
 
 function SessionWidget() {
+  const t = useT();
   const activeSession = useGame(s => s.activeSession);
   const quests = useGame(s => s.quests);
   const [, tick] = useState(0);
@@ -305,7 +313,7 @@ function SessionWidget() {
   const p = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <Link to={`/quests/${quest.id}`} className="session-widget" data-tour="session-widget" title="Session running — click to open quest">
+    <Link to={`/quests/${quest.id}`} className="session-widget" data-tour="session-widget" title={t('layout.sessionRunning')}>
       <span className="session-pulse" />
       <span className="session-time">{hh > 0 ? `${hh}:` : ''}{p(mm)}:{p(ss)}</span>
       <span className="session-quest">{quest.title}</span>

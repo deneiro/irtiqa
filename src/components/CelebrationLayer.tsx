@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Icon } from './Icon';
 import { playSound, type SoundId } from '../lib/sound';
 import { motionForTheme } from '../game/engine';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 import type { Celebration, CelebrationType, IconName } from '../game/types';
 
@@ -68,9 +69,12 @@ export function CelebrationLayer() {
 }
 
 function Popup({ c, motion, onClose }: { c: Celebration; motion: string; onClose: () => void }) {
+  // Safe to call `t` here: the toast list above uses `t` as its item variable, but that
+  // is a different function's scope.
+  const t = useT();
   // The popup's own glyph is fixed by type; a celebration's optional `icon` is for toasts.
   const icon: IconName = c.type === 'levelup' ? 'sparkles' : c.type === 'rankup' ? 'sovereign' : 'trophy';
-  const heading = c.type === 'levelup' ? 'LEVEL UP!' : c.type === 'rankup' ? 'RANK UP!' : 'ACHIEVEMENT UNLOCKED';
+  const heading = c.type === 'levelup' ? t('celeb.levelUp') : c.type === 'rankup' ? t('celeb.rankUp') : t('celeb.achUnlocked');
   return (
     <div className="popup-overlay" onClick={onClose}>
       <div className={`popup-card popup-${c.type} celeb-${motion} ${c.tier ? `tier-${c.tier}` : ''}`}>
@@ -83,7 +87,7 @@ function Popup({ c, motion, onClose }: { c: Celebration; motion: string; onClose
         <div className="popup-heading">{heading}</div>
         <div className="popup-title">{c.title}</div>
         {c.subtitle && <div className="popup-sub">{c.subtitle}</div>}
-        <button className="btn btn-primary" onClick={onClose}>Glorious</button>
+        <button className="btn btn-primary" onClick={onClose}>{t('celeb.glorious')}</button>
       </div>
     </div>
   );

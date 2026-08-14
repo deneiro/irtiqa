@@ -1,4 +1,5 @@
 import type { AttributeKey } from './types';
+import { t } from '../i18n';
 
 /**
  * The Library: one sector, everything worth knowing about it.
@@ -69,12 +70,16 @@ export interface LibraryEntry {
   vaultSource: string;
 }
 
-export const MEDIUM_LABEL: Record<LibraryMedium, string> = {
-  book: 'Book',
-  podcast: 'Podcast',
-  lecture: 'Lecture',
-  paper: 'Paper',
-};
+// The Library entries themselves stay English for now; these four labels are chrome
+// around them and follow the interface language. Real getters on the record, so
+// `MEDIUM_LABEL[m]` is still a string at every call site.
+export const MEDIUM_LABEL = (() => {
+  const out = {} as Record<LibraryMedium, string>;
+  for (const k of ['book', 'podcast', 'lecture', 'paper'] as LibraryMedium[]) {
+    Object.defineProperty(out, k, { get: () => t(`medium.${k}`), enumerable: true });
+  }
+  return out;
+})();
 
 export const LIBRARY: LibraryEntry[] = [
   // ---------------- Health ----------------

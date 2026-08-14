@@ -4,27 +4,32 @@ import { Icon, type IconName } from '../components/Icon';
 import { Empty } from '../components/ui';
 import { addDaysStr, fmtDayFull, parseDay, todayStr, toDayStr } from '../game/engine';
 import { buildCalendarItems, type CalendarItem, type CalendarItemType } from '../lib/calendar';
+import { plural, useT } from '../i18n';
+import { fmtMonthYear, weekdayInitials } from '../lib/format';
 import { useGame } from '../store';
 
-const TYPE_META: Record<CalendarItemType, { icon: IconName; label: string; dotClass: string }> = {
-  habit: { icon: 'habits', label: 'Habits', dotClass: 'cal-dot-habit' },
-  event: { icon: 'social', label: 'Event', dotClass: 'cal-dot-event' },
-  birthday: { icon: 'cake', label: 'Birthday', dotClass: 'cal-dot-birthday' },
-  quickTask: { icon: 'check', label: 'Task', dotClass: 'cal-dot-task' },
-  journal: { icon: 'journal', label: 'Journal', dotClass: 'cal-dot-journal' },
-  questTarget: { icon: 'target', label: 'Quest target', dotClass: 'cal-dot-quest' },
-  subscription: { icon: 'subscription', label: 'Subscription', dotClass: 'cal-dot-subscription' },
+// Labels are resolved from `cal.type.<key>` at render time.
+const TYPE_META: Record<CalendarItemType, { icon: IconName; dotClass: string }> = {
+  habit: { icon: 'habits', dotClass: 'cal-dot-habit' },
+  event: { icon: 'social', dotClass: 'cal-dot-event' },
+  birthday: { icon: 'cake', dotClass: 'cal-dot-birthday' },
+  quickTask: { icon: 'check', dotClass: 'cal-dot-task' },
+  journal: { icon: 'journal', dotClass: 'cal-dot-journal' },
+  questTarget: { icon: 'target', dotClass: 'cal-dot-quest' },
+  subscription: { icon: 'subscription', dotClass: 'cal-dot-subscription' },
 };
 // Display priority inside a day: the daily loop first, then things with other people in them,
 // then money, then the records you leave behind. The month cell only has room for the top two.
 const TYPE_ORDER: CalendarItemType[] = ['habit', 'event', 'birthday', 'quickTask', 'subscription', 'journal', 'questTarget'];
 // Monday-first, to match weekKey() — the weekly boss and the Chronicle both run Mon→Sun,
 // so a Sunday-first grid would draw a different week than the one the game scores.
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+// Monday-first, matching the grid this calendar draws.
+const WEEKDAYS = () => weekdayInitials();
 /** Titles printed inside a month cell before it collapses into "+N more". */
 const CELL_PREVIEW = 2;
 
 export function Calendar() {
+  const t = useT();
   const s = useGame();
   const today = todayStr();
   const [cursor, setCursor] = useState(() => {
@@ -34,7 +39,7 @@ export function Calendar() {
   const [selectedDate, setSelectedDate] = useState(today);
 
   const monthStart = new Date(cursor.year, cursor.month, 1);
-  const monthLabel = monthStart.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const monthLabel = fmtMonthYear(monthStart);
   const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate();
   // getDay() is Sun=0; this shifts it to Mon=0 … Sun=6, which is the number of leading cells
   // the grid needs before the 1st. Getting this wrong slides every item a day sideways.
@@ -86,28 +91,28 @@ export function Calendar() {
     <div className="page">
       <div className="page-head">
         <div>
-          <h1>Calendar</h1>
-          <p className="muted">Every date-tied thing in one place — habits due, events, birthdays, due tasks, journal entries, quest targets.</p>
+          <h1>{t('nav.calendar')}</h1>
+          <p className="muted">{t('cal.subtitle')}</p>
         </div>
         <div className="quick-actions">
-          <button className="btn btn-ghost" onClick={goPrev} aria-label="Previous month"><Icon name="chevronLeft" size={16} /></button>
+          <button className="btn btn-ghost" onClick={goPrev} aria-label={t('cal.prevMonth')}><Icon name="chevronLeft" size={16} /></button>
           <span className="cal-month-label">{monthLabel}</span>
-          <button className="btn btn-ghost" onClick={goNext} aria-label="Next month"><Icon name="chevronRight" size={16} /></button>
-          <button className="btn btn-ghost" onClick={goToday}>Today</button>
+          <button className="btn btn-ghost" onClick={goNext} aria-label={t('cal.nextMonth')}><Icon name="chevronRight" size={16} /></button>
+          <button className="btn btn-ghost" onClick={goToday}>{t('common.today')}</button>
         </div>
       </div>
 
       <div className="cal-legend">
-        {TYPE_ORDER.map(t => (
-          <span key={t} className="cal-legend-item">
-            <span className={`cal-dot ${TYPE_META[t].dotClass}`} /> {TYPE_META[t].label}
+        {TYPE_ORDER.map(type => (
+          <span key={type} className="cal-legend-item">
+            <span className={`cal-dot ${TYPE_META[type].dotClass}`} /> {t(`cal.type.${type}`)}
           </span>
         ))}
       </div>
 
       <div className="card">
         <div className="cal-grid cal-grid-head">
-          {WEEKDAYS.map(w => <div key={w} className="cal-weekday">{w}</div>)}
+          {WEEKDAYS().map(w => <div key={w} className="cal-weekday">{w}</div>)}
         </div>
         <div className="cal-grid">
           {cells.map(({ date, inMonth }) => {
@@ -138,7 +143,7 @@ export function Calendar() {
                           <span className="cal-title-text">{it.title}</span>
                         </span>
                       ))}
-                      {overflow > 0 && <span className="cal-more">+{overflow} more</span>}
+                      {overflow > 0 && <span className="cal-more">{t('cal.more', { n: overflow })}</span>}
                     </span>
                   </>
                 )}
@@ -151,11 +156,13 @@ export function Calendar() {
       <div className="card">
         <div className="card-head">
           <h2>{fmtDayFull(selectedDate)}</h2>
-          <span className="muted">{selectedItems.length} item{selectedItems.length === 1 ? '' : 's'}</span>
+          <span className="muted">
+            {selectedItems.length} {plural(selectedItems.length, t('cal.itemOne'), t('cal.itemFew'), t('cal.itemMany'))}
+          </span>
         </div>
         {selectedItems.length === 0 ? (
           <Empty>
-            Nothing on this day. <Link to="/habits">Set up a habit</Link> or <Link to="/social">add an event</Link> and it will land here.
+            {t('cal.emptyDay')} <Link to="/habits">{t('cal.setUpHabit')}</Link> {t('cal.or')} <Link to="/social">{t('cal.addEvent')}</Link> {t('cal.emptyDayTail')}
           </Empty>
         ) : (
           <ul className="list">

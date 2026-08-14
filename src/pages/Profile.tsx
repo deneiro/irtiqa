@@ -11,15 +11,15 @@ import { charLevelProgress, fmtDayFull, fmtMinutes, questPayout, rankFor, todayS
 import { buildInsights } from '../game/insights';
 import { sigilDescription, sigilSpec } from '../game/sigil';
 import type { CosmeticSlot, HabitDayStatus } from '../game/types';
+import { plural, t as tr, useT } from '../i18n';
+import { fmtNum } from '../lib/format';
 import { useGame } from '../store';
 
 // The stored status stays 'failed' (it's persisted save data), but nothing shown to
 // the player says "failed" — a missed day is a fact to read, not a verdict to wear.
+// Labels live in the dictionaries under `profile.habitStatus.<key>`.
 const HABIT_ICON: Record<HabitDayStatus, IconName> = {
   done: 'check', failed: 'minus', pardoned: 'pardon', shielded: 'shield', ghost: 'ghost', indulged: 'indulgence',
-};
-const HABIT_LABEL: Record<HabitDayStatus, string> = {
-  done: 'completed', failed: 'missed', pardoned: 'pardoned', shielded: 'streak shielded', ghost: 'frozen day', indulged: 'relapse forgiven',
 };
 
 interface ActivityEntry {
@@ -33,6 +33,7 @@ interface ActivityEntry {
 const DAYS_PER_PAGE = 10;
 
 export function Profile() {
+  const t = useT();
   const s = useGame();
   const character = s.character!;
   const lp = charLevelProgress(character.xp);
@@ -119,7 +120,7 @@ export function Profile() {
     for (const h of s.habits) {
       const log = s.habitLog[h.id] ?? {};
       for (const [day, status] of Object.entries(log)) {
-        entries.push({ id: `habit-${h.id}-${day}`, day, icon: HABIT_ICON[status], title: h.name, subtitle: HABIT_LABEL[status] });
+        entries.push({ id: `habit-${h.id}-${day}`, day, icon: HABIT_ICON[status], title: h.name, subtitle: tr(`profile.habitStatus.${status}`) });
       }
     }
 
@@ -127,7 +128,7 @@ export function Profile() {
       for (const sess of q.sessions) {
         entries.push({
           id: `qs-${sess.id}`, day: sess.date, icon: 'play',
-          title: `Worked on: ${q.title}`,
+          title: tr('profile.workedOn', { title: q.title }),
           subtitle: `${fmtMinutes(sess.minutes)}${sess.note ? ` — "${sess.note}"` : ''}`,
         });
       }
@@ -135,53 +136,57 @@ export function Profile() {
         const payout = questPayout(q, s.character?.classes);
         entries.push({
           id: `qc-${q.id}`, day: q.completedAt.slice(0, 10), icon: 'flag',
-          title: `Completed quest: ${q.title}`, subtitle: `+${payout.xp} XP · +${payout.gold} Gold`,
+          title: tr('profile.completedQuest', { title: q.title }),
+          subtitle: `+${payout.xp} XP · +${payout.gold} ${tr('common.gold')}`,
         });
       }
     }
 
-    for (const t of s.quickTasks) {
-      if (t.doneAt) entries.push({ id: `qt-${t.id}`, day: t.doneAt.slice(0, 10), icon: 'check', title: `Quick task: ${t.title}` });
+    for (const qt of s.quickTasks) {
+      if (qt.doneAt) entries.push({ id: `qt-${qt.id}`, day: qt.doneAt.slice(0, 10), icon: 'check', title: tr('profile.quickTask', { title: qt.title }) });
     }
 
     for (const e of s.journal) {
       entries.push({
         id: `j-${e.id}`, day: e.date, icon: 'journal',
-        title: 'Wrote a journal entry', subtitle: `${MOODS[e.mood - 1]} mood ${e.mood}/5 · stress ${e.stress}/10`,
+        title: tr('profile.wroteJournal'),
+        subtitle: `${MOODS[e.mood - 1]} ${tr('journal.mood')} ${e.mood}/5 · ${tr('journal.stress')} ${e.stress}/10`,
       });
     }
 
     for (const c of s.contacts) {
-      entries.push({ id: `c-${c.id}`, day: c.createdAt.slice(0, 10), icon: 'friends', title: `Added contact: ${c.name}` });
+      entries.push({ id: `c-${c.id}`, day: c.createdAt.slice(0, 10), icon: 'friends', title: tr('profile.addedContact', { name: c.name }) });
     }
 
     for (const d of s.debts) {
-      const name = s.contacts.find(c => c.id === d.contactId)?.name ?? 'someone';
+      const name = s.contacts.find(c => c.id === d.contactId)?.name ?? tr('profile.someone');
       entries.push({
         id: `d-${d.id}`, day: d.createdAt.slice(0, 10), icon: 'card',
-        title: `Logged debt with ${name}`, subtitle: `${d.direction === 'theyOwe' ? 'they owe you' : 'you owe'} ${d.amount}`,
+        title: tr('profile.loggedDebt', { name }),
+        subtitle: `${d.direction === 'theyOwe' ? tr('profile.theyOweYou') : tr('profile.youOwe')} ${d.amount}`,
       });
       for (const p of d.payments) {
         entries.push({
           id: `dp-${p.id}`, day: p.date, icon: 'banknote',
-          title: `${d.direction === 'theyOwe' ? 'Collected from' : 'Paid'} ${name}`, subtitle: `${p.amount}`,
+          title: d.direction === 'theyOwe' ? tr('profile.collectedFrom', { name }) : tr('profile.paidTo', { name }),
+          subtitle: `${p.amount}`,
         });
       }
     }
 
-    for (const t of s.txs) {
+    for (const tx of s.txs) {
       entries.push({
-        id: `tx-${t.id}`, day: t.date,
-        icon: t.transferId ? 'subscription' : t.type === 'income' ? 'arrowUp' : 'arrowDown',
-        title: t.note || t.category,
-        subtitle: `${t.type === 'income' ? '+' : '−'}${t.amount.toLocaleString()} · ${t.category}`,
+        id: `tx-${tx.id}`, day: tx.date,
+        icon: tx.transferId ? 'subscription' : tx.type === 'income' ? 'arrowUp' : 'arrowDown',
+        title: tx.note || tr(`cat.${tx.category}`),
+        subtitle: `${tx.type === 'income' ? '+' : '−'}${fmtNum(tx.amount)} · ${tr(`cat.${tx.category}`)}`,
       });
     }
 
     for (const [id, at] of Object.entries(s.unlocked)) {
       const def = ACHIEVEMENTS.find(a => a.id === id);
       if (!def) continue;
-      entries.push({ id: `ach-${id}`, day: at.slice(0, 10), icon: 'trophy', title: `Achievement: ${def.name}`, subtitle: `${TIER_LABEL[def.tier]} · ${def.desc}` });
+      entries.push({ id: `ach-${id}`, day: at.slice(0, 10), icon: 'trophy', title: tr('profile.achievement', { name: def.name }), subtitle: `${TIER_LABEL[def.tier]} · ${def.desc}` });
     }
 
     const grouped = new Map<string, ActivityEntry[]>();
@@ -202,7 +207,7 @@ export function Profile() {
         <div className="hero-sigil">
           <Sigil size={260} interactive />
           {momentumStreak > 0 && (
-            <span className="hero-flame" title={`${momentumStreak}-day perfect streak — the sigil is lit`}>
+            <span className="hero-flame" title={t('profile.perfectStreak', { n: momentumStreak })}>
               <Icon name="flame" size={14} /> {momentumStreak}
             </span>
           )}
@@ -214,11 +219,11 @@ export function Profile() {
             {equippedTitle && <span className="char-title"> {equippedTitle.name}</span>}
           </h1>
           <p className="hero-sub">
-            <Icon name={rank.icon} size={14} /> {rank.name} · {cls && <Icon name={cls.id} size={14} />} {cls?.name} · Level {lp.level}
+            <Icon name={rank.icon} size={14} /> {rank.name} · {cls && <Icon name={cls.id} size={14} />} {cls?.name} · {t('common.level')} {lp.level}
           </p>
 
           <Bar value={lp.into} max={lp.need} className="bar-xp" label={`${lp.into}/${lp.need} XP`} />
-          <p className="muted hero-xp">{lp.into}/{lp.need} XP to level {lp.level + 1}</p>
+          <p className="muted hero-xp">{t('layout.xpToLevel', { into: lp.into, need: lp.need, level: lp.level + 1 })}</p>
 
           <p className="hero-read">{sigilDescription(spec)}</p>
 
@@ -226,41 +231,44 @@ export function Profile() {
 
           <div className="hero-meta">
             <span className="muted">
-              {spec.rings} rank ring{spec.rings === 1 ? '' : 's'} · {spec.facets} facet{spec.facets === 1 ? '' : 's'} ·{' '}
-              {Math.round(spec.balance * 100)}% round
+              {spec.rings} {plural(spec.rings, t('profile.ringOne'), t('profile.ringFew'), t('profile.ringMany'))}
+              {' · '}
+              {spec.facets} {plural(spec.facets, t('profile.facetOne'), t('profile.facetFew'), t('profile.facetMany'))}
+              {' · '}
+              {t('profile.percentRound', { pct: Math.round(spec.balance * 100) })}
             </span>
-            <button className="btn btn-ghost btn-sm" onClick={downloadSigil}><Icon name="download" size={13} /> Save sigil</button>
+            <button className="btn btn-ghost btn-sm" onClick={downloadSigil}><Icon name="download" size={13} /> {t('profile.saveSigil')}</button>
           </div>
         </div>
       </section>
 
       <div className="profile-stats">
-        <div className="profile-stat"><span className="stat-big">{s.stats.checkins}</span><span className="muted">habit check-ins</span></div>
-        <div className="profile-stat"><span className="stat-big">{s.stats.bestStreak}</span><span className="muted">best streak</span></div>
-        <div className="profile-stat"><span className="stat-big">{s.stats.questsCompleted}</span><span className="muted">quests completed</span></div>
-        <div className="profile-stat"><span className="stat-big">{fmtMinutes(s.stats.sessionMinutes)}</span><span className="muted">hours worked</span></div>
-        <div className="profile-stat"><span className="stat-big">{s.journal.length}</span><span className="muted">journal entries</span></div>
-        <div className="profile-stat"><span className="stat-big">{s.contacts.length}</span><span className="muted">contacts</span></div>
+        <div className="profile-stat"><span className="stat-big">{s.stats.checkins}</span><span className="muted">{t('profile.statCheckins')}</span></div>
+        <div className="profile-stat"><span className="stat-big">{s.stats.bestStreak}</span><span className="muted">{t('profile.statBestStreak')}</span></div>
+        <div className="profile-stat"><span className="stat-big">{s.stats.questsCompleted}</span><span className="muted">{t('profile.statQuests')}</span></div>
+        <div className="profile-stat"><span className="stat-big">{fmtMinutes(s.stats.sessionMinutes)}</span><span className="muted">{t('profile.statHours')}</span></div>
+        <div className="profile-stat"><span className="stat-big">{s.journal.length}</span><span className="muted">{t('profile.statJournal')}</span></div>
+        <div className="profile-stat"><span className="stat-big">{s.contacts.length}</span><span className="muted">{t('profile.statContacts')}</span></div>
       </div>
 
       <div className="dash-grid">
         <section className="card">
-          <div className="card-head"><h2>Life balance</h2><span className="muted">8 attributes</span></div>
+          <div className="card-head"><h2>{t('widget.lifeBalance')}</h2><span className="muted">{t('profile.eightAttrs')}</span></div>
           <RadarChart />
         </section>
         <section className="card">
-          <div className="card-head"><h2>Attribute XP</h2></div>
+          <div className="card-head"><h2>{t('profile.attrXp')}</h2></div>
           <AttributeProgress />
         </section>
       </div>
 
       <section className="card">
         <div className="card-head">
-          <h2 className="heading-icon"><Icon name="trophy" size={18} /> Achievements</h2>
+          <h2 className="heading-icon"><Icon name="trophy" size={18} /> {t('nav.achievements')}</h2>
           <Link to="/achievements" className="muted">{unlockedCount} / {totalAch} →</Link>
         </div>
         {recentAchievements.length === 0 ? (
-          <Empty>None unlocked yet — they come fast at first.</Empty>
+          <Empty>{t('profile.noAchYet')}</Empty>
         ) : (
           <div className="ach-grid">
             {recentAchievements.map(({ def, at }) => (
@@ -299,17 +307,15 @@ export function Profile() {
 
       <section className="card">
         <div className="card-head">
-          <h2><Icon name="sparkles" size={16} /> Wardrobe</h2>
-          <span className="muted">{s.ownedCosmetics.length} / {COSMETICS.length} collected — drops from daily chests</span>
+          <h2><Icon name="sparkles" size={16} /> {t('profile.wardrobe')}</h2>
+          <span className="muted">{t('profile.collected', { owned: s.ownedCosmetics.length, total: COSMETICS.length })}</span>
         </div>
         {s.adminUnlockAll && (
-          <p className="muted"><Icon name="unlock" size={13} /> Owner mode is on — every cosmetic previews and equips freely. It doesn't count toward your real collection above.</p>
+          <p className="muted"><Icon name="unlock" size={13} /> {t('profile.ownerCosmetics')}</p>
         )}
         {(['frame', 'title', 'banner'] as CosmeticSlot[]).map(slot => (
           <div key={slot} className="wardrobe-slot">
-            <h3 className="wardrobe-slot-title">
-              {slot === 'frame' ? 'Avatar frames' : slot === 'title' ? 'Titles' : 'Dashboard banners'}
-            </h3>
+            <h3 className="wardrobe-slot-title">{t(`profile.slot.${slot}`)}</h3>
             <div className="wardrobe-grid">
               {COSMETICS.filter(c => c.slot === slot).map(c => {
                 const owned = s.ownedCosmetics.includes(c.id);
@@ -332,12 +338,12 @@ export function Profile() {
                     </div>
                     {unlocked ? (
                       equipped ? (
-                        <button className="btn btn-ghost btn-sm" onClick={() => s.equipCosmetic(slot, null)}>Unequip</button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => s.equipCosmetic(slot, null)}>{t('profile.unequip')}</button>
                       ) : (
-                        <button className="btn btn-primary btn-sm" onClick={() => s.equipCosmetic(slot, c.id)}>Equip</button>
+                        <button className="btn btn-primary btn-sm" onClick={() => s.equipCosmetic(slot, c.id)}>{t('profile.equip')}</button>
                       )
                     ) : (
-                      <span className="muted wardrobe-hint"><Icon name="chest" size={12} /> chest drop</span>
+                      <span className="muted wardrobe-hint"><Icon name="chest" size={12} /> {t('profile.chestDrop')}</span>
                     )}
                   </div>
                 );
@@ -348,9 +354,9 @@ export function Profile() {
       </section>
 
       <section className="card">
-        <div className="card-head"><h2 className="heading-icon"><Icon name="journal" size={18} /> Activity journal</h2><span className="muted">everything, in order</span></div>
+        <div className="card-head"><h2 className="heading-icon"><Icon name="journal" size={18} /> {t('profile.activityJournal')}</h2><span className="muted">{t('profile.everythingInOrder')}</span></div>
         {shownDays.length === 0 ? (
-          <Empty>Nothing logged yet. Every check-in, session, and entry will show up here.</Empty>
+          <Empty>{t('profile.nothingLogged')}</Empty>
         ) : (
           <>
             <div className="activity-log">
@@ -371,7 +377,7 @@ export function Profile() {
             </div>
             {visibleDays < byDay.length && (
               <button className="btn btn-ghost" style={{ marginTop: 10 }} onClick={() => setVisibleDays(v => v + DAYS_PER_PAGE)}>
-                Show more days
+                {t('profile.showMoreDays')}
               </button>
             )}
           </>

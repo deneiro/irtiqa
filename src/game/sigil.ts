@@ -1,4 +1,5 @@
 import { ATTRIBUTES, ATTR_KEYS, RANKS } from './constants';
+import { t } from '../i18n';
 import { attrLevel, charLevelProgress, rankFor } from './engine';
 import type { AttributeKey, ClassId } from './types';
 
@@ -146,13 +147,13 @@ export function sigilDescription(spec: SigilSpec): string {
   const thinnest = ATTRIBUTES[sorted[sorted.length - 1].attr].label;
 
   if (spec.level === 1 && spec.petals.every(p => p.level === 1)) {
-    return 'Unformed. Every sector still at one — the shape is waiting for you.';
+    return t('sigil.unformed');
   }
   if (spec.balance >= 0.85) {
-    return `Nearly round. ${strongest} leads, but nothing is being left behind.`;
+    return t('sigil.nearlyRound', { strongest });
   }
   if (spec.balance >= 0.5) {
-    return `Leaning toward ${strongest}. ${thinnest} is the short petal.`;
+    return t('sigil.leaning', { strongest, thinnest });
   }
-  return `Badly lopsided — ${strongest} has run far ahead of ${thinnest}.`;
+  return t('sigil.lopsided', { strongest, thinnest });
 }

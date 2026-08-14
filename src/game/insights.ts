@@ -1,4 +1,6 @@
 import { addDaysStr, habitDueOn, parseDay } from './engine';
+import { t } from '../i18n';
+import { weekdayNames } from '../lib/format';
 import type { FailureRecord, Habit, HabitDayStatus, IconName, JournalEntry, Tx } from './types';
 
 // The insights engine: honest correlations computed from data the player
@@ -76,8 +78,8 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
         icon: a >= b ? 'flame' : 'brain',
         text:
           a >= b
-            ? `On days you complete every habit, your mood averages ${r1(a)}/5 — versus ${r1(b)}/5 on days something slips. The discipline is literally making you happier.`
-            : `Curious: your mood averages ${r1(b)}/5 on imperfect days but only ${r1(a)}/5 on perfect ones. Are the habits you chose actually yours?`,
+            ? t('insight.moodPerfect', { a: r1(a), b: r1(b) })
+            : t('insight.moodInverted', { a: r1(a), b: r1(b) }),
       });
     }
   }
@@ -93,7 +95,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
       insights.push({
         id: 'stress_spend',
         icon: 'banknote',
-        text: `High-stress days cost you real money: you spend ${r1(hi)} on average when stress is 6+, versus ${r1(lo)} on calm days. The budget leak is emotional.`,
+        text: t('insight.stressSpend', { hi: r1(hi), lo: r1(lo) }),
       });
     }
   }
@@ -117,11 +119,11 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
       const best = rates.reduce((a, b) => (b.rate > a.rate ? b : a));
       const worst = rates.reduce((a, b) => (b.rate < a.rate ? b : a));
       if (best.rate - worst.rate >= 0.25) {
-        const name = (wd: number) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][wd];
+        const name = (wd: number) => weekdayNames('long')[wd];
         insights.push({
           id: 'weekday',
           icon: 'calendar',
-          text: `${name(best.wd)}s are your strongest day (${Math.round(best.rate * 100)}% of habits done); ${name(worst.wd)}s are where streaks go to die (${Math.round(worst.rate * 100)}%). Guard your ${name(worst.wd)}s.`,
+          text: t('insight.weekday', { best: name(best.wd), bestPct: Math.round(best.rate * 100), worst: name(worst.wd), worstPct: Math.round(worst.rate * 100) }),
         });
       }
     }
@@ -139,8 +141,8 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
         icon: a > b ? 'arrowUp' : 'arrowDown',
         text:
           a > b
-            ? `Mood is climbing: ${r1(a)}/5 this week, up from ${r1(b)}/5 last week. Whatever changed — keep it.`
-            : `Mood dipped this week: ${r1(a)}/5, down from ${r1(b)}/5. Worth a look at what else changed.`,
+            ? t('insight.moodUp', { a: r1(a), b: r1(b) })
+            : t('insight.moodDown', { a: r1(a), b: r1(b) }),
       });
     }
   }
@@ -154,7 +156,7 @@ export function buildInsights(src: InsightSource, today: string): Insight[] {
     insights.push({
       id: 'triggers',
       icon: 'indulgence',
-      text: `Your recent relapse triggers, in your own words: ${triggers.map(f => `"${f.trigger!.trim()}"`).join(' · ')}. Name the pattern, then starve it.`,
+      text: t('insight.triggers', { list: triggers.map(f => `"${f.trigger!.trim()}"`).join(' · ') }),
     });
   }
 

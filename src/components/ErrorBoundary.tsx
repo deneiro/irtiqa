@@ -1,4 +1,7 @@
 import { Component, ReactNode } from 'react';
+// A class component can't use the hook, and the plain function is enough here:
+// nothing re-renders this screen, it is the last thing drawn before a reload.
+import { t } from '../i18n';
 import { SAVE_KEY } from '../store';
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -24,15 +27,13 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { error: E
     return (
       <div className="onboarding">
         <div className="onboarding-inner">
-          <h1 className="onb-logo">Something broke</h1>
-          <h2>Something broke — but your save is safe</h2>
-          <p className="muted">
-            The app hit an unexpected error. Your progress lives in this browser's storage and was not touched.
-          </p>
+          <h1 className="onb-logo">{t('err.short')}</h1>
+          <h2>{t('err.headline')}</h2>
+          <p className="muted">{t('err.body')}</p>
           <p className="muted" style={{ fontFamily: 'monospace', fontSize: 12 }}>{String(this.state.error)}</p>
           <div className="onb-actions">
-            <button className="btn btn-primary" onClick={() => location.reload()}>↻ Reload</button>
-            <button className="btn btn-ghost" onClick={this.downloadSave}>⬇ Back up save first</button>
+            <button className="btn btn-primary" onClick={() => location.reload()}>↻ {t('err.reload')}</button>
+            <button className="btn btn-ghost" onClick={this.downloadSave}>⬇ {t('err.backup')}</button>
           </div>
         </div>
       </div>

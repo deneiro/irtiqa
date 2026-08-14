@@ -18,6 +18,7 @@ import {
   TRANSFER_CATEGORY,
 } from './game/constants';
 import { LIBRARY_READ_REWARD, libraryEntry } from './game/library';
+import { detectLang, plural, setLang, t as tr, type Lang } from './i18n';
 import { CURRENCIES, DEFAULT_CURRENCY } from './game/money';
 import { HABIT_TEMPLATES, QUEST_TEMPLATES } from './game/templates';
 import { TUTORIAL_STEP_COUNT } from './game/tutorial';
@@ -104,6 +105,13 @@ export interface GameState {
   effects: Effects;
   ownedThemes: string[];
   theme: string;
+  /**
+   * UI language. Seeded from the browser locale on a brand-new save and persisted
+   * from then on, so a switch survives reloads. The i18n module keeps its own copy
+   * (it cannot import this store without a cycle) — setLanguage pushes into it, and
+   * the rehydrate hook below re-pushes on load.
+   */
+  lang: Lang;
   /**
    * Owner/admin mode. On (the default) → every theme is unlocked for the owner to test.
    * Off → only free + already-owned themes apply, and locked themes show their symbolic price.
@@ -242,6 +250,7 @@ export interface GameState {
   buyItem: (id: ItemId) => void;
   useItem: (id: ItemId, payload?: UseItemPayload) => void;
   setTheme: (themeId: string) => void;
+  setLanguage: (lang: Lang) => void;
   setAdminUnlockAll: (on: boolean) => void;
   setThemeColor: (themeId: string, token: string, value: string) => void;
   resetThemeColors: (themeId: string) => void;
@@ -336,7 +345,7 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
     dl.gold += gold;
     pushCeleb(d, {
       type: 'reward',
-      title: `+${finalXp} XP${gold > 0 ? ` · +${gold} Gold` : ''}`, icon: boosted ? 'boost' : 'sparkles',
+      title: `+${finalXp} XP${gold > 0 ? ` · +${gold} ${tr('common.gold')}` : ''}`, icon: boosted ? 'boost' : 'sparkles',
       subtitle: label,
     });
   }
@@ -360,21 +369,21 @@ function grantD(d: D, xp: number, gold: number, attrs: AttributeKey[], label: st
       const bossDef = BOSSES[d.boss.attr];
       pushCeleb(d, {
         type: 'reward',
-        title: `${bossDef.name} defeated!`, icon: 'quests',
-        subtitle: `+${BOSS_REWARD.xp} XP · +${BOSS_REWARD.gold} Gold — your weakest front just got stronger.`,
+        title: tr('toast.bossDefeated', { name: bossDef.name }), icon: 'quests',
+        subtitle: tr('toast.bossDefeatedSub', { xp: BOSS_REWARD.xp, gold: BOSS_REWARD.gold }),
       });
     }
   }
 
   const afterLevel = charLevel(d.character.xp);
   if (afterLevel > beforeLevel) {
-    pushCeleb(d, { type: 'levelup', title: `Level ${afterLevel}!`, subtitle: `You leveled up. Keep going.` });
+    pushCeleb(d, { type: 'levelup', title: tr('toast.levelN', { n: afterLevel }), subtitle: tr('toast.levelUpSub') });
     const afterRank = rankFor(afterLevel);
     if (afterRank.name !== beforeRank) {
-      pushCeleb(d, { type: 'rankup', title: `New Rank: ${afterRank.name}`, subtitle: 'Your title has grown with you.' });
+      pushCeleb(d, { type: 'rankup', title: tr('toast.newRank', { name: afterRank.name }), subtitle: tr('toast.newRankSub') });
     }
   }
-  for (const up of attrUps) pushCeleb(d, { type: 'info', title: 'Attribute Level Up', subtitle: up });
+  for (const up of attrUps) pushCeleb(d, { type: 'info', title: tr('toast.attrLevelUp'), subtitle: up });
 }
 
 function damageD(d: D, amount: number, label: string) {
@@ -403,7 +412,7 @@ function checkAchievementsD(d: D) {
         pushCeleb(d, {
           type: 'achievement',
           title: a.name,
-          subtitle: `${a.desc} · +${r.xp} XP · +${r.gold} Gold`,
+          subtitle: `${a.desc} · +${r.xp} XP · +${r.gold} ${tr('common.gold')}`,
           tier: a.tier,
         });
         any = true;
@@ -413,11 +422,11 @@ function checkAchievementsD(d: D) {
   }
   const afterLevel = charLevel(d.character.xp);
   if (afterLevel > beforeLevel) {
-    pushCeleb(d, { type: 'levelup', title: `Level ${afterLevel}!`, subtitle: 'Achievement rewards pushed you over the edge.' });
+    pushCeleb(d, { type: 'levelup', title: tr('toast.levelN', { n: afterLevel }), subtitle: tr('toast.achPushed') });
     const beforeRank = rankFor(beforeLevel).name;
     const afterRank = rankFor(afterLevel);
     if (afterRank.name !== beforeRank) {
-      pushCeleb(d, { type: 'rankup', title: `New Rank: ${afterRank.name}`, subtitle: 'Your title has grown with you.' });
+      pushCeleb(d, { type: 'rankup', title: tr('toast.newRank', { name: afterRank.name }), subtitle: tr('toast.newRankSub') });
     }
   }
 }
@@ -555,6 +564,7 @@ const initialData = () => ({
   effects: { indulgence: 0, xpBoostCharges: 0, maxPriority: 1, ghostDays: [] as string[], wardWeek: null as string | null },
   ownedThemes: ['midnight'],
   theme: 'midnight',
+  lang: detectLang(),
   adminUnlockAll: true, // owner mode on by default — everything free to test
   themeOverrides: {} as Record<string, Record<string, string>>,
 
@@ -662,8 +672,8 @@ export const useGame = create<GameState>()(
           const cls = CLASSES.find(c => c.id === list[0]);
           pushCeleb(d, {
             type: 'info',
-            title: `Welcome, ${d.character.name} the ${cls?.name ?? ''}`,
-            subtitle: 'Your journey begins. Everything you earn here, you earn for real.',
+            title: tr('toast.welcome', { name: d.character.name, cls: cls?.name ?? '' }),
+            subtitle: tr('toast.welcomeSub'),
           });
         }),
 
@@ -672,7 +682,7 @@ export const useGame = create<GameState>()(
       recordWheelCheck: scores =>
         set(d => {
           d.wheelSnapshots.push({ date: todayStr(), scores: { ...scores } });
-          pushCeleb(d, { type: 'info', title: 'Wheel Check saved', subtitle: 'Your self-audit is recorded. Compare it against how you actually played.' });
+          pushCeleb(d, { type: 'info', title: tr('toast.wheelSaved'), subtitle: tr('toast.wheelSavedSub') });
         }),
 
       resetGame: () => set(() => ({ ...initialData() })),
@@ -692,8 +702,8 @@ export const useGame = create<GameState>()(
             d.theme = 'midnight';
             pushCeleb(d, {
               type: 'info',
-              title: 'Switched to Midnight', icon: 'themeMidnight',
-              subtitle: `${activeTheme.name} is locked right now — reapply it once it's unlocked.`,
+              title: tr('toast.switchedMidnight'), icon: 'themeMidnight',
+              subtitle: tr('toast.themeLockedNow', { name: activeTheme.name }),
             });
           }
 
@@ -726,8 +736,8 @@ export const useGame = create<GameState>()(
             d.effects.comeback = { remaining: COMEBACK_CHECKINS, expiresDay: addDaysStr(today, COMEBACK_WINDOW_DAYS) };
             pushCeleb(d, {
               type: 'info',
-              title: 'The Long Sleep', icon: 'rankSeeker',
-              subtitle: `You were away ${gap} days. Streaks faded — no damage taken. Check in ${COMEBACK_CHECKINS} habits by ${fmtDay(d.effects.comeback.expiresDay)} to restore ${COMEBACK_HP} HP.`,
+              title: tr('toast.longSleep'), icon: 'rankSeeker',
+              subtitle: tr('toast.longSleepSub', { gap, n: COMEBACK_CHECKINS, by: fmtDay(d.effects.comeback.expiresDay), hp: COMEBACK_HP }),
             });
             day = cutoff; // the sleep itself is not judged
           }
@@ -821,8 +831,8 @@ export const useGame = create<GameState>()(
             const bossDef = BOSSES[weakest];
             pushCeleb(d, {
               type: 'info',
-              title: `A boss stalks your week: ${bossDef.name}`,
-              subtitle: `It feeds on ${ATTRIBUTES[weakest].label}, your thinnest attribute. Land ${BOSS_REQUIRED} ${ATTRIBUTES[weakest].label}-tagged actions before Sunday to claim it.`,
+              title: tr('toast.bossRises', { name: bossDef.name }),
+              subtitle: tr('toast.bossRisesSub', { attr: ATTRIBUTES[weakest].label, n: BOSS_REQUIRED }),
             });
           }
 
@@ -830,8 +840,8 @@ export const useGame = create<GameState>()(
             const pct = Math.round((momentumMult(d.momentum.streak) - 1) * 100);
             pushCeleb(d, {
               type: 'reward',
-              title: `Perfect day${perfectDays > 1 ? 's' : ''}!`, icon: 'flame',
-              subtitle: `Every habit done. Momentum ${d.momentum.streak} (+${pct}% XP)${regen > 0 ? ` · +${regen} HP` : ''}`,
+              title: tr('toast.perfectDays', { n: perfectDays }), icon: 'flame',
+              subtitle: `${tr('toast.perfectDaysSub', { streak: d.momentum.streak, pct })}${regen > 0 ? ` · +${regen} HP` : ''}`,
             });
           }
 
@@ -849,10 +859,10 @@ export const useGame = create<GameState>()(
             }
           }
 
-          if (missed > 0) pushCeleb(d, { type: 'damage', title: `-${dmgTotal} HP`, subtitle: `${missed} habit${missed > 1 ? 's' : ''} went unlogged. Today starts clean.` });
-          if (wards > 0) pushCeleb(d, { type: 'item', title: "Warden's ward held", icon: 'shield', subtitle: `${wards} streak${wards > 1 ? 's' : ''} survived the miss, free. The ward returns next week.` });
-          if (shields > 0) pushCeleb(d, { type: 'item', title: 'Streak Shield activated', icon: 'shield', subtitle: `${shields} streak${shields > 1 ? 's' : ''} protected automatically` });
-          if (indulged > 0) pushCeleb(d, { type: 'item', title: 'Indulgence consumed', icon: 'indulgence', subtitle: `${indulged} relapse${indulged > 1 ? 's' : ''} forgiven` });
+          if (missed > 0) pushCeleb(d, { type: 'damage', title: `-${dmgTotal} HP`, subtitle: tr('toast.missedHabits', { n: missed }) });
+          if (wards > 0) pushCeleb(d, { type: 'item', title: tr('toast.wardHeld'), icon: 'shield', subtitle: tr('toast.wardHeldSub', { n: wards }) });
+          if (shields > 0) pushCeleb(d, { type: 'item', title: tr('toast.shieldActivated'), icon: 'shield', subtitle: tr('toast.shieldActivatedSub', { n: shields }) });
+          if (indulged > 0) pushCeleb(d, { type: 'item', title: tr('toast.indulgenceUsed'), icon: 'indulgence', subtitle: tr('toast.indulgenceUsedSub', { n: indulged }) });
           checkAchievementsD(d);
         }),
 
@@ -909,7 +919,7 @@ export const useGame = create<GameState>()(
             if (d.effects.comeback.remaining <= 0) {
               d.character.hp = clampHp(d.character.hp + COMEBACK_HP);
               d.effects.comeback = null;
-              pushCeleb(d, { type: 'reward', title: 'The Hero Returns', icon: 'rankNovice', subtitle: `+${COMEBACK_HP} HP restored. The road continues.` });
+              pushCeleb(d, { type: 'reward', title: tr('toast.heroReturns'), icon: 'rankNovice', subtitle: tr('toast.heroReturnsSub', { hp: COMEBACK_HP }) });
             }
           }
           checkAchievementsD(d);
@@ -925,7 +935,7 @@ export const useGame = create<GameState>()(
           if (d.effects.indulgence > 0) {
             d.effects.indulgence--;
             log[t] = 'indulged';
-            pushCeleb(d, { type: 'item', title: 'Indulgence consumed', icon: 'indulgence', subtitle: `${h.name}: relapse forgiven, no damage.` });
+            pushCeleb(d, { type: 'item', title: tr('toast.indulgenceUsed'), icon: 'indulgence', subtitle: tr('toast.indulgenceOne', { name: h.name }) });
             return;
           }
           const dmg = missDamage('bad', h.streak);
@@ -961,7 +971,7 @@ export const useGame = create<GameState>()(
             if (count >= d.effects.maxPriority) {
               pushCeleb(d, {
                 type: 'info',
-                title: 'Priority limit reached',
+                title: tr('toast.priorityLimit'),
                 subtitle: d.effects.maxPriority === 1
                   ? 'Only one priority quest allowed. Focus Unlock (Market) allows a second.'
                   : 'You can mark at most two priority quests.',
@@ -977,7 +987,7 @@ export const useGame = create<GameState>()(
           const q = d.quests.find(x => x.id === questId);
           if (!q || q.completedAt) return;
           if (d.activeSession) {
-            pushCeleb(d, { type: 'info', title: 'Session already running', subtitle: 'Finish your current session first.' });
+            pushCeleb(d, { type: 'info', title: tr('toast.sessionRunning'), subtitle: tr('toast.sessionRunningSub') });
             return;
           }
           d.activeSession = { questId, startedAt: Date.now() };
@@ -1023,7 +1033,7 @@ export const useGame = create<GameState>()(
           pushCeleb(d, {
             type: 'info',
             title: 'Session logged',
-            subtitle: `${fmtMinutes(mins)} on ${fmtDay(day)}. The payout comes when the quest is done.`,
+            subtitle: tr('toast.sessionLoggedSub', { time: fmtMinutes(mins), day: fmtDay(day) }),
           });
           checkAchievementsD(d);
         }),
@@ -1033,7 +1043,7 @@ export const useGame = create<GameState>()(
           const q = d.quests.find(x => x.id === id);
           if (!q || q.completedAt) return;
           if (d.activeSession?.questId === id) {
-            pushCeleb(d, { type: 'info', title: 'Finish your session first', subtitle: 'Stop the running timer before completing the quest.' });
+            pushCeleb(d, { type: 'info', title: tr('toast.finishSessionFirst'), subtitle: tr('toast.finishSessionFirstSub') });
             return;
           }
           const payout = questPayout(q, d.character?.classes);
@@ -1092,8 +1102,8 @@ export const useGame = create<GameState>()(
           if (!finishedLinked) {
             pushCeleb(d, {
               type: 'info',
-              title: 'A goal must be earned',
-              subtitle: 'Link at least one quest to this goal and finish it — then come claim the milestone.',
+              title: tr('toast.goalMustBeEarned'),
+              subtitle: tr('toast.goalMustBeEarnedSub'),
             });
             return;
           }
@@ -1127,7 +1137,7 @@ export const useGame = create<GameState>()(
           e.answers = answers;
           if (e.unlocked && Date.now() - Date.parse(e.createdAt) >= 72 * 3600 * 1000) {
             e.unlocked = false; // Feather grants exactly one edit
-            pushCeleb(d, { type: 'info', title: 'Entry rewritten', subtitle: 'The Feather of Time crumbles to dust. The entry is sealed again.' });
+            pushCeleb(d, { type: 'info', title: tr('toast.entryRewritten'), subtitle: tr('toast.entryRewrittenSub') });
           }
         }),
 
@@ -1212,7 +1222,7 @@ export const useGame = create<GameState>()(
       deleteAccount: id =>
         set(d => {
           if (d.txs.some(t => t.accountId === id) || d.subs.some(s => s.accountId === id && s.active)) {
-            pushCeleb(d, { type: 'info', title: 'Account in use', subtitle: 'This account has transactions or subscriptions and cannot be deleted.' });
+            pushCeleb(d, { type: 'info', title: tr('toast.accountInUse'), subtitle: tr('toast.accountInUseSub') });
             return;
           }
           d.accounts = d.accounts.filter(a => a.id !== id);
@@ -1230,7 +1240,7 @@ export const useGame = create<GameState>()(
           if (!t) return;
           // Only same-day deletes (typo correction). Older entries are sealed so budget damage can't be laundered away.
           if (t.date !== todayStr()) {
-            pushCeleb(d, { type: 'info', title: 'The ledger is sealed', subtitle: 'Only entries logged today can be deleted.' });
+            pushCeleb(d, { type: 'info', title: tr('toast.ledgerSealed'), subtitle: tr('toast.ledgerSealedSub') });
             return;
           }
           // A transfer is two linked legs — remove both so one account isn't left with a phantom half.
@@ -1284,17 +1294,17 @@ export const useGame = create<GameState>()(
           if (item.id === 'focus_unlock' && d.effects.maxPriority >= 2) return;
           const price = itemPrice(item);
           if (d.character.gold < price) {
-            pushCeleb(d, { type: 'info', title: 'Not enough Gold', subtitle: `${item.name} costs ${price} Gold. Earn it — no cheat codes.` });
+            pushCeleb(d, { type: 'info', title: tr('toast.notEnoughGold'), subtitle: tr('toast.notEnoughGoldSub', { name: item.name, price }) });
             return;
           }
           d.character.gold -= price;
           d.stats.itemsBought++;
           if (item.id === 'focus_unlock') {
             d.effects.maxPriority = 2;
-            pushCeleb(d, { type: 'item', title: 'Focus Unlock active', icon: 'focus', subtitle: 'You can now mark two priority quests at once.' });
+            pushCeleb(d, { type: 'item', title: tr('toast.focusActive'), icon: 'focus', subtitle: tr('toast.focusActiveSub') });
           } else {
             d.inventory[item.id] = (d.inventory[item.id] ?? 0) + 1;
-            pushCeleb(d, { type: 'item', title: `Purchased: ${item.name}`, subtitle: 'Find it in your inventory below.' });
+            pushCeleb(d, { type: 'item', title: tr('toast.purchased', { name: item.name }), subtitle: tr('toast.purchasedSub') });
           }
           checkAchievementsD(d);
         }),
@@ -1310,32 +1320,32 @@ export const useGame = create<GameState>()(
             case 'potion_m':
             case 'potion_l': {
               if (d.character.hp >= 100) {
-                pushCeleb(d, { type: 'info', title: 'HP already full', subtitle: 'Save the potion for a darker day.' });
+                pushCeleb(d, { type: 'info', title: tr('market.hpFull'), subtitle: tr('toast.savePotion') });
                 return;
               }
               if (!consumeD(d, id)) return;
               const healed = Math.min(100 - d.character.hp, item.heal!);
               d.character.hp = clampHp(d.character.hp + item.heal!);
-              pushCeleb(d, { type: 'item', title: `+${healed} HP`, subtitle: `${item.name} restored your health.` });
+              pushCeleb(d, { type: 'item', title: `+${healed} HP`, subtitle: tr('toast.potionRestored', { name: item.name }) });
               break;
             }
             case 'indulgence': {
               if (!consumeD(d, id)) return;
               d.effects.indulgence++;
-              pushCeleb(d, { type: 'item', title: 'Indulgence active', icon: 'indulgence', subtitle: 'Your next bad-habit relapse will be forgiven.' });
+              pushCeleb(d, { type: 'item', title: tr('toast.indulgenceActive'), icon: 'indulgence', subtitle: tr('toast.indulgenceActiveSub') });
               break;
             }
             case 'attr_boost': {
               if (!consumeD(d, id)) return;
               const charges = boostCharges();
               d.effects.xpBoostCharges += charges;
-              pushCeleb(d, { type: 'item', title: 'Attribute Boost active', icon: 'boost', subtitle: `+50% XP on your next ${charges} actions.` });
+              pushCeleb(d, { type: 'item', title: tr('toast.boostActive'), icon: 'boost', subtitle: tr('toast.boostActiveSub', { n: charges }) });
               break;
             }
             case 'ghost_day': {
               const day = payload?.date ?? todayStr();
               if (d.effects.ghostDays.includes(day)) {
-                pushCeleb(d, { type: 'info', title: 'Already a Ghost Day', subtitle: 'That day is already frozen.' });
+                pushCeleb(d, { type: 'info', title: tr('toast.alreadyGhost'), subtitle: tr('toast.alreadyGhostSub') });
                 return;
               }
               if (!consumeD(d, id)) return;
@@ -1347,7 +1357,7 @@ export const useGame = create<GameState>()(
                   if (log && log[day] === 'failed') log[day] = 'ghost';
                 }
               }
-              pushCeleb(d, { type: 'item', title: 'Ghost Day set', icon: 'ghost', subtitle: `${day} is frozen: no penalties, streaks paused.` });
+              pushCeleb(d, { type: 'item', title: tr('toast.ghostSet'), icon: 'ghost', subtitle: tr('toast.ghostSetSub', { day }) });
               break;
             }
             case 'habit_pardon': {
@@ -1367,7 +1377,7 @@ export const useGame = create<GameState>()(
                   d.stats.bestStreak = Math.max(d.stats.bestStreak, h.best);
                 }
               }
-              pushCeleb(d, { type: 'item', title: 'Habit pardoned', icon: 'pardon', subtitle: `+${f.damage} HP restored, streak reconnected.` });
+              pushCeleb(d, { type: 'item', title: tr('toast.habitPardoned'), icon: 'pardon', subtitle: tr('toast.habitPardonedSub', { hp: f.damage }) });
               break;
             }
             case 'feather': {
@@ -1375,7 +1385,7 @@ export const useGame = create<GameState>()(
               if (!e || e.unlocked) return;
               if (!consumeD(d, id)) return;
               e.unlocked = true;
-              pushCeleb(d, { type: 'item', title: 'Entry unlocked', icon: 'feather', subtitle: `The ${e.date} entry can be edited once.` });
+              pushCeleb(d, { type: 'item', title: tr('toast.entryUnlocked'), icon: 'feather', subtitle: tr('toast.entryUnlockedSub', { date: e.date }) });
               break;
             }
             case 'identity_scroll': {
@@ -1386,11 +1396,11 @@ export const useGame = create<GameState>()(
               d.character.classes = list;
               d.character.classId = list[0];
               const cls = CLASSES.find(c => c.id === list[0]);
-              pushCeleb(d, { type: 'item', title: 'Identity rewritten', icon: 'identity', subtitle: `You are now ${d.character.name} the ${cls?.name}.` });
+              pushCeleb(d, { type: 'item', title: tr('toast.identityRewritten'), icon: 'identity', subtitle: tr('toast.identityRewrittenSub', { name: d.character.name, cls: cls?.name ?? '' }) });
               break;
             }
             case 'streak_shield': {
-              pushCeleb(d, { type: 'info', title: 'Shields are automatic', icon: 'shield', subtitle: 'A shield activates by itself the moment a streak would break.' });
+              pushCeleb(d, { type: 'info', title: tr('toast.shieldsAuto'), icon: 'shield', subtitle: tr('toast.shieldsAutoSub') });
               return;
             }
             default:
@@ -1408,6 +1418,12 @@ export const useGame = create<GameState>()(
           }
         }),
 
+      setLanguage: lang =>
+        set(d => {
+          d.lang = lang;
+          setLang(lang); // push into the i18n module so t() switches immediately
+        }),
+
       setAdminUnlockAll: on =>
         set(d => {
           d.adminUnlockAll = on;
@@ -1418,8 +1434,8 @@ export const useGame = create<GameState>()(
             d.theme = 'midnight';
             pushCeleb(d, {
               type: 'info',
-              title: 'Switched to Midnight', icon: 'themeMidnight',
-              subtitle: `${active.name} is locked with owner mode off. Reapply it anytime.`,
+              title: tr('toast.switchedMidnight'), icon: 'themeMidnight',
+              subtitle: tr('toast.themeLockedOwner', { name: active.name }),
             });
           }
           // Same trap-avoidance for the Wardrobe: an owner-mode-previewed cosmetic that
@@ -1493,14 +1509,14 @@ export const useGame = create<GameState>()(
 
           pushCeleb(d, {
             type: 'reward',
-            title: `${loot.crit ? 'CRITICAL CHEST! ' : ''}+${goldTotal} Gold`, icon: 'chest',
-            subtitle: `Daily Three fulfilled${bonusLabel}`,
+            title: `${loot.crit ? tr('toast.criticalChest') : ''}+${goldTotal} ${tr('common.gold')}`, icon: 'chest',
+            subtitle: `${tr('toast.dailyThreeDone')}${bonusLabel}`,
           });
           if (loot.bonus.kind === 'cosmetic') {
             pushCeleb(d, {
               type: 'item',
-              title: `${COSMETIC_RARITY_META[loot.bonus.cosmetic.rarity].label} drop: ${loot.bonus.cosmetic.name}`, icon: 'sparkles',
-              subtitle: 'New cosmetic! Equip it in your Profile wardrobe.',
+              title: tr('toast.cosmeticDrop', { rarity: COSMETIC_RARITY_META[loot.bonus.cosmetic.rarity].label, name: loot.bonus.cosmetic.name }), icon: 'sparkles',
+              subtitle: tr('toast.cosmeticDropSub'),
             });
           }
           checkAchievementsD(d);
@@ -1592,7 +1608,8 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 12, // v12: the sector Library (libraryRead)
+      version: 13, // v13: UI language (lang)
+      // v12: the sector Library (libraryRead)
       // v11: guided tour (tutorialStep, seenPages)
       // v10: currency, retired themes, wishlist removed, one identity
       // Older saves get new fields filled with defaults instead of being discarded
@@ -1624,8 +1641,18 @@ export const useGame = create<GameState>()(
         const { celebrations, ...rest } = state;
         return { ...rest, celebrations: [] } as GameState;
       },
+      // The i18n module holds the language it renders in, and it cannot read this
+      // store without an import cycle. Push the loaded value across as soon as the
+      // save lands, before the first render reads any translated constant.
+      onRehydrateStorage: () => state => {
+        if (state?.lang) setLang(state.lang);
+      },
     },
   ),
 );
+
+// Covers the fresh-save path, where nothing is rehydrated and the language came
+// straight from the browser locale.
+setLang(useGame.getState().lang);
 
 export const SAVE_KEY = 'irtiqa-save';

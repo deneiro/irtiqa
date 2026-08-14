@@ -15,9 +15,11 @@ import {
   todayStr,
 } from '../game/engine';
 import { spawnVFXAt } from '../lib/vfx';
+import { plural, useT } from '../i18n';
 import { useGame } from '../store';
 
 export function QuestDetail() {
+  const t = useT();
   const { id } = useParams();
   const navigate = useNavigate();
   const s = useGame();
@@ -31,7 +33,7 @@ export function QuestDetail() {
   if (!quest) {
     return (
       <div className="page">
-        <Empty>Quest not found. <Link to="/quests">Back to quests</Link></Empty>
+        <Empty>{t('qd.notFound')} <Link to="/quests">{t('qd.backToQuests')}</Link></Empty>
       </div>
     );
   }
@@ -50,15 +52,17 @@ export function QuestDetail() {
     <div className="page">
       <div className="page-head">
         <div>
-          <p><Link to="/quests" className="muted"><Icon name="chevronLeft" size={13} /> Quests</Link></p>
+          <p><Link to="/quests" className="muted"><Icon name="chevronLeft" size={13} /> {t('nav.quests')}</Link></p>
           <h1>
             {quest.priority && <Icon name="starFilled" size={18} />} {quest.title}{' '}
-            {quest.completedAt && <span className="status status-done"><Icon name="flag" size={13} /> completed</span>}
+            {quest.completedAt && <span className="status status-done"><Icon name="flag" size={13} /> {t('qd.completedTag')}</span>}
           </h1>
           {quest.description && <p className="muted">{quest.description}</p>}
           <p className="muted">
             <AttrTags attrs={quest.attrs} linked /> ·{' '}
-            {target ? `${QUEST_DURATIONS[quest.targetDuration].label} · target ${fmtDay(target)}` : 'No deadline'}
+            {target
+              ? `${QUEST_DURATIONS[quest.targetDuration].label} · ${t('qd.target', { date: fmtDay(target) })}`
+              : t('questDur.none')}
           </p>
         </div>
         {!quest.completedAt && (
@@ -66,16 +70,16 @@ export function QuestDetail() {
             <button
               className={`btn ${quest.priority ? 'btn-primary' : 'btn-ghost'}`}
               onClick={() => s.setQuestPriority(quest.id, !quest.priority)}
-              title="Priority quests pay +25% XP"
+              title={t('qd.priorityTitle')}
             >
               <Icon name={quest.priority ? 'starFilled' : 'starOutline'} size={14} />{' '}
-              {quest.priority ? 'Priority' : 'Make priority'}
+              {quest.priority ? t('qd.priority') : t('qd.makePriority')}
             </button>
             <button
               className="btn btn-danger"
-              onClick={() => { if (confirm('Delete this quest and all its logged sessions?')) { s.deleteQuest(quest.id); navigate('/quests'); } }}
+              onClick={() => { if (confirm(t('qd.deleteConfirm'))) { s.deleteQuest(quest.id); navigate('/quests'); } }}
             >
-              Delete
+              {t('common.delete')}
             </button>
           </div>
         )}
@@ -83,66 +87,63 @@ export function QuestDetail() {
 
       <div className="quest-detail-grid">
         <section className="card session-card">
-          <div className="card-head"><h2>Work session</h2></div>
+          <div className="card-head"><h2>{t('qd.workSession')}</h2></div>
           {quest.completedAt ? (
-            <p className="muted">This quest is finished. The saga is written below.</p>
+            <p className="muted">{t('qd.finishedNote')}</p>
           ) : isRunning ? (
             <>
               <LiveTimer startedAt={s.activeSession!.startedAt} />
               <button className="btn btn-primary btn-lg" onClick={() => setNotePrompt(true)}>
-                <Icon name="stop" size={15} /> Finish session
+                <Icon name="stop" size={15} /> {t('qd.finishSession')}
               </button>
             </>
           ) : (
             <>
-              <p className="muted">
-                Start the timer, do the real work, then finish and write down what you did.
-                Sessions earn nothing by themselves — the single big payout lands when the quest is completed.
-              </p>
+              <p className="muted">{t('qd.startDesc')}</p>
               <button className="btn btn-primary btn-lg" data-tour="start-session" disabled={otherRunning} onClick={() => s.startSession(quest.id)}>
-                <Icon name="play" size={15} /> Start session
+                <Icon name="play" size={15} /> {t('qd.startSession')}
               </button>
               {/* The payout scales with logged hours, so hours that never met the timer used to
                   be worth zero. This is the way back in: same log, same weight, entered by hand.
                   It stays enabled while another quest's timer runs — recording finished work
                   isn't the same act as starting new work, and blocking it would just lose it. */}
               <button className="btn btn-ghost" onClick={() => setLoggingPast(true)}>
-                <Icon name="write" size={14} /> Log past work
+                <Icon name="write" size={14} /> {t('qd.logPast')}
               </button>
-              {otherRunning && <p className="muted">Another quest's session is running — finish that one before starting a new timer.</p>}
+              {otherRunning && <p className="muted">{t('qd.otherRunning')}</p>}
             </>
           )}
           <div className="session-totals">
-            <div><span className="stat-big">{fmtMinutes(minutes)}</span><span className="muted">lifetime</span></div>
-            <div><span className="stat-big">{fmtMinutes(todayMinutes)}</span><span className="muted">today</span></div>
-            <div><span className="stat-big">{quest.sessions.length}</span><span className="muted">sessions</span></div>
+            <div><span className="stat-big">{fmtMinutes(minutes)}</span><span className="muted">{t('qd.lifetime')}</span></div>
+            <div><span className="stat-big">{fmtMinutes(todayMinutes)}</span><span className="muted">{t('common.today').toLowerCase()}</span></div>
+            <div><span className="stat-big">{quest.sessions.length}</span><span className="muted">{t('qd.sessionsLabel')}</span></div>
           </div>
           {progress !== null && target ? (
             <>
               <Bar value={progress} max={100} className={progress >= 100 ? 'bar-over' : 'bar-xp'} />
-              <p className="muted center">{progress}% of the way to {fmtDay(target)} ({QUEST_DURATIONS[quest.targetDuration].label} goal)</p>
+              <p className="muted center">{t('qd.progressLine', { pct: progress, date: fmtDay(target), label: QUEST_DURATIONS[quest.targetDuration].label })}</p>
             </>
           ) : (
-            <p className="muted center">No deadline set — work it at your own pace.</p>
+            <p className="muted center">{t('qd.noDeadline')}</p>
           )}
           {!quest.completedAt && (
             <button className="btn btn-gold btn-lg" disabled={isRunning} onClick={() => setConfirmDone(true)}>
-              <Icon name="flag" size={15} /> Complete quest — claim {payout.xp} XP + {payout.gold} <Icon name="gold" size={14} />
+              <Icon name="flag" size={15} /> {t('qd.completeClaim', { xp: payout.xp, gold: payout.gold })} <Icon name="gold" size={14} />
             </button>
           )}
         </section>
 
         <section className="card" data-tour="session-log">
-          <div className="card-head"><h2>Work log</h2></div>
+          <div className="card-head"><h2>{t('qd.workLog')}</h2></div>
           {sessions.length === 0 ? (
             <Empty>
-              <div>No sessions yet. The log fills up as you work — date, duration, and what you actually did.</div>
+              <div>{t('qd.logEmpty')}</div>
               {/* An empty log is the most likely moment to be sitting on hours that were never
                   clocked, so the way to enter them is offered here rather than only up in the card. */}
               {!quest.completedAt && (
                 <div style={{ marginTop: 12 }}>
                   <button className="btn btn-ghost btn-sm" onClick={() => setLoggingPast(true)}>
-                    <Icon name="write" size={13} /> Log work you already did
+                    <Icon name="write" size={13} /> {t('qd.logAlreadyDid')}
                   </button>
                 </div>
               )}
@@ -164,12 +165,12 @@ export function QuestDetail() {
       </div>
 
       {notePrompt && (
-        <Modal title="What did you do this session?" onClose={() => { /* must answer */ }}>
+        <Modal title={t('qd.notePrompt')} onClose={() => { /* must answer */ }}>
           <textarea
             className="input"
             rows={3}
             autoFocus
-            placeholder="e.g. Made the plan, outlined the structure"
+            placeholder={t('qd.notePlaceholder')}
             value={note}
             onChange={e => setNote(e.target.value)}
           />
@@ -179,7 +180,7 @@ export function QuestDetail() {
               disabled={!note.trim()}
               onClick={() => { s.finishSession(note); setNote(''); setNotePrompt(false); }}
             >
-              Log session
+              {t('qd.logSession')}
             </button>
           </div>
         </Modal>
@@ -188,17 +189,18 @@ export function QuestDetail() {
       {loggingPast && <ManualSessionForm questId={quest.id} onClose={() => setLoggingPast(false)} />}
 
       {confirmDone && (
-        <Modal title="Complete this quest?" onClose={() => setConfirmDone(false)}>
+        <Modal title={t('qd.completeTitle')} onClose={() => setConfirmDone(false)}>
           <p>
-            You logged <strong>{fmtMinutes(minutes)}</strong> across {quest.sessions.length} session{quest.sessions.length === 1 ? '' : 's'}.
+            {t('qd.youLogged')} <strong>{fmtMinutes(minutes)}</strong>{' '}
+            {t('qd.across', { n: quest.sessions.length, word: plural(quest.sessions.length, t('quests.sessionOne'), t('quests.sessionFew'), t('quests.sessionMany')) })}
           </p>
           <p>
-            Payout: <strong>+{payout.xp} XP</strong> and <strong>+{payout.gold} <Icon name="gold" size={14} /></strong>
-            {quest.priority && <> (includes the <Icon name="starFilled" size={13} /> priority bonus)</>} — paid once, now.
+            {t('qd.payout')} <strong>+{payout.xp} XP</strong> {t('onb.and')} <strong>+{payout.gold} <Icon name="gold" size={14} /></strong>
+            {quest.priority && <> ({t('qd.includesPriority')} <Icon name="starFilled" size={13} />)</>} — {t('qd.paidOnceNow')}
           </p>
-          <p className="muted">The payout scales with hours actually logged. No takebacks, no partial credit later.</p>
+          <p className="muted">{t('qd.payoutScales')}</p>
           <div className="modal-actions">
-            <button className="btn btn-ghost" onClick={() => setConfirmDone(false)}>Not yet</button>
+            <button className="btn btn-ghost" onClick={() => setConfirmDone(false)}>{t('qd.notYet')}</button>
             <button
               className="btn btn-gold"
               onClick={e => {
@@ -208,7 +210,7 @@ export function QuestDetail() {
                 setConfirmDone(false);
               }}
             >
-              <Icon name="flag" size={14} /> Claim the reward
+              <Icon name="flag" size={14} /> {t('qd.claimReward')}
             </button>
           </div>
         </Modal>
@@ -227,6 +229,7 @@ export function QuestDetail() {
  * future dates; the form says both out loud rather than silently correcting.
  */
 function ManualSessionForm({ questId, onClose }: { questId: string; onClose: () => void }) {
+  const t = useT();
   const logManualSession = useGame(s => s.logManualSession);
   const today = todayStr();
   const [hours, setHours] = useState('');
@@ -238,14 +241,11 @@ function ManualSessionForm({ questId, onClose }: { questId: string; onClose: () 
   const overCap = total > MAX_SESSION_MINUTES;
 
   return (
-    <Modal title="Log past work" onClose={onClose}>
-      <p className="muted">
-        For work already done — on paper, on your phone, or with this tab closed. It counts exactly
-        the same as a session run on the timer.
-      </p>
+    <Modal title={t('qd.logPast')} onClose={onClose}>
+      <p className="muted">{t('qd.manualDesc')}</p>
 
       <div className="field">
-        <span>How long did you work?</span>
+        <span>{t('qd.howLongWorked')}</span>
         <div className="qt-row">
           {/* Placeholder-only would leave these two boxes unnamed the moment a value is
               typed in, so the name lives on aria-label and the placeholder just hints. */}
@@ -255,8 +255,8 @@ function ManualSessionForm({ questId, onClose }: { questId: string; onClose: () 
             min={0}
             max={4}
             inputMode="numeric"
-            aria-label="Hours worked"
-            placeholder="hours"
+            aria-label={t('qd.hoursWorked')}
+            placeholder={t('qd.hoursPh')}
             value={hours}
             onChange={e => setHours(e.target.value)}
             autoFocus
@@ -267,8 +267,8 @@ function ManualSessionForm({ questId, onClose }: { questId: string; onClose: () 
             min={0}
             max={59}
             inputMode="numeric"
-            aria-label="Minutes worked"
-            placeholder="minutes"
+            aria-label={t('qd.minutesWorked')}
+            placeholder={t('qd.minutesPh')}
             value={mins}
             onChange={e => setMins(e.target.value)}
           />
@@ -276,37 +276,34 @@ function ManualSessionForm({ questId, onClose }: { questId: string; onClose: () 
       </div>
 
       <label className="field">
-        <span>Which day?</span>
+        <span>{t('qd.whichDay')}</span>
         {/* Capped at today: the log is a record of work done, not a plan. */}
         <input className="input" type="date" value={date} max={today} onChange={e => setDate(e.target.value)} />
       </label>
 
       <label className="field">
-        <span>What did you do? (optional)</span>
+        <span>{t('qd.whatDidYouDo')}</span>
         <textarea
           className="input"
           rows={2}
-          placeholder="e.g. Drafted the outline on the train"
+          placeholder={t('qd.manualNotePh')}
           value={note}
           onChange={e => setNote(e.target.value)}
         />
       </label>
 
       {overCap && (
-        <p className="muted">
-          One sitting counts up to {fmtMinutes(MAX_SESSION_MINUTES)}, so this logs as {fmtMinutes(MAX_SESSION_MINUTES)}.
-          Split a longer day into two entries and both count in full.
-        </p>
+        <p className="muted">{t('qd.overCap', { cap: fmtMinutes(MAX_SESSION_MINUTES) })}</p>
       )}
 
       <div className="modal-actions">
-        <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="btn btn-ghost" onClick={onClose}>{t('common.cancel')}</button>
         <button
           className="btn btn-primary"
           disabled={total < 1 || !date}
           onClick={() => { logManualSession(questId, total, note, date); onClose(); }}
         >
-          Add to the log
+          {t('qd.addToLog')}
         </button>
       </div>
     </Modal>

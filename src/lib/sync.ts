@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { t } from '../i18n';
 import type { GameState } from '../store';
 import { useGame } from '../store';
 import { isSupabaseConfigured, supabase } from './supabase';
@@ -174,13 +175,13 @@ export interface AuthResult {
 
 const NO_BACKEND: AuthResult = {
   ok: false,
-  message: 'Cloud sync is not enabled on this build. Your progress is saved in this browser.',
+  message: t('sync.notEnabled'),
 };
 
 export async function signIn(email: string, password: string): Promise<AuthResult> {
   if (!isSupabaseConfigured) return NO_BACKEND;
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  return error ? { ok: false, message: error.message } : { ok: true, message: 'Signed in — syncing your save.' };
+  return error ? { ok: false, message: error.message } : { ok: true, message: t('sync.signedIn') };
 }
 
 export async function signUp(email: string, password: string): Promise<AuthResult> {
@@ -188,9 +189,9 @@ export async function signUp(email: string, password: string): Promise<AuthResul
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) return { ok: false, message: error.message };
   if (!data.session) {
-    return { ok: true, message: 'Account created — confirm it from the email we sent, then sign in.' };
+    return { ok: true, message: t('sync.confirmEmail') };
   }
-  return { ok: true, message: 'Account created and signed in.' };
+  return { ok: true, message: t('sync.createdSignedIn') };
 }
 
 export async function signOutUser(): Promise<void> {

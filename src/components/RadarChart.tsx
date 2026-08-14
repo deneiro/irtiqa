@@ -1,9 +1,11 @@
 import { ATTRIBUTES, ATTR_KEYS } from '../game/constants';
 import { attrLevel } from '../game/engine';
+import { useT } from '../i18n';
 import { useGame } from '../store';
 import { Icon } from './Icon';
 
 export function RadarChart({ size = 300 }: { size?: number }) {
+  const t = useT();
   const attrs = useGame(s => s.attrs);
   const levels = ATTR_KEYS.map(k => attrLevel(attrs[k]));
   const maxLevel = Math.max(5, ...levels);
@@ -19,7 +21,7 @@ export function RadarChart({ size = 300 }: { size?: number }) {
   const valuePoly = ATTR_KEYS.map((_, i) => pt(i, (R * levels[i]) / maxLevel).join(',')).join(' ');
 
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="radar" role="img" aria-label="Attribute balance">
+    <svg viewBox={`0 0 ${size} ${size}`} className="radar" role="img" aria-label={t('radar.label')}>
       {[0.25, 0.5, 0.75, 1].map(f => (
         <polygon key={f} points={poly(R * f)} className="radar-ring" />
       ))}
