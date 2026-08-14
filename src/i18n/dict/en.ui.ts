@@ -213,7 +213,16 @@ export const EN_UI: Dict = {
   'quests.noQuestsYet': 'No quests exist yet. Forge one first — goals are won through quests.',
   'quests.saveLinks': 'Save links',
 
+  'celeb.levelUp': 'LEVEL UP!',
+  'celeb.rankUp': 'RANK UP!',
+  'celeb.achUnlocked': 'ACHIEVEMENT UNLOCKED',
+  'celeb.glorious': 'Glorious',
   // ---------- Dashboard ----------
+  'dash.xpProgress': 'XP progress',
+  'dash.openCount': v => `${v.n} open`,
+  'dash.chestHintThree': "Fulfill all three to unlock today's chest — gold, boosts, shields, or a rare cosmetic.",
+  'dash.chestHintBoth': "Fulfill both to unlock today's chest — gold, boosts, shields, or a rare cosmetic.",
+  'dash.bossDaysLeft': v => `${v.n} day${Number(v.n) > 1 ? 's' : ''} left`,
   'dash.chronThin': 'Last week was too quiet to write about. The Chronicle assembles itself from habits, quest sessions and journal entries — give it something to work with.',
   'dash.readLastWeek': 'Read last week →',
   'dash.openChronicle': 'Open the Chronicle →',
@@ -345,6 +354,8 @@ export const EN_UI: Dict = {
   'hh.savedByItem': 'saved by item',
 
   'radar.label': 'Attribute balance',
+  'wheel.weakestSector': 'Weakest sector →',
+  'wheel.weakestTail': v => `(Lv ${v.lvl}) becomes your first weekly boss.`,
   'wheel.previewLabel': 'Starting wheel preview',
   'wheel.skipForNow': 'Skip for now',
   'coach.dismiss': 'Dismiss tip',

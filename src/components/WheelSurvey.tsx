@@ -65,11 +65,11 @@ export function WheelSurvey({
     <div className="wheel-survey">
       <WheelRadar levels={levels} />
       <p className="wheel-weakest">
-        Weakest sector →{' '}
+        {t('wheel.weakestSector')}{' '}
         <strong className="wheel-weakest-name">
           <Icon name={weakest} size={14} /> {ATTRIBUTES[weakest].label}
         </strong>{' '}
-        (Lv {levels[weakest]}) becomes your first weekly boss.
+        {t('wheel.weakestTail', { lvl: levels[weakest] })}
       </p>
 
       <div className="wheel-sectors">
@@ -86,7 +86,7 @@ export function WheelSurvey({
                       A per-sector count turns it into eight short blocks you can see
                       yourself finishing — the total never moves, the progress does. */}
                   <span className="wheel-sector-count">{done}/{sec.statements.length}</span>
-                  <span className="wheel-sector-lvl" style={{ color: ATTRIBUTES[sec.key].color }}>Lv {levels[sec.key]}</span>
+                  <span className="wheel-sector-lvl" style={{ color: ATTRIBUTES[sec.key].color }}>{t('common.lv')} {levels[sec.key]}</span>
                 </span>
               </div>
               {sec.statements.map((st, i) => (

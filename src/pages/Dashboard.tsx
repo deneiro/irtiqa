@@ -35,6 +35,7 @@ import { buildCalendarItems, type CalendarItemType } from '../lib/calendar';
 import { spawnVFXAt } from '../lib/vfx';
 import type { AttributeKey, DashboardWidgetId } from '../game/types';
 import { plural, t as tr, useT } from '../i18n';
+import { locale } from '../lib/format';
 import { useGame } from '../store';
 
 const CAL_TYPE_ICON: Record<CalendarItemType, IconName> = {
@@ -266,7 +267,7 @@ export function Dashboard() {
           </button>
         ) : (
           <div className="chest-locked">
-            <Icon name="lock" size={14} className="dash-inline-icon" /> Fulfill {legsTotal === 3 ? 'all three' : 'both'} to unlock today's chest — gold, boosts, shields, or a rare cosmetic.
+            <Icon name="lock" size={14} className="dash-inline-icon" /> {legsTotal === 3 ? t('dash.chestHintThree') : t('dash.chestHintBoth')}
           </div>
         )}
       </section>
@@ -276,7 +277,7 @@ export function Dashboard() {
       <section className="card boss-card">
         <div className="card-head">
           <h2>{t('widget.weeklyBoss')}</h2>
-          <span className="muted">{bossDaysLeft} day{bossDaysLeft > 1 ? 's' : ''} left</span>
+          <span className="muted">{t('dash.bossDaysLeft', { n: bossDaysLeft })}</span>
         </div>
         {!boss || !bossDef ? (
           <Empty>{t('dash.nextBoss')}</Empty>
@@ -409,7 +410,7 @@ export function Dashboard() {
       <section className="card">
         <div className="card-head">
           <h2>{t('widget.attributes')}</h2>
-          <span className="muted">XP progress</span>
+          <span className="muted">{t('dash.xpProgress')}</span>
         </div>
         <AttributeProgress />
       </section>
@@ -419,7 +420,7 @@ export function Dashboard() {
       <section className="card">
         <div className="card-head">
           <h2>{t('widget.quickTasks')}</h2>
-          <span className="muted">{openTasks.length} open</span>
+          <span className="muted">{t('dash.openCount', { n: openTasks.length })}</span>
         </div>
         <QuickTaskAdd />
         {openTasks.length === 0 ? (
@@ -536,7 +537,7 @@ export function Dashboard() {
             {titleCosmetic && <span className="char-title"> {titleCosmetic.name}</span>}
           </h1>
           <p className="muted">
-            <Icon name={rank.icon} size={13} className="dash-inline-icon" /> {rank.name} · {cls && <Icon name={cls.id} size={13} className="dash-inline-icon" />} {cls?.name} · {parseDay(today).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+            <Icon name={rank.icon} size={13} className="dash-inline-icon" /> {rank.name} · {cls && <Icon name={cls.id} size={13} className="dash-inline-icon" />} {cls?.name} · {parseDay(today).toLocaleDateString(locale(), { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
         </div>
         <div className="quick-actions">
@@ -544,7 +545,7 @@ export function Dashboard() {
           <Link className="btn btn-ghost btn-icon-label" to="/quests"><Icon name="plus" size={14} /> {t('dash.qaQuest')}</Link>
           <Link className="btn btn-ghost btn-icon-label" to="/journal"><Icon name="write" size={14} /> {t('widget.journal')}</Link>
           <button className="btn btn-ghost btn-customize btn-icon-label" onClick={() => setCustomizing(true)} title={t('dash.customizeTitle')}>
-            <Icon name="grip" size={14} /> Customize
+            <Icon name="grip" size={14} /> {t('dash.customize')}
           </button>
         </div>
       </div>
