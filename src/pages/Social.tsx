@@ -14,12 +14,14 @@ import { useGame } from '../store';
  * fields in a two-column grid have no room for a caption each, and the glyph alone
  * doesn't say "Instagram" to someone meeting the icon set for the first time.
  */
+// Service names are proper nouns and stay as-is; only the format hint after the
+// dash is copy, and the two localisable ones (Phone, Email) take their label too.
 const CHANNEL_META: { key: keyof ContactChannels; label: string; icon: IconName; placeholder: string }[] = [
-  { key: 'instagram', label: 'Instagram', icon: 'instagram', placeholder: 'Instagram — @handle' },
-  { key: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp', placeholder: 'WhatsApp — +1 555 …' },
-  { key: 'telegram', label: 'Telegram', icon: 'telegram', placeholder: 'Telegram — @username' },
-  { key: 'phone', label: 'Phone', icon: 'phone', placeholder: 'Phone — +1 555 …' },
-  { key: 'email', label: 'Email', icon: 'email', placeholder: 'Email — name@example.com' },
+  { key: 'instagram', label: 'Instagram', icon: 'instagram', get placeholder() { return `Instagram — ${tr('soc.ch.handle')}`; } },
+  { key: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp', get placeholder() { return `WhatsApp — ${tr('soc.ch.phone')}`; } },
+  { key: 'telegram', label: 'Telegram', icon: 'telegram', get placeholder() { return `Telegram — ${tr('soc.ch.username')}`; } },
+  { key: 'phone', icon: 'phone', get label() { return tr('soc.ch.phoneLabel'); }, get placeholder() { return `${tr('soc.ch.phoneLabel')} — ${tr('soc.ch.phone')}`; } },
+  { key: 'email', icon: 'email', get label() { return tr('soc.ch.emailLabel'); }, get placeholder() { return `${tr('soc.ch.emailLabel')} — name@example.com`; } },
 ];
 
 /** Deep-link straight into a chat/profile/mail composer with this contact, not just the app's home screen. */

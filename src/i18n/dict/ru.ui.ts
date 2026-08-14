@@ -221,6 +221,11 @@ export const RU_UI: Dict = {
   'celeb.achUnlocked': 'ДОСТИЖЕНИЕ ОТКРЫТО',
   'celeb.glorious': 'Великолепно',
   // ---------- Круг ----------
+  'soc.ch.handle': '@ник',
+  'soc.ch.username': '@имя',
+  'soc.ch.phone': '+7 999 …',
+  'soc.ch.phoneLabel': 'Телефон',
+  'soc.ch.emailLabel': 'Почта',
   'soc.title': 'Круг',
   'soc.subtitle': 'Ваши люди, записанные как следует. Приватно — ничего не покидает это приложение.',
   'soc.didHappen': 'Это состоялось?',

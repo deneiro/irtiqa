@@ -218,6 +218,11 @@ export const EN_UI: Dict = {
   'celeb.achUnlocked': 'ACHIEVEMENT UNLOCKED',
   'celeb.glorious': 'Glorious',
   // ---------- Social Hub ----------
+  'soc.ch.handle': '@handle',
+  'soc.ch.username': '@username',
+  'soc.ch.phone': '+1 555 …',
+  'soc.ch.phoneLabel': 'Phone',
+  'soc.ch.emailLabel': 'Email',
   'soc.title': 'Social Hub',
   'soc.subtitle': 'Your people, remembered properly. Private — nothing leaves this app.',
   'soc.didHappen': 'Did these happen?',
