@@ -83,5665 +83,3195 @@ export const MEDIUM_LABEL = (() => {
 
 export const LIBRARY: LibraryEntry[] = [
   // ---------------- Health ----------------
+
+  // ---------------- Family ----------------
+
+  // ---------------- Development ----------------
+
+  // ---------------- Career ----------------
+
+  // ---------------- Development (2) ----------------
+
+  // ---------------- Health (2) ----------------
+
+  // ---------------- Money ----------------
+
+  // ---------------- Friends ----------------
+
+  // ---------------- Spirituality ----------------
+
+  // ---------------- Brightness ----------------
   {
     slug: 'health-is-cumulative',
     attr: 'health',
-    title: 'Health is cumulative, not causal',
-    origin: 'Alexander Dzidzaria — urologic oncologist, on prevention and male health',
+    get title() { return t('lib.health-is-cumulative.title'); },
+    get origin() { return t('lib.health-is-cumulative.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Why there is no single cause to find, and what a man over 35 should actually be checking.',
-    thesis:
-      'Illness is not caused, it accumulates. Both harm and repair work like weights on a scale: no single factor decides the outcome, so the useful move is to improve many small things slightly rather than hunt for the one thing to fix. The risk window for most cancers opens at 35–40 not because something appears then, but because that is when fifteen to thirty years of daily life finish adding up.',
-    ideas: [
-      {
-        name: 'The scale, not the cause',
-        body: 'Cell division errors happen in everyone, every day. Cancer is not the presence of errors — it is the failure of the system that culls them, degraded by genetics, epigenetics (lifestyle decides which genes are active), and load: smoking, alcohol, chronic sleep debt, chronic stress. Nothing here has a single lever.',
-      },
-      {
-        name: 'Chronic stress is biochemistry, not mood',
-        body: 'Years of work you hate or a life you cannot be yourself in raises cortisol, which lowers antitumour immunity and sex hormones. Living against your own values shows up in bloodwork. This is the least esoteric claim in the source and the most often dismissed.',
-      },
-      {
-        name: 'The missing check-engine light',
-        body: 'Men have no habit of routine checkups; they wait for a symptom loud enough to interrupt them. By then the cumulative process has been running for a decade. Screening exists precisely because the early phase is silent.',
-      },
-      {
-        name: 'Early markers most men misread',
-        body: 'Falling muscle mass, changing body composition, lower libido or erectile changes (a vascular one sends you to a cardiologist first, not a urologist), more night-time urination, unusual sweating — and, paradoxically, hair loss that suddenly stops. Each is easy to explain away one at a time.',
-      },
-      {
-        name: 'Gradual is invisible to the person it happens to',
-        body: 'Physical decline moves in fractions of a percent per day, so the only people who see the contrast are the ones who have not seen you in years. You cannot detect it by feel; you detect it by measurement, or not at all.',
-      },
-    ],
-    notes: [
-      'Smoking raises bladder and kidney cancer risk through a route most people never consider: carcinogens leave via urine and sit in prolonged contact with the urinary tract lining.',
-      'A sedentary job is not itself the risk — absence of physical activity is. Active people with desk jobs do not carry the same exposure.',
-      'Supplements are for documented deficiencies, not insurance. The guest\'s own ceiling is five to eight, taken once or twice a day — past that, adherence collapses and nothing gets taken consistently.',
-      'Vitamin D status read from D25OH alone is an incomplete picture; parathyroid hormone and ionised calcium change how the number should be read.',
-      'Some operations get performed because they are simple and safe to practise on, not because they are indicated. For a "simple" procedure, an experienced surgeon with nothing to prove is the safer choice.',
-    ],
-    practices: [
-      'After 35–40: abdominal ultrasound yearly, gastroscopy and colonoscopy on a regular schedule (polyps can be removed before they turn), faecal occult blood, PSA. Add lungs if you smoke.',
-      'Photograph your moles once — a "skin passport" — so change is measurable instead of remembered.',
-      'Change lifestyle in many directions slightly rather than one direction heroically. Break the target into measurable steps and record them, because the change is too gradual to feel.',
-      'Do not start eating changes by counting calories. Start by removing the worst items — late-night eating, processed meat, fast carbohydrates — and move toward food that was caught, killed, or grown.',
-    ],
+    get hook() { return t('lib.health-is-cumulative.hook'); },
+    get thesis() { return t('lib.health-is-cumulative.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.health-is-cumulative.idea.${i}.name`),
+        body: t(`lib.health-is-cumulative.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.health-is-cumulative.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.health-is-cumulative.practice.${i}`));
+    },
     habits: [
-      { id: 'h_nolate', because: 'Late eating is the single item the source names first when asked what to remove — and removing costs no new time.' },
-      { id: 'h_realmeal', because: 'The move away from processed food starts with one real meal landing before the evening, not with a diet.' },
-      { id: 'h_steps', because: 'Movement is the factor with the widest reach on the scale, and this is its cheapest daily version.' },
-      { id: 'h_lightsout', because: 'Chronic sleep debt is listed alongside smoking and alcohol as a load-bearing risk factor, not a comfort issue.' },
+      { id: 'h_nolate', get because() { return t('lib.health-is-cumulative.habit.h_nolate.because'); } },
+      { id: 'h_realmeal', get because() { return t('lib.health-is-cumulative.habit.h_realmeal.because'); } },
+      { id: 'h_steps', get because() { return t('lib.health-is-cumulative.habit.h_steps.because'); } },
+      { id: 'h_lightsout', get because() { return t('lib.health-is-cumulative.habit.h_lightsout.because'); } },
     ],
     quests: [
-      { id: 'q_healthcheck', because: 'The screening minimum is worthless as knowledge and valuable as an appointment. This is the quest that turns one into the other.' },
-      { id: 'q_energyaudit', because: 'If the mechanism is cumulative, the first useful act is finding out what is actually accumulating in your week.' },
+      { id: 'q_healthcheck', get because() { return t('lib.health-is-cumulative.quest.q_healthcheck.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.health-is-cumulative.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Дзидзария — Простые привычки долгожителей',
+    get vaultSource() { return t('lib.health-is-cumulative.vaultSource'); },
   },
   {
     slug: 'cheap-and-expensive-dopamine',
     attr: 'health',
-    title: 'Cheap dopamine and expensive dopamine',
-    origin: 'Ruslan Masgutov — microsurgeon, on dopamine and the control of wanting',
+    get title() { return t('lib.cheap-and-expensive-dopamine.title'); },
+    get origin() { return t('lib.cheap-and-expensive-dopamine.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Willpower problems are usually lifestyle problems wearing a character costume.',
-    thesis:
-      'Procrastination and "weak willpower" are, in the overwhelming majority of cases, not a defect of character but a consequence of how you live: overloaded on cheap dopamine (short video, sugar, scrolling) and short on the basics (movement, sleep, real food, dosed stress). Until the base is rebuilt, working on willpower directly does nothing.',
-    ideas: [
-      {
-        name: 'Cheap vs expensive dopamine',
-        body: 'Cheap dopamine is instant, needs escalating doses for the same effect, and erodes the decision-making system. Expensive dopamine is the product of effort and learning — a finished project, a new skill, a hard session — and gives lasting satisfaction with no dose escalation. The two are not different amounts of the same thing.',
-      },
-      {
-        name: 'The orienting reflex, farmed',
-        body: 'Humans react sharply to sudden stimuli — a rustle, a fast movement. Short-form video exploits this deliberately by changing the frame every few seconds. The guest\'s clinical read is that sustained exposure erodes analytical attention, particularly before the prefrontal cortex finishes maturing around 25.',
-      },
-      {
-        name: 'Hormesis — stress in a dose',
-        body: 'Short controlled stress (cold shower, contrast exposure) raises dopamine meaningfully. The condition matters more than the practice: applied on top of chronic stress or inflammation it inverts, and you get ill rather than robust. Recovery first, hormesis second.',
-      },
-      {
-        name: 'The golden plate rule',
-        body: 'Half vegetables (of which at most 100–150 g fruit or berries), a quarter protein, a quarter whole grain. No snacking between. A structure you can hold without measuring anything.',
-      },
-      {
-        name: 'The first hours belong to you',
-        body: 'Pick up the phone on waking and part of the day\'s dopamine budget is already spent, before anything you chose has happened.',
-      },
-    ],
-    notes: [
-      'Without baseline physical activity there is no climbing out of the dopamine hole: the body is built around movement, and no amount of discipline substitutes for it.',
-      'The guest\'s daily movement target: interval walking, three minutes brisk (breathing hard but still able to talk) and three minutes easy, about ten cycles.',
-      'Daytime naps are recommended at 15–30 minutes and no longer — past that you enter deep sleep and wake worse than you lay down.',
-      'The "2.5×" dopamine figure quoted for cold exposure comes from the guest without a citation. Treat it as a practitioner\'s estimate rather than an established number — the direction is well supported, the multiplier is not.',
-    ],
-    practices: [
-      'No phone for the first two to three hours after waking.',
-      'When a short video contains something genuinely interesting, stop scrolling and go deeper: ask why it works, check a source, read the longer version. That is the exact move that converts a cheap hit into expensive dopamine.',
-      'Attention drills that cost nothing: stare at a dot drawn on a sheet of A4 and note when your mind leaves; or sit outside and "become hearing", separating out every sound.',
-      'Keep a two-or-three-line log of good moments, written in the evening — the emotional state you fall asleep in correlates with the one you wake up in.',
-      'Put the phone in greyscale. The interface is designed around colour salience; removing it removes some of the pull.',
-    ],
+    get hook() { return t('lib.cheap-and-expensive-dopamine.hook'); },
+    get thesis() { return t('lib.cheap-and-expensive-dopamine.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.cheap-and-expensive-dopamine.idea.${i}.name`),
+        body: t(`lib.cheap-and-expensive-dopamine.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.cheap-and-expensive-dopamine.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.cheap-and-expensive-dopamine.practice.${i}`));
+    },
     habits: [
-      { id: 'h_noscreen_bed', because: 'The phone in bed is the point where cheap dopamine takes the two things — sleep and the first hour — that the whole argument rests on.' },
-      { id: 'd_nopassive', because: 'This is the cheap/expensive distinction turned into a rule you can actually check at the end of a day.' },
-      { id: 'h_walk10', because: 'The source is blunt that nothing else works before movement does. Ten minutes is the version you cannot argue with.' },
-      { id: 'b_outside', because: 'The "become hearing" attention drill needs no app and no setup — only being outside on purpose.' },
+      { id: 'h_noscreen_bed', get because() { return t('lib.cheap-and-expensive-dopamine.habit.h_noscreen_bed.because'); } },
+      { id: 'd_nopassive', get because() { return t('lib.cheap-and-expensive-dopamine.habit.d_nopassive.because'); } },
+      { id: 'h_walk10', get because() { return t('lib.cheap-and-expensive-dopamine.habit.h_walk10.because'); } },
+      { id: 'b_outside', get because() { return t('lib.cheap-and-expensive-dopamine.habit.b_outside.because'); } },
     ],
     quests: [
-      { id: 'q_sleepreset', because: 'Sleep is named as a base condition, not a nice-to-have — and it is the one that fixes itself least on its own.' },
-      { id: 'q_energyaudit', because: 'The claim is that your week, not your character, is producing the willpower problem. An audit is how you find out whether that is true for you.' },
+      { id: 'q_sleepreset', get because() { return t('lib.cheap-and-expensive-dopamine.quest.q_sleepreset.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.cheap-and-expensive-dopamine.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Масгутов — Дофамин и контроль желаний',
+    get vaultSource() { return t('lib.cheap-and-expensive-dopamine.vaultSource'); },
   },
-
-  // ---------------- Family ----------------
   {
     slug: 'infatuation-and-mature-love',
     attr: 'family',
-    title: 'Infatuation, love, and the difference between enduring and withstanding',
-    origin: 'Sergey Nasibyan — clinical psychologist, on marriage and mature love',
+    get title() { return t('lib.infatuation-and-mature-love.title'); },
+    get origin() { return t('lib.infatuation-and-mature-love.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'One distinction that predicts who leaves when a relationship starts to hurt.',
-    thesis:
-      'Marriage as most people live it runs on benefit — a neurotic need that has to be closed to lower anxiety — and it comes apart when the two partners\' benefits stop coinciding. Mature love is not benefit. It is the ability to tell infatuation (a state in which critical thinking disappears and you love an image you built) from love (accepting a real person, weaknesses included), and it requires distance, autonomy on both sides, and the capacity to withstand pain rather than merely endure it.',
-    ideas: [
-      {
-        name: 'Enduring vs withstanding',
-        body: 'The clinical distinction the whole source turns on. A partner who can only endure pain — clench, suppress, wait it out — eventually runs from it, through an affair or an emotional exit, the first time they meet real rejection. A partner who can withstand it stays next to the person causing it and lives through it. That, not any list of "three signs of a mature man", is the readiness marker.',
-      },
-      {
-        name: 'Benefit is set at the level of neurosis',
-        body: 'What you think you chose is usually what you needed to close in order to feel less anxious. Benefit is not a conscious goal, which is why it changes without announcement — and why two people can be perfectly matched for years and then not be.',
-      },
-      {
-        name: 'Infatuation is not early love',
-        body: 'The guest describes infatuation as a neurotic state in which critical thinking is suspended and the object is an invention. Love is acceptance of the actual person — which explicitly does not mean an obligation to stay. You can love someone, and refuse a specific act of theirs, and leave.',
-      },
-      {
-        name: 'The wrong question',
-        body: '"Does he love me or is he just infatuated" gives you neither power nor freedom. The productive version moves the locus of control back: am I infatuated, or have I come to love this person.',
-      },
-      {
-        name: 'Merging kills desire',
-        body: 'Distance — private time, private space, not demanding the password to a partner\'s phone — is named as a requirement for passion surviving, not a sign of insufficient closeness. Total merging consumes both people rather than joining them.',
-      },
-      {
-        name: 'The partner as mirror',
-        body: 'Irritation at a partner\'s appearance or habits frequently reflects an unprocessed problem of your own — greed, anxiety, jealousy, anger — rather than a legitimate demand for them to change.',
-      },
-    ],
-    notes: [
-      'The guest\'s therapeutic position: "I never save a marriage, I save people." The first move with a couple considering divorce is to take the fear off the word itself; the second is to introduce deliberate distance, sometimes literal, which either clarifies the decision or brings the feeling back.',
-      'Much of this source is clinical hypothesis stated as such — including estimates like "95% of men" — and is not research. The Sapolsky baboon work on rank and cortisol is real; the extension of it to married men living longer is the guest\'s own extrapolation.',
-      'The proposed reason women more often initiate divorce: people used to divorce because they could not endure, and now divorce because they do not want to endure — with the caveat that the unprocessed problems usually travel to the next relationship intact.',
-    ],
-    practices: [
-      'In conflict, practise staying and living through the painful moment rather than suppressing it or exiting — that is the trainable skill underneath everything else here.',
-      'Swap the anxious question about them for the honest question about yourself.',
-      'Protect private space in the relationship deliberately, as maintenance of desire rather than as distance from your partner.',
-      'Before entering a relationship, say plainly what you are bringing and building — instead of handing your unmet needs to another person to close.',
-      'When something about your partner irritates you, check first whether it is yours.',
-    ],
+    get hook() { return t('lib.infatuation-and-mature-love.hook'); },
+    get thesis() { return t('lib.infatuation-and-mature-love.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.infatuation-and-mature-love.idea.${i}.name`),
+        body: t(`lib.infatuation-and-mature-love.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.infatuation-and-mature-love.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.infatuation-and-mature-love.practice.${i}`));
+    },
     habits: [
-      { id: 'fa_listen', because: 'Letting someone finish without arguing is withstanding, in its smallest daily form.' },
-      { id: 'fa_noraise', because: 'A raised voice is what enduring looks like the moment it runs out.' },
-      { id: 'f_remember', because: 'Loving the real person rather than the image starts with knowing what is actually going on in their week.' },
+      { id: 'fa_listen', get because() { return t('lib.infatuation-and-mature-love.habit.fa_listen.because'); } },
+      { id: 'fa_noraise', get because() { return t('lib.infatuation-and-mature-love.habit.fa_noraise.because'); } },
+      { id: 'f_remember', get because() { return t('lib.infatuation-and-mature-love.habit.f_remember.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Naming what is actually wrong, out loud, is the first move the source recommends before anyone decides anything.' },
+      { id: 'q_hardconversation', get because() { return t('lib.infatuation-and-mature-love.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Насибян — Брак, влюблённость и зрелая любовь',
+    get vaultSource() { return t('lib.infatuation-and-mature-love.vaultSource'); },
   },
   {
     slug: 'relationships-without-nerves',
     attr: 'family',
-    title: 'Most arguments are not about what they are about',
-    origin: 'Ilya Shabshin — family psychologist, on getting through the long middle',
+    get title() { return t('lib.relationships-without-nerves.title'); },
+    get origin() { return t('lib.relationships-without-nerves.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The phases every long relationship goes through, and the one question that ends most fights before they start.',
-    thesis:
-      'Long relationships move through predictable phases — infatuation, convergence, drifting — and that is the norm, not evidence you chose wrong. Most fights are not about a disagreement; they are about each person interpreting the other\'s words through their own inner world without ever checking whether the meaning matches. And romance does not maintain itself: it takes deliberate, repeated effort, like a plant.',
-    ideas: [
-      {
-        name: 'The novelty curve',
-        body: 'At first you keep discovering good things, so the curve climbs. Then the new good runs out and the new bad starts accumulating. At some point the curves cross and disappointment arrives. This is a regularity, not a signal that you picked the wrong person.',
-      },
-      {
-        name: 'The hedonic criterion is a trap',
-        body: '"I am with you while it feels good to me" assumes a relationship in which it always feels good exists. It does not, so the criterion fails with certainty — the only question is when.',
-      },
-      {
-        name: 'Understanding and accepting are two different jobs',
-        body: 'You cannot love well without knowing specifically what is pleasant and unpleasant for this person. Without deliberate curiosity people act "from themselves" — doing what would please them, and quietly resenting that it did not land.',
-      },
-      {
-        name: 'Same words, different inner meanings',
-        body: '"We\'ll see", "planning the future" — each partner decodes these through their own history. The source puts roughly 90% of domestic arguments here: not in content, but in an unchecked interpretation.',
-      },
-      {
-        name: 'Acceptance is not tolerating abuse',
-        body: 'Accepting means taking that a person comes with strengths and weaknesses as a set, and giving up on improving them through sanctions, scenes, or therapy imposed from outside. It is not a licence for anyone to be treated badly.',
-      },
-      {
-        name: 'Romance is not a foundation',
-        body: 'Romantic infatuation cannot show you the real person. Shared daily life — living together, travelling, conflict — is what reveals how someone behaves when things are hard.',
-      },
-    ],
-    notes: [
-      'The commonly cited causes of divorce are mostly secondary. Behind "poverty" is usually a mismatch in expected standard of living rather than the lack of money itself — couples with nothing stay together for decades.',
-      'An affair that ends a marriage is rarely a single episode; it is usually a long parallel life, and a consequence of problems left unsolved rather than a cause on its own.',
-      'After a first child the romantic and sexual side almost always drops down the list. Normal in the moment, dangerous if it is never deliberately brought back.',
-      'There is no universally correct way to split a budget, divide roles, or handle stress after work. "Whatever works for you is right" is the actual answer.',
-    ],
-    practices: [
-      'Check the meaning before you argue: "am I understanding correctly that you mean…?" In the source\'s example, "you spend too much time on sport" turned out to mean "I miss your attention on the only days we share".',
-      'Hold a scheduled conversation about the relationship — not about logistics — like a standing meeting. Three anchor questions: how is it for you in this relationship right now; is there something that happened to you that you want to tell me; what can I do for you.',
-      'Open a difficult conversation with what is good before moving to what you want improved.',
-      'Run a day of positive feedback only: no criticism for 24 hours, and say out loud the small things you appreciated. The usual discovery is that something you do automatically matters a great deal to the other person.',
-      'For passion, skip the generic checklist. Ask this specific person what reads as romantic to them, repeat what actually worked early on, and watch the reaction rather than the template.',
-    ],
+    get hook() { return t('lib.relationships-without-nerves.hook'); },
+    get thesis() { return t('lib.relationships-without-nerves.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.relationships-without-nerves.idea.${i}.name`),
+        body: t(`lib.relationships-without-nerves.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.relationships-without-nerves.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.relationships-without-nerves.practice.${i}`));
+    },
     habits: [
-      { id: 'fa_meal', because: 'The scheduled conversation needs a slot that already exists. A meal with no phone is the one most people already have.' },
-      { id: 'f_thanks', because: 'The positive-feedback exercise, reduced to something you can do every day instead of once.' },
-      { id: 'f_remember', because: 'Understanding is a separate job from accepting, and it is done by asking about the thing they told you last time.' },
-      { id: 'fa_noraise', because: 'Almost all of it is an unchecked interpretation. Checking is impossible at volume.' },
+      { id: 'fa_meal', get because() { return t('lib.relationships-without-nerves.habit.fa_meal.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.relationships-without-nerves.habit.f_thanks.because'); } },
+      { id: 'f_remember', get because() { return t('lib.relationships-without-nerves.habit.f_remember.because'); } },
+      { id: 'fa_noraise', get because() { return t('lib.relationships-without-nerves.habit.fa_noraise.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Start with the plus, then name what you want to improve — this is that conversation, planned rather than triggered.' },
-      { id: 'q_reconnect', because: 'The drifting phase is normal and it is also reversible, but only by someone deciding to make contact first.' },
+      { id: 'q_hardconversation', get because() { return t('lib.relationships-without-nerves.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.relationships-without-nerves.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Шабшин — Отношения без нервов',
+    get vaultSource() { return t('lib.relationships-without-nerves.vaultSource'); },
   },
   {
     slug: 'attachment-and-the-four-horsemen',
     attr: 'family',
-    title: 'Desire, love, and attachment are three different circuits',
-    origin: 'Andrew Huberman — neuroscientist, on the science of love, desire and attachment',
+    get title() { return t('lib.attachment-and-the-four-horsemen.title'); },
+    get origin() { return t('lib.attachment-and-the-four-horsemen.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'The single behaviour that predicts a breakup with roughly 94% accuracy, and it is not what most people guess.',
-    thesis:
-      'Desire, love, and attachment are separate, sequentially recruited systems in the brain, not one "love" mechanism — each runs on a different mix of hormones and neurochemistry. How securely a relationship holds is best predicted not by surface compatibility but by how two people\'s nervous systems coordinate under stress, by specific destructive conflict patterns being present or absent, and by something researchers call positive illusion.',
-    ideas: [
-      {
-        name: 'Four attachment styles, set early and still changeable',
-        body: 'Built from research on how toddlers react to a caregiver leaving and returning a room: secure (visible distress at separation, visible relief at reunion), anxious-avoidant (little visible emotion either way), anxious-ambivalent (distress before separation even starts, hard to soothe at reunion), and disorganized (contradictory behaviour, such as approaching while looking away). The same circuitry gets reused for adult romantic attachment — but it is plastic: an insecurely attached adult can move toward security over time, including through a relationship with a more securely attached partner. It also runs the other way.',
-      },
-      {
-        name: "Gottman's Four Horsemen",
-        body: 'Four interaction patterns shown to predict relationship breakdown: criticism, defensiveness, stonewalling, and contempt. Contempt — treating a partner or their concerns as beneath consideration — is described as the strongest single predictor of the four, and the one most worth eliminating on sight.',
-      },
-      {
-        name: 'Positive illusion',
-        body: 'The belief that this specific partner, and not just any similar person, is the one who makes you feel a particular way. Described as a real predictor of long-term stability — the opposite of the cynical read that romantic attachment is just people overestimating how different they are from anyone else.',
-      },
-      {
-        name: 'Self-expansion',
-        body: 'Feeling that a partner makes you a more capable version of yourself is a hallmark of a healthy early bond, and it shows up physically: people primed to feel this showed reduced brain activity associated with rating the attractiveness of alternatives — a plausible neural mechanism behind loyalty, not just a nice feeling.',
-      },
-      {
-        name: 'Arousal is not proof of anything by itself',
-        body: 'Courtship and pursuit run on the same activated, alert nervous-system state as anxiety. The state alone does not tell you whether a relationship is good for you — the story you build around that state does the deciding, which is exactly how people mistake a volatile relationship for an exciting one.',
-      },
-    ],
-    notes: [
-      'Attachment style measured in early childhood is one of the more robustly replicated findings connecting early life to adult romantic behaviour — but "predictive" is not "fixed."',
-      'The oft-cited figure that conflict-pattern observation alone predicts divorce with around 94% accuracy comes from Gottman\'s own research group; treat it as the headline finding of a specific research programme; it has been well cited but its precise replication is only understood as well as any single lab\'s figure.',
-      'Compatible couples showed different resting-state brain activity from each other in one cited study — the opposite of a naive "like attracts like" and worth remembering the next time similarity gets treated as the whole story.',
-    ],
-    practices: [
-      'Identify your own attachment style and, if you can, your partner\'s — as a working model for recurring patterns, not a life sentence.',
-      'Watch your own conflicts for the Four Horsemen, especially contempt, and treat any sign of it as the one to remove first.',
-      'Deliberately say the self-expansion sentence out loud when it is true — "you make me better at this" — rather than assuming it is understood.',
-      'When a relationship feels intensely exciting, check whether the excitement or the anxiety is doing the talking before reading it as a good sign.',
-    ],
+    get hook() { return t('lib.attachment-and-the-four-horsemen.hook'); },
+    get thesis() { return t('lib.attachment-and-the-four-horsemen.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.attachment-and-the-four-horsemen.idea.${i}.name`),
+        body: t(`lib.attachment-and-the-four-horsemen.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.attachment-and-the-four-horsemen.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.attachment-and-the-four-horsemen.practice.${i}`));
+    },
     habits: [
-      { id: 'fa_noraise', because: 'Of the four patterns, contempt is the one that predicts breakup hardest — and it lives exactly where a raised voice starts to.' },
-      { id: 'f_invite', because: 'Self-expansion needs new shared ground to point at. Inviting someone into something new is the cheapest way to keep generating it.' },
+      { id: 'fa_noraise', get because() { return t('lib.attachment-and-the-four-horsemen.habit.fa_noraise.because'); } },
+      { id: 'f_invite', get because() { return t('lib.attachment-and-the-four-horsemen.habit.f_invite.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Naming a pattern like contempt or a mismatched attachment style out loud is the harder, more useful version of noticing it privately.' },
+      { id: 'q_hardconversation', get because() { return t('lib.attachment-and-the-four-horsemen.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Huberman — Love, Desire and Attachment',
+    get vaultSource() { return t('lib.attachment-and-the-four-horsemen.vaultSource'); },
   },
   {
     slug: 'lust-romance-attachment',
     attr: 'family',
-    title: 'Lust, romance, and attachment run on different chemistry',
-    origin: 'Helen Fisher — biological anthropologist, on the science of sex, love and attachment',
+    get title() { return t('lib.lust-romance-attachment.title'); },
+    get origin() { return t('lib.lust-romance-attachment.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'Why "casual" sex is not neurologically casual, and the cheapest lever for reviving a long relationship.',
-    thesis:
-      'Romantic love is a basic, biologically hardwired drive — universal across every studied culture — not merely a feeling or a cultural script. A long partnership runs on three separable systems (sex drive, romantic attraction, deep attachment), and each has to be deliberately sustained on its own terms rather than assumed to maintain itself.',
-    ideas: [
-      {
-        name: 'Three systems, three chemistries',
-        body: 'Sex drive runs on testosterone, romantic attraction on dopamine, deep attachment on oxytocin and vasopressin. They can run somewhat independently — deep attachment without active "in love" feeling, or desire without either — which is why a relationship can lose one system while the others are intact, and why fixing it means naming which one actually went quiet.',
-      },
-      {
-        name: 'Romantic love as a primary drive, not a secondary emotion',
-        body: 'Early-stage romantic love activates the same basic dopamine-producing brain region involved in hunger and thirst — framed as an ancient survival mechanism repurposed to focus mating energy on one person long enough to pair-bond.',
-      },
-      {
-        name: 'Rejection overlaps with addiction, neurologically',
-        body: 'Scans of recently rejected people show activation in the same brain regions implicated in substance craving — a real basis for heartbreak behaving, physiologically, less like sadness and more like withdrawal.',
-      },
-      {
-        name: 'Long-term love is neurologically real, not nostalgia',
-        body: 'Couples decades into a relationship who report still being "in love" show activation patterns in the same brain regions as newly in-love couples — evidence against the assumption that romantic love inevitably fades, though the finding is presented with the obvious caveat that it depends on the relationship being a good one to begin with.',
-      },
-      {
-        name: 'Novelty is a real, repeatable lever',
-        body: 'Shared novel or exciting activity reliably drives the same dopamine system responsible for early romantic attraction — meaning it can reactivate those feelings in a long relationship on purpose, not just by chance.',
-      },
-      {
-        name: '"Casual sex is not casual"',
-        body: 'Genital stimulation drives the same dopamine system that feeds into romantic-love circuitry and, from there, attachment — so sex intended as purely physical can trigger the neural machinery of falling in love regardless of the stated intention going in.',
-      },
-    ],
-    notes: [
-      'Longer courtship before major commitment correlates with greater relationship longevity in the demographic data cited here — a "slow love" pattern identified well before it became a named dating trend.',
-      'People tend to fall in love within a pool sharing their socioeconomic background, education and values — but even inside that filtered pool they do not fall in love with everyone who qualifies, implying a further temperament-based layer of selection beyond demographic similarity.',
-    ],
-    practices: [
-      'Treat sex, novelty, and physical affection as three separate maintenance jobs in a long relationship rather than one general "romance" task.',
-      'Introduce novelty on purpose — new activity, travel, breaking routine — as a specific, repeatable lever, not a one-off anniversary gesture.',
-      'Before pursuing a purely physical encounter, factor in that the body does not reliably keep it purely physical.',
-      'When evaluating a partner\'s fit, weigh temperament (novelty-seeking versus stability-seeking) alongside shared background — similarity on paper is not the whole story.',
-    ],
+    get hook() { return t('lib.lust-romance-attachment.hook'); },
+    get thesis() { return t('lib.lust-romance-attachment.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.lust-romance-attachment.idea.${i}.name`),
+        body: t(`lib.lust-romance-attachment.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 2 }, (_, i) => t(`lib.lust-romance-attachment.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.lust-romance-attachment.practice.${i}`));
+    },
     habits: [
-      { id: 'b_new', because: 'Novelty is this source\'s single most repeatable lever for reviving attraction in a long relationship, and doing something you have never done is that lever in its plainest form.' },
-      { id: 'fa_meal', because: 'Deep attachment runs on oxytocin, which physical togetherness and ritual feed more reliably than words do — a shared meal with no phone is exactly that kind of ritual.' },
+      { id: 'b_new', get because() { return t('lib.lust-romance-attachment.habit.b_new.because'); } },
+      { id: 'fa_meal', get because() { return t('lib.lust-romance-attachment.habit.fa_meal.because'); } },
     ],
     quests: [],
-    vaultSource: 'Family & relationship / Resource / Fisher — The Science of Sex, Love and Attachment',
+    get vaultSource() { return t('lib.lust-romance-attachment.vaultSource'); },
   },
   {
     slug: 'self-regulation-in-conflict',
     attr: 'family',
-    title: 'Regulate yourself first — resolving the argument can wait',
-    origin: 'Lori Gottlieb — psychotherapist, on finding and being a great romantic partner',
+    get title() { return t('lib.self-regulation-in-conflict.title'); },
+    get origin() { return t('lib.self-regulation-in-conflict.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Why insisting on resolving a fight right now is one of the worst moves available, and what to do instead.',
-    thesis:
-      'Good relationships run on active self-regulation — noticing your own internal state and using it as information, rather than either suppressing it or discharging it onto a partner — combined with honest self-knowledge about your own unconscious pull toward familiar-but-unhealthy dynamics. Managing yourself in the moment matters more than resolving the disagreement immediately, and reacting instantly to a trigger is often an old reaction from somewhere else being replayed onto the present.',
-    ideas: [
-      {
-        name: 'Self-regulation versus dysregulation',
-        body: 'Noticing "I am really angry about this" and treating it as information — a boundary was likely crossed — without either suppressing it or acting it out destructively. In an argument, at least one person staying regulated matters more than the disagreement getting resolved on the spot; insisting on resolving everything in a heated moment is named as one of the worst available strategies.',
-      },
-      {
-        name: 'Attraction to the familiar over the healthy',
-        body: 'People are often unconsciously drawn to partners who recreate childhood relational dynamics, even unhappy ones, because familiarity reads as safer than the unknown — which is also why some people quietly distrust a genuinely stable partner: if it feels this good, something must be about to go wrong.',
-      },
-      {
-        name: 'Guilt versus shame',
-        body: 'Guilt — "that did not align with who I want to be" — is a constructive, behaviour-linked signal that can drive real change. Shame — "I am bad" — tends to produce nothing constructive at all. The distinction is worth making deliberately in your own self-talk after a mistake.',
-      },
-      {
-        name: 'Reacting is often re-acting',
-        body: 'An intense emotional reaction in the moment is frequently an old reaction from a past situation being replayed onto the present one. Deliberately creating space before responding — even a slow count before speaking — gives you room to ask whether the intensity actually matches what just happened.',
-      },
-      {
-        name: 'Teflon versus Velcro',
-        body: 'Positive experiences tend to slide off with little lasting effect; negative ones stick and accumulate. That uneven residue is how core beliefs like "I\'m unlovable" or "nothing works out" get built — and once built, they filter out the evidence that would contradict them.',
-      },
-    ],
-    notes: [
-      'A therapy reframe worth borrowing directly: instead of asking what you want to change about your partner, ask what you could work on to be the best possible partner yourself.',
-      'A described red flag worth watching for: a partner whose stories about past relationship failures are consistently self-exonerating — always someone else\'s fault — especially when told while fishing for your validation.',
-      'Chronic low-grade numbness is often not one overwhelming feeling but a defensive response to being flooded by too many feelings at once — the fix is slowing down to name the specific feeling, not suppressing further.',
-    ],
-    practices: [
-      'Name your emotional state out loud before acting on it, and treat it as information rather than something to suppress or discharge onto a partner.',
-      'In a heated moment, propose a short, explicit break — "let\'s revisit this in an hour" — instead of insisting on resolving everything immediately.',
-      'Before reacting to something that triggered you, pause and ask whether the intensity belongs to the present situation or an older one.',
-      'When you notice a core negative belief about yourself or relationships, actively look for counter-examples from your own life rather than accepting the belief\'s self-selected evidence.',
-    ],
+    get hook() { return t('lib.self-regulation-in-conflict.hook'); },
+    get thesis() { return t('lib.self-regulation-in-conflict.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.self-regulation-in-conflict.idea.${i}.name`),
+        body: t(`lib.self-regulation-in-conflict.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.self-regulation-in-conflict.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.self-regulation-in-conflict.practice.${i}`));
+    },
     habits: [
-      { id: 'fa_listen', because: 'Letting someone finish without arguing is self-regulation in its smallest, most repeatable daily form.' },
-      { id: 'fa_help', because: 'The reframe here is doing something to become the best possible partner rather than naming what the other person should change — this habit is that reframe, made concrete.' },
+      { id: 'fa_listen', get because() { return t('lib.self-regulation-in-conflict.habit.fa_listen.because'); } },
+      { id: 'fa_help', get because() { return t('lib.self-regulation-in-conflict.habit.fa_help.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The conversation you keep avoiding is usually the one where an old reaction, not the present situation, is doing the talking. Naming it is how you find out.' },
+      { id: 'q_hardconversation', get because() { return t('lib.self-regulation-in-conflict.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Gottlieb — How to Find and Be a Great Romantic Partner',
+    get vaultSource() { return t('lib.self-regulation-in-conflict.vaultSource'); },
   },
   {
     slug: 'the-third-in-the-room',
     attr: 'family',
-    title: "The hardest crisis isn't an anniversary, it's the arrival of a third",
-    origin: 'Marina Nakhalova — family psychologist and psychoanalytic therapist, on passion, crises and raising children',
+    get title() { return t('lib.the-third-in-the-room.title'); },
+    get origin() { return t('lib.the-third-in-the-room.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Why the toughest relationship crisis has nothing to do with how many years you\'ve been together.',
-    thesis:
-      "Relationship crises aren't tied to an anniversary — they're tied to a change in the couple's structure, most commonly the arrival of a first child turning a pair into a triangle. Passion is not sustained by merging and closeness; it needs a preserved measure of otherness between partners. And any crisis starts to resolve the same way: name the problem without blame, and make it a shared enemy rather than making each other the enemy.",
-    ideas: [
-      {
-        name: 'From pair to triangle',
-        body: 'The heaviest structural crisis in long relationships is not tied to a specific year of marriage — it is tied to the arrival of a first child. A partner who was needed as part of a couple can suddenly feel surplus to requirements once a woman\'s focus shifts entirely onto the pregnancy or the infant, which is offered as one reason departures cluster around this period rather than around any anniversary.',
-      },
-      {
-        name: '"Us versus the problem"',
-        body: 'Reframing a conflict from "you versus me" to "us versus this problem" removes a partner\'s need to get defensive in the first place — the single most transferable move in the source, and the one every other technique here builds on.',
-      },
-      {
-        name: 'Otherness as fuel for passion',
-        body: 'Passion needs partners to keep some distance and independence — separate friends, some privacy, a bit of the unsaid — rather than full merging. A couple that reads each other\'s minds and shares literally everything is describing a sibling-style closeness that reliably kills desire, not sustains it.',
-      },
-      {
-        name: 'The 70/40 heuristic',
-        body: 'The source\'s own rough working rule, not a clinical threshold: a couple in conflict roughly 40% of the time is within a healthy range; conflict around 70% of the time is a real warning sign. Useful as a gut check, not a diagnosis.',
-      },
-      {
-        name: 'Managed conflict is not pathology',
-        body: 'Arguing in a couple is a way of surfacing what has gone unsaid, and is not itself unhealthy — as long as it actually leads somewhere (reconciliation, new understanding) rather than looping without resolution.',
-      },
-    ],
-    notes: [
-      'Two early warning markers named here: rising interest in "outside" life (work, friends) as avoidance rather than simple busyness, and conflict that never resolves or teaches anything, as opposed to conflict that clears the air.',
-      'A long-running affair is described as rarely forgiven in this source\'s clinical experience; a single episode can be absorbed if the relationship is valued highly, but tends to remain a sore spot that resurfaces in later arguments rather than vanishing.',
-      'An admission of wrongdoing lands better framed as "that was me, but I was different then and I handle it differently now" than as flat denial ("that wasn\'t me") — the second reads as untrustworthy rather than reassuring.',
-    ],
-    practices: [
-      'Open a hard conversation without blame: "something seems to be going on with us, can we talk about it" rather than a direct accusation.',
-      'When a crisis surfaces, agree explicitly on three things in order: that there is a problem, whether to address it, and how (together, separately, with outside help).',
-      'Translate a complaint about money or intimacy into an "I" statement plus a joint question — "I\'ve noticed we\'re short on X, is something going on with us?" instead of "why don\'t you earn more."',
-      'Protect some separate friendships, interests, and unsaid moments deliberately, rather than treating total transparency as the goal.',
-    ],
+    get hook() { return t('lib.the-third-in-the-room.hook'); },
+    get thesis() { return t('lib.the-third-in-the-room.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-third-in-the-room.idea.${i}.name`),
+        body: t(`lib.the-third-in-the-room.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-third-in-the-room.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-third-in-the-room.practice.${i}`));
+    },
     habits: [
-      { id: 'f_meet', because: 'Keeping a separate friendship alive is exactly the otherness this source names as what protects passion from merging into siblinghood.' },
-      { id: 'fa_meal', because: '"Us versus the problem" conversations need a recurring slot that already exists rather than waiting for a crisis to force one.' },
+      { id: 'f_meet', get because() { return t('lib.the-third-in-the-room.habit.f_meet.because'); } },
+      { id: 'fa_meal', get because() { return t('lib.the-third-in-the-room.habit.fa_meal.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Naming the problem out loud, without blame, is this source\'s first and only entry point into resolving any crisis.' },
+      { id: 'q_hardconversation', get because() { return t('lib.the-third-in-the-room.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Нахалова — Страсть, кризисы и воспитание',
+    get vaultSource() { return t('lib.the-third-in-the-room.vaultSource'); },
   },
   {
     slug: 'do-versus-talk',
     attr: 'family',
-    title: 'He shows love by doing, she needs it said — and both are real',
-    origin: 'Elena Novoselova — psychologist, on trust, healthy selfishness and relationship crises',
+    get title() { return t('lib.do-versus-talk.title'); },
+    get origin() { return t('lib.do-versus-talk.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The gender gap in how care actually gets expressed, and why most conflict starts right there.',
-    thesis:
-      "Most couple conflict is not a shortage of love — it's a mismatch in how care gets expressed and unconscious patterns inherited from earlier generations doing the interpreting. A typical gap: a man shows love by doing and expects the same in return; a woman expects it said, repeatedly, and reads silent action as a shortage of feeling. Trust, in this framing, is not the absence of infidelity — it is the willingness to hear a partner's real disclosures without judgment.",
-    ideas: [
-      {
-        name: '"Do" versus "talk"',
-        body: "A recurring gendered pattern in how care gets expressed: a man tends to show love through action and expects action back, not questions; a woman tends to expect verbal confirmation — hearing \"I love you\" said, more than once — and can read silent action alone as a shortage of feeling. Named as the point where a large share of conflict actually starts, not a lack of love underneath it.",
-      },
-      {
-        name: 'Healthy selfishness',
-        body: "Doing something good for a partner while honestly recognising it also satisfies you removes the need to wait for gratitude, and turns care into a habit that holds up rather than a debt the other person is expected to repay.",
-      },
-      {
-        name: 'Trust is not the same as fidelity',
-        body: 'Basic trust is defined here as the willingness to hear a partner\'s honest disclosures without judgment — not simply the absence of an affair. Openness is scoped to the two of you, not a running account of every past detail, which the source distinguishes from real closeness.',
-      },
-      {
-        name: "Men's and women's midlife crises differ in shape",
-        body: 'A roughly decade-cycle identity crisis in men ("who am I in her eyes"), typically lasting years, where a partner supporting from a place of her own continued activity works better than dissolving into caretaking. Two identity-linked crises named for women — one in the 30s–40s tied to social expectations around achievement and motherhood, one around 50 tied to fertility and a felt loss of status — both are framed as needing to be lived through and refilled with new meaning, not argued out of.',
-      },
-      {
-        name: 'Trying to remake a partner does not work',
-        body: 'Partners change only through their own voluntary choice, never through an ultimatum or a system of rewards and punishments aimed at reshaping them — a direct contrast with treating a relationship as a renovation project.',
-      },
-    ],
-    notes: [
-      'A described de-escalation line worth borrowing directly: "we\'re not getting divorced, are we?" — deliberately absurd enough to cut tension and redirect a conflict toward something constructive.',
-      'A warning sign for a relationship heading toward real trouble: a sustained (multi-year) low mood, absence of joy, and a felt sense of one\'s own personality disappearing — not the occasional argument.',
-      'Turning a relationship into a dumping ground for daily unfiltered stress is described as corrosive in the same register as outright distrust — care has to account for a partner\'s emotional bandwidth, not just your own need to vent.',
-    ],
-    practices: [
-      'When a partner is expressing something through action rather than words, notice it as their dialect of care rather than a shortage of it.',
-      'Say appreciation out loud specifically and often, rather than assuming action alone communicates it.',
-      'During a partner\'s identity crisis, keep your own activities and friendships running rather than dissolving fully into caretaking — sustained normalcy motivates better than constant concern.',
-      'Periodically ask yourselves, outside of any crisis, "why are we together" — a deliberate check-in rather than an inertial assumption.',
-    ],
+    get hook() { return t('lib.do-versus-talk.hook'); },
+    get thesis() { return t('lib.do-versus-talk.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.do-versus-talk.idea.${i}.name`),
+        body: t(`lib.do-versus-talk.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.do-versus-talk.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.do-versus-talk.practice.${i}`));
+    },
     habits: [
-      { id: 'fa_help', because: 'Doing something at home without being asked is the "do" side of care this source says a lot of couples never learn to read as love.' },
-      { id: 'f_thanks', because: "Saying appreciation specifically is the direct fix for the half of the gap that action alone can't cover." },
+      { id: 'fa_help', get because() { return t('lib.do-versus-talk.habit.fa_help.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.do-versus-talk.habit.f_thanks.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The recurring "why are we together" check-in this source recommends is exactly this quest, asked before a crisis forces it.' },
+      { id: 'q_hardconversation', get because() { return t('lib.do-versus-talk.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Новосёлова — Доверие, здравый эгоизм и кризисы',
+    get vaultSource() { return t('lib.do-versus-talk.vaultSource'); },
   },
   {
     slug: 'sex-as-communication',
     attr: 'family',
-    title: "Sex is a form of communication, not a performance score",
-    origin: 'Natalia Fomicheva — sex therapist, on the myths around sex, porn and infidelity',
+    get title() { return t('lib.sex-as-communication.title'); },
+    get origin() { return t('lib.sex-as-communication.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Why there is no universal normal, and why waiting for spontaneous desire is the wrong strategy for most couples.',
-    thesis:
-      "Sexual desire is a psychological phenomenon, not a purely physiological one, and its normal range is individual to each person and each couple — there is no universal standard of frequency or duration to measure against. Most popular myths about sex (size, pornography, an inherent male drive toward polygamy) are cultural constructs rather than biological facts, and because sex is one layer of a couple's overall communication, a problem in it rarely stays isolated from the rest of the relationship.",
-    ideas: [
-      {
-        name: 'Sex as one layer of communication',
-        body: "Sexual connection sits alongside verbal and emotional communication as one level of how a couple relates — not first, not last, but linked. Discomfort here is not separate from discomfort elsewhere in the relationship; the two layers affect each other in both directions.",
-      },
-      {
-        name: 'Individual norm and couple norm',
-        body: 'There is no sexological standard for frequency or duration that applies across people — what counts as normal is whatever is genuinely comfortable for this specific person and this specific couple, not a number to hit.',
-      },
-      {
-        name: 'Plan it, don\'t wait for it',
-        body: 'Deliberately setting aside time for intimacy, the way you would for a date, rather than waiting for a spontaneous urge — described as increasingly necessary as a relationship or a family grows, when spontaneity naturally gets crowded out.',
-      },
-      {
-        name: 'Porn is not automatically harmful',
-        body: 'The clearest harm scenario named is porn preceding a person\'s actual sexual debut, where it can set unrealistic expectations and a distorted baseline. Outside that specific case, it is described as not inherently harmful unless it becomes compulsive.',
-      },
-      {
-        name: 'Notice, name, then choose',
-        body: 'For strong emotion generally — including shame or anxiety around sex — name what you are feeling rather than trying to suppress the feeling directly, since it originates in a part of the brain that does not respond well to direct control. Self-imposed limits that come from self-care hold up; ones that come from shame or self-criticism tend to end in a relapse into the exact behaviour being restricted.',
-      },
-    ],
-    notes: [
-      'A described clinical pattern (the source\'s own impression, not a formal statistic): a large share of the men she sees in practice present with performance anxiety — a spiral of worry, then a difficulty, then more worry — while a comparable share of women present with body-image anxiety, reinforced by industries that profit from manufactured insecurity.',
-      'Cultural beauty and attractiveness standards are framed as historically relative — plumpness once signalled wealth where fitness signals it today — rather than as timeless, fixed preferences.',
-      'A long-term affair, once discovered, is described as rarely something couples fully recover from — a third person\'s presence changes the couple\'s communication system even when the relationship visibly continues.',
-    ],
-    practices: [
-      'Stop measuring your relationship against an assumed universal frequency or standard — check what is actually comfortable for the two of you specifically.',
-      'Schedule intimacy deliberately during a busy stretch of life rather than waiting for it to arise spontaneously.',
-      'If porn is a point of tension, ask specifically whether it is shaping unrealistic expectations rather than treating it as inherently the problem.',
-      'When something about your own or a partner\'s sexuality causes discomfort, name specifically what feels off before assuming something is broken.',
-    ],
+    get hook() { return t('lib.sex-as-communication.hook'); },
+    get thesis() { return t('lib.sex-as-communication.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.sex-as-communication.idea.${i}.name`),
+        body: t(`lib.sex-as-communication.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.sex-as-communication.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.sex-as-communication.practice.${i}`));
+    },
     habits: [
-      { id: 'f_invite', because: 'Planning intimacy instead of waiting for it starts with actually putting it on the calendar — inviting someone to something is that habit in its most literal form.' },
+      { id: 'f_invite', get because() { return t('lib.sex-as-communication.habit.f_invite.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'A mismatch here rarely gets fixed by silence. Naming specifically what feels off is this source\'s own first move.' },
+      { id: 'q_hardconversation', get because() { return t('lib.sex-as-communication.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Фомичева — Секс, порно и измены',
+    get vaultSource() { return t('lib.sex-as-communication.vaultSource'); },
   },
-
-  // ---------------- Development ----------------
   {
     slug: 'atomic-habits',
     attr: 'development',
-    title: 'You do not rise to the level of your goals',
-    origin: 'Atomic Habits — James Clear (2018)',
+    get title() { return t('lib.atomic-habits.title'); },
+    get origin() { return t('lib.atomic-habits.origin'); },
     medium: 'book',
     minutes: 6,
-    hook: 'The operating manual behind most of the habit library in this app.',
-    thesis:
-      'You do not rise to the level of your goals; you fall to the level of your systems. Behaviour change is not a motivation problem to be solved once but a design problem to be solved repeatedly — and the unit of design is a habit small enough that it never has to be negotiated.',
-    ideas: [
-      {
-        name: 'The habit loop',
-        body: 'Cue → craving → response → reward. Every technique in the book attaches to one of these four stages, which is why the model is worth memorising before any individual tactic.',
-      },
-      {
-        name: 'The four laws',
-        body: 'To build: make it obvious, attractive, easy, satisfying. To break: make it invisible, unattractive, difficult, unsatisfying. Eight rows, and every technique in twenty chapters lands in one of them.',
-      },
-      {
-        name: 'The Two-Minute Rule',
-        body: 'Scale the entry version down until it takes under two minutes. Not because two minutes changes your life, but because the version you cannot argue with is the version that establishes the identity — and identity is what carries the larger version later.',
-      },
-      {
-        name: 'Habit stacking',
-        body: '"After [current habit], I will [new habit]." A new behaviour attached to an existing one inherits its cue for free, which is the cheapest possible way to make something obvious.',
-      },
-      {
-        name: 'Implementation intentions',
-        body: 'A habit with a stated time and place gets done; a habit with an intention does not. "I will X at TIME in PLACE" outperforms resolve by a wide margin.',
-      },
-      {
-        name: 'Identity over outcome',
-        body: 'Outcome-based habits aim at what you want to get. Identity-based habits aim at who you want to become, and every completed rep is a vote for that identity. This is the layer the other techniques ultimately serve.',
-      },
-    ],
-    notes: [
-      'The book is deliberately an operating manual rather than a theory — every idea arrives with a concrete technique attached.',
-      'Its model extends the classic stimulus → response → reward account with internal states: cravings, beliefs, identity. That addition is the reason it explains relapse better than the older version.',
-      'Every habit template in this app names the mechanism it leans on. That vocabulary comes from here.',
-    ],
-    practices: [
-      'Take any habit you have failed at and write its two-minute version. Do that version until it is automatic before you scale it.',
-      'Attach each new habit to an anchor you already perform without thinking.',
-      'State time and place, in writing, for anything you intend to start this week.',
-      'Make one bad habit measurably harder to reach — distance, friction, a removed app — instead of relying on refusal in the moment.',
-    ],
+    get hook() { return t('lib.atomic-habits.hook'); },
+    get thesis() { return t('lib.atomic-habits.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.atomic-habits.idea.${i}.name`),
+        body: t(`lib.atomic-habits.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.atomic-habits.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.atomic-habits.practice.${i}`));
+    },
     habits: [
-      { id: 'd_onepage', because: 'One page is the Two-Minute Rule applied to reading — the version that survives a bad day.' },
-      { id: 'h_pushups', because: 'Ten push-ups is not a training programme. It is a vote for being someone who trains.' },
-      { id: 'c_plan', because: 'Tomorrow planned tonight is an implementation intention for the whole next day at once.' },
-      { id: 'd_notes', because: 'Writing what you read in your own words is what turns consumption into a rep that counts.' },
+      { id: 'd_onepage', get because() { return t('lib.atomic-habits.habit.d_onepage.because'); } },
+      { id: 'h_pushups', get because() { return t('lib.atomic-habits.habit.h_pushups.because'); } },
+      { id: 'c_plan', get because() { return t('lib.atomic-habits.habit.c_plan.because'); } },
+      { id: 'd_notes', get because() { return t('lib.atomic-habits.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'The book\'s actual deliverable is a stack, not a habit. This is the quest that builds one.' },
+      { id: 'q_habitsystem', get because() { return t('lib.atomic-habits.quest.q_habitsystem.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Atomic Habits',
+    get vaultSource() { return t('lib.atomic-habits.vaultSource'); },
   },
   {
     slug: 'extreme-time-management',
     attr: 'development',
-    title: 'Where the eight sectors came from',
-    origin: 'Extreme Time Management — Mrochkovskiy & Tolkachev (2012)',
+    get title() { return t('lib.extreme-time-management.title'); },
+    get origin() { return t('lib.extreme-time-management.origin'); },
     medium: 'book',
     minutes: 5,
-    hook: 'The source of this app\'s eight attributes, and the four rules it hangs off them.',
-    thesis:
-      'A life is a wheel of eight sectors, and a wheel with one tall sector and seven flat ones cannot roll. The neglected sectors do not sit quietly out of the way — they act as weights tied to the arms and legs of the one you are proud of.',
-    ideas: [
-      {
-        name: 'The Wheel of Life',
-        body: 'Eight sectors — health and sport, environment, relationships, career and business, finance, spirituality and creativity, personal growth, brightness of life — each scored 0 to 10. The book\'s diagnostic is the gap between them, not the height of any one. These are the eight attributes of this app, mapped one to one.',
-      },
-      {
-        name: 'Eat the frogs first',
-        body: 'The unpleasant task you keep deferring is a frog. Rule: eat every frog in the morning, while everyone else defers theirs to the last possible hour. The relief is not the reward — the rest of the day at full capacity is.',
-      },
-      {
-        name: 'The 72-hour rule',
-        body: 'If you have not acted on a new idea within 72 hours, the time, money and energy that went into acquiring it are written off. The authors attribute this to a US study they do not cite — treat the number as a working rule of thumb rather than a finding, and the discipline behind it as the real point.',
-      },
-      {
-        name: 'Reserve blocks',
-        body: 'A perfect plan always breaks. So put buffer blocks into the day on purpose. A crisis you have made room for is not a crisis; it is a normal working situation.',
-      },
-      {
-        name: 'Plan tonight, act tomorrow',
-        body: 'Tomorrow\'s plan is written before sleep, so the morning is for doing rather than deciding. Days are built from blocks by task type — analysis, calls and mail, clients, rest, quick tasks, reserve — with no interruptions permitted inside a block.',
-      },
-    ],
-    notes: [
-      'The book is a parable: a 27-year-old rebuilds his life in two months under a mentor, and each of the ten chapters ends in homework. The story is a delivery mechanism; the homework is the content.',
-      'Quick tasks are best batched into a single hour a day rather than sprinkled through it. Tasks waiting on an external event should be forgotten until that event; stale ones should be crossed out rather than carried.',
-      'The authors are business trainers and refer to their own paid courses throughout. Take the tools; skip the funnel.',
-    ],
-    practices: [
-      'Draw your wheel, score all eight sectors, and write concrete two-month goals for each — the exercise the entire book is built around.',
-      'Identify tomorrow\'s frog tonight, and do it first.',
-      'Put a reserve block in the day before the day needs one.',
-      'Silence notifications for the duration of a block. Interrupted work is worse work, not slower work.',
-    ],
+    get hook() { return t('lib.extreme-time-management.hook'); },
+    get thesis() { return t('lib.extreme-time-management.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.extreme-time-management.idea.${i}.name`),
+        body: t(`lib.extreme-time-management.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.extreme-time-management.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.extreme-time-management.practice.${i}`));
+    },
     habits: [
-      { id: 'c_frog', because: 'The frog rule is the book\'s single most transferable instruction, and it only exists as a habit.' },
-      { id: 'c_plan', because: 'Planning tomorrow before sleep is the mechanism that makes the frog findable in the morning.' },
-      { id: 'd_review', because: 'A wheel scored once is a snapshot. Scored regularly, it is the diagnostic the book actually intends.' },
+      { id: 'c_frog', get because() { return t('lib.extreme-time-management.habit.c_frog.because'); } },
+      { id: 'c_plan', get because() { return t('lib.extreme-time-management.habit.c_plan.because'); } },
+      { id: 'd_review', get because() { return t('lib.extreme-time-management.habit.d_review.because'); } },
     ],
     quests: [
-      { id: 'q_wheel', because: 'This is the book\'s homework from chapter one, and the reason this app has eight attributes at all.' },
+      { id: 'q_wheel', get because() { return t('lib.extreme-time-management.quest.q_wheel.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Экстремальный тайм-менеджмент',
+    get vaultSource() { return t('lib.extreme-time-management.vaultSource'); },
   },
-
-  // ---------------- Career ----------------
   {
     slug: 'porters-five-forces',
     attr: 'career',
-    title: 'The five forces that decide whether a business can be profitable',
-    origin: "Michael Porter's Five Forces, via Stephen Silbiger's MBA in 10 Days",
+    get title() { return t('lib.porters-five-forces.title'); },
+    get origin() { return t('lib.porters-five-forces.origin'); },
     medium: 'book',
     minutes: 6,
-    hook: 'Before you compete on price, find out whether the industry even lets anyone win.',
-    thesis:
-      'Some industries make almost everyone in them unprofitable no matter how well they are run; others make mediocre operators rich. The difference is five structural forces — rivalry, supplier power, buyer power, new entrants, substitutes — and a business strategy is really just a plan for how to sit lightly under all five, then win through cost, differentiation, or a chosen niche rather than trying to do all three at once.',
-    ideas: [
-      {
-        name: 'The five forces',
-        body: 'Rivalry among existing competitors, the bargaining power of suppliers, the bargaining power of buyers, the threat of new entrants, and the threat of substitutes. Each force squeezes the profit available in an industry from a different direction — a business can be well run and still sit in a structurally bad spot.',
-      },
-      {
-        name: 'Rivalry is worse where products are commodities',
-        body: 'Many similar-sized competitors, a mature or shrinking market, products that are hard to tell apart, and high exit costs all push rivalry toward price competition, which is the fastest way to erase everyone\'s margin at once.',
-      },
-      {
-        name: 'Entry barriers are what make an advantage last',
-        body: 'Low capital requirements, no regulation, and an easily copied offering mean anyone can enter — which caps how much any single player can charge. Durable advantages come from brand, network effects, proprietary content or methods, and switching costs: the things a new entrant with money still cannot buy quickly.',
-      },
-      {
-        name: 'Three generic strategies, not a blend of all three',
-        body: 'Cost leadership wins by being the cheapest, which demands real operational efficiency and scale. Differentiation wins by being genuinely different and charging for it, which demands a real reason customers cannot get elsewhere. Focus wins by owning a specific segment fully rather than fighting for the whole market. Trying to be the cheap option and the premium option at once usually means losing both fights.',
-      },
-      {
-        name: 'Durable advantage versus fragile advantage',
-        body: 'A feature, a website, a price point — competitors copy these in months. A brand people already trust, a network that gets more valuable as it grows, and switching costs a customer would rather not pay for are the advantages that hold up under direct copying.',
-      },
-    ],
-    notes: [
-      'The threat of substitutes is often the most underestimated force, because a substitute does not have to be a competitor in the same category — it only has to solve the same underlying need more cheaply or conveniently.',
-      'A niche strategy trades market size for lower competition and a more defensible position; the risk is a total addressable market too small to matter, or one that quietly shrinks.',
-    ],
-    practices: [
-      'Name your industry\'s five forces specifically, in writing, before choosing a strategy — most people skip straight to tactics without checking whether the underlying structure can be profitable at all.',
-      'Pick one generic strategy — cost, differentiation, or focus — and say what you would stop doing to commit to it.',
-      'List your actual advantages and sort them into durable (hard to copy) and fragile (copied within a year). Invest further only in the durable column.',
-      'Ask what would have to be true for a new entrant with capital to take your position in six months. If the honest answer is "not much," the advantage is not real yet.',
-    ],
+    get hook() { return t('lib.porters-five-forces.hook'); },
+    get thesis() { return t('lib.porters-five-forces.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.porters-five-forces.idea.${i}.name`),
+        body: t(`lib.porters-five-forces.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 2 }, (_, i) => t(`lib.porters-five-forces.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.porters-five-forces.practice.${i}`));
+    },
     habits: [
-      { id: 'c_ship', because: 'Differentiation is a claim until someone outside your own head reacts to it. A weekly audience is how you find out if it holds.' },
+      { id: 'c_ship', get because() { return t('lib.porters-five-forces.habit.c_ship.because'); } },
     ],
     quests: [
-      { id: 'q_portfolio', because: 'A visible body of work is exactly the kind of asset a new entrant cannot buy quickly — the framework\'s definition of a durable advantage, built one link at a time.' },
+      { id: 'q_portfolio', get because() { return t('lib.porters-five-forces.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Бизнес и менеджмент / Competitive Strategy',
+    get vaultSource() { return t('lib.porters-five-forces.vaultSource'); },
   },
   {
     slug: 'unit-economics',
     attr: 'career',
-    title: 'Does one sale make money? Prove that before you scale',
-    origin: "Stephen Silbiger's MBA in 10 Days, on unit economics",
+    get title() { return t('lib.unit-economics.title'); },
+    get origin() { return t('lib.unit-economics.origin'); },
     medium: 'book',
     minutes: 6,
-    hook: 'Growth does not fix a business that loses money on every single sale — it multiplies the loss.',
-    thesis:
-      'Unit economics asks one question at the smallest possible scale: for one customer, one order, one month of service, does the money coming in exceed the money going out? If the answer is no, no amount of growth repairs it — a thousand times a loss is a bigger loss, not a profit. Prove the per-unit math works before spending anything to acquire volume.',
-    ideas: [
-      {
-        name: 'Revenue per unit minus cost per unit',
-        body: 'The whole framework in one line: what a single unit — one order, one subscriber-month — actually brings in, minus what it actually costs to deliver, including realistic refunds, fees and failed charges rather than the list price.',
-      },
-      {
-        name: 'Contribution margin has to cover overhead before it is profit',
-        body: 'Revenue per unit minus direct cost per unit leaves a contribution margin — the pool that pays for marketing, salaries and rent. A healthy per-unit margin is not yet profit; divide it into fixed overhead to find how many units you actually need before anything is kept.',
-      },
-      {
-        name: 'The CAC:LTV ratio',
-        body: 'Customer acquisition cost against lifetime value. A ratio near 1:1 means you are working for free; the common rule of thumb is roughly 3:1 — three dollars of lifetime value for every dollar spent acquiring the customer — as the point where the model can absorb churn and still be worth running.',
-      },
-      {
-        name: 'Three shapes of unit economics',
-        body: 'Transactional (pay once, must re-acquire the customer every time), subscription (recurring revenue, acquisition cost recovered over the relationship), and marketplace (a commission on someone else\'s transaction). Each has a different lever to watch — repeat-purchase rate, churn, or take-rate.',
-      },
-    ],
-    notes: [
-      'A common failure mode is treating acquisition cost as a per-unit cost — it belongs in the lifetime-value calculation, amortised over the whole relationship, not subtracted from one sale.',
-      'A second common failure is checking that revenue exceeds cost while ignoring gross margin as a percentage — a healthy margin band differs by business type, and a thin one leaves no room for anything going wrong.',
-      'The ordering in the framework is deliberate: prove the unit is profitable, then reduce its cost, then raise its revenue, and only then spend on acquisition at scale. Reversed, it is the standard startup failure — scale first and discover the unit was never profitable once the funding runs out.',
-    ],
-    practices: [
-      'Write down the actual revenue one customer generates in one month, and the actual cost to deliver it — not the list price, the realised one.',
-      'Compute the contribution margin, then divide your fixed monthly overhead by it to find the real break-even customer count.',
-      'Estimate your CAC:LTV ratio honestly. Anything under 3:1 is a warning, not a rounding error.',
-      'Before spending anything on paid acquisition, fix the per-unit economics first — a cheaper acquisition channel cannot save a model that loses money per customer.',
-    ],
+    get hook() { return t('lib.unit-economics.hook'); },
+    get thesis() { return t('lib.unit-economics.thesis'); },
+    get ideas() {
+      return Array.from({ length: 4 }, (_, i) => ({
+        name: t(`lib.unit-economics.idea.${i}.name`),
+        body: t(`lib.unit-economics.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.unit-economics.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.unit-economics.practice.${i}`));
+    },
     habits: [
-      { id: 'm_log', because: 'You cannot compute a cost per unit without first knowing what things actually cost. This is where that number comes from.' },
-      { id: 'c_reachout_pro', because: 'Referral and word-of-mouth are the cheapest acquisition channel the framework names — close to zero CAC, which is the fastest way to fix a weak ratio.' },
+      { id: 'm_log', get because() { return t('lib.unit-economics.habit.m_log.because'); } },
+      { id: 'c_reachout_pro', get because() { return t('lib.unit-economics.habit.c_reachout_pro.because'); } },
     ],
     quests: [
-      { id: 'q_raise', because: 'Revenue per unit is the framework\'s first lever, and raising price is the fastest way to move it — faster than cutting cost or lowering acquisition spend.' },
+      { id: 'q_raise', get because() { return t('lib.unit-economics.quest.q_raise.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Бизнес и менеджмент / Unit Economics',
+    get vaultSource() { return t('lib.unit-economics.vaultSource'); },
   },
-
-  // ---------------- Development (2) ----------------
   {
     slug: 'seven-radicals',
     attr: 'development',
-    title: 'Character is a style of adaptation, not a flaw to fix',
-    origin: 'Practical Characterology: the Seven Radicals Method — Viktor Ponomarenko (2019)',
+    get title() { return t('lib.seven-radicals.title'); },
+    get origin() { return t('lib.seven-radicals.origin'); },
     medium: 'book',
     minutes: 7,
-    hook: 'The theory behind this app\'s own radical-profile filter, and why "difficult personality" is not actually a thing.',
-    thesis:
-      'Character is not a fixed type but a style of adaptation: a person absorbs whichever behavioural patterns are easiest for their given nervous system, by a principle of minimal energy expenditure. A real character is a cocktail of several such tendencies — radicals — ranked in a hierarchy rather than a single textbook label, and no radical is inherently a flaw. What gets called a "difficult personality" is usually a task set against someone\'s grain, not a defect in the person.',
-    ideas: [
-      {
-        name: 'Seven radicals, one hierarchy',
-        body: 'The method names seven recurring tendencies — roughly: a need to be seen and admired, a drive for control and order, a single-minded pursuit of a goal, deep empathy and harmony-seeking, an unconventional and often solitary way of thinking, easy sociability and optimism, and a cautious, risk-averse steadiness. Almost no one is a pure type — a real profile ranks several of these from strongest to weakest.',
-      },
-      {
-        name: 'The principle of minimal energy expenditure',
-        body: 'Character forms from what was easiest to absorb, not what was chosen. The nervous system a person is born with makes certain behavioural patterns cost almost nothing and others cost a great deal — which is why advice that fits one person\'s grain perfectly can be nearly impossible for another to sustain.',
-      },
-      {
-        name: 'Order matters: which radical sets the goal',
-        body: 'In a pair of radicals, the first sets the goal and the second supplies the method — order over ambition versus ambition using order as its tool are different people even with the same two ingredients. A profile is a sequence, not a set.',
-      },
-      {
-        name: '"Difficult personality" is usually a mismatch, not a diagnosis',
-        body: 'The author\'s position: conflict is a protest against a situation that does not fit a person\'s radicals, not evidence of a flawed character. The useful move is finding and removing the mismatch between task and person, not trying to reshape the person.',
-      },
-      {
-        name: 'Leadership and creativity trace to specific radicals',
-        body: 'Real leadership, in this framework, derives specifically from the goal-driven radical — other radicals can imitate authority or impose discipline, but do not generate it the same way. Creativity is described as the near-forced mode of the unconventional-thinking radical: valuable exactly where something genuinely new is needed, and a liability where the task is to follow a template.',
-      },
-    ],
-    notes: [
-      'The method is explicitly non-test-based — it is built on observing real behaviour and, for self-diagnosis, analysing actual significant past decisions rather than hypothetical ones ("what did you choose, between what and what" — not "what would you do if").',
-      'The author\'s biological explanations (specific claims about brain structure behind each radical) are offered as his own hypothesis and are flagged, including by the author himself, as not confirmed by neurophysiology. Treat the behavioural observations as the load-bearing part, and the biology as speculative framing.',
-      'This is a classical, clinically-derived typology (in the lineage of Leonhard and Lichko), not a modern psychometric one — it has not been validated the way instruments like Big Five or HEXACO have. Useful as a descriptive lens; not a diagnostic instrument.',
-    ],
-    practices: [
-      'Instead of asking which type you are, identify two or three genuinely significant past decisions and examine which tendency\'s logic actually won when it mattered — not how you would like to see yourself.',
-      'Rank what you find rather than picking one label: which tendency set the goal, and which supplied the method, in each decision.',
-      'When a task or environment keeps producing friction, check whether it is asking you to work against your own grain before concluding something is wrong with you.',
-      'Use the profile to choose which tasks to take on, not to excuse avoiding ones that are simply uncomfortable — the method distinguishes a genuine mismatch from ordinary difficulty.',
-    ],
+    get hook() { return t('lib.seven-radicals.hook'); },
+    get thesis() { return t('lib.seven-radicals.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.seven-radicals.idea.${i}.name`),
+        body: t(`lib.seven-radicals.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.seven-radicals.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.seven-radicals.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'The method\'s own self-diagnosis technique is a retrospective look at real decisions. A weekly review is that technique, run on a schedule instead of once.' },
-      { id: 'd_notes', because: 'A profile that stays a feeling never gets used. Writing down what a decision actually revealed is what turns observation into something you can act on.' },
+      { id: 'd_review', get because() { return t('lib.seven-radicals.habit.d_review.because'); } },
+      { id: 'd_notes', get because() { return t('lib.seven-radicals.habit.d_notes.because'); } },
     ],
     quests: [],
-    vaultSource: 'Personal growth / Resource / Практическая характерология — Методика 7 радикалов',
+    get vaultSource() { return t('lib.seven-radicals.vaultSource'); },
   },
-
-  // ---------------- Health (2) ----------------
   {
     slug: 'energy-in-quarters',
     attr: 'health',
-    title: 'Energy comes from four buckets, not one supplement',
-    origin: 'Roman Terushkin — endocrinologist, on energy and chronic fatigue',
+    get title() { return t('lib.energy-in-quarters.title'); },
+    get origin() { return t('lib.energy-in-quarters.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Why the supplement aisle caps out around 25% effectiveness, and what the other three quarters actually are.',
-    thesis:
-      'Chronic fatigue is almost never solved by one supplement, one diet, or one hormone. It usually traces back to hypoxia at the cellular level — mitochondria running in an inefficient mode because red blood cell quality is poor, itself driven by protein, iron, or B-vitamin deficiency, or an overloaded liver. Energy is built across four roughly equal quarters — sleep, food and hydration, physical and mental activity, and only last, supplements — and trying to fix it through supplements alone caps out near a quarter of what is actually needed.',
-    ideas: [
-      {
-        name: 'Cellular hypoxia as the root of "low energy"',
-        body: 'A mitochondrion running anaerobically produces a small fraction of the energy it would running aerobically. Anatomical causes contribute a minority of cases; most of the gap traces to blood quality — the number, size and function of red blood cells.',
-      },
-      {
-        name: 'Four causes of poor blood quality',
-        body: 'Protein deficiency (the raw material red blood cells are built from), iron deficiency (spent on stress and training, and close to unavoidable for menstruating women), B-vitamin deficiency (water-soluble, not stored, and consumed fastest under stress), and an overloaded liver (chronic viral load, gut issues, or poor sleep can push detox work to the point where nutrients cannot be used even when present).',
-      },
-      {
-        name: '"Energy on credit"',
-        body: 'Coffee and stimulants do not create energy — they borrow it, drawing down magnesium, B vitamins and iron that the body then has to repay. Tremor, anxiety and panic under chronic stimulant overuse are described as the interest on that loan, not a separate toxicity.',
-      },
-      {
-        name: 'The 25/25/25/25 rule',
-        body: 'Sleep, food and hydration, physical and mental activity, and supplements each carry roughly a quarter of the weight. The guest\'s own clinical observation — not a formal study — is that most patients try to solve fatigue through the smallest quarter alone, and get roughly a quarter of the result.',
-      },
-      {
-        name: 'Self-observation as an early warning system',
-        body: 'A weekly log of two or three indicators — energy, mood, libido — on a 0–10 scale, kept for at least eight weeks, separates a real trend from ordinary day-to-day noise. A genuine decline is the cue to test early, in what the guest calls the "pre-illness" window, rather than waiting for a diagnosis.',
-      },
-    ],
-    notes: [
-      'Melatonin is not recommended for regular use — the guest cites a study on veterans with PTSD in which long-term exogenous melatonin use correlated with faster brain aging, since it suppresses the body\'s own production. He treats it as an occasional tool for severe jet lag, not a nightly habit.',
-      'Two to three cups of brewed coffee a day is described as neutral to beneficial; beyond three, the concern shifts to lithium depletion and adrenal load. Coffee mixed with milk, syrup or fresh juice is reframed as a dessert with a sugar spike, not a functional drink.',
-      'Smoothies and fresh juice are, by this account, concentrated fructose with reduced or absent fibre — a fast glucose and insulin spike followed by a crash and rebound appetite, closer to a dessert than a healthy snack. Whole fruit does not carry the same effect.',
-      'Walking past roughly 7,000 steps a day is where cardiovascular risk reduction becomes statistically meaningful, with each additional 1,000 adding further reduction — the guest\'s suggestion for beginners is to build up by about 1,000 steps a week rather than jumping straight to the target.',
-      'Cutting something out abruptly (the guest\'s analogy is smoking) statistically ends in relapse more often than a gradual reduction over months — the same logic applied to any habit change, not just substances.',
-    ],
-    practices: [
-      'Front-load protein at breakfast, especially after a poor night\'s sleep — a rough target across the day is 1.5–2g of protein per kilogram of body weight.',
-      'Drink a glass of warm water before meals — a simple, no-lab-work lever for bile flow and downstream digestion and absorption.',
-      'Build toward 7,000+ daily steps gradually, roughly 1,000 more per week, rather than starting at the target and risking injury or burnout.',
-      'Keep sleep timing consistent across the whole week, weekends included, instead of running a deficit and trying to "catch up."',
-      'Run an eight-week weekly log of energy, mood and libido on a 0–10 scale before concluding anything about a trend.',
-    ],
+    get hook() { return t('lib.energy-in-quarters.hook'); },
+    get thesis() { return t('lib.energy-in-quarters.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.energy-in-quarters.idea.${i}.name`),
+        body: t(`lib.energy-in-quarters.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.energy-in-quarters.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.energy-in-quarters.practice.${i}`));
+    },
     habits: [
-      { id: 'h_water', because: 'Warm water before meals for bile flow is nearly this exact habit, anchored to a different moment of the day.' },
-      { id: 'h_steps', because: 'The cheapest lever toward the 7,000-step threshold this source names as where cardiovascular risk actually starts dropping.' },
+      { id: 'h_water', get because() { return t('lib.energy-in-quarters.habit.h_water.because'); } },
+      { id: 'h_steps', get because() { return t('lib.energy-in-quarters.habit.h_steps.because'); } },
     ],
     quests: [
-      { id: 'q_energyaudit', because: 'The eight-week log of energy, mood and libido is this quest\'s exact mechanism, run over a timeframe long enough to see a real trend instead of noise.' },
+      { id: 'q_energyaudit', get because() { return t('lib.energy-in-quarters.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Терушкин — Энергия и хроническая усталость',
+    get vaultSource() { return t('lib.energy-in-quarters.vaultSource'); },
   },
-
-  // ---------------- Money ----------------
   {
     slug: 'rich-versus-wealthy',
     attr: 'money',
-    title: 'Rich is what you spend. Wealthy is what you did not.',
-    origin: 'Morgan Housel — on financial behaviour, independence and expectations',
+    get title() { return t('lib.rich-versus-wealthy.title'); },
+    get origin() { return t('lib.rich-versus-wealthy.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'The one distinction that changes what a savings target is even for.',
-    thesis:
-      'Financial outcomes are driven overwhelmingly by behaviour rather than intelligence or education — this is the rare field where an ordinary person with no training routinely outperforms the credentialed professional. The load-bearing distinction is between being rich (having money to spend on what you want) and being wealthy (independence — the money you did NOT spend, which buys control over your own time). Most financial damage comes not from stupidity but from ignorance in the literal sense: not knowing your own real income and outgoings.',
-    ideas: [
-      {
-        name: 'Every dollar is a piece of your future, owned by someone',
-        body: 'A dollar of debt is a piece of your future that belongs to a lender; a dollar saved is a piece of your future that belongs to you. Taken literally, saving $100 is not deferring pleasure — it is purchasing $100 of independence today.',
-      },
-      {
-        name: 'Two buckets for every purchase',
-        body: 'Every dollar spent does one of two things: makes you or your family happier, or impresses strangers who do not actually care. The source\'s sharpest observation is that people are impressed by the object, not its owner — each onlooker is imagining themselves driving the car, being envied. Seeing this clearly deflates most status spending on its own.',
-      },
-      {
-        name: 'Savings is a bill, not a leftover',
-        body: 'Housel files saving in the same budget category as rent and food — not "whatever remains". The concrete version is a 10% rule applied to any inflow of any size, automated at the transfer level so it never depends on willpower after the fact.',
-      },
-      {
-        name: 'The moving goalpost',
-        body: 'Happiness is the gap between expectations and reality, and expectations tend to rise faster than results — so chasing more, without stopping the goalposts, never registers as progress. Social media widened the comparison set from neighbours and colleagues to an algorithmic feed of the most successful people alive, permanently available.',
-      },
-      {
-        name: 'Compounding is a function of time, not returns',
-        body: 'The variable that matters is how long you can hold without selling, not the annual rate. Housel notes Buffett accumulated the overwhelming majority of his net worth after age 60. The claim attached: an average investor over a disproportionately long horizon ends up in the top percentile.',
-      },
-      {
-        name: 'The metric is sleeping at night',
-        body: 'Housel describes his own portfolio as more conservative than textbook-optimal, because the goal is not beating an index but not waking at 2am asking whether he has got it wrong. Asset allocation is treated as a question of temperament and circumstance rather than a universal formula.',
-      },
-    ],
-    notes: [
-      'Independence is a spectrum, not a threshold: the thought "why bother saving $20, it changes nothing" is the error. It is one small step of independence bought, not an all-or-nothing move.',
-      'It is possible to be a multi-billionaire with no independence (wholly captive to others\' opinion) and to be independent on very little.',
-      'The market\'s return is not free — the price is continuous volatility and uncertainty, not broker fees. Declining to pay it means accepting the predictable, lower return of a deposit.',
-      'Before changing spending habits, ask what psychological hole a purchase is trying to fill. Usually the honest answer is none — the object\'s effect lasts a day or two while the payment lasts months.',
-      'A deliberately boring habit — checking your account balance daily, ten seconds — is claimed to outperform elaborate apps and spreadsheets, because the failure it fixes is not knowing the numbers at all.',
-      'Housel is a practitioner and writer rather than an academic researcher; the argument rests on documented public histories and observation, not controlled studies. Treat the specific figures as directionally credible rather than precise.',
-    ],
-    practices: [
-      'Automate a fixed percentage off every inflow, however small, on the day it arrives — before any spending decision gets made.',
-      'Run the two-bucket test on any non-trivial purchase: is this for me and mine, or to impress strangers?',
-      'Check the account balance daily. The point is not control, it is ending the ignorance that most mistakes actually come from.',
-      'State the long-term goal as an amount of independence rather than an amount of income.',
-      'Practise gratitude deliberately: it closes the expectation gap more reliably than a raise does, because the gap is what happiness is measured against.',
-    ],
+    get hook() { return t('lib.rich-versus-wealthy.hook'); },
+    get thesis() { return t('lib.rich-versus-wealthy.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.rich-versus-wealthy.idea.${i}.name`),
+        body: t(`lib.rich-versus-wealthy.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 6 }, (_, i) => t(`lib.rich-versus-wealthy.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.rich-versus-wealthy.practice.${i}`));
+    },
     habits: [
-      { id: 'm_checkbalance', because: 'The source names this exact habit — ten seconds a day — as the fix for the ignorance most financial mistakes actually come from.' },
-      { id: 'm_payday', because: 'The 10% rule in its literal form: the transfer happens the day money arrives, before any spending decision competes with it.' },
-      { id: 'm_waitlist', because: 'A day\'s delay is enough to answer the source\'s question — what hole is this purchase filling? — before the money is gone.' },
-      { id: 'm_nodebt', because: 'If a dollar of debt is a piece of your future owned by someone else, then not borrowing is the cheapest way to keep it.' },
+      { id: 'm_checkbalance', get because() { return t('lib.rich-versus-wealthy.habit.m_checkbalance.because'); } },
+      { id: 'm_payday', get because() { return t('lib.rich-versus-wealthy.habit.m_payday.because'); } },
+      { id: 'm_waitlist', get because() { return t('lib.rich-versus-wealthy.habit.m_waitlist.because'); } },
+      { id: 'm_nodebt', get because() { return t('lib.rich-versus-wealthy.habit.m_nodebt.because'); } },
     ],
     quests: [
-      { id: 'q_emergencyfund', because: 'This is "savings as a bill" made concrete — the first block of independence bought, rather than an amount left over at month end.' },
-      { id: 'q_debts', because: 'If a dollar of debt is a piece of your future someone else owns, then facing the total is the act of finding out how much of your future is currently spoken for.' },
-      { id: 'q_raise', because: 'The source treats income as the weaker lever than behaviour — but raising it is what makes a savings rate survivable rather than punishing.' },
+      { id: 'q_emergencyfund', get because() { return t('lib.rich-versus-wealthy.quest.q_emergencyfund.because'); } },
+      { id: 'q_debts', get because() { return t('lib.rich-versus-wealthy.quest.q_debts.because'); } },
+      { id: 'q_raise', get because() { return t('lib.rich-versus-wealthy.quest.q_raise.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Housel — The Psychology of Money, Rich vs Wealthy',
+    get vaultSource() { return t('lib.rich-versus-wealthy.vaultSource'); },
   },
-
-  // ---------------- Friends ----------------
   {
     slug: 'social-health-5-3-1',
     attr: 'friends',
-    title: 'Social health is a pillar, and it has a number',
-    origin: 'Kasley Killam — public-health researcher, on connection and loneliness',
+    get title() { return t('lib.social-health-5-3-1.title'); },
+    get origin() { return t('lib.social-health-5-3-1.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'Most loneliness is not circumstance. It is accumulated small avoidances — and there is a weekly target that fixes it.',
-    thesis:
-      'Social health is a distinct, measurable pillar of wellbeing alongside physical and mental health, and its absence carries mortality risk that researchers place in the range of smoking or obesity. The practical claim underneath: the majority of missed connection is not the result of genuine need but of small, repeated avoidances that feel justified in the moment — and the felt risk of reaching out is systematically higher than the real one.',
-    ideas: [
-      {
-        name: 'Loneliness is a signal, not a defect',
-        body: 'A study comparing the brains of people isolated all day with people who had not eaten all day found the same regions active — loneliness is framed as hunger-like, indicating an unmet need rather than something wrong with the person feeling it. The trap is that it is self-fulfilling: chronically lonely people enter social situations more guarded and primed for negative cues, which degrades the interaction itself.',
-      },
-      {
-        name: 'The liking gap',
-        body: 'When strangers were paired for a short conversation, both consistently underestimated how much the other liked them — while outside observers judged the rapport accurately. A parallel finding: people underestimate how much a friend will appreciate an unprompted message. The cost of reaching out is nearly always overestimated.',
-      },
-      {
-        name: 'The 5-3-1 formula',
-        body: 'Five different people per week (diversity of ties is itself protective, not just one close person), at least three close relationships, and a cumulative hour a day of connection. The hour need not be continuous or with one person — a minute with a barista, twenty with a partner, a ten-minute call all count. A work meeting does not, unless part of it is genuinely personal.',
-      },
-      {
-        name: 'The stress-buffering hypothesis',
-        body: 'Being with supportive people actively damps the cortisol and inflammation response rather than adding to it. The implication is counterintuitive: the moments you most want to withdraw — after a hard day, mid-burnout — are often exactly when connection would help most.',
-      },
-      {
-        name: 'Four friendship styles',
-        body: 'Butterfly (frequent, casual, easy in groups), wallflower (selective and infrequent, a natural listener, slow to warm), firefly (infrequent but deep, loves solitude, skips small talk entirely), evergreen (frequent and deep). Explicitly descriptive rather than evaluative — useful for knowing which settings will actually energise you, and for not reading a friend\'s different rhythm as a weaker bond.',
-      },
-      {
-        name: 'Connection is a muscle with four modes',
-        body: 'Stretch (seek new ties), rest (deliberately scale back when overconnected — solitude is legitimate), tone (deepen what exists), flex (enjoy and sustain what is already built). The analogy is fitness: it needs recovery as well as exertion.',
-      },
-    ],
-    notes: [
-      'Shared activity beats cold networking: joining something organised around a real interest, with a recurring touchpoint rather than a one-off, is named as the actual mechanism — it removes the pressure of a one-to-one first impression.',
-      'For distance friendships, three tactics: micro-moments (a text when someone crosses your mind), "autopilot" (a standing recurring call that kills the scheduling negotiation), and prioritising real in-person time.',
-      'When a friend seems to be pulling away, a direct caring check-in is recommended over silent worry — get curious instead of assuming it is personal.',
-      'Closeness is defined by two properties: mutual (an even exchange over time, not within every conversation) and meaningful (room to be authentic rather than performing wellness).',
-      'The claims come from a credentialed public-health researcher, but in interview form: the individual statistics are cited without authors or years, so treat them as directionally credible expert claims. The "excuse versus need" sorting is an editorial device, not research, and some of its calls are normative judgements.',
-    ],
-    practices: [
-      'Sort your own recent cancellations into genuine needs and excuses. The source\'s finding is that needs are real but rare; most cancellations are the easier default.',
-      'Use 5-3-1 as a weekly checklist rather than an aspiration to "be more social".',
-      'In dead moments that default to scrolling — a queue, a commute, a meeting that ended early — message or call someone instead. The time was already unstructured.',
-      'Identify your own friendship style, then stop reading a friend\'s different rhythm as a verdict on the friendship.',
-      'When someone hits a life transition, name it and ask what staying connected could look like now, rather than letting it quietly fade.',
-    ],
+    get hook() { return t('lib.social-health-5-3-1.hook'); },
+    get thesis() { return t('lib.social-health-5-3-1.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.social-health-5-3-1.idea.${i}.name`),
+        body: t(`lib.social-health-5-3-1.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.social-health-5-3-1.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.social-health-5-3-1.practice.${i}`));
+    },
     habits: [
-      { id: 'f_nodoom', because: '"Go for connection first" is precisely this: the dead moments that default to scrolling were already unstructured, so the swap costs nothing.' },
-      { id: 'f_reachout', because: 'The liking gap means this message will land better than it feels like it will — the felt risk is the thing the research says is wrong.' },
-      { id: 'f_meet', because: 'The cumulative hour and the three close relationships both need time in person; this is the leg of 5-3-1 that a phone cannot cover.' },
-      { id: 'f_voice', because: 'Named directly as a micro-moment tactic for distance friendships — the spontaneous note when someone crosses your mind.' },
+      { id: 'f_nodoom', get because() { return t('lib.social-health-5-3-1.habit.f_nodoom.because'); } },
+      { id: 'f_reachout', get because() { return t('lib.social-health-5-3-1.habit.f_reachout.because'); } },
+      { id: 'f_meet', get because() { return t('lib.social-health-5-3-1.habit.f_meet.because'); } },
+      { id: 'f_voice', get because() { return t('lib.social-health-5-3-1.habit.f_voice.because'); } },
     ],
     quests: [
-      { id: 'q_reconnect', because: 'Five people is exactly the diversity leg of 5-3-1, and the liking gap says every one of those messages will land better than it feels like it will.' },
-      { id: 'q_hardconversation', because: 'The source\'s recommendation for sensed distance is a direct, caring check-in — this is that conversation, and silence is what the research says makes it worse.' },
+      { id: 'q_reconnect', get because() { return t('lib.social-health-5-3-1.quest.q_reconnect.because'); } },
+      { id: 'q_hardconversation', get because() { return t('lib.social-health-5-3-1.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Killam — Social Health, the 5-3-1 Formula and Four Friendship Styles',
+    get vaultSource() { return t('lib.social-health-5-3-1.vaultSource'); },
   },
-
-  // ---------------- Spirituality ----------------
   {
     slug: 'the-virtue-that-hides-the-flaw',
     attr: 'spirituality',
-    title: 'The virtue you already have can hide the one you lack',
-    origin: 'Omar Suleiman — lecture on wholesomeness, sincerity and self-deception',
+    get title() { return t('lib.the-virtue-that-hides-the-flaw.title'); },
+    get origin() { return t('lib.the-virtue-that-hides-the-flaw.origin'); },
     medium: 'lecture',
     minutes: 7,
-    hook: 'Why doing more of what you are already good at can be a way of avoiding the thing that actually needs fixing.',
-    thesis:
-      'Wholeness is the balance between practice and character, and the central danger is specific: a quality that comes naturally to you can become cover for a fundamental flaw you are refusing to look at. The pattern is compensation — answering a known defect by intensifying an already-strong virtue, so that the effort feels like growth while the one thing that needed correcting stays untouched.',
-    ideas: [
-      {
-        name: 'The child who vacuums instead of washing up',
-        body: 'Asked to do the dishes, the child vacuums the living room and mows the lawn instead — good things, but not the thing that was required. The spiritual analogue: praying more, fasting more, giving more, as a way of not confronting the single specific fault that was asked of you.',
-      },
-      {
-        name: 'Introspection as the clearest mirror',
-        body: 'The exercise: imagine you are your own friend, someone who has watched you closely for the last five or six months, and must now give honest, uncomfortable advice. Reflection is described as a clearer mirror than even an honest friend — because you are the only one who sees yourself all day, every day.',
-      },
-      {
-        name: 'The handover of responsibility for your own faith',
-        body: 'There is a point at which care for your own practice must pass from parents to you — you rise before anyone knocks on the door. The analogy given: parents can buy the best school and the best teachers, but the student still has to sit at the desk. Without that, the best institution changes nothing.',
-      },
-      {
-        name: 'Unexpected pairings of quality and station',
-        body: 'The figures held up are notable for virtues their position did not require: Dawud, a wealthy and powerful prophet-king, remembered for night prayer and alternate-day fasting; Uthman ibn Affan, exceptionally wealthy yet the most modest person in the room; Luqman, celebrated for eloquence yet distinguished by knowing when to stay silent; Umar ibn al-Khattab, commanding and imposing, yet never too proud to accept correction from a child.',
-      },
-      {
-        name: 'Al-Ghazali on the delusion of the devout',
-        body: 'Four groups are named as most vulnerable to spiritual self-deception precisely because of their piety: scholars who reduce religion to theory and do not practise what they teach; worshippers who add extra devotions while holding on to a major fault with no intention of correcting it, developing contempt for "sinners"; those who believe they have reached a station exempting them from ordinary obligations; and the wealthy, practising a "chequebook religion" — giving just enough to be called generous, and changing nothing else.',
-      },
-      {
-        name: 'Good deeds are easier than leaving a sin',
-        body: 'Citing Ibn al-Qayyim: good deeds resonate with innate nature, which is why they feel good to perform and why anyone at all is capable of them. Abstaining from what is forbidden requires sincerity, because it offers no immediate reward. The real sacrifice is not adding another good deed — it is stopping the thing you know to be wrong, precisely when that is uncomfortable.',
-      },
-    ],
-    notes: [
-      'The culture of a religious circle can normalise a fault — "he does it too, so it cannot be that serious" is named explicitly as a mechanism of drift.',
-      'Detachment can be inherited from example rather than status: Sulayman is described as inheriting not only his father\'s wealth but his distance from it.',
-      'Khadija is cited as choosing a husband for truthfulness and trustworthiness rather than standing, despite having wealth, beauty and rank herself — and spending her fortune freeing slaves and providing dowries for poor brides.',
-      'The lecture is a structured talk by a named, credentialed scholar drawing on classical sources; it is teaching within a tradition rather than empirical research, and is best read on those terms.',
-    ],
-    practices: [
-      'Do the friend exercise honestly: what would someone who watched you closely for six months tell you, that you would not enjoy hearing?',
-      'Name the one fault you have been compensating for. Then check whether your recent effort has gone into it, or into something you were already good at.',
-      'Treat leaving one wrong thing as worth more than adding one more good thing — it is the harder act, and the one that requires sincerity.',
-      'Watch for the four delusions in your own practice, especially the two most socially rewarded: teaching what you do not do, and giving enough to be praised.',
-    ],
+    get hook() { return t('lib.the-virtue-that-hides-the-flaw.hook'); },
+    get thesis() { return t('lib.the-virtue-that-hides-the-flaw.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-virtue-that-hides-the-flaw.idea.${i}.name`),
+        body: t(`lib.the-virtue-that-hides-the-flaw.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-virtue-that-hides-the-flaw.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-virtue-that-hides-the-flaw.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'The mirror exercise needs a standing slot: the honest friend cannot give you uncomfortable advice if you never sit down to hear it.' },
-      { id: 's_dhikr', because: 'Reflection is called the clearest mirror — five quiet minutes before the day is the smallest version that still counts as looking.' },
-      { id: 'f_nogossip', because: 'A concrete instance of the lecture\'s core move: leaving one wrong thing, which it argues is worth more than adding another good deed.' },
-      { id: 's_forgive', because: 'Letting something go is the harder, less rewarded act the source contrasts against the easy satisfaction of a good deed.' },
+      { id: 'd_review', get because() { return t('lib.the-virtue-that-hides-the-flaw.habit.d_review.because'); } },
+      { id: 's_dhikr', get because() { return t('lib.the-virtue-that-hides-the-flaw.habit.s_dhikr.because'); } },
+      { id: 'f_nogossip', get because() { return t('lib.the-virtue-that-hides-the-flaw.habit.f_nogossip.because'); } },
+      { id: 's_forgive', get because() { return t('lib.the-virtue-that-hides-the-flaw.habit.s_forgive.because'); } },
     ],
     quests: [
-      { id: 'q_anchor', because: 'The handover of responsibility is described exactly as a daily practice you hold yourself, before anyone reminds you — which is what anchoring the day to one practice means.' },
-      { id: 'q_learnfaith', because: 'The lecture\'s warning about scholars who know about God without knowing God is an argument for studying something properly rather than collecting fragments.' },
+      { id: 'q_anchor', get because() { return t('lib.the-virtue-that-hides-the-flaw.quest.q_anchor.because'); } },
+      { id: 'q_learnfaith', get because() { return t('lib.the-virtue-that-hides-the-flaw.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Omar Suleiman — Wholesomeness, Sincerity and Spiritual Delusion',
+    get vaultSource() { return t('lib.the-virtue-that-hides-the-flaw.vaultSource'); },
   },
-
-  // ---------------- Brightness ----------------
   {
     slug: 'the-curse-of-knowledge',
     attr: 'brightness',
-    title: 'The curse of knowledge',
-    origin: 'Steven Pinker — cognitive scientist, on why clear writing is rare',
+    get title() { return t('lib.the-curse-of-knowledge.title'); },
+    get origin() { return t('lib.the-curse-of-knowledge.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Bad writing is almost never malice or stupidity. It is one specific blind spot — and it hides itself.',
-    thesis:
-      'Most bad writing is not obfuscation and not low intelligence: it is the curse of knowledge, the inability to imagine what it is like not to already know what you know. Nearly every concrete technique for writing clearly is a countermeasure against that single root cause — which matters because the blind spot cannot be detected by introspection, since the thing hiding it is the very knowledge you cannot unsee.',
-    ideas: [
-      {
-        name: 'Hanlon\'s razor, applied to prose',
-        body: 'Never attribute to malice what is adequately explained otherwise. Most impenetrable academic and technical writing comes from intelligent, well-meaning people who simply cannot model what their audience does not know — not from a wish to gatekeep or sound impressive.',
-      },
-      {
-        name: 'Four seconds to lose a room',
-        body: 'A brilliant molecular biologist at a conference lost several hundred people almost immediately by opening with jargon-heavy findings, never framing the problem or why it mattered — and was visibly the only person in the room who could not tell.',
-      },
-      {
-        name: 'The symptoms are structural, not stylistic',
-        body: 'The curse shows up as unexplained abbreviations, jargon known only to a small clique, and needless abstraction. Pinker\'s example of the last: "the level of the stimulus was proportional to the intensity of the reaction" in place of "kids look longer at a bunny than a truck".',
-      },
-      {
-        name: 'You cannot introspect your way out',
-        body: 'Trying to imagine the reader\'s ignorance helps, but is fundamentally unreliable — the blind spot conceals itself. The only dependable correction is external: show the draft to intelligent, well-read people outside your specialty and watch where they stumble.',
-      },
-      {
-        name: 'The clique is smaller than you think',
-        body: 'Even sub-specialists inside the same department can become unintelligible to one another once each has been immersed in a small group\'s private vocabulary. "Written for experts" is rarely a real defence.',
-      },
-    ],
-    notes: [
-      'Concrete and visual language outperforms abstraction not as a matter of taste but because it gives the reader something to actually simulate.',
-      'Examples are not decoration — they pin down what a generalisation actually claims, which is the thing an unfamiliar reader cannot reconstruct on their own.',
-      'This source differs in kind from craft advice given by novelists: it explains from cognitive science why the techniques work, rather than describing one writer\'s personal process.',
-    ],
-    practices: [
-      'Give the draft to someone intelligent and well read but outside your field, and note precisely where they slow down. Do not explain — watch.',
-      'Open by framing the problem and why it matters, before any finding, term or abbreviation.',
-      'Replace abstraction with the concrete thing it stands for wherever the sentence still means what you intended.',
-      'Attach an example to every generalisation you are asking a reader to accept.',
-    ],
+    get hook() { return t('lib.the-curse-of-knowledge.hook'); },
+    get thesis() { return t('lib.the-curse-of-knowledge.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-curse-of-knowledge.idea.${i}.name`),
+        body: t(`lib.the-curse-of-knowledge.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-curse-of-knowledge.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-curse-of-knowledge.practice.${i}`));
+    },
     habits: [
-      { id: 'c_ship', because: 'This is the countermeasure itself. The blind spot cannot be found by introspection — only by watching one real reader stumble.' },
-      { id: 'd_teach', because: 'Explaining something to a non-specialist is the fastest way to discover which parts of what you know you cannot actually put into words.' },
-      { id: 'd_notes', because: 'Rewriting a source in your own words is where abstraction gets swapped for the concrete thing it stood for, at low stakes.' },
+      { id: 'c_ship', get because() { return t('lib.the-curse-of-knowledge.habit.c_ship.because'); } },
+      { id: 'd_teach', get because() { return t('lib.the-curse-of-knowledge.habit.d_teach.because'); } },
+      { id: 'd_notes', get because() { return t('lib.the-curse-of-knowledge.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'The countermeasure only works on a finished draft in someone else\'s hands — which requires actually finishing one thing you made.' },
-      { id: 'q_portfolio', because: 'Putting work where it can be found is what recruits the outside readers whose stumbles are the only reliable detector of your own blind spot.' },
+      { id: 'q_makeweekly', get because() { return t('lib.the-curse-of-knowledge.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.the-curse-of-knowledge.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Steven Pinker — The Curse of Knowledge and the Science of Clear Writing',
+    get vaultSource() { return t('lib.the-curse-of-knowledge.vaultSource'); },
   },
   {
     slug: 'focus-then-rest',
     attr: 'development',
-    title: 'Focus, then rest. The rewiring happens in the second part.',
-    origin: 'Andrew Huberman — neuroscientist, on plasticity, focus and self-regulation',
+    get title() { return t('lib.focus-then-rest.title'); },
+    get origin() { return t('lib.focus-then-rest.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'Focused work is supposed to feel bad at the start. Expecting flow is why people conclude they are doing it wrong.',
-    thesis:
-      'Adult neuroplasticity requires two things in sequence: intense focus, which is inherently uncomfortable because agitation is a byproduct of the stress system doing its job, followed by deep rest or sleep, where the actual rewiring occurs. Dopamine is not a reward at the finish line — it is released at any recognised milestone along the way, and its function is to suppress the norepinephrine buildup that otherwise makes people quit.',
-    ideas: [
-      {
-        name: 'Focus tags, rest rewires',
-        body: 'Focused attention releases acetylcholine from a brainstem structure that marks the active neurons for change — but the change itself happens later, in deep rest or sleep. Focus without adequate rest afterwards does not produce plasticity; the two are one mechanism in sequence, not alternatives.',
-      },
-      {
-        name: 'Duration, path, outcome — and why it feels bad',
-        body: 'Real focus requires the brain to work out how long something will take, what the path is, and what the outcome will be. That is effortful by design and throws off genuine agitation as a side effect. Expecting focused work to feel good from the start sets you up to think you are failing at the exact moment you are doing it correctly.',
-      },
-      {
-        name: 'Dopamine marks the path, not the arrival',
-        body: 'The model given is a thirsty deer finding a stream partway to the lake: the signal reinforces the route, not only the destination. So rewarding real intermediate progress is a genuine performance lever rather than a mood boost — though it has to attach to actual effort, not to detached positive self-talk.',
-      },
-      {
-        name: 'Why people quit, mechanically',
-        body: 'Sustained effort accumulates norepinephrine in the brainstem; past a threshold it shuts down voluntary motor control and the behaviour stops. Dopamine pushes that level back down, buying more capacity before the quit point. Marking milestones is therefore how you extend the runway.',
-      },
-      {
-        name: 'Action changes thought, not the other way round',
-        body: 'The causal direction runs from behaviour to mood and thought more reliably than the reverse. Waiting to feel motivated before acting has the sequence backwards — behaviour is the entry point when stuck.',
-      },
-      {
-        name: 'Adult plasticity has to be triggered deliberately',
-        body: 'Childhood plasticity is largely passive; the brain resists change past roughly twenty-five by design. Adult learning means actively re-creating the same focus-then-rest mechanism that ran automatically in childhood.',
-      },
-    ],
-    notes: [
-      'Perception is a spotlight and is controllable; sensation is not. The nervous system\'s core job is described as matching internal state to external demand — impatience, on this model, is an internal pulse running faster than the situation calls for, rather than a character flaw.',
-      'Urgency is required for plasticity, and Huberman is explicit that motivation from love and from fear converge on the same acetylcholine/norepinephrine pathway — he makes no claim they are interchangeable for wellbeing, only for triggering the mechanism.',
-      'Down-regulation in real time: two nasal inhales and one long exhale. Rapid cyclic breathing is the opposite tool, for when you are under-aroused and need activation.',
-      'Huberman is a publishing Stanford neuroscientist and several claims trace to citable work, but this is a long-form conversational podcast: figures are given from memory without in-episode sourcing. He flags the physiological-sigh protocol as an in-progress study at the time of recording, and the self-reward synthesis as his own extrapolation rather than a published finding — worth carrying those hedges rather than dropping them.',
-    ],
-    practices: [
-      'Treat early agitation in a focus block as the mechanism working, not as evidence the task is wrong or flow is unreachable.',
-      'Reward real milestones inside a larger goal, not only the finish — that is what extends capacity before the quit threshold.',
-      'When stuck, start with the behaviour rather than waiting to feel ready.',
-      'Take deliberate defocus breaks between blocks — look at something far away, not a screen — to preserve capacity for the next block.',
-      'Before a hard conversation, lower physiological arousal first: listening is gated by autonomic state, not by good intentions.',
-    ],
+    get hook() { return t('lib.focus-then-rest.hook'); },
+    get thesis() { return t('lib.focus-then-rest.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.focus-then-rest.idea.${i}.name`),
+        body: t(`lib.focus-then-rest.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.focus-then-rest.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.focus-then-rest.practice.${i}`));
+    },
     habits: [
-      { id: 'c_plan', because: 'Duration, path and outcome are exactly what planning tomorrow settles — done the night before, so the focus block does not have to spend its energy there.' },
-      { id: 'd_nopassive', because: 'The direct application of action-before-motivation: make something first, and let the mood follow the behaviour rather than gating it.' },
-      { id: 'd_review', because: 'Milestones only suppress the quit signal if you actually notice them — a standing review is where intermediate progress gets recognised instead of passing unmarked.' },
+      { id: 'c_plan', get because() { return t('lib.focus-then-rest.habit.c_plan.because'); } },
+      { id: 'd_nopassive', get because() { return t('lib.focus-then-rest.habit.d_nopassive.because'); } },
+      { id: 'd_review', get because() { return t('lib.focus-then-rest.habit.d_review.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'Focus-then-rest is a structure, not a mood; building the stack is how the rest half stops being whatever is left over.' },
-      { id: 'q_skill', because: 'Adult plasticity has to be deliberately triggered, which needs one concrete skill to aim the focus at over a real stretch of time.' },
+      { id: 'q_habitsystem', get because() { return t('lib.focus-then-rest.quest.q_habitsystem.because'); } },
+      { id: 'q_skill', get because() { return t('lib.focus-then-rest.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Huberman — Neuroplasticity, Focus and Self-Regulation',
+    get vaultSource() { return t('lib.focus-then-rest.vaultSource'); },
   },
   {
     slug: 'minimum-effective-dose-strength',
     attr: 'health',
-    title: 'There is no threshold. There is a gradient.',
-    origin: 'Andy Galpin — exercise scientist, on strength training and fast-twitch loss',
+    get title() { return t('lib.minimum-effective-dose-strength.title'); },
+    get origin() { return t('lib.minimum-effective-dose-strength.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'One session a week is not a compromise. It is most of the benefit.',
-    thesis:
-      'Strength training has a gradient dose-response, not a threshold: there is no cutoff below which it does not count. The jump from zero sessions to one is larger than any later increment, and each added day gives real but diminishing further benefit. The reason to lift specifically — rather than only walk or do cardio — is that fast-twitch fibres activate only under genuine load, and are preferentially lost with age if never recruited, regardless of how generally active you are.',
-    ideas: [
-      {
-        name: 'Do not let perfect be the enemy of good',
-        body: 'One session a month beats never, though not by much. One a week produces a large measurable jump against zero across longevity, bone, cardiovascular and mental-health markers. Around three a week is described as roughly "best-ish" as a lifelong average. The instruction that follows: never let an inability to hit the ideal frequency become the reason to do nothing.',
-      },
-      {
-        name: 'Why walking cannot substitute',
-        body: 'Slow-twitch fibres are fatigue-resistant and low-force — they cover standing, walking, chewing. Fast-twitch fibres produce high force and fatigue quickly, and are recruited only under real effort. Ageing strips the fast-twitch preferentially precisely because ordinary daily movement never calls on them. That is the mechanism behind an otherwise active older person who suddenly cannot lift a case overhead or catch themselves in a fall.',
-      },
-      {
-        name: 'Hardish, not maximal',
-        body: 'Fixing it does not require a one-rep max or training to failure — only periodic exposure to genuinely hardish relative load. Modern life no longer demands that, so it has to be deliberately engineered.',
-      },
-      {
-        name: 'Three components, none substitutable',
-        body: 'A full week has baseline activity (steps and general movement, with no real upper limit), at least one structured cardiovascular session, and at least one structured strength session. Heavy load in one component can lower the minimum needed in another, but nothing else reaches the force production, connective tissue and bone adaptations that strength work does.',
-      },
-      {
-        name: 'Program the days you have, minus one',
-        body: 'The coaching method shown: ask how many days are actually available, not how many the person wishes they had — then subtract one as a buffer against overcommitment and dropout. If they say four, program three.',
-      },
-    ],
-    notes: [
-      'Reps in reserve: stop sets meaningfully short of failure, especially as a beginner. Next-day soreness above roughly 2–3 out of 10 is a signal to back off, not evidence of a good session.',
-      'Soreness as a measure of effectiveness, training to failure, and standing desks as a fix are all addressed as myths rather than tactics.',
-      'On a day when a full session is impossible, do the smaller substitute — a walk, light movement, stretching — rather than skipping. "Make a dollar, not zero."',
-      'A protein reference point of roughly 2 g/kg/day is given, and creatine at 5 g/day is named as the one supplement worth considering. Both are general-population figures: anyone with a relevant medical condition should treat them as a question for a clinician rather than an instruction.',
-      'Galpin directs a university human-performance centre and coaches professionally. The physiology is described as backed by many labs but is not individually cited in the episode, and he flags his own live coaching example as simplified. Recovery and deficit percentages are his working heuristics, not sharp cutoffs.',
-    ],
-    practices: [
-      'Put one genuine strength session in the week before optimising anything else about training.',
-      'Use compound pairs — a leg movement and an upper-body movement — as supersets, two sets of eight, with whatever minimal equipment you have.',
-      'Stop each set short of failure and treat heavy next-day soreness as a signal you overshot.',
-      'On a day the session will not happen, do the reduced version instead of nothing.',
-      'Decide the week from the days you actually have, then subtract one.',
-    ],
+    get hook() { return t('lib.minimum-effective-dose-strength.hook'); },
+    get thesis() { return t('lib.minimum-effective-dose-strength.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.minimum-effective-dose-strength.idea.${i}.name`),
+        body: t(`lib.minimum-effective-dose-strength.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.minimum-effective-dose-strength.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.minimum-effective-dose-strength.practice.${i}`));
+    },
     habits: [
-      { id: 'h_pushups', because: 'The whole argument in its smallest honest form: fast-twitch fibres need real load, and this recruits them without a gym or a program.' },
-      { id: 'h_steps', because: 'Component one of the three — baseline activity, the part with no real upper limit on benefit and the one that carries a bad week.' },
-      { id: 'b_sport', because: '"Make a dollar, not zero" — the structured cardiovascular leg is easier to keep when it is something you would do anyway.' },
-      { id: 'h_stretch', because: 'The named substitute for a day when the full session is not happening, so the week does not become all-or-nothing.' },
+      { id: 'h_pushups', get because() { return t('lib.minimum-effective-dose-strength.habit.h_pushups.because'); } },
+      { id: 'h_steps', get because() { return t('lib.minimum-effective-dose-strength.habit.h_steps.because'); } },
+      { id: 'b_sport', get because() { return t('lib.minimum-effective-dose-strength.habit.b_sport.because'); } },
+      { id: 'h_stretch', get because() { return t('lib.minimum-effective-dose-strength.habit.h_stretch.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'The days-minus-one rule is a scheduling decision, not a motivation problem — which is exactly what building the stack settles in advance.' },
-      { id: 'q_energyaudit', because: 'The three components can only be balanced against a real picture of where the week\'s capacity currently goes.' },
+      { id: 'q_habitsystem', get because() { return t('lib.minimum-effective-dose-strength.quest.q_habitsystem.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.minimum-effective-dose-strength.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Galpin — Minimum Effective Dose Strength Training, Fast-Twitch Fiber Loss and Creatine',
+    get vaultSource() { return t('lib.minimum-effective-dose-strength.vaultSource'); },
   },
   {
     slug: 'the-delta-and-the-debt',
     attr: 'money',
-    title: 'Your standard of living is your spending, not your income',
-    origin: 'Kuralay Mukhamizhanova — financial consultant, on debt, the gap and capital',
+    get title() { return t('lib.the-delta-and-the-debt.title'); },
+    get origin() { return t('lib.the-delta-and-the-debt.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Earning and spending are two processes. The third one — the gap between them — is the only one that builds anything.',
-    thesis:
-      'There are three independent processes: earning, spending, and managing the gap between them. Most people run only the first two and therefore never form capital. Income is never guaranteed — illness, redundancy, a dry month all remove it — while spending is guaranteed always, which is why standard of living is set by the expense base rather than the income. Income equal to spending is a slow road to poverty; spending above income is a fast road to insolvency.',
-    ideas: [
-      {
-        name: 'Pay yourself first',
-        body: 'The rule is order, not amount: the first action on any income is setting aside a share, and you live on the remainder — never spend-then-save-the-leftover. The psychological argument is that 90% and 100% of a given sum are subjectively indistinguishable, so the felt drop in living standard is close to nothing while the compounding difference is not.',
-      },
-      {
-        name: 'The delta is the whole game',
-        body: 'Income equal to spending means no delta, no capital, and poverty at retirement. Income below spending means bankruptcy. Only income above spending creates the delta that savings and investment are built from — and it can be widened from either side, by cutting spending or raising income, ideally both.',
-      },
-      {
-        name: 'Compounding runs both directions',
-        body: 'The same mechanism works against a borrower and for an investor, and the dominant variable is time rather than the sum. The source\'s illustration: $200/month for twenty years beats $400/month for ten, despite identical capital contributed. Starting small immediately beats waiting for the right moment and a bigger amount.',
-      },
-      {
-        name: 'Instalments feel free because the pain is deferred',
-        body: 'An instalment plan reads as costless because the first payment belongs to next month. The pleasure of the purchase fades quickly while the payment runs for a year or two — so an instalment on a trip or an experience means paying, at length, for a joy that has already faded. Retail instalment plans frequently carry an interest component the buyer never sees stated.',
-      },
-      {
-        name: 'Snowball versus avalanche',
-        body: 'Snowball: rank debts smallest balance first, pay minimums on everything else, attack the smallest — the first closure arrives quickly and creates momentum. Avalanche: rank by highest interest rate and attack the most expensive, which is mathematically optimal and minimises total overpayment. The choice is a trade between psychology and arithmetic.',
-      },
-    ],
-    notes: [
-      'When income falls, spending falls more slowly — that lag is where credit traps are actually born.',
-      'The first step out of debt is structural rather than financial: stop adding new borrowing, or none of the rest holds.',
-      'List debts by real outstanding balance, not by monthly payment. The monthly figure is what makes a total feel survivable while it grows.',
-      'The consultant is a practitioner rather than a researcher, and the advice tracks standard personal-finance practice. "Pay yourself first" comes from the popular finance canon rather than original research; the compound-interest-as-eighth-wonder line is an apocryphal attribution; and the specific hidden-interest figure for local instalment products is a reasonable claim given without published data.',
-    ],
-    practices: [
-      'Write every debt down at its real remaining balance, in one list, before choosing any strategy.',
-      'Pick snowball or avalanche deliberately — momentum if you need a visible first win, avalanche if you can hold out for the lower total.',
-      'Set aside a fixed share the day income arrives, and live on the rest.',
-      'Treat an instalment offer as a loan with a hidden rate, and refuse it for anything whose pleasure will fade before the payments do.',
-      'Track the expense base, since that — not income — is what your standard of living actually is.',
-    ],
+    get hook() { return t('lib.the-delta-and-the-debt.hook'); },
+    get thesis() { return t('lib.the-delta-and-the-debt.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-delta-and-the-debt.idea.${i}.name`),
+        body: t(`lib.the-delta-and-the-debt.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-delta-and-the-debt.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-delta-and-the-debt.practice.${i}`));
+    },
     habits: [
-      { id: 'm_payday', because: 'This is "pay yourself first" as a mechanism rather than an intention: it happens on arrival, before the remainder gets claimed.' },
-      { id: 'm_log', because: 'Standard of living is the expense base, and the expense base cannot be managed while it is unmeasured.' },
-      { id: 'm_subs', because: 'Recurring charges are the part of the base that grows without a decision — the instalment logic applied monthly and invisibly.' },
-      { id: 'm_nospend', because: 'The delta can be widened from either side; this is the cheapest available move on the spending side.' },
+      { id: 'm_payday', get because() { return t('lib.the-delta-and-the-debt.habit.m_payday.because'); } },
+      { id: 'm_log', get because() { return t('lib.the-delta-and-the-debt.habit.m_log.because'); } },
+      { id: 'm_subs', get because() { return t('lib.the-delta-and-the-debt.habit.m_subs.because'); } },
+      { id: 'm_nospend', get because() { return t('lib.the-delta-and-the-debt.habit.m_nospend.because'); } },
     ],
     quests: [
-      { id: 'q_debts', because: 'Snowball and avalanche both require the same first artefact — every debt at its real balance, in one place.' },
-      { id: 'q_emergencyfund', because: 'Because income is never guaranteed and spending always is, the buffer is what stops the next gap becoming new borrowing.' },
+      { id: 'q_debts', get because() { return t('lib.the-delta-and-the-debt.quest.q_debts.because'); } },
+      { id: 'q_emergencyfund', get because() { return t('lib.the-delta-and-the-debt.quest.q_emergencyfund.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Мухамижанова — Долги, рассрочки и формирование капитала',
+    get vaultSource() { return t('lib.the-delta-and-the-debt.vaultSource'); },
   },
   {
     slug: 'manage-emotions-dont-control-them',
     attr: 'friends',
-    title: 'Manage the emotion. Do not control it.',
-    origin: 'Victoria Shimanskaya — on emotional intelligence as a skill',
+    get title() { return t('lib.manage-emotions-dont-control-them.title'); },
+    get origin() { return t('lib.manage-emotions-dont-control-them.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'One sentence structure that separates the feeling from you — and changes it in the process.',
-    thesis:
-      'Emotional intelligence runs in three stages: recognise and name the emotion, separating it from yourself ("I feel anger", not "I am angry"); understand what caused it; then choose the response from that cause. The distinction the whole account rests on is managing rather than controlling — control is felt in the body as clamping down and tends toward psychosomatic cost, while management feels like flexibility and choice. There are no bad emotions, only signals carrying energy and a function; only the expression can be wrong.',
-    ideas: [
-      {
-        name: 'The same feeling, different causes, different handling',
-        body: 'Anxiety from a nutrient deficiency, from bad news, and from fear of speaking in public are the same sensation with three different origins — and the correct response differs in each case. Skipping the cause stage means treating all of them identically, which is why generic advice about emotions so often fails.',
-      },
-      {
-        name: 'The three-part formula',
-        body: '"I feel X, because Y, and I would like Z." It executes all three stages in one sentence: it names the emotion apart from the identity, states the cause, and converts the state into a request. The claim is that the wording does not merely describe the state but changes it — "I am upset" degrades how you feel, while "I feel off, give me five minutes" is already a route out.',
-      },
-      {
-        name: 'Language fuses feeling and identity',
-        body: 'Everyday grammar quietly does the merging — "you are angry" instead of "you are feeling anger". Separating the two in how you speak is the practical form of separating them in how you experience it.',
-      },
-      {
-        name: 'A stop-word is preventive, not emergency equipment',
-        body: 'A personal trigger word, said instead of the automatic reaction, buys the pause in which "why do I feel this right now?" can be asked. It only works if trained in advance — reaching for it for the first time mid-emotion does not work.',
-      },
-      {
-        name: 'Vocabulary widens perception',
-        body: 'Six basic emotions combine into compound ones — disappointment, for instance, as sadness plus surprise, arising specifically from a gap between expectation and reality. The exercise is to write out sixteen distinct shades of a single emotion. The analogy offered: the more names for colours a person knows, the more shades the eye actually distinguishes.',
-      },
-    ],
-    notes: [
-      'Control is associated with blocked digestion and a stress response that shows up later as evening overeating; management leaves the option of deciding whether the emotion is needed now, and letting it go if not.',
-      'Asking "but why" down to a third or fourth level is offered as the diagnostic that gets past the surface answer — past "he is an idiot" or "I am just lazy" to the cause the response should actually address.',
-      'Boundaries with someone who reliably pushes you into unwanted behaviour work better formulated in advance than improvised at the moment of pressure.',
-      'The author is a practising specialist with mainstream-published books rather than an academic researcher. Plutchik\'s wheel, Vygotsky and Gardner are used appropriately; the neurophysiology is broadly correct at a general level but uncited; and the proprietary diagnostic and role-model framework should be taken as a useful practitioner\'s frame rather than an independently validated instrument.',
-    ],
-    practices: [
-      'Replace "I am upset" with "I feel X, because Y, I would like Z" — in conflicts at home and in negotiations alike.',
-      'Choose a stop-word now, while calm, and rehearse it. It is preventive equipment.',
-      'When irritated, ask why three or four times rather than stopping at the first answer.',
-      'Build the vocabulary deliberately: name several distinct shades of one emotion instead of reusing one word for all of them.',
-      'Decide a boundary with a difficult person in advance, in words, rather than improvising under pressure.',
-    ],
+    get hook() { return t('lib.manage-emotions-dont-control-them.hook'); },
+    get thesis() { return t('lib.manage-emotions-dont-control-them.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.manage-emotions-dont-control-them.idea.${i}.name`),
+        body: t(`lib.manage-emotions-dont-control-them.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.manage-emotions-dont-control-them.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.manage-emotions-dont-control-them.practice.${i}`));
+    },
     habits: [
-      { id: 'f_remember', because: 'Asking about what someone told you last time is the outward half of the same skill — reading another person\'s state well enough to know what mattered to them.' },
-      { id: 'f_thanks', because: 'Naming specifically what someone did is the same precision the shades exercise trains, pointed outward instead of inward.' },
-      { id: 'f_nogossip', because: 'Talking about someone who is absent is expression without the cause stage — the exact failure mode the three-stage model is meant to catch.' },
+      { id: 'f_remember', get because() { return t('lib.manage-emotions-dont-control-them.habit.f_remember.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.manage-emotions-dont-control-them.habit.f_thanks.because'); } },
+      { id: 'f_nogossip', get because() { return t('lib.manage-emotions-dont-control-them.habit.f_nogossip.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The formula and the pre-formulated boundary are built for precisely this conversation, which is why having it is the test of whether they work.' },
+      { id: 'q_hardconversation', get because() { return t('lib.manage-emotions-dont-control-them.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Шиманская — Эмоциональный интеллект как навык управления, а не контроля',
+    get vaultSource() { return t('lib.manage-emotions-dont-control-them.vaultSource'); },
   },
   {
     slug: 'the-pleasure-pain-balance',
     attr: 'development',
-    title: 'Pleasure and pain share one set of scales',
-    origin: 'Anna Lembke — psychiatrist, on dopamine, indulgence and honesty',
+    get title() { return t('lib.the-pleasure-pain-balance.title'); },
+    get origin() { return t('lib.the-pleasure-pain-balance.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'The comedown is not a side effect. It is the same system rebalancing — and waiting it out is the whole skill.',
-    thesis:
-      'Pleasure and pain are processed by the same brain structures and behave like scales seeking equilibrium: any stimulus on one side produces an equal tilt to the other. Under repeated indulgence the rebound gains the advantage — the brain compensates by down-regulating its own dopamine transmission — and if the balance is never allowed to recover, a person settles into a chronic dopamine deficit that is subjectively indistinguishable from clinical depression.',
-    ideas: [
-      {
-        name: 'Deviation from baseline, not absolute level',
-        body: 'Dopamine is tied to movement as much as to reward, and is released tonically at a baseline. What matters is the deviation from that baseline rather than the absolute figure — and there is evidence that in depression the tonic baseline itself may sit lower.',
-      },
-      {
-        name: 'Why the pain side wins',
-        body: 'After a large dopamine release the brain immediately compensates downward by reducing receptor sensitivity. That compensation is the hangover, and the moment of wanting to repeat. Wait for the feeling to pass and the balance restores itself; keep indulging before it recovers and the result is anhedonia — anxiety, irritability, insomnia, dysphoria, intrusive thoughts of using.',
-      },
-      {
-        name: 'Addiction is one circuit, not many diseases',
-        body: 'The same loop can attach to almost any substance or behaviour. That is why the mechanism generalises across things that look unrelated from the outside.',
-      },
-      {
-        name: 'Impulsivity is a risk factor, not a vice',
-        body: 'The inability to find space between wanting and acting genuinely raises addiction risk — but is not bad in itself: in intimacy or in danger it is exactly what serves. Many traits currently framed as disorder would be advantages in a different environment; the mismatch is with this world, not with the person.',
-      },
-      {
-        name: 'Pleasure often turns into avoidance',
-        body: 'Even when the pursuit begins as pleasure-seeking, motivation shifts over time toward avoiding withdrawal and consequence — which is why "pleasure" cannot be treated as one single thing.',
-      },
-      {
-        name: 'Modern life is hard because it is boring',
-        body: 'With survival needs largely met, people have to manufacture their own friction — effort and challenge. How much friction someone needs varies widely, and those who need a lot and do not build it deliberately tend to find it in worse ways.',
-      },
-    ],
-    notes: [
-      'Abstinence long enough to reset the circuit is put at roughly thirty days on average — presented as clinical experience generalised, not as a measured constant.',
-      'Complete honesty, including in small things, is named as a load-bearing part of recovery rather than a moral extra — and as a daily, checkable marker of progress.',
-      'Vigilance matters most when things are going well. Success is itself a trigger, not protection.',
-      'Rather than waiting to discover a calling, the recommendation is to look at what actually needs doing right now, nearby.',
-      'Lembke is a practising psychiatrist running a dual-diagnosis clinic; the pleasure-pain homeostasis mechanism is settled neurobiology rather than a contested position. Specific figures quoted from memory in conversation — including a recovery percentage attributed to a real study — are worth checking before being relied on precisely.',
-    ],
-    practices: [
-      'When the rebound hits, wait it out instead of resolving it with more of the same. That pause is the entire mechanism.',
-      'Plan phone and social media use in advance — set hours off, physical no-phone zones — rather than deciding in the moment.',
-      'Practise honesty in small things as the daily marker, not only in the large ones.',
-      'Raise vigilance when things are going well, not only in a crisis.',
-      'When apathetic or bored, look around for what actually needs doing instead of waiting for inspiration.',
-    ],
+    get hook() { return t('lib.the-pleasure-pain-balance.hook'); },
+    get thesis() { return t('lib.the-pleasure-pain-balance.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-pleasure-pain-balance.idea.${i}.name`),
+        body: t(`lib.the-pleasure-pain-balance.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-pleasure-pain-balance.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-pleasure-pain-balance.practice.${i}`));
+    },
     habits: [
-      { id: 'd_nopassive', because: 'The cheapest available source of the exact rebound described — and putting making before consuming is the self-binding rule in its smallest form.' },
-      { id: 'f_nodoom', because: 'A pre-committed barrier rather than an in-the-moment decision, which is precisely the form the source says actually works.' },
-      { id: 'b_nocompare', because: 'Scrolling other people\'s lives is the indulgence whose rebound is hardest to notice, because it does not feel like one while it happens.' },
+      { id: 'd_nopassive', get because() { return t('lib.the-pleasure-pain-balance.habit.d_nopassive.because'); } },
+      { id: 'f_nodoom', get because() { return t('lib.the-pleasure-pain-balance.habit.f_nodoom.because'); } },
+      { id: 'b_nocompare', get because() { return t('lib.the-pleasure-pain-balance.habit.b_nocompare.because'); } },
     ],
     quests: [
-      { id: 'q_declutter', because: 'Self-binding is environmental before it is psychological — the barriers have to exist in the room, not only in the intention.' },
-      { id: 'q_habitsystem', because: 'Manufacturing deliberate friction is a structural job: if the effort is not scheduled, the scales get tipped by whatever is nearest.' },
+      { id: 'q_declutter', get because() { return t('lib.the-pleasure-pain-balance.quest.q_declutter.because'); } },
+      { id: 'q_habitsystem', get because() { return t('lib.the-pleasure-pain-balance.quest.q_habitsystem.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Лембке — Баланс удовольствия-боли, зависимость и правда',
+    get vaultSource() { return t('lib.the-pleasure-pain-balance.vaultSource'); },
   },
-
   {
     slug: 'resist-less',
     attr: 'brightness',
-    title: 'The point is not to try harder. It is to resist less.',
-    origin: 'Anne Lamott — on attention, permission and the first draft',
+    get title() { return t('lib.resist-less.title'); },
+    get origin() { return t('lib.resist-less.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Most creative blocks are not a skill problem. They are an attention problem, and they have a different fix.',
-    thesis:
-      'Most problems that present as a deficit of skill are really a deficit of attention. Being blocked is usually being empty — and the remedy is noticing the world more closely, not accumulating more experiences, because what a piece needs is generally already available to anyone paying attention. Editing is a separate matter entirely: a mechanical, learnable craft of cutting and strengthening whatever a permissive first draft produced.',
-    ideas: [
-      {
-        name: 'Headlights in fog',
-        body: 'Borrowed from Doctorow — driving at night, you see only a little way ahead and can still make the whole journey — with fog added. You do not need the ending or even the next chapter, only the next couple of sentences; arriving at them reveals what follows.',
-      },
-      {
-        name: 'Empty, not blocked',
-        body: 'When a novelist friend reported writer\'s block, Lamott\'s reply was that she was not blocked but empty — all the sand had run out of the sack. The accompanying image is a "ragbag" collector who gathers noticed scraps (a colour, a texture, an overheard line) into a mental quilt and hands it over only once there is enough material. The fix is better attention, not chasing more experience, which only adds pressure.',
-      },
-      {
-        name: 'Resist less',
-        body: 'The line she uses as her core discipline reframes the work as agreeing to notice and receive rather than forcing output. Trying harder is the wrong axis.',
-      },
-      {
-        name: 'Attention is raw material, and it need not be yours',
-        body: 'She does not need to have lived a thing to write it: the exact greenish-yellow centre of someone else\'s orchid can later become a character\'s eyes. The craft is capturing observed specifics as they happen — a pen and index card, or phone notes — because writing something down makes it nearly indelible even if never used.',
-      },
-      {
-        name: 'The inner critic is a character you can negotiate with',
-        body: 'Locate where the critical voice physically sits, bring it forward, and ask directly who hired it, why, and when. The practice is not to silence or defeat it — it once served a protective function — but to thank it for that and ask it to step aside while you work.',
-      },
-      {
-        name: 'Three drafts, three different jobs',
-        body: 'The child\'s draft gets everything down permissively, firm but friendly with yourself and without judgement; it will be too long and partly bad. The later passes are where cuts and stronger verbs happen, and then the final line edit. Conflating the three is what makes first drafts impossible.',
-      },
-    ],
-    notes: [
-      '"Tell me a story, make me care" works as a compact test for anything you make: is there a real stake and a recognisably human, flawed subject, or is it only information delivery?',
-      'Lamott is a long-established published author speaking about her own documented method; this is high-reliability craft opinion rather than research, and the personal anecdotes are self-reported and not load-bearing.',
-      'One quotation in the source is misattributed in transcription — the line about surviving childhood giving you enough to write about belongs to Flannery O\'Connor. Flagged rather than quietly corrected.',
-    ],
-    practices: [
-      'When stuck, treat the diagnosis as "pay closer attention", not "try harder".',
-      'Carry something to capture specifics the moment you notice them — writing it down is what makes it available later.',
-      'Give yourself an explicitly bad first pass, then do the cutting in a separate, later session.',
-      'Name the inner critic and ask it to step aside for the duration of the draft rather than trying to win the argument.',
-    ],
+    get hook() { return t('lib.resist-less.hook'); },
+    get thesis() { return t('lib.resist-less.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.resist-less.idea.${i}.name`),
+        body: t(`lib.resist-less.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.resist-less.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.resist-less.practice.${i}`));
+    },
     habits: [
-      { id: 's_makecreate', because: 'The permission model only works if there is a regular, low-stakes place to put a bad first pass — twenty minutes is the size that survives a busy week.' },
-      { id: 'b_play', because: 'The ragbag fills through undirected noticing, which is exactly what doing something with no purpose protects time for.' },
-      { id: 'd_notes', because: 'Writing an observation down in your own words is the capture step she says makes a detail nearly indelible, whether or not it ever gets used.' },
+      { id: 's_makecreate', get because() { return t('lib.resist-less.habit.s_makecreate.because'); } },
+      { id: 'b_play', get because() { return t('lib.resist-less.habit.b_play.because'); } },
+      { id: 'd_notes', get because() { return t('lib.resist-less.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'The three-draft model is meaningless until one thing gets carried all the way to finished — that is where the second and third passes actually happen.' },
+      { id: 'q_makeweekly', get because() { return t('lib.resist-less.quest.q_makeweekly.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Anne Lamott — Writing Advice and the Craft of Attention',
+    get vaultSource() { return t('lib.resist-less.vaultSource'); },
   },
   {
     slug: 'escalate-dont-subvert',
     attr: 'brightness',
-    title: 'Finish it first. Diagnose later.',
-    origin: 'Brandon Sanderson — on promises, escalation and broken stories',
+    get title() { return t('lib.escalate-dont-subvert.title'); },
+    get origin() { return t('lib.escalate-dont-subvert.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'The instinct to tell "stuck" from "fundamentally broken" is earned by finishing things, not by thinking harder.',
-    thesis:
-      'Subplots, twists and hooks all pass or fail on one test: do they escalate the stakes and honour the promises already made to the audience, or do they merely surprise and delay without paying off? And the ability to tell an ordinary stuck patch from a genuinely broken structure only develops after finishing several complete pieces — which is the argument for finishing rather than diagnosing mid-draft.',
-    ideas: [
-      {
-        name: 'The promise is the contract',
-        body: 'The failure in a badly received subplot is usually not the digression itself but an abandoned promise. The worked negative example opens by stating an explicit goal — I need to get to my friend — then immediately drops it for an unrelated errand. Breaking the promise, not the detour, is what the audience actually registers.',
-      },
-      {
-        name: 'Twists must escalate, not merely subvert',
-        body: 'A twist is good only insofar as it expands the scope or stakes of a conflict that already exists. The canonical example works because it is a natural escalation of a conflict the story had been building toward, with real foreshadowing — not because it was unexpected.',
-      },
-      {
-        name: 'Every subplot deserves its own promise-and-progress',
-        body: 'In a large cast, audiences will always rank favourites and least-favourites; that is unavoidable rather than a fixable bug. The lever is treating each secondary arc with the same discipline as the main one, so it reads as its own story rather than a detour.',
-      },
-      {
-        name: 'There is no master list — build your own',
-        body: 'He says plainly that he has never found a satisfying catalogue of plot archetypes beyond reductive lists. The alternative is deliberate pattern-matching: consume work while asking what sub-genre and beat pattern it belongs to, and accumulate a personal, growing catalogue of reusable patterns.',
-      },
-      {
-        name: 'The threshold of tolerance, and what earns it',
-        body: 'Every audience tolerates a different amount of slow setup before leaving, and that tolerance is extended by trust an author has already earned. The practical rule for openings: establish the character\'s head, the tone, and their relationship to the coming conflict as fast as possible. Nobody has ever complained that something started too interesting.',
-      },
-    ],
-    notes: [
-      'Sanderson is unusually explicit about the limits of his own frameworks — he admits an unsolved structural problem in a published book and a years-long struggle to fix another. That makes him a useful calibration against more dogmatically stated craft "laws".',
-      'This is a working practitioner teaching a university course, not a content-creator take; the frameworks are offered as heuristics rather than measured findings.',
-    ],
-    practices: [
-      'Before adding a thread, state its promise to the audience in one sentence — then check later whether that exact promise was honoured.',
-      'Test every planned reveal with: does this deepen a conflict they already care about, or is it surprise for its own sake?',
-      'Finish the draft before deciding it is broken. The diagnostic instinct is a product of completed work.',
-      'Build your own catalogue of patterns by asking, of everything you consume, what shape it actually is.',
-    ],
+    get hook() { return t('lib.escalate-dont-subvert.hook'); },
+    get thesis() { return t('lib.escalate-dont-subvert.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.escalate-dont-subvert.idea.${i}.name`),
+        body: t(`lib.escalate-dont-subvert.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 2 }, (_, i) => t(`lib.escalate-dont-subvert.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.escalate-dont-subvert.practice.${i}`));
+    },
     habits: [
-      { id: 'c_ship', because: 'Whether a promise was honoured is not knowable from inside your own head — it needs one person who did not watch you make it.' },
-      { id: 's_makecreate', because: '"Finish it first" is a claim about accumulated volume, and volume is made of ordinary sessions rather than inspired ones.' },
+      { id: 'c_ship', get because() { return t('lib.escalate-dont-subvert.habit.c_ship.because'); } },
+      { id: 's_makecreate', get because() { return t('lib.escalate-dont-subvert.habit.s_makecreate.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'This is the thesis as a task: the judgement he describes is only earned by carrying something all the way to done.' },
-      { id: 'q_portfolio', because: 'Tolerance is extended by trust already earned — which requires the earlier work to exist somewhere findable.' },
+      { id: 'q_makeweekly', get because() { return t('lib.escalate-dont-subvert.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.escalate-dont-subvert.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Sanderson — Viewpoint, Escalation and Diagnosing a Broken Story',
+    get vaultSource() { return t('lib.escalate-dont-subvert.vaultSource'); },
   },
-
   {
     slug: 'heart-soul-body-mind',
     attr: 'spirituality',
-    title: 'Treating the symptom is not the same as treating the soul',
-    origin: 'Rania Awaad — psychiatrist, on al-Ghazali\'s model of the psyche',
+    get title() { return t('lib.heart-soul-body-mind.title'); },
+    get origin() { return t('lib.heart-soul-body-mind.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'Two opposite errors — faith instead of treatment, and treatment with no soul in it. The source rejects both.',
-    thesis:
-      'Islamic psychology is presented not as adding scripture to an existing Western model but as a discipline built from its own sources, in which the psyche cannot be treated while the soul is left out. The clinical position is explicitly neither of the two available extremes: refusing medicine on the grounds that faith should be sufficient, and full medicalisation with no spiritual component, are both named as failures.',
-    ideas: [
-      {
-        name: 'Al-Ghazali\'s model, used clinically',
-        body: 'At the centre sits the qalb — the metaphysical heart, not the organ — connected bidirectionally to the ruh (soul), the nafs (here meaning behavioural inclination rather than simply "self"), the jasad (body) and the aql (mind). All four interact, so intervening on behaviour alone or cognition alone produces symptom reduction rather than healing.',
-      },
-      {
-        name: 'The stated goal is fitra, not symptom scores',
-        body: 'Therapy aims at returning a person toward their original given state. Work that never touches the ruh is described as operating on the surface layer — real, but partial.',
-      },
-      {
-        name: 'Grief and trauma are different processes',
-        body: 'Grief is bounded in time and naturally weakens. Trauma is the state in which the same circumstances still spontaneously trigger a person long afterwards — and if that is not happening, the source calls it a difficulty rather than trauma in the clinical sense. Untreated trauma does not fade; it goes deeper and resurfaces at full intensity.',
-      },
-      {
-        name: 'The hadith cited against refusing treatment',
-        body: 'Asked whether one should seek treatment when ill, the Prophet answered yes, and added that Allah does not send an illness without also sending its cure. On that basis the source sharply criticises the claim that a believer does not get depressed as contradicting both the Sunnah and the evidence.',
-      },
-      {
-        name: 'Depression is multifactorial',
-        body: 'Reducing its cause to weak faith ignores biological, hormonal, genetic and environmental factors. Postnatal depression — affecting roughly one in five women — is given as a largely hormonal condition unrelated to strength of iman, and blaming the woman\'s faith is named as direct harm.',
-      },
-      {
-        name: 'Therapy is a period, not an identity',
-        body: 'It is framed as time-bounded, with the goal that a person becomes their own therapist rather than indefinitely dependent on one specialist — a useful marker for whether a process is actually going somewhere.',
-      },
-    ],
-    notes: [
-      'Historically, the argument is that psychiatric care was first institutionalised inside a hospital system in the Islamic world, and that the model was integrated: architecture, music, diet, talking therapy and spiritual care working together rather than separately.',
-      'A useful self-check offered on wealth: the question is not the size of the income or the ambition, but where the heart\'s priority actually sits.',
-      'The author is a practising psychiatrist with an academic post and classical religious training, and states those positions openly as the basis for trust. The historical section is her own archival argument advancing a specific thesis rather than independently verified here, and the hadith is conveyed by meaning without a chain analysis in the interview.',
-    ],
-    practices: [
-      'Before interpreting a hard state spiritually, account for the biological, hormonal and environmental factors — especially postnatally.',
-      'Distinguish grief from trauma by whether the triggers still return at full intensity long afterwards; if they do, seek structured help rather than waiting it out.',
-      'Judge a therapeutic process by whether it is making you more able to handle yourself, not by how long it has lasted.',
-      'Check where the heart\'s priority sits rather than auditing the income figure.',
-    ],
+    get hook() { return t('lib.heart-soul-body-mind.hook'); },
+    get thesis() { return t('lib.heart-soul-body-mind.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.heart-soul-body-mind.idea.${i}.name`),
+        body: t(`lib.heart-soul-body-mind.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.heart-soul-body-mind.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.heart-soul-body-mind.practice.${i}`));
+    },
     habits: [
-      { id: 's_dhikr', because: 'The model\'s whole claim is that leaving the ruh untouched gives symptom reduction rather than healing — this is the smallest daily version of not leaving it out.' },
-      { id: 'd_review', because: 'Grief that fades and trauma that keeps returning can only be told apart by noticing the pattern over weeks, which needs a standing look rather than memory.' },
-      { id: 's_gratitude', because: 'Naming what went right is the practical form of the source\'s reframe: relationship built on recognising what is already there rather than on what is missing.' },
+      { id: 's_dhikr', get because() { return t('lib.heart-soul-body-mind.habit.s_dhikr.because'); } },
+      { id: 'd_review', get because() { return t('lib.heart-soul-body-mind.habit.d_review.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.heart-soul-body-mind.habit.s_gratitude.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'The model is only usable if actually understood — and the source\'s own argument is that doubts do not clear without deliberate study.' },
+      { id: 'q_learnfaith', get because() { return t('lib.heart-soul-body-mind.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Rania Awaad — Бимаристан, модель психики по Газали и границы медикализации',
+    get vaultSource() { return t('lib.heart-soul-body-mind.vaultSource'); },
   },
   {
     slug: 'the-map-and-the-support',
     attr: 'spirituality',
-    title: 'Feeling lost is a signal, not a verdict',
-    origin: 'Belal Assaad — lecture on guidance and its five components',
+    get title() { return t('lib.the-map-and-the-support.title'); },
+    get origin() { return t('lib.the-map-and-the-support.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'Guidance splits into two kinds — and confusing them is what makes "guides whom He wills" sound arbitrary.',
-    thesis:
-      'Guidance is a two-way process rather than something imposed or withheld arbitrarily. One kind is universal — the map, given to everyone without exception. The other is the support that comes to those who took the map up. Feeling lost is therefore read as a signal to return to five concrete elements of practice rather than as a verdict already passed.',
-    ideas: [
-      {
-        name: 'Two kinds of guidance',
-        body: 'Guidance-as-direction is universal and does not depend on acceptance — the map is issued to everyone. Guidance-as-support is subjective and arrives only after the first is taken up. The apparent tension in "guides whom He wills" resolves once the phrase is read as applying to the second kind.',
-      },
-      {
-        name: 'Being left in your own choice',
-        body: 'Correspondingly, misguidance is presented not as active pushing off the path but as being left in the choice you insisted on — the same logical structure as the freedom to jump or not.',
-      },
-      {
-        name: 'Recitation with tadabbur, not as an oracle',
-        body: 'The first component is remembrance, at best through the Qur\'an read reflectively — rereading a single verse many times and going deeper — explicitly against superstitious use. The cautionary anecdote is a man opening the Mushaf at random and reading the first words as a sign, which produced a verse about Musa\'s serpent in answer to a question about marriage.',
-      },
-      {
-        name: 'The five components',
-        body: 'Remembrance; conviction in belief, meaning going back and studying what one actually holds, since doubts do not resolve without deliberate study; the obligatory acts first and then the voluntary ones; charity, which explicitly includes a service, an embrace, a smile, or listening to someone\'s pain; and good company that reminds you.',
-      },
-      {
-        name: 'The "222" minimum',
-        body: 'For the voluntary night prayer: two units, two tears of sincerity, at two in the morning, for two minutes. Offered as the smallest possible version that still counts — a deliberately low floor rather than an ideal.',
-      },
-      {
-        name: 'Gratitude as the opening move',
-        body: 'A story about rereading the Qur\'an and rediscovering the meaning of its first word — praise — as an invitation into relationship through recognising blessings already present, rather than through what is lacking.',
-      },
-    ],
-    notes: [
-      'Charity is defined broadly enough that having no money removes no excuse: a service, a smile, or listening counts.',
-      'A recurring caution: do not judge someone\'s religiosity by outward behaviour observed in a moment — including your own earlier practice.',
-      'The speaker is a preacher rather than an academic; much of the material is personal narrative and practical exhortation rather than strict exegesis. Hadith are attributed to their collections but given by meaning without chains examined, and at least one fiqh position is flagged by the speaker himself as contested rather than settled.',
-    ],
-    practices: [
-      'Read feeling lost as an instruction to check the five components rather than as evidence about your standing.',
-      'Reread one verse repeatedly for meaning instead of covering volume — and do not use the text as an oracle for decisions.',
-      'Secure the obligatory acts before adding voluntary ones.',
-      'Use the smallest viable version of the night prayer rather than an ideal you will not keep.',
-      'Treat company as part of the practice, not as background.',
-    ],
+    get hook() { return t('lib.the-map-and-the-support.hook'); },
+    get thesis() { return t('lib.the-map-and-the-support.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-map-and-the-support.idea.${i}.name`),
+        body: t(`lib.the-map-and-the-support.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-map-and-the-support.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-map-and-the-support.practice.${i}`));
+    },
     habits: [
-      { id: 's_fivedaily', because: 'The order in the five components is explicit: the obligatory acts come first, and the voluntary ones are built on top rather than instead.' },
-      { id: 's_quran', because: 'One page read with tadabbur is the component named first — and the format the source argues for, against covering volume.' },
-      { id: 'm_charity', because: 'Charity here explicitly includes a service, a smile or listening, which makes the daily version possible regardless of what is in the account.' },
+      { id: 's_fivedaily', get because() { return t('lib.the-map-and-the-support.habit.s_fivedaily.because'); } },
+      { id: 's_quran', get because() { return t('lib.the-map-and-the-support.habit.s_quran.because'); } },
+      { id: 'm_charity', get because() { return t('lib.the-map-and-the-support.habit.m_charity.because'); } },
     ],
     quests: [
-      { id: 'q_anchor', because: 'The five components only function as a returnable structure if at least one of them is fixed to the day rather than negotiated each morning.' },
-      { id: 'q_learnfaith', because: 'Component two is exactly this: doubts are described as not clearing on their own, only through deliberate study of what you actually hold.' },
+      { id: 'q_anchor', get because() { return t('lib.the-map-and-the-support.quest.q_anchor.because'); } },
+      { id: 'q_learnfaith', get because() { return t('lib.the-map-and-the-support.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Belal Assaad — Хидая, пять слагаемых руководства и вопрос обращённых',
+    get vaultSource() { return t('lib.the-map-and-the-support.vaultSource'); },
   },
-
   {
     slug: 'goal-audience-format-moment',
     attr: 'career',
-    title: 'One goal, then audience, format and moment',
-    origin: 'Nina Zvereva — communications trainer, on speaking and being remembered',
+    get title() { return t('lib.goal-audience-format-moment.title'); },
+    get origin() { return t('lib.goal-audience-format-moment.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'A thousand goals means no goal — and eight seconds decides whether anyone is still listening.',
-    thesis:
-      'A talk or an important conversation works only if it starts from one clearly formulated goal — the expected result — and that result only lands if three further factors are respected: the audience, the format, and the moment. Any one of the three can collapse the communication entirely, even when the goal is perfectly stated. The speaker\'s actual job is not saying things well; it is being remembered.',
-    ideas: [
-      {
-        name: 'A thousand goals means no goal',
-        body: 'The goal is the expected result, stated as one thing. Everything downstream — what to include, what to cut, how to open — is decided by it, which is why an unfocused goal produces an unfocused talk no amount of delivery can rescue.',
-      },
-      {
-        name: 'Said it, proved it',
-        body: 'Any claim has to be backed by a fact, an example or a story, or it will not be remembered. But proof has a ceiling too: too many stories and figures dissolve the thread of the claim they were meant to support.',
-      },
-      {
-        name: 'The eight-second rule',
-        body: 'A speaker has roughly eight seconds to hook an audience — by analogy with how quickly a viewer decides whether to keep watching. The practical consequence is specific: learn the first sentence by heart rather than preparing a general plan, because that sentence decides whether the rest gets heard.',
-      },
-      {
-        name: 'Prepare triggers, rehearse aloud, not at a mirror',
-        body: 'Do not write the talk out in full — prepare a notebook of trigger words meaningful only to you. Record yourself, since recorded speech always runs shorter than live delivery, where pauses appear. Do not rehearse at a mirror: your own frightened eyes amplify the anxiety. Rehearsing aloud in front of family or friends is already a real rehearsal.',
-      },
-      {
-        name: 'Turn the nerves into drive rather than removing them',
-        body: 'Pre-talk nerves are not a defect to eliminate but a sign of being alive and charged — the stated position is that it will be a bad sign when the nerves stop. The task is converting them into drive without letting them take your tongue.',
-      },
-      {
-        name: 'The moment is uncontrollable and cannot be ignored',
-        body: 'The moment is whatever is happening here and now that you do not control — noise next door, a piece of news everyone is carrying, a match on everyone\'s mind. Walking out and behaving as though it does not exist loses the room; sometimes cancelling is the better call. The worked example is a speaker arriving crumpled after a night at the maternity hospital who simply named why — and had the audience immediately.',
-      },
-    ],
-    notes: [
-      'Announcing the format explicitly at the start — "I will take N minutes of your time" — saves time and sets the frame for any meeting, not only a talk.',
-      'An I-statement instead of a direct accusation is offered as a general de-escalation technique, not a family-specific one.',
-      '"Do the surplus" as a principle: try more variants than are formally required, so you have earned the right to have some of them fail.',
-      'This is a practising trainer with decades of broadcast and coaching experience. The central formula is presented as her own find that nobody has yet disproved — a practical instrument from one successful trainer rather than a validated model, and worth taking on those terms.',
-    ],
-    practices: [
-      'Before anything that matters, write one goal, then check it against audience, format and moment.',
-      'Write and memorise the opening sentence. Prepare the rest as trigger words only.',
-      'Rehearse out loud to a person, and record yourself — never to a mirror.',
-      'Name the moment out loud when there is one, rather than performing around it.',
-      'State the format up front so nobody is guessing how long this will take.',
-    ],
+    get hook() { return t('lib.goal-audience-format-moment.hook'); },
+    get thesis() { return t('lib.goal-audience-format-moment.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.goal-audience-format-moment.idea.${i}.name`),
+        body: t(`lib.goal-audience-format-moment.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.goal-audience-format-moment.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.goal-audience-format-moment.practice.${i}`));
+    },
     habits: [
-      { id: 'c_plan', because: 'Goal, audience, format and moment are four decisions best made the night before, not in the corridor on the way in.' },
-      { id: 'c_ship', because: 'Rehearsing aloud to one real person is named as a full rehearsal — and it is the only way to find out what actually landed.' },
-      { id: 'd_askquestion', because: 'Audience is half the formula, and the fastest way to stop guessing at it is to ask the question you would normally skip.' },
+      { id: 'c_plan', get because() { return t('lib.goal-audience-format-moment.habit.c_plan.because'); } },
+      { id: 'c_ship', get because() { return t('lib.goal-audience-format-moment.habit.c_ship.because'); } },
+      { id: 'd_askquestion', get because() { return t('lib.goal-audience-format-moment.habit.d_askquestion.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'Speaking is treated here as a craft with a protocol rather than a trait — which makes it a concrete skill to take on deliberately.' },
-      { id: 'q_promise', because: 'The eight-second rule and the moment can only be practised in front of actual people, which requires committing to a date you cannot quietly drop.' },
+      { id: 'q_skill', get because() { return t('lib.goal-audience-format-moment.quest.q_skill.because'); } },
+      { id: 'q_promise', get because() { return t('lib.goal-audience-format-moment.quest.q_promise.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Зверева — Формула ЦАФМ, правило 8 секунд и волнение как кураж',
+    get vaultSource() { return t('lib.goal-audience-format-moment.vaultSource'); },
   },
   {
     slug: 'psychology-over-technique',
     attr: 'career',
-    title: 'Perfect technique with broken psychology is worth nothing',
-    origin: 'Anatoly Tremzin — professional player, on preparation, tilt and leaks',
+    get title() { return t('lib.psychology-over-technique.title'); },
+    get origin() { return t('lib.psychology-over-technique.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Knowing your weakness does not remove it, because the decision has already been made automatically.',
-    thesis:
-      'At an elite level the asymmetry is explicit: flawless technique paired with failing psychology gives no chance of success. The corollaries are unglamorous — sleep ranks above nutrition and training in the preparation hierarchy, the cost of high performance is a specific sacrifice consciously accepted rather than resented, and known weaknesses persist because decisions are made automatically, long before the knowledge can intervene.',
-    ideas: [
-      {
-        name: 'Everything has a price, and accepting it is what makes it bearable',
-        body: 'World-class performance is described as requiring a concrete sacrifice — in his case an inverted sleep schedule. The claim is that it stays comfortable precisely because it was chosen consciously as the price, rather than experienced as an imposed restriction.',
-      },
-      {
-        name: 'Flexible planning beats rigid planning',
-        body: 'Rigid planning fixes the day and follows it regardless. Flexible planning holds an approximate plan and deliberately changes it when something more valuable appears. For an unpredictable working life, the flexible mode is presented as the healthier one.',
-      },
-      {
-        name: 'Sleep is priority one',
-        body: 'The stated hierarchy puts sleep above both nutrition and physical training when preparing for a demanding stretch. His personal threshold: six hours is not enough to reset, seven is the minimum.',
-      },
-      {
-        name: 'Leaks — known weaknesses that resist being fixed',
-        body: 'A "leak" is a weakness the player already knows about. The observation that matters is that awareness is not enough: decisions become mechanical and automated — the button is pressed, and only afterwards does the recognition arrive. Closing the gap between knowing and doing needs targeted practice, not more understanding.',
-      },
-      {
-        name: 'Catch the emotion first',
-        body: 'The first step in handling tilt is recognising the emotion in the moment — a general self-regulation technique that transfers well beyond the game, since naming it in the moment is what lowers the odds of an impulsive decision.',
-      },
-      {
-        name: 'Top 1% in several fields, deliberately',
-        body: 'An explicit alternative to trying to be the single best at one thing: aim for the top percentile in more than one area at once, as a stated strategy for distributing effort across several active projects.',
-      },
-    ],
-    notes: [
-      'Preparation includes studying recordings of specific future opponents — mood, tactics, patterns — before the stage where the real stakes sit.',
-      'At the top the contest is recursive reading of intent and deliberate exploitation of noticed patterns, rather than strategy knowledge alone.',
-      'Play strictly within a predetermined budget — bankroll management generalises to any decision made under real risk.',
-      'The speaker has a verifiable public record and is openly candid about his own gambling addiction and long struggle with it. Claims about typical earnings and industry structure come from personal experience rather than external statistics.',
-    ],
-    practices: [
-      'Name the price your goal actually requires and accept it explicitly, or drop the goal.',
-      'Hold the plan loosely enough to trade up when something genuinely more valuable appears.',
-      'Protect sleep ahead of diet and training when a demanding stretch is coming.',
-      'Attack a known weakness with targeted practice — understanding it does not disarm an automatic decision.',
-      'Catch and name the emotion before acting on it.',
-    ],
+    get hook() { return t('lib.psychology-over-technique.hook'); },
+    get thesis() { return t('lib.psychology-over-technique.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.psychology-over-technique.idea.${i}.name`),
+        body: t(`lib.psychology-over-technique.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.psychology-over-technique.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.psychology-over-technique.practice.${i}`));
+    },
     habits: [
-      { id: 'h_lightsout', because: 'The stated hierarchy puts sleep above nutrition and training — this is that priority made into a decision you only take once.' },
-      { id: 'c_plan', because: 'Flexible planning still needs a plan to deviate from; without one, every interruption looks equally valuable.' },
-      { id: 'c_onelesson', because: 'Leaks close through targeted practice, and targeting requires noticing what actually worked rather than reconstructing it later.' },
+      { id: 'h_lightsout', get because() { return t('lib.psychology-over-technique.habit.h_lightsout.because'); } },
+      { id: 'c_plan', get because() { return t('lib.psychology-over-technique.habit.c_plan.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.psychology-over-technique.habit.c_onelesson.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'The gap between knowing a weakness and acting differently is closed by deliberate practice over a real stretch of time, not by insight.' },
+      { id: 'q_skill', get because() { return t('lib.psychology-over-technique.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Тремзин — Психология как 100%, гибкое планирование и топ-1% в двух сферах',
+    get vaultSource() { return t('lib.psychology-over-technique.vaultSource'); },
   },
-
   {
     slug: 'budget-from-facts',
     attr: 'money',
-    title: 'Build the budget from transactions, not from memory',
-    origin: 'Caleb Hammer — on budget audits and the share-of-income view',
+    get title() { return t('lib.budget-from-facts.title'); },
+    get origin() { return t('lib.budget-from-facts.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Everyone agrees with the principles. The statement is where the disagreement actually shows up.',
-    thesis:
-      'Financial trouble rarely looks like not knowing the principles — it looks like agreeing with every one of them and immediately producing a reason to keep spending. The diagnostic that cuts through: build the budget from actual transactions rather than from a person\'s account of themselves, and convert every category into a percentage of income, because that is the only view in which small purchases visibly outweigh the large obvious ones.',
-    ideas: [
-      {
-        name: 'Facts before principles',
-        body: 'The method is to take a full month\'s statement, sort every transaction into categories, and compute the reality before arguing about discipline. In the worked case the self-description ("I pay my own bills") and the statement disagreed on nearly every point.',
-      },
-      {
-        name: 'Share of income is the diagnostic language',
-        body: 'Each category is expressed as a percentage of total income. The reference point offered: if rent alone is consuming most of the income, the conversation about spending discipline is secondary — the problem is structural, and no amount of restraint on small categories will reach it.',
-      },
-      {
-        name: 'A credit limit is not a credit debt',
-        body: 'Confusing the maximum you may spend with what you actually owe is presented as a basic literacy gap that looks trivial until it has produced thousands in real debt.',
-      },
-      {
-        name: 'The reserve rule, deliberately harsher',
-        body: 'The floor is set as the greater of six months of essential spending or a fixed nominal sum — deliberately stricter than the common three-to-six-months rule, on the reasoning that a real emergency (medical, vehicle) does not scale down just because the income is small.',
-      },
-      {
-        name: 'Help without a change of behaviour removes the trigger',
-        body: 'Clearing someone\'s debt without requiring anything to change is argued to remove the only effective prompt for change and to set up a predictable repeat of the same debt.',
-      },
-    ],
-    notes: [
-      'Check whether you are paying for a version of something that has a free equivalent — a quick, painless audit that usually finds something.',
-      'The mechanics of repayment given: total the required minimums, subtract all genuine essentials from income, and direct everything left at the debt.',
-      'Watch for the pattern of agreeing in one sentence and contradicting it in the next — useful as a test on your own internal monologue, not only on other people.',
-      'The format is a deliberately confrontational entertainment audit. The host\'s interrupting, sarcastic style is the genre, not a model for how to hold this conversation with your own family.',
-      'The reserve figure and the rent threshold are standard American personal-finance reference points, not universal constants — cost of living, currency and available social provision all change them.',
-      'The framing of family help as straightforwardly harmful is a culturally specific "tough love" position. It sits in real tension with traditions that treat supporting family as an obligation, and is worth holding as one view rather than a verdict.',
-    ],
-    practices: [
-      'Pull one full month of transactions and categorise every line before drawing any conclusion about your habits.',
-      'Convert each category to a percentage of income — that is where the small recurring things become visible.',
-      'Know the difference between your limit and your balance, in numbers, today.',
-      'Set the emergency floor by the harsher of the two rules, and treat it as the target you move toward rather than a demand for right now.',
-      'If you give or receive help, attach a change in behaviour to it rather than repeating it unconditionally.',
-    ],
+    get hook() { return t('lib.budget-from-facts.hook'); },
+    get thesis() { return t('lib.budget-from-facts.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.budget-from-facts.idea.${i}.name`),
+        body: t(`lib.budget-from-facts.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 6 }, (_, i) => t(`lib.budget-from-facts.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.budget-from-facts.practice.${i}`));
+    },
     habits: [
-      { id: 'm_log', because: 'The whole method depends on the transaction record existing — a budget built from memory is exactly the thing the audit disproves.' },
-      { id: 'm_checkbalance', because: 'Limit versus balance is the confusion at the centre of the worked case, and this is the ten-second habit that makes it impossible to hold.' },
-      { id: 'm_subs', because: 'The paid-where-a-free-version-exists check is a recurring-charge problem, and recurring charges only surface if something looks at them weekly.' },
+      { id: 'm_log', get because() { return t('lib.budget-from-facts.habit.m_log.because'); } },
+      { id: 'm_checkbalance', get because() { return t('lib.budget-from-facts.habit.m_checkbalance.because'); } },
+      { id: 'm_subs', get because() { return t('lib.budget-from-facts.habit.m_subs.because'); } },
     ],
     quests: [
-      { id: 'q_emergencyfund', because: 'The reserve rule is the source\'s one hard number — and it is deliberately set above the common advice because emergencies do not scale with income.' },
-      { id: 'q_debts', because: 'Minimums first, then everything spare at the balance, requires the same artefact the audit does: every debt, at its real number.' },
+      { id: 'q_emergencyfund', get because() { return t('lib.budget-from-facts.quest.q_emergencyfund.because'); } },
+      { id: 'q_debts', get because() { return t('lib.budget-from-facts.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Caleb Hammer — Аудит бюджета, ловушка доли дохода и семейное потворство долгам',
+    get vaultSource() { return t('lib.budget-from-facts.vaultSource'); },
   },
   {
     slug: 'investing-is-not-trading',
     attr: 'money',
-    title: 'Investing is not trading, and chasing yield is how capital dies',
-    origin: 'Kladko — investor, on diversification rules and the pull of fast returns',
+    get title() { return t('lib.investing-is-not-trading.title'); },
+    get origin() { return t('lib.investing-is-not-trading.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The loss did not come from a bad market. It came from deciding a good return was too slow.',
-    thesis:
-      'Investing and trading are different activities with different costs: investing aims at long-term return at risk only slightly above a deposit and needs a few minutes of attention a month, while trading requires continuous market attention and is a full working day. "Trader is a profession; anyone can be an investor." The characteristic failure is not a bad market but the decision that an adequate return is too slow — which is the doorway to schemes built for exactly that impulse.',
-    ideas: [
-      {
-        name: 'The loss followed the good months, not the bad ones',
-        body: 'After three or four successful months of active trading, the judgement that the returns were too small led to searching online for something better — and to losing nearly the entire capital in a pyramid scheme. The lesson taken from it was a permanent move to long-term strategy and an end to chasing quick profit.',
-      },
-      {
-        name: 'Numeric diversification limits',
-        body: 'Concrete ceilings rather than principles: no more than a set share of capital in a single country, a hard cap on any one company inside a fund, and a small ceiling on speculative assets. The point of numbers is that they still work on a day when conviction is high.',
-      },
-      {
-        name: 'The rollback after a jump in income',
-        body: 'A sharp rise in income was followed by a collapse the next month. The explanation offered: a new income level demands a matching level of responsibility, energy, environment and projects, and without accumulated capacity for it the rollback is predictable. The useful part: each rollback is proportionally smaller than the rise, so the level ratchets upward rather than returning to zero.',
-      },
-      {
-        name: 'Money solves money problems, and no others',
-        body: 'The first large sum is described as producing exactly one thing — expenses of the same size — and roughly half a year of reckoning with the fact that the expected transformation did not arrive.',
-      },
-      {
-        name: 'Why she left profitable trading',
-        body: 'Three reasons given, none financial: it adds no value and serves nobody; one participant\'s gain is another\'s loss; and the psychological damage she observed in traders directly, including someone carrying enormous debt while outwardly composed.',
-      },
-    ],
-    notes: [
-      'One year, one field in focus, the rest held steady — offered as a concrete alternative to running everything at once.',
-      'A morning practice of writing goals before opening messages, and a rule against heavy financial reading first thing, are both given as zero-cost and immediately available.',
-      'The speaker is a practising investor and adviser with an evident commercial interest — courses are promoted in the episode. The early-biography details carry noticeable self-presentation and are not verifiable.',
-      'The diversification numbers are reasonable and match standard risk-management practice; some of the supporting market history is simplified and given without a source.',
-      'Her firm position that regularly supporting parents inverts the family hierarchy and harms both sides is a personal conviction, not a consensus of family psychology — and stands in direct tension with traditions treating that support as an obligation. Useful as one viewpoint, not as a diagnosis.',
-    ],
-    practices: [
-      'Decide which activity you are actually doing — investing or trading — and price the time it demands honestly.',
-      'Write the diversification ceilings as numbers before you have a position you feel strongly about.',
-      'Treat "this return is too slow" as the warning sign it is; it is the sentence that precedes the loss.',
-      'Expect a rollback after a jump, and plan for the level rather than the peak.',
-      'Keep one field in focus per year and hold the others steady instead of running all of them.',
-    ],
+    get hook() { return t('lib.investing-is-not-trading.hook'); },
+    get thesis() { return t('lib.investing-is-not-trading.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.investing-is-not-trading.idea.${i}.name`),
+        body: t(`lib.investing-is-not-trading.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.investing-is-not-trading.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.investing-is-not-trading.practice.${i}`));
+    },
     habits: [
-      { id: 'm_waitlist', because: 'A day\'s delay is the cheapest possible defence against "this return is too slow", which is the exact impulse the schemes are built to catch.' },
-      { id: 'm_nodebt', because: 'The rollback after an income jump is described as predictable — borrowing against the peak is how a temporary drop becomes permanent.' },
-      { id: 'm_owed', because: 'Her hardest claim is about money inside a family inverting the hierarchy; naming what is actually owed, in either direction, is where that gets handled rather than accumulated.' },
+      { id: 'm_waitlist', get because() { return t('lib.investing-is-not-trading.habit.m_waitlist.because'); } },
+      { id: 'm_nodebt', get because() { return t('lib.investing-is-not-trading.habit.m_nodebt.because'); } },
+      { id: 'm_owed', get because() { return t('lib.investing-is-not-trading.habit.m_owed.because'); } },
     ],
     quests: [
-      { id: 'q_emergencyfund', because: 'A buffer is what makes the long-term strategy survivable — without it the first shock forces the sale the strategy depends on not making.' },
+      { id: 'q_emergencyfund', get because() { return t('lib.investing-is-not-trading.quest.q_emergencyfund.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Кладько — Правила диверсификации, психология финансовых пирамид и деньги как иерархия в семье',
+    get vaultSource() { return t('lib.investing-is-not-trading.vaultSource'); },
   },
-
   {
     slug: 'notice-the-manipulation',
     attr: 'friends',
-    title: 'A request that does not allow "no" is not a request',
-    origin: 'Safin — psychologist, on manipulation, boundaries and communication',
+    get title() { return t('lib.notice-the-manipulation.title'); },
+    get origin() { return t('lib.notice-the-manipulation.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Manipulation is in every conversation in some dose. The skill is not removing it — it is seeing it, including your own.',
-    thesis:
-      'Manipulation is conscious or unconscious pressure on another person\'s picture of the world that makes them more compliant, and it is present in some dose in all communication. The goal is not to eradicate it but to notice it — in other people\'s speech, and in your own. Most conflicts, at work and at home, are not about the thing being argued over: they are about goals that have drifted out of sync or a communicative function nobody named.',
-    ideas: [
-      {
-        name: 'Double binds',
-        body: 'A sentence with two layers: on the surface a compliment or a neutral remark, underneath a compulsion or a devaluation — "you\'re a clever person, you must understand" carrying "if you don\'t, be ashamed". Spotting them in others protects you; spotting them in yourself lowers your own toxicity.',
-      },
-      {
-        name: 'The straw-man request',
-        body: 'Asking while denying the other person permission to refuse is manipulation: it places them where "no" reads as betrayal. The healthy form makes refusal explicit — "can I ask you for X? If not, that\'s completely fine." Learning to ask this way is described as muscular rather than intellectual: it needs daily reps over weeks, not an insight.',
-      },
-      {
-        name: 'Naming an emotion makes it manageable',
-        body: 'Saying "this is awkward for me" out loud before a request already converts it from something passively suffered into something being handled. The supporting image: a painter cannot use a colour they have never seen — you cannot manage a state you have no name for.',
-      },
-      {
-        name: 'The formula for a drifted agreement',
-        body: '"As I understand it the situation is A, though we agreed B. I suggest we pause and discuss how you see it." It works because it states the fact without an accusation and explicitly invites a conversation rather than a confrontation.',
-      },
-      {
-        name: 'The body governs the thought',
-        body: 'When someone is chemically carried away by a strong emotion, verbal technique does not work — physiological regulation has to come first, and only then the conversation. A practical marker offered: the stronger the awkwardness about refusing, the more reliably it signals that refusal is the right answer.',
-      },
-      {
-        name: '"I am good enough" as the starting position',
-        body: 'Working on yourself does not require first agreeing that you are insufficient. Holding that you and others are fundamentally fine does not remove the need to grow — it removes self-flagellation as the fuel for it. If an idea is still beyond you, that is about readiness, not worth.',
-      },
-    ],
-    notes: [
-      'A register of unfinished business — conversations left hanging, things unresolved — is offered as a concrete exercise rather than a metaphor.',
-      'Separating the roles someone occupies (friend, creditor, business partner) is treated as a prerequisite for talking clearly with them, since an unnamed role mix is where most of the confusion lives.',
-      'This is a practising psychologist working from an Ericksonian and transactional-analysis lineage rather than academic psychology, and he presents the material explicitly as a set of viewpoints rather than an axiom. Some terminology is standard systemic family therapy rather than original to him, though not cited as such.',
-    ],
-    practices: [
-      'Phrase requests so that "no" is explicitly available, and mean it.',
-      'Say the awkward thing out loud before the request rather than working around it.',
-      'When reality has drifted from an agreement, name the gap and invite discussion instead of accusing.',
-      'Regulate the body first when emotion is high — the words do not work until it is down.',
-      'Watch your own sentences for the two-layer version, not only other people\'s.',
-    ],
+    get hook() { return t('lib.notice-the-manipulation.hook'); },
+    get thesis() { return t('lib.notice-the-manipulation.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.notice-the-manipulation.idea.${i}.name`),
+        body: t(`lib.notice-the-manipulation.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.notice-the-manipulation.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.notice-the-manipulation.practice.${i}`));
+    },
     habits: [
-      { id: 'f_nogossip', because: 'Talking about someone absent is where the second layer lives unchecked — the same double bind you would notice instantly if it were aimed at you.' },
-      { id: 'f_thanks', because: 'Naming something specific is the plain-speech counterpart to the two-layer sentence: nothing underneath it, nothing to decode.' },
-      { id: 'm_owed', because: 'Money between friends is the most common drifted agreement there is, and the formula is built exactly for naming a gap without an accusation.' },
+      { id: 'f_nogossip', get because() { return t('lib.notice-the-manipulation.habit.f_nogossip.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.notice-the-manipulation.habit.f_thanks.because'); } },
+      { id: 'm_owed', get because() { return t('lib.notice-the-manipulation.habit.m_owed.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The desync formula only proves itself in the conversation you have been postponing — which is the one it was designed for.' },
-      { id: 'q_debts', because: 'Separating a friend from a creditor requires knowing the actual numbers first; the roles cannot be untangled while the amount is vague.' },
+      { id: 'q_hardconversation', get because() { return t('lib.notice-the-manipulation.quest.q_hardconversation.because'); } },
+      { id: 'q_debts', get because() { return t('lib.notice-the-manipulation.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Сафин — Манипуляции, границы и коммуникация',
+    get vaultSource() { return t('lib.notice-the-manipulation.vaultSource'); },
   },
   {
     slug: 'comparison-is-learned',
     attr: 'friends',
-    title: 'Comparison is a learned habit, not a need',
-    origin: 'Nasibyan — psychologist, on fear, comparison and boundaries',
+    get title() { return t('lib.comparison-is-learned.title'); },
+    get origin() { return t('lib.comparison-is-learned.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Anxiety is fear projected onto a future that does not exist — which is why it never resolves on its own terms.',
-    thesis:
-      'Suffering comes less from not knowing than from holding a model of the world that hurts and refusing to revise it. Fear of change is, underneath, fear of death. Anxiety is fear projected onto a non-existent future and is therefore neurotic by construction. And comparing yourself with others is not an innate need but a cognitive process learned in childhood — which means it can be dismantled.',
-    ideas: [
-      {
-        name: 'The question is not whether it is true',
-        body: 'The useful question about a belief you are holding is not "is this true" but "does holding this make me happy — and if not, why am I holding on to it?" Suffering is framed as knowing wrongly rather than not knowing.',
-      },
-      {
-        name: 'Square breathing, and nerves as a signal of significance',
-        body: 'Four heartbeats in, four held, four out, four held. He reports his own pulse still hitting 130 before every talk after years of practice — the aim is not removing the fear but not being run by it. His stated view: if the anxiety before teaching disappeared, it would mean he had stopped finding it interesting.',
-      },
-      {
-        name: '"Why" taken to its limit',
-        body: 'Fear of having lived pointlessly comes from nobody ever helping you formulate your own why. The practice is to push any goal through repeated "why" until the real motive is exposed — not "to earn" but "to become a professional". Goals that extend beyond your own life make any current task automatically meaningful.',
-      },
-      {
-        name: 'Irritation as a reflection',
-        body: 'What reliably irritates you in another person is offered as diagnostic information about yourself — a cheap and uncomfortable instrument.',
-      },
-      {
-        name: 'Criticism and hate are different inputs',
-        body: 'Distinguishing the two is presented as a practical requirement for anyone doing anything public, along with the claim that an inability to tolerate criticism is itself a signal of stagnation.',
-      },
-    ],
-    notes: [
-      'Knowing a decision was better or worse is only available retrospectively — which is an argument for letting time run rather than trying to compute everything in advance.',
-      'A value vacuum is described as what appears when an externally imposed meaning collapses: not freedom but a gap, filled with anxiety and consumption.',
-      'This is a rapid-answer interview format, so the depth on any single point is limited. Several concepts are the speaker\'s own free interpretation of philosophical and religious systems rather than sourced positions, one cited statistic is used rhetorically rather than as fact, and his position on religion is a personal thesis rather than an empirical finding.',
-    ],
-    practices: [
-      'Ask of a belief you are suffering under: what is it doing for me, and why am I keeping it?',
-      'Use square breathing before anything that frightens you, with the aim of not being run by the fear rather than removing it.',
-      'Push a goal through "why" until you reach a motive you actually recognise.',
-      'Treat what irritates you in someone else as information about you.',
-      'Separate criticism from hate before responding to either.',
-    ],
+    get hook() { return t('lib.comparison-is-learned.hook'); },
+    get thesis() { return t('lib.comparison-is-learned.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.comparison-is-learned.idea.${i}.name`),
+        body: t(`lib.comparison-is-learned.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.comparison-is-learned.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.comparison-is-learned.practice.${i}`));
+    },
     habits: [
-      { id: 'b_nocompare', because: 'If comparison is learned rather than innate, then the feed that trains it daily is the first thing to remove — the habit is the dismantling.' },
-      { id: 'f_nodoom', because: 'Anxiety here is fear aimed at a future that does not exist, and scrolling is the most reliable supplier of imagined futures to be afraid of.' },
-      { id: 's_gratitude', because: 'Naming what actually happened is the direct counterweight to a mind working on a projected future instead of the day that occurred.' },
+      { id: 'b_nocompare', get because() { return t('lib.comparison-is-learned.habit.b_nocompare.because'); } },
+      { id: 'f_nodoom', get because() { return t('lib.comparison-is-learned.habit.f_nodoom.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.comparison-is-learned.habit.s_gratitude.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Boundaries are a theme he keeps returning to, and the strength of your reluctance is described as the signal that the conversation is the necessary one.' },
+      { id: 'q_hardconversation', get because() { return t('lib.comparison-is-learned.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Насибян — Страх, сравнение и границы',
+    get vaultSource() { return t('lib.comparison-is-learned.vaultSource'); },
   },
-
   {
     slug: 'three-sources-of-fatigue',
     attr: 'health',
-    title: 'Training is only one of three things tiring you out',
-    origin: 'Mike Israetel — sport physiologist, on recovery and what does not aid it',
+    get title() { return t('lib.three-sources-of-fatigue.title'); },
+    get origin() { return t('lib.three-sources-of-fatigue.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'Most recovery is subtraction. Several of the most popular recovery tools do not repair anything.',
-    thesis:
-      'Fatigue comes from three independent sources — training, all non-training physical activity across the day, and psychological stress — and most people account only for the first, which is why they systematically misjudge how recovered they are. All three draw on the same finite capacity. The second reframe: recovery is mostly subtraction rather than addition, and several popular recovery tools do not accelerate tissue repair at all.',
-    ideas: [
-      {
-        name: 'The three sources',
-        body: 'Training is obvious. Everyday movement is not: conscientious people who walk constantly and cannot sit still quietly drain recovery capacity without ever connecting it to their training results, while naturally sedentary athletes recover easily almost by accident. The third — described as the biggest surprise of his own doctoral training — is psychological stress: chronic relationship conflict, work anxiety and rumination measurably degrade performance and body composition, roughly in proportion to severity.',
-      },
-      {
-        name: 'The nervous system is the actual gate',
-        body: 'Being physically still does not start recovery if the nervous system stays sympathetically dominant — lying on the sofa while scrolling and getting angry counts as rest on paper and not in the body. Recovery unlocks at parasympathetic dominance, which is why stress can silently block it while sleep hours, food and rest time all look correct.',
-      },
-      {
-        name: 'Why stress wrecks sleep quality without shortening it',
-        body: 'A stressed nervous system deliberately keeps sleep shallower as a vigilance adaptation — more micro-awakenings, lighter stages — so duration can be entirely normal while the restoration is not.',
-      },
-      {
-        name: 'Acute versus cumulative fatigue, as debt',
-        body: 'Acute fatigue clears in hours to days. Cumulative fatigue builds when training frequency outruns recovery, never fully clearing between sessions, and after several weeks of hard work reaches a point that has to be addressed deliberately. One easy day is a small payment against a balance that is still there and still dragging — which is the argument for a periodic planned deload rather than an improvised one.',
-      },
-      {
-        name: 'Masking is not repairing',
-        body: 'Cold plunges, extensive stretching, foam rolling and most supplements are presented as not accelerating tissue repair — they reduce the sensation of fatigue, or actively blunt the inflammatory process that performs the repair. Useful if you enjoy them; not a substitute for sleep, food and less load.',
-      },
-    ],
-    notes: [
-      'A default question for handling stress: what can I actually do about this? If there is an action, take it or schedule it and then disengage deliberately; if there is none, further rumination carries no additional signal.',
-      'Judge recovery by trackable numbers — reps, loads, any measurable personal-best-adjacent metric — rather than by how you feel on the day.',
-      'He holds a doctorate in sport physiology and coaches competitive athletes; the repair-versus-masking distinction reflects mainstream sport-science consensus rather than a fringe position. Specific numbers are stated confidently without in-episode citation, and the hard-work-culture commentary is labelled by him as personal philosophy rather than a finding.',
-    ],
-    practices: [
-      'Count everyday movement and psychological stress as training load, because your body already does.',
-      'Get the nervous system down before calling it rest — stillness with your jaw clenched is not recovery.',
-      'Schedule a lighter week periodically instead of waiting until performance forces one.',
-      'Use cold, stretching and rolling because you like them, not as a substitute for sleeping and eating.',
-      'Ask what action is available; take it or drop it, rather than continuing to turn it over.',
-    ],
+    get hook() { return t('lib.three-sources-of-fatigue.hook'); },
+    get thesis() { return t('lib.three-sources-of-fatigue.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.three-sources-of-fatigue.idea.${i}.name`),
+        body: t(`lib.three-sources-of-fatigue.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.three-sources-of-fatigue.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.three-sources-of-fatigue.practice.${i}`));
+    },
     habits: [
-      { id: 'h_lightsout', because: 'Sleep is the intervention the whole model rests on — and the one the other two fatigue sources quietly degrade the quality of.' },
-      { id: 'f_nodoom', because: 'Scrolling and getting angry is the exact example given of rest that never reaches parasympathetic dominance, so it never becomes recovery.' },
-      { id: 'b_noalarm', because: 'A regular unforced day is the smallest version of the deload — a scheduled payment against cumulative fatigue rather than an emergency one.' },
+      { id: 'h_lightsout', get because() { return t('lib.three-sources-of-fatigue.habit.h_lightsout.because'); } },
+      { id: 'f_nodoom', get because() { return t('lib.three-sources-of-fatigue.habit.f_nodoom.because'); } },
+      { id: 'b_noalarm', get because() { return t('lib.three-sources-of-fatigue.habit.b_noalarm.because'); } },
     ],
     quests: [
-      { id: 'q_sleepreset', because: 'If stress keeps sleep shallow while its duration looks fine, then the fix is structural rather than a matter of going to bed earlier once.' },
-      { id: 'q_energyaudit', because: 'The three sources compete for one budget, and there is no way to see that competition without actually logging where the week goes.' },
+      { id: 'q_sleepreset', get because() { return t('lib.three-sources-of-fatigue.quest.q_sleepreset.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.three-sources-of-fatigue.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Israetel — Recovery as Machine Maintenance, the Three Sources of Fatigue and Why Cold Plunges Don\'t Recover You',
+    get vaultSource() { return t('lib.three-sources-of-fatigue.vaultSource'); },
   },
   {
     slug: 'plaques-and-risk-factors',
     attr: 'health',
-    title: 'Atherosclerosis is a process, not an event',
-    origin: 'Utin — cardiologist, on plaques, clots and misfiled anxiety',
+    get title() { return t('lib.plaques-and-risk-factors.title'); },
+    get origin() { return t('lib.plaques-and-risk-factors.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'The goal was never to remove the plaques. It is to stop them rupturing.',
-    thesis:
-      'Cardiovascular disease leads causes of death because infections were defeated and four risk factors were not: smoking, inactivity, obesity and untreated hypertension. Atherosclerosis is not a single event but a process running from birth — cholesterol deposits in the artery wall in everyone, and the only questions are how fast and whether a plaque ruptures. Treatment therefore aims not at removing plaques but at making them safe.',
-    ideas: [
-      {
-        name: 'Good and bad cholesterol is about packaging',
-        body: 'Cholesterol is not good or bad in itself — the distinction describes how it is packaged for transport. The loosely packed form oxidises easily, sticks to the artery wall and gets inside. Macrophages arrive, gorge, and die, forming a plaque: a fibrous cap over a liquid core of cholesterol and dead immune cells.',
-      },
-      {
-        name: 'How a plaque becomes a clot',
-        body: 'If the liquid core breaks through into the vessel lumen, blood clots on the plaque surface and blocks it — a heart attack if the vessel serves the heart, a stroke if it serves the brain. Which is why the therapeutic goal is described as stabilising the core rather than clearing the deposit.',
-      },
-      {
-        name: 'Three different places clots form',
-        body: 'In arteries, almost always on a ruptured plaque. In leg veins, via slowed flow, wall damage and changes in clotting — a detached clot travels to the lung, and the warning sign given is one leg suddenly thicker and redder than the other plus sudden breathlessness. In the left atrium during atrial fibrillation, from where a clot travels to the brain.',
-      },
-      {
-        name: 'Thick blood is not the mechanism',
-        body: 'Clot formation is a chemical process — platelet aggregation and fibrin polymerisation — not blood being too thick and sitting still. Blood-thinning drugs do not change the consistency of blood; they act on those chemical steps.',
-      },
-      {
-        name: 'The plate, in practice',
-        body: 'Half the plate vegetables and fruit across the colour range, a quarter whole grains, a quarter protein; olive oil rather than sunflower. Roughly one steak of red meat a week rather than daily; cold-water fish once or twice a week; a small daily portion of nuts, counted, because they are calorie-dense.',
-      },
-      {
-        name: 'A diagnosis used as a wastebasket',
-        body: 'His second theme is that a widely used functional diagnosis in the region operates as a bin for untreated anxiety and panic disorders, keeping people looking for a cardiac cause instead of being referred appropriately.',
-      },
-    ],
-    notes: [
-      'Salt intake in the region runs at roughly two to three times the WHO reference; the first step named is taking the salt cellar off the table. Pink and sea salt are described as marketing rather than a health difference.',
-      'Distinguishing cardiac pain from anxiety or muscular spasm: cardiac pain relates to exertion and tends to press; spasm and anxiety tend to worsen on inhalation and lack the link to exertion.',
-      'Dried fruit as a potassium source, collagen supplements and pink salt are named as myths without demonstrated effect.',
-      'On alcohol he cites the position that there is no safe dose.',
-      'Notably not a promotional source — he is openly sceptical of sponsored content and pseudo-diagnoses. The specific figures quoted are given without in-episode references; they align with widely cited cardiology literature but cannot be checked from the conversation itself, and he flags the evidence on harm-reduction alternatives to smoking as still developing.',
-    ],
-    practices: [
-      'Take the salt off the table before changing anything else about the diet.',
-      'Build the plate by proportion rather than by counting: half vegetables and fruit, a quarter whole grains, a quarter protein.',
-      'Measure resting blood pressure properly once a year — sit still for several minutes first. It costs nothing.',
-      'Get a full cholesterol panel once to learn your inherited baseline, independent of how you currently eat.',
-      'Stop hunting for a cardiac explanation for symptoms that behave like anxiety, and get the anxiety treated as anxiety.',
-    ],
+    get hook() { return t('lib.plaques-and-risk-factors.hook'); },
+    get thesis() { return t('lib.plaques-and-risk-factors.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.plaques-and-risk-factors.idea.${i}.name`),
+        body: t(`lib.plaques-and-risk-factors.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.plaques-and-risk-factors.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.plaques-and-risk-factors.practice.${i}`));
+    },
     habits: [
-      { id: 'h_nosmoke', because: 'It heads the list of the four unbeaten risk factors — and it is the only one on that list you can act on in a single decision.' },
-      { id: 'h_realmeal', because: 'The plate is a proportion rather than a calculation, which makes it something a single honest meal a day can actually carry.' },
-      { id: 'h_steps', because: 'Inactivity is named as a risk factor in its own right, sitting alongside smoking and untreated hypertension rather than below them.' },
+      { id: 'h_nosmoke', get because() { return t('lib.plaques-and-risk-factors.habit.h_nosmoke.because'); } },
+      { id: 'h_realmeal', get because() { return t('lib.plaques-and-risk-factors.habit.h_realmeal.because'); } },
+      { id: 'h_steps', get because() { return t('lib.plaques-and-risk-factors.habit.h_steps.because'); } },
     ],
     quests: [
-      { id: 'q_healthcheck', because: 'A resting blood pressure reading and one full cholesterol panel are the two cheap numbers that turn a lifelong silent process into something visible.' },
-      { id: 'q_energyaudit', because: 'Two of the four risk factors are lifestyle patterns rather than events, and patterns only become addressable once the week is actually written down.' },
+      { id: 'q_healthcheck', get because() { return t('lib.plaques-and-risk-factors.quest.q_healthcheck.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.plaques-and-risk-factors.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Утин — Атеросклероз, тромбы и ВСД',
+    get vaultSource() { return t('lib.plaques-and-risk-factors.vaultSource'); },
   },
-
   {
     slug: 'critical-mass-of-a-habit',
     attr: 'development',
-    title: 'Habits end by accumulation, not by breakage',
-    origin: 'Alipov — neuroscientist, on how habits actually end',
+    get title() { return t('lib.critical-mass-of-a-habit.title'); },
+    get origin() { return t('lib.critical-mass-of-a-habit.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'People quit for years-long habits without rehab or a dramatic trigger. That is a mechanism, and it can be used deliberately.',
-    thesis:
-      'The popular model — a substance breaks the reward system, so a person cannot stop until an overdose or forced intervention — does not match how people actually quit smoking, games or scrolling. They do it themselves, without treatment. The alternative offered: every interaction leaves an emotional trace (guilt, disappointment, time lost); those traces accumulate slowly, like memory, until they cross a threshold and the person simply asks what they are getting from it.',
-    ideas: [
-      {
-        name: 'Goal-trackers and sign-trackers',
-        body: 'In a conditioning experiment, some animals wait at the food bowl (orienting on the biologically meaningful object) and others at the lamp that predicts it (orienting on the surrogate symbol). The sign-trackers are experimentally more prone to forming dependencies — a predisposition that appears innate rather than the result of meeting a bad stimulus.',
-      },
-      {
-        name: 'Recall the actual ending, not the idealised one',
-        body: 'His own technique, at the moment the hand reaches for the app: ask what exactly you are about to get, and deliberately recall not the imagined pleasure but the real emotions the last session ended in. Memory selectively preserves the good, so the negative has to be reconstructed on purpose rather than trusted to surface.',
-      },
-      {
-        name: 'The bed rule',
-        body: 'Remove every competing activity from the bed so no conditioned reflex forms between lying down and reaching for the phone. The bed is for sleep, and the association is built by what you repeatedly do there rather than by intention.',
-      },
-      {
-        name: 'Timeboxing beats "less"',
-        body: 'A hard window for the thing works where a general resolution to do less of it does not — the same mechanism as work expanding to fill the time available.',
-      },
-      {
-        name: 'Manufactured competition as a motivation switch',
-        body: 'When interest in the task itself is not enough, an artificial competitive frame is offered as a working substitute — not as a virtue, but as a lever that reliably moves people who are otherwise stuck.',
-      },
-      {
-        name: 'Build the routine around your own confirmed limits',
-        body: 'The explicit antidote to copying other people\'s extreme regimes: construct the schedule around limits you have actually verified in yourself rather than around someone else\'s published routine.',
-      },
-    ],
-    notes: [
-      'A technique credited to psychiatry for making a distant consequence usable: instead of listing abstract risks, walk the person concretely and emotionally through the future that inaction produces.',
-      'The same neuroscientist appears elsewhere in a more structured format; this is a personal, confessional podcast, which yields more tested techniques and fewer direct references to studies.',
-      'He marks the critical-mass model of addiction himself as an open question rather than a settled finding — worth carrying as a practitioner\'s working hypothesis, not established fact.',
-    ],
-    practices: [
-      'At the moment of reaching, ask what you are actually about to get — and recall how the last one ended rather than how it started.',
-      'Keep the bed for sleep alone, so the association never forms.',
-      'Give the habit a hard window instead of resolving to do less of it.',
-      'When interest fails, borrow a competitive frame rather than waiting for motivation.',
-      'Build your schedule from limits you have confirmed on yourself, not from someone else\'s routine.',
-    ],
+    get hook() { return t('lib.critical-mass-of-a-habit.hook'); },
+    get thesis() { return t('lib.critical-mass-of-a-habit.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.critical-mass-of-a-habit.idea.${i}.name`),
+        body: t(`lib.critical-mass-of-a-habit.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.critical-mass-of-a-habit.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.critical-mass-of-a-habit.practice.${i}`));
+    },
     habits: [
-      { id: 'h_lightsout', because: 'The bed rule in its enforceable form: the association is built by what you repeatedly do there, so the fix is a boundary rather than a resolution.' },
-      { id: 'f_nodoom', because: 'A hard window beats "less" — and this is the version of the window that protects the part of the day the habit is most likely to swallow.' },
-      { id: 'd_nopassive', because: 'Every session adds to the pile of traces; making something first is what stops the pile being the only thing accumulating.' },
+      { id: 'h_lightsout', get because() { return t('lib.critical-mass-of-a-habit.habit.h_lightsout.because'); } },
+      { id: 'f_nodoom', get because() { return t('lib.critical-mass-of-a-habit.habit.f_nodoom.because'); } },
+      { id: 'd_nopassive', get because() { return t('lib.critical-mass-of-a-habit.habit.d_nopassive.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'Timeboxing and the bed rule are structural changes, and structure does not survive being reinvented each evening.' },
-      { id: 'q_declutter', because: 'The bed rule is really about the room: the competing activities have to physically leave, not merely be resisted.' },
+      { id: 'q_habitsystem', get because() { return t('lib.critical-mass-of-a-habit.quest.q_habitsystem.because'); } },
+      { id: 'q_declutter', get because() { return t('lib.critical-mass-of-a-habit.quest.q_declutter.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Алипов — Критическая масса привычки, конкуренция как топливо и правило кровати',
+    get vaultSource() { return t('lib.critical-mass-of-a-habit.vaultSource'); },
   },
   {
     slug: 'mindlessness-and-novelty',
     attr: 'development',
-    title: 'Mindfulness is noticing novelty, not sitting still',
-    origin: 'Ellen Langer — psychologist, on mindlessness and the mind-body unit',
+    get title() { return t('lib.mindlessness-and-novelty.title'); },
+    get origin() { return t('lib.mindlessness-and-novelty.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Most rules you live by were set by someone, once. The question nobody asks is who.',
-    thesis:
-      'Mind and body are treated as one system rather than two connected objects — the dualism is called a mistaken habit of thought rather than a fact. Mindfulness here is not meditation but a way of being: continually noticing novelty and acknowledging that the situation is uncertain, as against mindlessness, which is acting mechanically on rules absorbed in childhood without noticing you are doing it.',
-    ideas: [
-      {
-        name: 'Mindlessness is unexamined rules, not low intelligence',
-        body: 'It is defined as accepting rules absorbed early — someone said it once and it became absolute — without ever asking who decided. Even basic "facts" turn out to be statistical probabilities rather than laws, which a single contrary observation is enough to expose.',
-      },
-      {
-        name: 'Placebo and nocebo as direct evidence',
-        body: 'Placebo is described as the most effective medicine precisely because it shows that belief produces a physical effect with no substance involved. In the cited hotel-housekeeper study, one group was told their work already constituted exercise and the other was not; both worked identically and ate the same, and only the informed group showed measurable changes.',
-      },
-      {
-        name: 'Perceived time changes physiology',
-        body: 'Two results are cited: wound healing tracked perceived rather than real elapsed time in front of deliberately altered clocks, and blood sugar in people with type 2 diabetes followed the perceived rather than actual time passed during a task with a falsified clock.',
-      },
-      {
-        name: 'Expecting failure produces it',
-        body: 'On a standard eye chart the letters shrink downward, building an expectation that you are about to stop seeing. With the chart reversed, people read letters they had not managed on the standard version — the expectation, not the eyesight, had been setting the limit.',
-      },
-      {
-        name: 'Tragedy or inconvenience',
-        body: 'Offered as the first question to ask under stress, before any attempt to solve the problem — a reproducible action rather than an instruction to feel differently.',
-      },
-    ],
-    notes: [
-      'The novelty practice is concrete: notice two or three new details in a familiar setting, or in a person you know well, daily. The same claim applies to travel — looking for novelty at home works as well as going somewhere new.',
-      'On a hard decision: rather than spending the time hunting for the right option, choose and then invest the energy in making the choice work.',
-      'Fifty years of her own research at Harvard, and most claims point at specific studies from her lab — but methodology, sample sizes and replication are not given in an interview format.',
-      'She explicitly marks the boundary of her own data: her claim that stress outweighs genetics, diet and treatment is flagged by her as personal conviction she has not run the study for. That distinction is worth preserving rather than flattening.',
-    ],
-    practices: [
-      'Notice two or three genuinely new things about something familiar, every day.',
-      'Ask "is this a tragedy or an inconvenience?" before trying to solve the stressful thing.',
-      'When a rule is running you, ask who decided it and whether it was ever true.',
-      'Make the decision, then spend the energy on making it work rather than on verifying it was optimal.',
-    ],
+    get hook() { return t('lib.mindlessness-and-novelty.hook'); },
+    get thesis() { return t('lib.mindlessness-and-novelty.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.mindlessness-and-novelty.idea.${i}.name`),
+        body: t(`lib.mindlessness-and-novelty.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.mindlessness-and-novelty.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.mindlessness-and-novelty.practice.${i}`));
+    },
     habits: [
-      { id: 'b_new', because: 'Noticing novelty is the whole definition being used here — and the reliable way to guarantee some is to put something unfamiliar in the day.' },
-      { id: 's_gratitude', because: 'Naming what actually happened forces attention onto the specifics of the day, which is the opposite of running it on absorbed rules.' },
-      { id: 'b_morningjoy', because: 'A small deliberate pleasure is a daily instance of attending to the present rather than executing the morning mechanically.' },
+      { id: 'b_new', get because() { return t('lib.mindlessness-and-novelty.habit.b_new.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.mindlessness-and-novelty.habit.s_gratitude.because'); } },
+      { id: 'b_morningjoy', get because() { return t('lib.mindlessness-and-novelty.habit.b_morningjoy.because'); } },
     ],
     quests: [
-      { id: 'q_tryfive', because: 'The novelty practice scaled up from noticing to doing — and her own claim is that unfamiliarity at home counts as much as unfamiliarity abroad.' },
-      { id: 'q_wheel', because: 'Scoring your own life is the structured version of asking which of your rules you have never actually examined.' },
+      { id: 'q_tryfive', get because() { return t('lib.mindlessness-and-novelty.quest.q_tryfive.because'); } },
+      { id: 'q_wheel', get because() { return t('lib.mindlessness-and-novelty.quest.q_wheel.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Langer — Осознанность, единство разума и тела и сила неопределённости',
+    get vaultSource() { return t('lib.mindlessness-and-novelty.vaultSource'); },
   },
-
   {
     slug: 'yes-comma-but',
     attr: 'brightness',
-    title: 'Yes, comma, but',
-    origin: 'Diarmaid MacCulloch — historian, on honesty, bias and sense of place',
+    get title() { return t('lib.yes-comma-but.title'); },
+    get origin() { return t('lib.yes-comma-but.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'A person taken over by lies is no longer sane — and the same is true of a society.',
-    thesis:
-      'The ethical claim: technical disciplines can get you to the moon without making you a sane person, and that job falls to history alongside philosophy and literature. A society that sanitises its own record to fit a comfortable narrative is not merely dishonest but losing its grip — and the working method that defends against it is a structural refusal to resolve tension too early.',
-    ideas: [
-      {
-        name: 'Be sceptical, then be sympathetic',
-        body: 'The core instruction: read any source with scepticism first, since everyone has an agenda and you can only gradually tell which — but pair it with genuine interest in the person as a human being. Scepticism without sympathy produces cynicism; sympathy without scepticism produces credulity.',
-      },
-      {
-        name: 'Yes, comma, but',
-        body: 'Acknowledge the conventional version honestly — yes, I see that — then add the complicating truth: but I also see this. It prevents idolising the past as a standard the present is unfairly judged against, and his claim is that the result is more satisfying precisely because it is truer, even though it pleases less immediately than the simplified version.',
-      },
-      {
-        name: 'Read the clichés before you try to correct them',
-        body: 'He deliberately read the great earlier syntheses before going to primary sources — not to adopt their conclusions but to know what the standing clichés are, so he would recognise them rather than unconsciously reinvent them later.',
-      },
-      {
-        name: 'Two thirds of the day, deliberately',
-        body: 'Fixed hours, nothing before mid-morning, nothing past early evening, no evening work at all, a substantial midday break and an unembarrassed nap. The rule credited to his supervisor: divide the day in thirds and work only two. Not working the third is what removes the guilt of should-be-working and makes the other two productive.',
-      },
-      {
-        name: 'Declare your standpoint',
-        body: 'He opens his own books by stating who he is and where he stands, so readers can weigh passages knowing it. No historian is neutral, and pretending otherwise deprives the reader of data they need — self-disclosure is treated as respect, not weakness.',
-      },
-      {
-        name: 'Sense of place changes the account, not the decoration',
-        body: 'Filming inside a cathedral whose ground plan is calm and symmetrical on paper, he found the lived interior claustrophobic and vertiginous, and rewrote his script on the spot — the revision survived into the book. Enormous amounts can be researched without travel, but the felt experience of a specific space genuinely cannot.',
-      },
-    ],
-    notes: [
-      'On the boundary between history and fiction: a novelist may write "and" where a historian must write "may have" — filling the gap outright rather than flagging the uncertainty.',
-      'His sharp division between the humanities and the sciences on who makes a person sane is a stated personal conviction rather than a neutral description, and a scientist would likely contest it.',
-      'A senior credentialed historian speaking from decades of practice — strong on method and craft; the collaboration account is a first-person recollection used as illustration rather than a general claim.',
-    ],
-    practices: [
-      'State the conventional version honestly before complicating it — do not lead with the contrarian take alone.',
-      'Say where you stand, up front, so people can weigh what follows.',
-      'Learn the existing consensus before forming an objection to it, or risk reinventing one already answered.',
-      'Work two thirds of the day and genuinely stop for the third.',
-      'Go and stand in the place when the felt experience of it might change what you would say.',
-    ],
+    get hook() { return t('lib.yes-comma-but.hook'); },
+    get thesis() { return t('lib.yes-comma-but.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.yes-comma-but.idea.${i}.name`),
+        body: t(`lib.yes-comma-but.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.yes-comma-but.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.yes-comma-but.practice.${i}`));
+    },
     habits: [
-      { id: 'c_shutdown', because: 'The two-thirds rule only works if the third is really off — an unenforced stop is what turns it back into guilt about not working.' },
-      { id: 'd_read', because: 'Knowing the standing clichés before objecting to them is a reading habit before it is a research method.' },
-      { id: 'd_notes', because: 'Yes-but is a structure you have to be able to state, and putting a source in your own words is where you find out whether you can.' },
+      { id: 'c_shutdown', get because() { return t('lib.yes-comma-but.habit.c_shutdown.because'); } },
+      { id: 'd_read', get because() { return t('lib.yes-comma-but.habit.d_read.because'); } },
+      { id: 'd_notes', get because() { return t('lib.yes-comma-but.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'Declaring a standpoint and holding a tension are decisions that only get made in a finished piece, not in notes.' },
-      { id: 'q_tryfive', because: 'Sense of place is his one claim that cannot be met by research — some things require going and standing there.' },
+      { id: 'q_makeweekly', get because() { return t('lib.yes-comma-but.quest.q_makeweekly.because'); } },
+      { id: 'q_tryfive', get because() { return t('lib.yes-comma-but.quest.q_tryfive.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / MacCulloch — The Historian as Guardian of Sanity, Sense of Place and the \'Yes, But\' Motto',
+    get vaultSource() { return t('lib.yes-comma-but.vaultSource'); },
   },
   {
     slug: 'morphology-of-the-tale',
     attr: 'brightness',
-    title: 'Thirty-one functions, seven characters, one order',
-    origin: 'Eidelman — on Propp\'s morphology, myth and the coded initiation',
+    get title() { return t('lib.morphology-of-the-tale.title'); },
+    get origin() { return t('lib.morphology-of-the-tale.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'Behind apparently endless variety sits a fixed order — and it is a rite, not a literary device.',
-    thesis:
-      'The wonder tale is not a children\'s genre by origin but a weakened myth: the same archaic structure moved from the scale of the whole world down to one family and one hero. Propp showed that behind seemingly endless variety sits a rigid structure — thirty-one functions in fixed order and only seven character types — and that the structure encodes a rite of initiation rather than a storytelling technique.',
-    ideas: [
-      {
-        name: 'Myth and tale, distinguished',
-        body: 'Myth is sacred, concerns the whole community, explains the origin of the world and is bound to ritual. The tale is less sacred and eventually not sacred at all, individual, focused on one family and one hero. The formulation quoted: a tale is a weakened myth — not worse, but different in scale and function.',
-      },
-      {
-        name: 'The trickster as a desacralised culture hero',
-        body: 'The culture hero of myth is a divine figure performing a feat for all humanity. The trickster of the tale — the hare, the raven, the fool — is the same structural type stripped of sanctity: small, sly, local. A visible illustration of myth contracting into tale.',
-      },
-      {
-        name: 'Functions hold their order',
-        body: 'Working by hand through thousands of recorded tales in the 1920s, Propp found the plot decomposes into thirty-one functions — struggle, abduction, difficult tasks — in an order that never changes. Functions may be absent, but they never swap places.',
-      },
-      {
-        name: 'Seven roles, freely cast',
-        body: 'Hero, villain, false hero, donor, helper, dispatcher and princess-as-reward. One character can hold several roles at once — a stepmother may be both villain and dispatcher — and one functional type can appear as wildly different figures, so that a witch and a talking apple tree are both donors.',
-      },
-      {
-        name: 'The forest is the world of the dead',
-        body: 'The wood the hero enters is not scenery but the realm of ancestors. Behaving correctly with the beings met there, eating the food of the other world, passing the tests and returning with a reward and a mark are the elements of an initiation rite preserved inside the plot.',
-      },
-      {
-        name: 'Structure over props',
-        body: 'Both of Propp\'s own definitions deliberately avoid mentioning magical objects: the flying carpet is not what makes a wonder tale. The structure matters and the equipment does not.',
-      },
-    ],
-    notes: [
-      'Each era rewrites folklore to fit its own anxieties and tastes rather than neutrally recording it — which makes a translation a mirror of its translator\'s period as much as of the original.',
-      'A folklorist\'s comparison of the distribution of one motif against archaeological migration routes suggests extreme antiquity for some plots — the lecturer explicitly marks this as needing confirmation rather than settled.',
-      'The lecturer is a history populariser rather than a folklorist, but leans consistently on named, established specialists, and flags the uncertain claims as uncertain — an unusually clean piece of popular scholarship.',
-    ],
-    practices: [
-      'Look for the function a character is performing rather than the costume they are wearing.',
-      'When a story is not working, check whether a required function is missing rather than adding more invention.',
-      'Read the structure of old material before borrowing its surface.',
-      'Treat a translation as a document of its own era, and know whose optics you are reading through.',
-    ],
+    get hook() { return t('lib.morphology-of-the-tale.hook'); },
+    get thesis() { return t('lib.morphology-of-the-tale.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.morphology-of-the-tale.idea.${i}.name`),
+        body: t(`lib.morphology-of-the-tale.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.morphology-of-the-tale.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.morphology-of-the-tale.practice.${i}`));
+    },
     habits: [
-      { id: 'd_read', because: 'The argument is that the structure is only visible across many tales — which is a reading volume problem before it is an analytical one.' },
-      { id: 'd_notes', because: 'Functions are noticed by writing them down: the fixed order only appears once you have restated several plots in the same terms.' },
-      { id: 's_makecreate', because: 'A structure this explicit is meant to be used — and it only becomes yours when something gets built on it.' },
+      { id: 'd_read', get because() { return t('lib.morphology-of-the-tale.habit.d_read.because'); } },
+      { id: 'd_notes', get because() { return t('lib.morphology-of-the-tale.habit.d_notes.because'); } },
+      { id: 's_makecreate', get because() { return t('lib.morphology-of-the-tale.habit.s_makecreate.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'This is a canonical, still-cited body of work rather than a summary to skim — the sort of thing the quest means by studying one thing properly.' },
-      { id: 'q_makeweekly', because: 'The morphology is a tool for making, and the fastest test of whether you have understood it is finishing something built with it.' },
+      { id: 'q_learnfaith', get because() { return t('lib.morphology-of-the-tale.quest.q_learnfaith.because'); } },
+      { id: 'q_makeweekly', get because() { return t('lib.morphology-of-the-tale.quest.q_makeweekly.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Эйдельман — Сказка, миф и морфология Проппа',
+    get vaultSource() { return t('lib.morphology-of-the-tale.vaultSource'); },
   },
-
   {
     slug: 'means-not-end',
     attr: 'spirituality',
-    title: 'A good life, not a rich one — and poverty is not a virtue',
-    origin: 'Ustaz lecture on wealth, provision and intention',
+    get title() { return t('lib.means-not-end.title'); },
+    get origin() { return t('lib.means-not-end.origin'); },
     medium: 'lecture',
     minutes: 7,
-    hook: 'Wanting more is not the problem. Confusing the means with the goal is.',
-    thesis:
-      'Success in the Qur\'anic vocabulary is a good life rather than a rich one — and the recurring frame is that work, money, family and property are means, never the goal. Confusing the two is named as the root of most of the difficulty people have with earning. But the corollary cuts the other way too: poverty is not treated as a virtue, and wanting out of it is legitimate.',
-    ideas: [
-      {
-        name: 'A good life, not a wealthy one',
-        body: 'The textual observation offered: the promise made is of a good, pleasant life rather than a rich or provided-for one. The word chosen for the successful person in the hadith cited is the one meaning sufficiency — contentment with what there is — rather than the word for abundance.',
-      },
-      {
-        name: 'Poverty is not praiseworthy',
-        body: 'An explicit rebuttal of a view common among some practising people: the Prophet is described as asking for protection from poverty specifically, in the daily morning and evening remembrances. Poverty is inevitable in any society but not spiritually commendable, and wanting to escape it is legitimate.',
-      },
-      {
-        name: 'Wealthy companions as precedent',
-        body: 'Answering the charge that an ambitious believer is chasing the world: several of the ten companions promised paradise were very wealthy, and one financed the equipping of an entire army alone. The stated conclusion is that the problem is never the wealth but the ordering — someone who earns a great deal while not knowing the basics of their religion has misordered priorities, not too much money.',
-      },
-      {
-        name: 'Means versus goal',
-        body: 'The formula repeated throughout: work, money, family and property are the instrument, and the goal is God\'s pleasure. Everything else must serve that rather than compete with it. This is offered as the single diagnostic to run on your own ambitions.',
-      },
-      {
-        name: 'Provision is set; forbidden means change the risk, not the sum',
-        body: 'The theological position given: the total provision is already determined, so pursuing it through forbidden means does not increase the amount — it increases the exposure. Interest is described as erasing blessing even where the number on the statement has grown.',
-      },
-      {
-        name: 'Tie the camel, then trust',
-        body: 'The sequence is explicit and in that order: take preparation to its maximum, and only then stop being anxious about the outcome. Trust is not offered as a substitute for the preparation.',
-      },
-    ],
-    notes: [
-      'Sharia is contrasted with utopian ideology: it does not promise universal equality but states plainly that poverty, illness and crime persist in any society, and supplies conduct for the poor, for the rich, and for living alongside both.',
-      'Against the argument "I earn a lot in order to lift the community": if the real intention is vanity dressed as service, the framing does not repair it.',
-      'Maintaining kinship ties is the one action named as linked to both increased provision and long life.',
-      'Direction of comparison as a quick diagnostic: downward in material things, upward in spiritual ones — against envy in one direction and stagnation in the other.',
-      'A practising teacher answering mostly through direct citation with explicit references, relying on widely transmitted material rather than marginal positions. Some historical and economic details come without academic sourcing and are best read as transmitted tradition rather than documented history.',
-    ],
-    practices: [
-      'Run the means-versus-goal check regularly: has the current target quietly become the point rather than the instrument?',
-      'Prepare to the maximum, then deliberately stop carrying the outcome.',
-      'Change your physical state — posture, ablution, prayer, a pause — before any decision being made on emotion.',
-      'Keep kinship ties actively, not as sentiment but as a named priority.',
-      'Compare downward in material matters and upward in spiritual ones.',
-    ],
+    get hook() { return t('lib.means-not-end.hook'); },
+    get thesis() { return t('lib.means-not-end.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.means-not-end.idea.${i}.name`),
+        body: t(`lib.means-not-end.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.means-not-end.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.means-not-end.practice.${i}`));
+    },
     habits: [
-      { id: 'f_remember', because: 'Maintaining kinship ties is the single action the source names as tied to both provision and long life — and it is made of small specific attention, not sentiment.' },
-      { id: 'm_charity', because: 'Giving is the cleanest daily proof that the money is being held as a means rather than as the goal.' },
-      { id: 's_gratitude', because: 'Sufficiency rather than abundance is the stated definition of success, and gratitude is how sufficiency gets noticed at all.' },
+      { id: 'f_remember', get because() { return t('lib.means-not-end.habit.f_remember.because'); } },
+      { id: 'm_charity', get because() { return t('lib.means-not-end.habit.m_charity.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.means-not-end.habit.s_gratitude.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'The misordering the source warns about is precisely earning a great deal while never studying the basics — this is the corrective it prescribes.' },
-      { id: 'q_debts', because: 'Interest is described as erasing blessing even when the figure grows, which makes the real exposure something you have to actually look at.' },
+      { id: 'q_learnfaith', get because() { return t('lib.means-not-end.quest.q_learnfaith.because'); } },
+      { id: 'q_debts', get because() { return t('lib.means-not-end.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Богатство, искушения, кредиты — успех как хорошая жизнь, ризк как предопределённый и харам как источник риска',
+    get vaultSource() { return t('lib.means-not-end.vaultSource'); },
   },
   {
     slug: 'the-prayer-of-yunus',
     attr: 'spirituality',
-    title: 'When every cause fails at once',
-    origin: 'Lecture on the prayer of Yunus and the habit of self-justification',
+    get title() { return t('lib.the-prayer-of-yunus.title'); },
+    get origin() { return t('lib.the-prayer-of-yunus.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'Explaining yourself is not a small flaw of character. The source calls it worship of the self.',
-    thesis:
-      'The prayer of Yunus is read as the model of any trial: swallowed by a fish, in a storm, at night — three created things threatening at once, with every ordinary cause simultaneously stripped of any power to help. What remains is the One who governs the causes themselves. The general law drawn from it: a trial is not primarily there to be solved through causes but to make their powerlessness undeniable.',
-    ideas: [
-      {
-        name: 'The Causer of causes',
-        body: 'Causes are described as having no influence of their own — they are entirely subject to what governs them. The distinction drawn is between knowing this as a general formula, which almost every believer does, and holding it with enough certainty that it changes the reaction to a specific difficulty.',
-      },
-      {
-        name: 'Two paths through a trial',
-        body: 'Either fixate on the causes — fearing them, hoping in them, waiting for mercy from them — which is described as only increasing the pressure; or move attention immediately from the causes to the relationship with the Creator, ask why this is happening, find the fault, and repent. The second is presented as changing the situation rather than only the reaction to it.',
-      },
-      {
-        name: 'Self-justification as worship of the self',
-        body: 'The sharpest claim in the source. The verse cited is "do not justify yourselves", with attention drawn to a grammatical lengthening in the original conveying intensity — that our justifications are many. The self by nature loves only itself and refuses to concede its faults, spending even the capacities given for worship on serving itself.',
-      },
-      {
-        name: 'Knowing and being convinced are different states',
-        body: 'The practical version of the whole lecture: the question is not whether you can state the belief, but whether it changes what you actually do the next time something goes wrong.',
-      },
-      {
-        name: 'The world as a place of service',
-        body: 'Framed as somewhere one is present for work and service rather than for enjoyment — a formulation the source arrives at from a second, independent direction rather than by repeating an earlier argument.',
-      },
-    ],
-    notes: [
-      'The concrete exercise offered: catch the moment you explain your action instead of simply admitting it — regardless of how convincing the explanation happens to be.',
-      'This is a preacher transmitting a recognised theological tradition, with personal interpretation and anecdote in the interludes. Hadith are conveyed by meaning without chains examined.',
-      'The lecture also uses a deliberately jarring rhetorical contrast that the source itself qualifies immediately afterwards; it is a homiletic device rather than a doctrinal position, and is left out here because it does not survive separation from its delivery.',
-    ],
-    practices: [
-      'Notice when you are explaining rather than admitting, and stop at the admission.',
-      'In a difficulty, move attention off the causes early rather than after they have been exhausted.',
-      'Ask whether your conviction changes what you do next, or only what you can say.',
-      'Take the trial as a question about the relationship rather than only as a problem to be routed around.',
-    ],
+    get hook() { return t('lib.the-prayer-of-yunus.hook'); },
+    get thesis() { return t('lib.the-prayer-of-yunus.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-prayer-of-yunus.idea.${i}.name`),
+        body: t(`lib.the-prayer-of-yunus.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-prayer-of-yunus.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-prayer-of-yunus.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'Catching self-justification requires looking back over the week, since in the moment the explanation is always the most convincing thing available.' },
-      { id: 's_dhikr', because: 'The turn described is from the causes to their Author — and five quiet minutes before the day is where that turn is practised while nothing is on fire.' },
-      { id: 's_forgive', because: 'Letting a thing go without first constructing a case for yourself is the same muscle the self-justification test is trying to build.' },
+      { id: 'd_review', get because() { return t('lib.the-prayer-of-yunus.habit.d_review.because'); } },
+      { id: 's_dhikr', get because() { return t('lib.the-prayer-of-yunus.habit.s_dhikr.because'); } },
+      { id: 's_forgive', get because() { return t('lib.the-prayer-of-yunus.habit.s_forgive.because'); } },
     ],
     quests: [
-      { id: 'q_anchor', because: 'The difference between knowing and being convinced is closed by daily practice, not by agreeing with the argument once.' },
-      { id: 'q_learnfaith', because: 'The source\'s own distinction — a formula everyone can state versus a conviction that changes behaviour — is an argument for studying rather than collecting.' },
+      { id: 'q_anchor', get because() { return t('lib.the-prayer-of-yunus.quest.q_anchor.because'); } },
+      { id: 'q_learnfaith', get because() { return t('lib.the-prayer-of-yunus.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Из мрака к свету — Молитва Юнуса, нафс как идол через самооправдание и мир как служение',
+    get vaultSource() { return t('lib.the-prayer-of-yunus.vaultSource'); },
   },
-
   {
     slug: 'beliefs-under-habits',
     attr: 'career',
-    title: 'Willpower is short-term. The belief underneath is not.',
-    origin: 'Seisembayev — entrepreneur, on beliefs, mission and real wealth',
+    get title() { return t('lib.beliefs-under-habits.title'); },
+    get origin() { return t('lib.beliefs-under-habits.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Change a habit without changing the belief it grew from and you are fighting your own picture of the world.',
-    thesis:
-      'Habits are roughly ninety per cent of the autopilot a life runs on, and attacking them directly with will is close to useless because they sit at the end of a chain: belief forms a picture of the world, which produces values, then principles, then rules, then skill, then character. The lever is at the root. Willpower is a short-term instrument, useful for crossing a gap, not for holding a position.',
-    ideas: [
-      {
-        name: 'The chain, in order',
-        body: 'A belief forms on contact with reality — the kettle was hot, so it must not be touched. On that belief a picture of the world is built, and it is inside that representation, rather than in reality, that a person spends most of their life. Values sit on the picture, principles generalise the values, rules apply them to specific situations, and habit and character are what is left downstream.',
-      },
-      {
-        name: 'Identity is memory, and autopilot is not remembered',
-        body: 'What is lived on autopilot is not stored, and therefore, functionally, was not lived. That gives the ninety-per-cent figure its bite: it is not only about efficiency but about how much of a life is actually retained.',
-      },
-      {
-        name: 'Where money shame comes from',
-        body: 'On the figures cited, a majority of people first encounter money through petty theft — small change taken from a parent — forming an early association between money and guilt, which is offered as an explanation for why money later "does not stay in the hands".',
-      },
-      {
-        name: 'The belief inherited from a father',
-        body: 'A child watching an exhausted parent earn through hard physical work forms the belief that money equals brutal labour — and as an adult unconsciously rejects every easier route as a scam. Those who earn hard and see others earn easily must explain it as fraud, a good marriage, or a secret, but never as something they could also do, because that would require giving up a self-protective identity.',
-      },
-      {
-        name: 'Mission by organic growth, not analysis',
-        body: 'The recommendation is to let a hobby grow until it demonstrates its own commercial viability rather than forcing monetisation early — and to find the mission by progressive narrowing, striking out categories you are certain you do not want, rather than trying to state it correctly in one attempt.',
-      },
-      {
-        name: 'Real wealth is opportunities minus obligations',
-        body: 'The closing formula: wealth is the gap between what you can do and what you owe, rather than a quantity of money. On that definition an income rise that arrives with matching obligations is not an increase.',
-      },
-    ],
-    notes: [
-      'On acting under pressure: emotions are described as a signalling function aimed at other people, and therefore useless when nobody is there — the account given is of ignoring them entirely while executing a sequence where each action gets exactly one attempt.',
-      'A personal interview rather than an academic source, from a speaker with a pattern of confidently delivered personal theory, including theological claims that cannot be checked empirically.',
-      'The statistic about childhood money and theft is given without a source — plausible, unverified, and better carried as an illustration than as a number.',
-    ],
-    practices: [
-      'Before forcing a habit, ask which belief is producing the resistance — then argue with that instead.',
-      'Let a side project grow on its own until it proves it can pay, rather than monetising it early.',
-      'Find the direction by elimination: cross out what you are sure you do not want, repeatedly.',
-      'Measure a gain as opportunities minus obligations, not as income.',
-    ],
+    get hook() { return t('lib.beliefs-under-habits.hook'); },
+    get thesis() { return t('lib.beliefs-under-habits.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.beliefs-under-habits.idea.${i}.name`),
+        body: t(`lib.beliefs-under-habits.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.beliefs-under-habits.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.beliefs-under-habits.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'The chain is only visible looking backwards — a belief shows itself in the pattern of a week, never in the moment it is operating.' },
-      { id: 's_makecreate', because: 'The mission is supposed to emerge from something grown rather than analysed, and growth needs regular hours before it needs a plan.' },
-      { id: 'c_onelesson', because: 'What is run on autopilot is not remembered; writing down the one thing that worked is how a day stops being lost to the ninety per cent.' },
+      { id: 'd_review', get because() { return t('lib.beliefs-under-habits.habit.d_review.because'); } },
+      { id: 's_makecreate', get because() { return t('lib.beliefs-under-habits.habit.s_makecreate.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.beliefs-under-habits.habit.c_onelesson.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'Progressive narrowing only converges if each round is tested against something real rather than imagined.' },
-      { id: 'q_portfolio', because: 'A hobby proves its own commercial case by being found — which requires it to exist somewhere other than your own machine.' },
+      { id: 'q_skill', get because() { return t('lib.beliefs-under-habits.quest.q_skill.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.beliefs-under-habits.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Сейсембаев — Убеждения как источник привычек, поиск миссии через хобби и формула истинного богатства',
+    get vaultSource() { return t('lib.beliefs-under-habits.vaultSource'); },
   },
   {
     slug: 'the-idea-is-a-multiplier',
     attr: 'career',
-    title: 'The idea is a multiplier, not the source',
-    origin: 'Tokovinin — entrepreneur, on management as a craft and choosing a niche',
+    get title() { return t('lib.the-idea-is-a-multiplier.title'); },
+    get origin() { return t('lib.the-idea-is-a-multiplier.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Managing people is described as the highest-paid skill on earth — and as something nobody can teach you, only let you learn.',
-    thesis:
-      'The traits that make a good entrepreneur — protest, self-direction, vanity, ambition, nerve — are described as the same traits that can put someone under a bridge, and what separates the outcomes is circumstance, environment and chance rather than character. Against that, the practical claim: the idea is a multiplier rather than the source, which makes selling and managing the things worth building because they work with any idea.',
-    ideas: [
-      {
-        name: 'Rebellion as fuel rather than defect',
-        body: 'The account given is of deliberately becoming the worst student in the school to differentiate from a high-achieving older sibling — and of the same qualities later becoming the engine. The explicit caution attached is not to underestimate chance, probability and environment in deciding which way those qualities resolve.',
-      },
-      {
-        name: 'Marks may measure compliance rather than ability',
-        body: 'Offered as a hypothesis with the survivorship bias openly acknowledged: school grades often mark willingness to comply rather than knowledge. But compliance is not written off — the same passage states you will not reach great heights without being able to listen and to serve.',
-      },
-      {
-        name: 'The marshmallow test, reread',
-        body: 'A counterintuitive reframe: both the diligent and the indifferent child can wait for a future reward. The difference is not willpower but whose approval is at stake — a teacher and parents in one case, peers in the other.',
-      },
-      {
-        name: 'Management is a craft, learned by being allowed to ruin things',
-        body: 'It is called the highest-paid skill on earth and one nobody teaches, because it is a craft rather than a body of knowledge. The only route described is someone experienced choosing to invest in you specifically and patiently permitting the bad hires, the bad firings and the badly set tasks until the hand is trained.',
-      },
-      {
-        name: 'Entrepreneur and manager are two different people',
-        body: 'The entrepreneurial role is creative — conceive the product, read the market. Management is a separate skill of persistence and system. The pairing is presented as a tandem rather than a progression.',
-      },
-      {
-        name: 'Timing a niche by consumption, not by enthusiasm',
-        body: 'Two heuristics: a topic having gone stale among the earliest enthusiasts is a timing signal, and before betting on a trend, check whether the pattern of consumption has actually changed — look for new consumers without the old habit rather than trying to re-educate the existing ones.',
-      },
-    ],
-    notes: [
-      'A capital formula is offered as the filter for choosing a direction: money, people and knowledge together — rather than picking whichever idea is most attractive in the abstract.',
-      'Because the idea is a multiplier rather than the source, the antidote to paralysis while hunting for the perfect idea is to build sales and management, which pay off under any idea.',
-      'A practising entrepreneur speaking in the first person about specific decisions, sums and failures, with open self-irony — he calls several of his own decisions disgraceful failures and admits a nine-year unsuccessful push abroad. Company figures are deliberately vague, which he says outright.',
-    ],
-    practices: [
-      'Choose a direction by money, people and knowledge rather than by the appeal of the idea.',
-      'Stop hunting for the idea and build the two skills that work regardless of which one you land on.',
-      'Before betting on a trend, look for consumers with no prior habit rather than trying to convert the existing ones.',
-      'Seek out someone willing to let you make management mistakes on purpose — that permission is the training.',
-    ],
+    get hook() { return t('lib.the-idea-is-a-multiplier.hook'); },
+    get thesis() { return t('lib.the-idea-is-a-multiplier.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-idea-is-a-multiplier.idea.${i}.name`),
+        body: t(`lib.the-idea-is-a-multiplier.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-idea-is-a-multiplier.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-idea-is-a-multiplier.practice.${i}`));
+    },
     habits: [
-      { id: 'd_build', because: 'A craft is learned by producing bad work under supervision — which requires actually building with the thing rather than reading about it.' },
-      { id: 'c_onelesson', because: 'If management is trained by ruining things, then the training only compounds when what went wrong gets written down while it is still fresh.' },
-      { id: 'd_askquestion', because: 'Both niche heuristics are questions asked of other people — whether the consumption pattern moved, and who is buying without the old habit.' },
+      { id: 'd_build', get because() { return t('lib.the-idea-is-a-multiplier.habit.d_build.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.the-idea-is-a-multiplier.habit.c_onelesson.because'); } },
+      { id: 'd_askquestion', get because() { return t('lib.the-idea-is-a-multiplier.habit.d_askquestion.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'Selling and managing are named as the skills that pay off under any idea, which makes them the concrete thing to take on while the idea is still unsettled.' },
-      { id: 'q_promise', because: 'Nerve is treated as the fuel, and a commitment made publicly is the cheapest way to find out whether you have any.' },
+      { id: 'q_skill', get because() { return t('lib.the-idea-is-a-multiplier.quest.q_skill.because'); } },
+      { id: 'q_promise', get because() { return t('lib.the-idea-is-a-multiplier.quest.q_promise.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Токовинин — Бунтарство как топливо, ремесло менеджмента и выбор ниши как выбор судьбы',
+    get vaultSource() { return t('lib.the-idea-is-a-multiplier.vaultSource'); },
   },
-
   {
     slug: 'the-bottom-is-still-your-life',
     attr: 'friends',
-    title: 'Is this thought coming from the healthy part or the other one?',
-    origin: 'Zhukova — gestalt therapist, on hitting bottom and climbing out',
+    get title() { return t('lib.the-bottom-is-still-your-life.title'); },
+    get origin() { return t('lib.the-bottom-is-still-your-life.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The dangerous stage is not the fall. It is when the damage you are doing yourself exceeds the damage of the situation.',
-    thesis:
-      'Two moments decide a slide. The first is ignoring the signal — sensing that a situation or a person should no longer be trusted, and writing the unease off as tiredness or shame. The second, more dangerous, is active self-drowning: knowing things are bad and choosing destructive ways to cope, rationalised as "it is already bad, it cannot get worse". The clear marker of the second stage is that the harm from your own behaviour has overtaken the harm from the original situation.',
-    ideas: [
-      {
-        name: 'A crisis is a segment, not a cancellation',
-        body: 'The reframe the whole conversation rests on: time at the bottom does not stop being your life — it is a specific, often hard stretch of it. The technique offered is drawing a timeline from nought to a hundred and marking the peaks and troughs, so the present crisis appears as one segment of a line rather than as the whole line.',
-      },
-      {
-        name: 'Healthy part or dependent part',
-        body: 'The daily test: before a small decision in a hard period, ask which part of you the thought is coming from. It is fast, requires no insight, and is meant to be used on ordinary choices rather than saved for large ones.',
-      },
-      {
-        name: 'Three silver bullets',
-        body: 'Formulate three minimal actions that are genuinely doable today, in the direction of the basic goals — instead of waiting for strength or motivation to arrive. The size is the point: they have to survive a day with nothing in the tank.',
-      },
-      {
-        name: 'Defences amplify exactly when they help least',
-        body: 'In an acute crisis psychological defences intensify: a person may swing into harsh self-flagellation, or land in an environment that answers real distress with "just pull yourself together" — which reliably worsens it.',
-      },
-      {
-        name: 'Devaluing the past is a symptom, not an assessment',
-        body: 'The pattern where someone in crisis declares everything they previously did worthless is treated as a regressive intensification of a general tendency to devalue — information about the state, not about the record.',
-      },
-      {
-        name: 'Compare with yourself in crisis, not yourself at your peak',
-        body: 'Offered as the specific defence against self-criticism during a depleted period: the comparison class has to match the conditions, or the verdict is guaranteed in advance.',
-      },
-    ],
-    notes: [
-      'Why saying "I am not okay" out loud is hard: patterns absorbed early — boys do not cry, a man should be resilient — collide with the public image someone has built.',
-      'A useful check on delay: if you are waiting until you have more reach or more resources, ask what specifically will be different at the larger number. It separates genuine unreadiness from self-deception.',
-      'A practising gestalt therapist specialising in dependency, who explicitly separates clinical experience from her own history. The format is a live interview with a rapid-fire segment, so some advice is personal opinion rather than protocol — and one clinical claim about which couples therapy performs best is worth checking separately rather than taking from a conversation.',
-    ],
-    practices: [
-      'Ask which part of you a thought is coming from, before acting on it.',
-      'Name three minimal actions that are actually possible today, and do those instead of waiting to feel able.',
-      'Draw the timeline and mark where this stretch sits on it.',
-      'Compare yourself to yourself in the same conditions, not to your best year.',
-      'Say it out loud to one person, rather than waiting until it can be said well.',
-    ],
+    get hook() { return t('lib.the-bottom-is-still-your-life.hook'); },
+    get thesis() { return t('lib.the-bottom-is-still-your-life.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-bottom-is-still-your-life.idea.${i}.name`),
+        body: t(`lib.the-bottom-is-still-your-life.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-bottom-is-still-your-life.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-bottom-is-still-your-life.practice.${i}`));
+    },
     habits: [
-      { id: 'f_reachout', because: 'Isolation is what lets the second stage run unobserved — and the source is explicit that the hard part is saying it out loud at all.' },
-      { id: 's_gratitude', because: 'Devaluing everything already done is named as a symptom; writing down what went right is the cheapest daily correction to it.' },
-      { id: 'b_morningjoy', because: 'The three-bullet principle applied to the day itself: something small and genuinely possible, rather than waiting for the tank to refill.' },
+      { id: 'f_reachout', get because() { return t('lib.the-bottom-is-still-your-life.habit.f_reachout.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.the-bottom-is-still-your-life.habit.s_gratitude.because'); } },
+      { id: 'b_morningjoy', get because() { return t('lib.the-bottom-is-still-your-life.habit.b_morningjoy.because'); } },
     ],
     quests: [
-      { id: 'q_reconnect', because: 'The environment decides whether distress is met with help or with "pull yourself together" — which makes who you are actually in contact with a practical variable.' },
-      { id: 'q_hardconversation', because: 'Asking for help is described as the hardest sentence to say, and this is the quest that turns it into a specific conversation with a specific person.' },
+      { id: 'q_reconnect', get because() { return t('lib.the-bottom-is-still-your-life.quest.q_reconnect.because'); } },
+      { id: 'q_hardconversation', get because() { return t('lib.the-bottom-is-still-your-life.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Жукова — Дно как часть жизни, здоровая vs зависимая часть психики и три серебряные пули',
+    get vaultSource() { return t('lib.the-bottom-is-still-your-life.vaultSource'); },
   },
   {
     slug: 'fixing-the-car-instead-of-driving',
     attr: 'friends',
-    title: 'Repairing the car instead of taking the trip',
-    origin: 'Zhuravlyov — psychiatrist, on neurotic relationships and the image in your head',
+    get title() { return t('lib.fixing-the-car-instead-of-driving.title'); },
+    get origin() { return t('lib.fixing-the-car-instead-of-driving.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The diagnostic is not how much conflict there is. It is whether the resources go into living or into repair.',
-    thesis:
-      'The defining sign of a neurotic relationship is that it contains the problem in its own substance: psychological, financial and emotional resources go not into living but into endlessly fixing the relationship itself — repairing the car rather than driving it somewhere. Underneath sits a paradox: wanting to change and fearing it, wanting to leave and being unable to.',
-    ideas: [
-      {
-        name: 'You relate to yourself as you were related to',
-        body: 'From cultural-historical psychology: there is no unmediated access to your own inner experience — the relationship you have with yourself is modelled on how adults related to you, the way a child first led by the hand later leads themselves. The illustration offered is self-consciousness in front of a camera when alone: it materialises the gaze of another, and there is no way to look at yourself except with social eyes.',
-      },
-      {
-        name: 'Not every neurotic component is fatal',
-        body: 'He takes a deliberately more moderate position than the "leave immediately if there is neurosis" view, naming the colleague he differs from without disparaging them. The criterion offered: does the relationship reduce entirely to the neurotic mechanism, or are the people still driving and looking around — still getting something real? If the latter, there is something to work with.',
-      },
-      {
-        name: 'Repetition can be its own reward',
-        body: 'The neurotic personality is described as beating their head against the wall and, at some level, getting something from it — repeating a pattern in order to feel a familiar pain again, without that being conscious.',
-      },
-      {
-        name: 'Therapy works on the image, not the person',
-        body: 'Work on a relationship is always work with the version of the other person inside your own head rather than with the actual human being. That reframe is what makes the work possible when the other party is unavailable, unwilling, or gone.',
-      },
-      {
-        name: 'What I do but do not want; what I want but do not do',
-        body: 'The two-column exercise given as universal — applicable to any area where things feel stuck, not only to relationships.',
-      },
-    ],
-    notes: [
-      'Like attracts like, sometimes further down than expected — friendship and attraction tend to form between similar people, with an illustration running to shared clinical outcomes decades later.',
-      'A list of what the other person is actually living by is offered as a direct test of the quality of any close relationship, friendships included.',
-      'A named psychiatrist in private practice, giving clinical positions rather than research claims and openly marking where he differs from a colleague — an acknowledgement that schools of thought differ rather than a single correct view. The philosophical references are real and attributed; the one empirical reference is not backed with a citation.',
-    ],
-    practices: [
-      'Ask where the resources are going: into living, or into repairing the relationship itself.',
-      'Write the two columns — what you do but do not want, and what you want but do not do.',
-      'Try to list what the other person is actually living by right now. Struggling to is the finding.',
-      'Notice which image of the person you are arguing with, since that is who you are actually talking to.',
-    ],
+    get hook() { return t('lib.fixing-the-car-instead-of-driving.hook'); },
+    get thesis() { return t('lib.fixing-the-car-instead-of-driving.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.fixing-the-car-instead-of-driving.idea.${i}.name`),
+        body: t(`lib.fixing-the-car-instead-of-driving.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.fixing-the-car-instead-of-driving.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.fixing-the-car-instead-of-driving.practice.${i}`));
+    },
     habits: [
-      { id: 'f_remember', because: 'Listing what someone is actually living by is only possible if you were listening last time — this is that test, run weekly instead of once.' },
-      { id: 'f_meet', because: 'The image in your head drifts from the person unless it is regularly corrected by the person.' },
-      { id: 'f_thanks', because: 'Naming something specific and real is the opposite of the repair loop: it is the relationship being used rather than worked on.' },
+      { id: 'f_remember', get because() { return t('lib.fixing-the-car-instead-of-driving.habit.f_remember.because'); } },
+      { id: 'f_meet', get because() { return t('lib.fixing-the-car-instead-of-driving.habit.f_meet.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.fixing-the-car-instead-of-driving.habit.f_thanks.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The two-column exercise usually produces one thing you want but do not do — and it is almost always a conversation.' },
+      { id: 'q_hardconversation', get because() { return t('lib.fixing-the-car-instead-of-driving.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Журавлёв — Невротические отношения, вина и починка машины вместо поездки',
+    get vaultSource() { return t('lib.fixing-the-car-instead-of-driving.vaultSource'); },
   },
-
   {
     slug: 'the-cost-of-ownership',
     attr: 'money',
-    title: 'Every purchase drags a tail of purchases behind it',
-    origin: 'Seisembay — on the delta, cost of ownership and expense order',
+    get title() { return t('lib.the-cost-of-ownership.title'); },
+    get origin() { return t('lib.the-cost-of-ownership.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'If investing feels exciting, that is the signal you are losing money rather than making it.',
-    thesis:
-      'Managing money is a third process, independent of earning more and spending less — the gap does not accumulate by itself even on a high income if nobody is managing it. Two practical consequences follow: anything you buy drags a chain of subsequent costs behind it that is rarely counted in advance, and personal spending has to run in a fixed order rather than by whatever is most pressing.',
-    ideas: [
-      {
-        name: 'Three separate processes',
-        body: 'Financial literacy is built around the delta between income and outgoings, and without a positive delta investing is not a meaningful conversation. But managing money reduces to neither earning more nor economising: someone can grow their income steadily and still be short, precisely because managing is a distinct skill nobody trained.',
-      },
-      {
-        name: 'The brain spends future income now',
-        body: 'Deferred payment is handled badly: money not yet received is mentally spent before it arrives, which is the mechanism that makes borrowing against a future salary feel reasonable in the moment.',
-      },
-      {
-        name: 'Cost of ownership',
-        body: 'Any status purchase pulls a chain of unaccounted costs after it — the worked example runs from an expensive lighter to a matching cigar, to the drink it apparently requires, to somewhere to store them, ending at roughly ten times the original outlay. The practical instruction is to say out loud what tail a purchase will drag before looking at the price on it.',
-      },
-      {
-        name: 'Investing should be boring',
-        body: 'The marker given: if investing produces excitement and a pull to check the charts, that is a sign of losing money rather than earning it. Investing that works looks like routine, tedious work. Related rules: never borrow in order to invest, do not confuse the guaranteed saving of early repayment with a hypothetical market return, and start with a sum you would not mind losing, because early losses are close to inevitable.',
-      },
-      {
-        name: 'Quality of life has a floor',
-        body: 'The stated order is a tax to your future self first, then the insurance reserve, then genuine necessities, and only then quality of life — which cannot be cut below a certain level, because doing so hits self-esteem and through it the ability to earn at all.',
-      },
-    ],
-    notes: [
-      'Cash reserve kept separately from investments, so a shock does not force the sale the strategy depends on not making.',
-      'Pyramids and casinos are grouped as psychologically adjacent — both are the wish to earn everything at once, and one participant argues the better predictor of walking into one is the absence of a cushion and of any long-horizon habit, rather than a lack of financial literacy.',
-      'The host opens by saying explicitly that this is kitchen-table conversation rather than an expert platform, and most material is personal observation rather than data.',
-      'One study is misattributed to the wrong university in passing, quoted figures come from memory, and personal sums are anecdote — none of it load-bearing, but not to be leaned on as sourced.',
-    ],
-    practices: [
-      'Before a status purchase, write the chain of costs it will pull behind it, then decide.',
-      'Run the order deliberately: future self, reserve, necessities, then quality of life.',
-      'Treat excitement about an investment as a stop signal rather than a good sign.',
-      'Keep the cash reserve separate from anything invested.',
-      'Start with an amount whose loss would not injure you, and expect to lose some of it.',
-    ],
+    get hook() { return t('lib.the-cost-of-ownership.hook'); },
+    get thesis() { return t('lib.the-cost-of-ownership.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-cost-of-ownership.idea.${i}.name`),
+        body: t(`lib.the-cost-of-ownership.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-cost-of-ownership.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-cost-of-ownership.practice.${i}`));
+    },
     habits: [
-      { id: 'm_waitlist', because: 'A day\'s delay is exactly long enough to write out the tail of costs the purchase drags — which is the calculation the price tag hides.' },
-      { id: 'm_payday', because: 'The tax to your future self comes first in the stated order, and the only way an order survives contact with a month is if the first item is automatic.' },
-      { id: 'm_log', because: 'The delta is a subtraction, and half of it stays unknown while the outgoings are unmeasured.' },
+      { id: 'm_waitlist', get because() { return t('lib.the-cost-of-ownership.habit.m_waitlist.because'); } },
+      { id: 'm_payday', get because() { return t('lib.the-cost-of-ownership.habit.m_payday.because'); } },
+      { id: 'm_log', get because() { return t('lib.the-cost-of-ownership.habit.m_log.because'); } },
     ],
     quests: [
-      { id: 'q_emergencyfund', because: 'The reserve sits second in the order and is named separately from investments — it is the thing that stops a shock forcing a sale.' },
-      { id: 'q_debts', because: 'Early repayment is a guaranteed return, and the source\'s warning is against trading that certainty for a hypothetical one.' },
+      { id: 'q_emergencyfund', get because() { return t('lib.the-cost-of-ownership.quest.q_emergencyfund.because'); } },
+      { id: 'q_debts', get because() { return t('lib.the-cost-of-ownership.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Сейсембай — Дельта, цена владения и приоритет расходов',
+    get vaultSource() { return t('lib.the-cost-of-ownership.vaultSource'); },
   },
   {
     slug: 'money-shame-and-courage',
     attr: 'money',
-    title: 'Money amplifies what was already there',
-    origin: 'Dmitrieva — psychologist, on money beliefs, shame and naming your price',
+    get title() { return t('lib.money-shame-and-courage.title'); },
+    get origin() { return t('lib.money-shame-and-courage.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Underneath most of the barriers sits one thing: the courage to be visible and say what you cost.',
-    thesis:
-      'The capacity to earn more is set not only by knowledge and skill but by a set of psychological settings: separation from family, self-esteem, appetite for novelty, and beliefs about money absorbed in childhood. Money neither corrupts nor improves — it amplifies what was already in the character. And underneath most of the barriers sits the same deficit: the courage to be visible, to name your price, to risk failing.',
-    ideas: [
-      {
-        name: 'The fear of outgrowing your parents',
-        body: 'An unconscious fear of exceeding the standard of living you came from is described as a real and common barrier. Separation is not rupture: it is the capacity to be close and separate at once — different principles, different incomes, different decisions, without that being a conflict.',
-      },
-      {
-        name: 'Self-esteem can be fuel or brake',
-        body: 'Low self-esteem can drive someone to work harder and prove something, and it works up to a point — or it can produce capitulation: it will not work anyway, so why try. The practical diagnostic is to notice which direction yours is running and intervene only if it is the second. Successful people not uncommonly monetise a wound, and that is not automatically a reason to fix it while it is functioning as fuel.',
-      },
-      {
-        name: 'Wanting, devalued early',
-        body: '"You will stop wanting it" teaches that wanting is not worth doing, and lowers the odds that the adult wants much at all. The proposed replacement keeps the wanting and adds the work: good that you want it — let us think about how to get there.',
-      },
-      {
-        name: 'Money does not change the character it arrives at',
-        body: 'The claim against "money spoils people": it amplifies what was there before, illustrated with the speaker\'s own tendency to give gifts — small ones before, large ones after.',
-      },
-      {
-        name: 'Shame as a cultural layer',
-        body: 'Beyond the family beliefs sits a cultural layer that attaches shame to having money and to discussing it at all — which is what makes naming a price feel like a transgression rather than a transaction.',
-      },
-      {
-        name: 'Managing money is its own variable',
-        body: 'Independent of financial literacy: the ability to not spend to zero or into the negative is treated as a separate capacity rather than a consequence of knowing more.',
-      },
-    ],
-    notes: [
-      'Phrases that keep an adult a child — you will always be my little one — are described as lowering rather than raising the motivation to build an independent life. The suggested substitution keeps the relationship and drops the infantilising.',
-      'A useful separation: how much you actually need for stability, versus how much it seems you need based on other people\'s examples.',
-      'A practising psychologist in an interview format, working from clinical observation rather than cited research. Two claims presented as research-backed are given without naming the studies; they are plausible and consistent with the wider literature but cannot be checked here, and the personal anecdotes illustrate a mechanism rather than establish a rate.',
-    ],
-    practices: [
-      'Take the single belief about money that is costing you most right now, and rewrite it deliberately.',
-      'Check which way your self-esteem is running before trying to repair it.',
-      'Separate the number you need for stability from the number you inherited from comparison.',
-      'Practise saying the price out loud, since the barrier is usually the saying rather than the number.',
-    ],
+    get hook() { return t('lib.money-shame-and-courage.hook'); },
+    get thesis() { return t('lib.money-shame-and-courage.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.money-shame-and-courage.idea.${i}.name`),
+        body: t(`lib.money-shame-and-courage.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.money-shame-and-courage.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.money-shame-and-courage.practice.${i}`));
+    },
     habits: [
-      { id: 'm_owed', because: 'Money between people is where the shame layer shows up first — and the habit is one sentence about a thing that is otherwise never said.' },
-      { id: 'm_checkbalance', because: 'Shame works by keeping the number unlooked at; ten seconds a day removes the avoidance without requiring the feeling to change first.' },
-      { id: 'm_log', because: 'Managing money is named as a variable separate from knowing about it, and the log is where managing becomes possible at all.' },
+      { id: 'm_owed', get because() { return t('lib.money-shame-and-courage.habit.m_owed.because'); } },
+      { id: 'm_checkbalance', get because() { return t('lib.money-shame-and-courage.habit.m_checkbalance.because'); } },
+      { id: 'm_log', get because() { return t('lib.money-shame-and-courage.habit.m_log.because'); } },
     ],
     quests: [
-      { id: 'q_raise', because: 'The whole entry converges on naming your price out loud — this is the quest where that stops being a belief and becomes a sentence someone hears.' },
-      { id: 'q_debts', because: 'Shame keeps the total vague, and the total is the specific thing shame makes hardest to look at directly.' },
+      { id: 'q_raise', get because() { return t('lib.money-shame-and-courage.quest.q_raise.because'); } },
+      { id: 'q_debts', get because() { return t('lib.money-shame-and-courage.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Дмитриева — Психология денег, стыд и смелость',
+    get vaultSource() { return t('lib.money-shame-and-courage.vaultSource'); },
   },
-
   {
     slug: 'the-cycle-is-the-enemy',
     attr: 'family',
-    title: 'Neither of you is the problem. The dance is.',
-    origin: 'Sue Johnson — originator of EFT, on the pursue-withdraw cycle',
+    get title() { return t('lib.the-cycle-is-the-enemy.title'); },
+    get origin() { return t('lib.the-cycle-is-the-enemy.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'Criticism is usually protest in disguise — and what it literally means is "where are you, I need you".',
-    thesis:
-      'Romantic relationships are attachment bonds — structurally the same system that binds infants to caregivers — rather than negotiations between two independent parties. Distress follows a predictable shape: one partner protests disconnection in a form that looks like criticism, the other hears attack and withdraws to protect themselves, and the withdrawal fuels more protest. Neither person is the problem; the cycle is.',
-    ideas: [
-      {
-        name: 'Bonds, not bargains',
-        body: 'Her account of the shift: skills-based couples work produced compliant behaviour inside the session that evaporated the moment the exercise ended. Applying attachment theory — until then reserved for infants and mothers — to adult relationships was professionally risky at the time and drew open ridicule from peers working in the bargaining model.',
-      },
-      {
-        name: 'The pursue-withdraw loop',
-        body: 'A raised voice or a criticism is a distorted protest: I do not feel heard, I do not feel like I matter to you. The partner receives it as blame — I am not wanted, I am not enough — and shuts down, face going flat. The more one shuts down, the more frantic the other becomes. Naming the dance itself as the shared enemy is the reframe that makes the work approachable at all.',
-      },
-      {
-        name: 'The same few fears underneath, on both sides',
-        body: 'Whatever the surface emotion — anger, demand, numbness — it sits on a small set of primal fears: rejection, abandonment, isolation, not being enough. These are described as wired into the nervous system of a bonding mammal rather than as personality flaws, which is why they do not respond to being argued with.',
-      },
-      {
-        name: 'The case that shows the translation',
-        body: 'A man presenting with relentless sexual demand turned out, once explored, to be panicking about whether his wife loved him at all — sex was the only channel where he briefly felt safe. When he could name the actual need — touch me, reassure me that I matter — his wife responded to the vulnerability rather than to the demand, and the dynamic changed.',
-      },
-      {
-        name: 'Why the bonding conversation sticks',
-        body: 'When a partner can share genuine vulnerability and reach toward the other rather than attack or withdraw, it functions as biologically prepared learning: the nervous system registers it as survival-relevant and keeps it. Taught communication skills do not stick the same way, because they are processed as technique.',
-      },
-    ],
-    notes: [
-      'One round of genuine vulnerability is not a fair test — several cycles before a withdrawn partner responds is described as normal. Persistent non-response across many is different information.',
-      'Specifying a vague fear is itself de-escalating rather than merely analytical: not "everything is falling apart" but the particular thing being feared.',
-      'EFT has a substantial independent outcome-research base and is commonly named alongside the Gottman method as a gold-standard approach — the core claims here reflect mainstream clinical consensus rather than a fringe position.',
-      'In this particular conversation the neuroscience vocabulary is used loosely and metaphorically rather than technically, and the outcome figures cited are referenced without naming studies. Read the mechanism as clinical shorthand, not as precise neuroscience.',
-    ],
-    practices: [
-      'Describe the loop instead of the person: when I get loud you go quiet, and the quieter you get the louder I get.',
-      'Translate protest into its literal request before responding to its tone.',
-      'Say the vulnerable version — the fear underneath — rather than the demand on top of it.',
-      'Name the specific fear rather than letting it stay global.',
-      'Do not judge the approach on a single attempt.',
-    ],
+    get hook() { return t('lib.the-cycle-is-the-enemy.hook'); },
+    get thesis() { return t('lib.the-cycle-is-the-enemy.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-cycle-is-the-enemy.idea.${i}.name`),
+        body: t(`lib.the-cycle-is-the-enemy.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-cycle-is-the-enemy.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-cycle-is-the-enemy.practice.${i}`));
+    },
     habits: [
-      { id: 'f_remember', because: 'Mattering is the thing being protested for, and remembering what someone told you last time is its smallest daily evidence.' },
-      { id: 'f_voice', because: 'Tone is what gets misread in the loop — a voice carries the vulnerability that the same words in text reliably lose.' },
-      { id: 'f_thanks', because: 'Specific appreciation is a reach toward the other person, which is the exact move the cycle prevents both partners from making.' },
+      { id: 'f_remember', get because() { return t('lib.the-cycle-is-the-enemy.habit.f_remember.because'); } },
+      { id: 'f_voice', get because() { return t('lib.the-cycle-is-the-enemy.habit.f_voice.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.the-cycle-is-the-enemy.habit.f_thanks.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The bonding conversation is the whole intervention — and it is precisely the conversation the cycle has been postponing.' },
-      { id: 'q_reconnect', because: 'The same protest-and-withdraw shape runs in every close relationship, not only romantic ones, and it ends the same way: someone reaches first.' },
+      { id: 'q_hardconversation', get because() { return t('lib.the-cycle-is-the-enemy.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.the-cycle-is-the-enemy.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Johnson — Emotionally Focused Therapy and the Bonding Conversation',
+    get vaultSource() { return t('lib.the-cycle-is-the-enemy.vaultSource'); },
   },
   {
     slug: 'dont-collect-stamps',
     attr: 'family',
-    title: 'Do not collect stamps',
-    origin: 'Meleshko — psychotherapist, on the four stages and the drama triangle',
+    get title() { return t('lib.dont-collect-stamps.title'); },
+    get origin() { return t('lib.dont-collect-stamps.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The breakup happens over the socks. The reason was filed months earlier.',
-    thesis:
-      'The organising metaphor is a garden two people tend together rather than a fifty-fifty deal. The structural map: four stages a couple moves through, the drama triangle as the explanation for most recurring conflict, and a written five-area agreement as the concrete instrument. The deliberately unpopular claim underneath: mature love is not finding someone who closes your earlier problems but joint work on finishing what did not finish in childhood.',
-    ideas: [
-      {
-        name: 'Four stages, and why duration tells you nothing',
-        body: 'Searching; infatuation and symbiosis, running from a month to around three years on hormonal drive; the struggle for power, where each partner starts producing what they inherited from their family and tries to build the relationship to that internal template; and interdependence, which takes seven years and upward. How long you have been together says nothing — a couple can spend twenty years stuck in the third stage. The example given is a pair discovering in therapy after fifteen years that they did not know each other.',
-      },
-      {
-        name: 'The imago',
-        body: 'The unconscious image of the expected partner, formed in the family you came from — whether there was warmth, whether there was trust. It gets repeated in who you choose and in what you expect from them, whether or not you intend it.',
-      },
-      {
-        name: 'Why drama is more comfortable than closeness',
-        body: 'A conflict pattern is predictable, and predictability is psychologically comfortable even when it is unpleasant. Vulnerability is genuinely unknown territory, which is why it frightens people more than familiar pain does.',
-      },
-      {
-        name: 'The drama triangle',
-        body: 'Persecutor, victim, rescuer — three roles the parties switch between while passing responsibility around: the victim hands it over (you should have guessed), the persecutor pushes it back (you owe me), the rescuer takes on what is not theirs. The exit is direct conversation about the specific need instead of playing the role.',
-      },
-      {
-        name: 'Stamps',
-        body: 'Unspoken grievances collect like stamps in an album. When the album fills, the break happens over something trivial — the socks in the wrong place — although the cause accumulated much earlier. The instruction that follows is not to collect them at all: say the tension immediately, in small amounts.',
-      },
-      {
-        name: 'Criticise the behaviour, not the person',
-        body: 'Taken from the Gottman material: a trainable rule that applies to any close relationship rather than only a romantic one.',
-      },
-    ],
-    notes: [
-      'A written agreement across five areas is offered as a concrete template — with stability (not taking large decisions alone) and openness (which subjects are not left unsaid) named as the load-bearing ones.',
-      'A fair diagnostic before deciding to leave: have you actually done everything to keep it, or is this a reaction to being tired?',
-      'A practising transactional-analysis therapist citing the real originators of the models used — these are documented frameworks from established schools rather than the speaker\'s own metaphors, which is worth noting given how much material in this area is invented vocabulary. The clinical illustrations are, as always, unverifiable.',
-    ],
-    practices: [
-      'Say the small irritation now, in a small amount, rather than filing it.',
-      'When a conflict repeats, ask which of the three roles each of you is currently occupying.',
-      'Criticise a specific behaviour, never the character.',
-      'Write the agreement down together rather than assuming it is understood.',
-      'Ask what stage you are actually in, rather than how long it has been.',
-    ],
+    get hook() { return t('lib.dont-collect-stamps.hook'); },
+    get thesis() { return t('lib.dont-collect-stamps.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.dont-collect-stamps.idea.${i}.name`),
+        body: t(`lib.dont-collect-stamps.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.dont-collect-stamps.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.dont-collect-stamps.practice.${i}`));
+    },
     habits: [
-      { id: 'f_meet', because: 'The stages are moved through by shared experience rather than elapsed time — and shared experience needs to actually be scheduled.' },
-      { id: 'f_remember', because: 'The fifteen-year couple who did not know each other is the warning; asking about the thing they told you last time is the cheapest possible defence against becoming them.' },
-      { id: 'f_nogossip', because: 'Talking about someone who is not there is how a grievance gets filed instead of said — which is exactly how the album fills.' },
+      { id: 'f_meet', get because() { return t('lib.dont-collect-stamps.habit.f_meet.because'); } },
+      { id: 'f_remember', get because() { return t('lib.dont-collect-stamps.habit.f_remember.because'); } },
+      { id: 'f_nogossip', get because() { return t('lib.dont-collect-stamps.habit.f_nogossip.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Leaving the triangle is described as naming the specific need directly — which is a conversation, not a resolution to behave differently.' },
-      { id: 'q_reconnect', because: 'Stamps collect in every close relationship, not only the romantic one, and they are cleared the same way: by saying the thing.' },
+      { id: 'q_hardconversation', get because() { return t('lib.dont-collect-stamps.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.dont-collect-stamps.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Мелешко — Четыре стадии отношений, драматический треугольник и контракт из пяти обещаний',
+    get vaultSource() { return t('lib.dont-collect-stamps.vaultSource'); },
   },
-
   {
     slug: 'count-it-in-grams',
     attr: 'health',
-    title: 'The gut does not rest, and neither does the myth',
-    origin: 'Vyalov — gastroenterologist, on digestion myths and what actually matters',
+    get title() { return t('lib.count-it-in-grams.title'); },
+    get origin() { return t('lib.count-it-in-grams.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Most of what people believe about eating does not survive contact with the mechanism.',
-    thesis:
-      'Most popular beliefs about eating and digestion do not hold: the stomach does not rest between meals any more than the heart does, frequent small meals have no demonstrated basis, probiotics are indicated for a narrow group rather than everyone, and fizzy drinks harm through one specific mechanism — pushing acidic stomach contents back into the oesophagus. The systemic problem underneath is that people think about food abstractly, in "I eat normally", and never in grams.',
-    ideas: [
-      {
-        name: 'The tract does not take breaks',
-        body: 'Like the heart, lungs and brain, the digestive tract works continuously — it can move faster or slower, but a full stop is an obstruction rather than a rest. The frequent-small-meals advice is traced to dietary tables designed in the 1920s for feeding up the starving, not for a modern person with a surplus of food.',
-      },
-      {
-        name: 'Skipped meals are borrowed, not free',
-        body: 'If you do not eat when you should, the body takes from reserves, and that has to be returned. Skipping is not costless even when it feels fine at the time.',
-      },
-      {
-        name: 'A sustained fast is not a skipped day',
-        body: 'Extended fasting periods are described as having a real measurable effect — a reported reduction in liver fat over a month — but only where there was overeating to begin with. A single day without food does not produce the same thing.',
-      },
-      {
-        name: 'Probiotics are a narrow indication',
-        body: 'Probiotic is the microbe, prebiotic its food, and the further categories are largely marketing. Medical indications after antibiotics are a short list rather than everyone as a precaution — a substantial share of people taking them report feeling worse, because an excess of gut microbes is more common than a shortage. Most commercial microbiota tests show only part of the picture; one sequencing method gives the full species composition.',
-      },
-      {
-        name: 'Gastritis is cell death, not a stomach ache',
-        body: 'Medically it means the death of stomach cells, with three paths onward: recovery — the option few people know exists — ulceration, or the cycles of damage and repair that can go wrong. Using it as a household label for any abdominal discomfort devalues a genuinely serious diagnosis.',
-      },
-    ],
-    notes: [
-      'The stomach is on the left, under the heart; the liver on the right. Pain on the left is the stomach and on the right the liver, rather than the pancreas as is commonly assumed.',
-      'The threshold for seeing a doctor, offered as a concrete rule: the same troubling symptom at least once a week for around three months.',
-      'For weight loss: no ideal diet, only a sustained deficit at roughly a kilogram a week, with waist circumference a more honest reference than the scale.',
-      'A demystifying rather than promotional source — he calls parts of the market, including some tests and product categories, marketing outright. But the specific figures are given confidently without citations in the conversation itself; they align with the direction of the current literature but cannot be checked from here.',
-      'One remark about fermented drinks and gut flora is directionally correct but delivered without dose or context, and he immediately clarifies his overall position against alcohol — the qualification matters more than the line.',
-    ],
-    practices: [
-      'Count the actual grams once — protein, fat, fibre — to see the gap between what you assume and what you eat.',
-      'Do not drink fizzy drinks in the evening, and do not lie down straight after eating.',
-      'Use the once-a-week-for-three-months rule as the threshold to stop tolerating a symptom.',
-      'Judge weight change by waist circumference rather than by the scale.',
-      'Drop sweeteners and flavour enhancers if the goal is to stop overeating.',
-    ],
+    get hook() { return t('lib.count-it-in-grams.hook'); },
+    get thesis() { return t('lib.count-it-in-grams.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.count-it-in-grams.idea.${i}.name`),
+        body: t(`lib.count-it-in-grams.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.count-it-in-grams.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.count-it-in-grams.practice.${i}`));
+    },
     habits: [
-      { id: 'h_nolate', because: 'The reflux mechanism is the specific one described — and not eating late is the version of the fix that costs no new time.' },
-      { id: 'h_realmeal', because: 'The gap between "I eat normally" and the actual grams closes at the level of one real meal, not at the level of a diet.' },
-      { id: 'h_water', because: 'The routine, unglamorous input is the one that survives; the marketed categories are the ones he spends the episode dismantling.' },
+      { id: 'h_nolate', get because() { return t('lib.count-it-in-grams.habit.h_nolate.because'); } },
+      { id: 'h_realmeal', get because() { return t('lib.count-it-in-grams.habit.h_realmeal.because'); } },
+      { id: 'h_water', get because() { return t('lib.count-it-in-grams.habit.h_water.because'); } },
     ],
     quests: [
-      { id: 'q_healthcheck', because: 'The once-a-week-for-three-months threshold is useless as knowledge and useful as an appointment.' },
-      { id: 'q_energyaudit', because: 'Thinking about food abstractly is the named root problem, and an audit is what replaces the impression with a record.' },
+      { id: 'q_healthcheck', get because() { return t('lib.count-it-in-grams.quest.q_healthcheck.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.count-it-in-grams.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Вялов — ЖКТ, микробиота и мифы о питании',
+    get vaultSource() { return t('lib.count-it-in-grams.vaultSource'); },
   },
   {
     slug: 'cut-the-middle-out',
     attr: 'health',
-    title: 'Cut the unproductive middle out of your week',
-    origin: 'Stacy Sims — exercise physiologist, on polarised training and intensity language',
+    get title() { return t('lib.cut-the-middle-out.title'); },
+    get origin() { return t('lib.cut-the-middle-out.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The zone that feels hardest is often the one doing least — hard enough to cost you, not hard enough to pay.',
-    thesis:
-      'Two things make training legible: a precise vocabulary for intensity, and a polarised model that combines genuinely hard work with genuinely easy recovery while deliberately avoiding sustained moderate effort. That middle zone feels effortful enough to raise cortisol and generate fatigue without being intense enough to trigger the adaptive response that would offset it.',
-    ideas: [
-      {
-        name: 'Reps in reserve, and RPE',
-        body: 'Stopping a set a defined number of repetitions short of true failure — eight clean reps with two more available in good form. It maps directly onto a one-to-ten perceived-exertion scale, which lets intensity be prescribed without testing a one-rep max, itself a risky thing to attempt on compound lifts.',
-      },
-      {
-        name: 'The unproductive middle',
-        body: 'Combine truly hard efforts with true easy movement and avoid the sustained moderate zone. Popular class formats are criticised by name for parking people exactly there — maximally effortful in feel, least productive in effect.',
-      },
-      {
-        name: 'Two different interval protocols, routinely conflated',
-        body: 'Interval work at eighty per cent and above runs one to four minutes with self-paced recovery. Sprint interval training is a distinct and harder protocol: thirty seconds or less at true maximum, then two to three minutes of full recovery — explicitly not the twenty-on twenty-off format, because that does not allow the energy system and nervous system to recover between efforts. They produce different stimuli.',
-      },
-      {
-        name: 'A concrete post-training sauna sequence',
-        body: 'After resistance training: hydrate lightly with a little salt, sauna, then rehydrate slowly afterwards — presented as a low-cost addition aimed at blood volume, applicable regardless of sex.',
-      },
-      {
-        name: 'Where default advice inverts',
-        body: 'Her specialisation is that women are more oxidatively efficient by default — more slow-twitch fibre, better baseline fat utilisation — which flips several pieces of male-derived advice from neutral to counterproductive: fasted training, long fasting windows, and low carbohydrate intake among them.',
-      },
-    ],
-    notes: [
-      'The intensity vocabulary here is the same one used elsewhere in this sector, which makes reps-in-reserve the common language across the strength material rather than a competing scheme.',
-      'A world-recognised exercise physiologist with a large peer-reviewed record and direct work with professional teams — high authority, particularly on the female-specific material that is her core specialisation.',
-      'Comparative male-female claims are stated confidently without individual citations in the episode, and several are flagged by her as preliminary or as her own coaching pattern-matching: she calls the menstrual-cycle-and-performance research confounded and underpowered, and says outright that the study on contraceptive effects on training adaptation has not been done. One cold-water finding is a single pilot rather than a replicated result.',
-    ],
-    practices: [
-      'Prescribe intensity in reps in reserve rather than by percentage of a max you have not tested.',
-      'Make the easy sessions genuinely easy and the hard sessions genuinely hard.',
-      'Treat sustained medium-hard cardio as the least useful category rather than the safe middle ground.',
-      'Keep sprint efforts under thirty seconds with full recovery, rather than compressing the rest.',
-    ],
+    get hook() { return t('lib.cut-the-middle-out.hook'); },
+    get thesis() { return t('lib.cut-the-middle-out.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.cut-the-middle-out.idea.${i}.name`),
+        body: t(`lib.cut-the-middle-out.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.cut-the-middle-out.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.cut-the-middle-out.practice.${i}`));
+    },
     habits: [
-      { id: 'h_steps', because: 'The easy pole of the polarised model has to actually exist, and walking is the version of it that does not quietly become moderate.' },
-      { id: 'h_pushups', because: 'Reps in reserve is only learnable on something you do often enough to feel the difference between eight and failure.' },
-      { id: 'b_sport', because: 'True high intensity is easier to reach in something you would play anyway than in a session you have to talk yourself into.' },
+      { id: 'h_steps', get because() { return t('lib.cut-the-middle-out.habit.h_steps.because'); } },
+      { id: 'h_pushups', get because() { return t('lib.cut-the-middle-out.habit.h_pushups.because'); } },
+      { id: 'b_sport', get because() { return t('lib.cut-the-middle-out.habit.b_sport.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'Polarising a week is a scheduling decision about which sessions are hard and which are easy — made once, not renegotiated each morning.' },
-      { id: 'q_energyaudit', because: 'The unproductive middle is invisible without a record: it is the zone that feels like it counted.' },
+      { id: 'q_habitsystem', get because() { return t('lib.cut-the-middle-out.quest.q_habitsystem.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.cut-the-middle-out.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Sims — Polarized Training, RPE, Post-Workout Sauna Protocol and Female-Specific Physiology',
+    get vaultSource() { return t('lib.cut-the-middle-out.vaultSource'); },
   },
-
   {
     slug: 'weakness-and-goal',
     attr: 'brightness',
-    title: 'Two things make an audience care, and detail is neither',
-    origin: 'John Truby — on genre, weakness and the premise line',
+    get title() { return t('lib.weakness-and-goal.title'); },
+    get origin() { return t('lib.weakness-and-goal.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Most scripts fail before a page is written — at the one-sentence premise.',
-    thesis:
-      'What makes an audience care about a character is exactly two things: their weakness or need — a deep internal problem running their life — and their goal. Detailed traits are surface. Plot comes from character in a specific engineering sense: the pursuit of the external goal is built to force a confrontation with the internal weakness, and it is the inner change the audience is actually invested in.',
-    ideas: [
-      {
-        name: 'The premise is where things fail',
-        body: 'The claim is that the overwhelming majority of scripts fail at the one-sentence stage, before drafting — and usually not because the idea is bad but because it was put into the wrong form to develop it in. The two tests offered: is there a desire line that can sustain the full length, and is there an opponent capable of sustaining conflict?',
-      },
-      {
-        name: 'The product is the form, not the person',
-        body: 'Genres are story forms refined over decades or longer, with their characters, themes and mechanics already worked out — which is why they travel across cultures. A studio buying a character bank is buying pre-established, globally recognised figures reusable indefinitely.',
-      },
-      {
-        name: 'Combination is the default and the hard part',
-        body: 'Almost nothing modern is single-genre; most combine two to four. Each carries its own hero, opponent, desire line and theme, so combining them without skill produces unconnected chaos rather than richness.',
-      },
-      {
-        name: 'Transcending means paying the dues surprisingly',
-        body: 'Every form has eight to fifteen non-negotiable beats. Writing them conventionally produces something indistinguishable; ignoring them produces something unsatisfying. The professional move is hitting each required beat in a way nobody has seen — giving the audience what they came for and something new at once.',
-      },
-      {
-        name: 'Structure first, dialogue last',
-        body: 'A checkable rewrite discipline: resist polishing sentences until the underlying structure has been confirmed to work. Applies to any long piece, not only scripts.',
-      },
-    ],
-    notes: [
-      'His method was empirical rather than theoretical — roughly three years of watching two films a day and taking notes in the dark, hunting for what recurred.',
-      'Worth holding as a live disagreement rather than a settled answer: Truby dismisses three-act structure outright as fabricated, while other working screenwriting educators build their frameworks on exactly that paradigm. Both are practitioners with real records; this is a genuine professional dispute about which structural model is real versus oversimplified, not a case of one being uninformed.',
-      'A credentialed consultant whose craft book sits alongside the standard references in the field. The specific counts — how many genres, what proportion of scripts fail — are stated confidently and are best read as working figures rather than measurements.',
-    ],
-    practices: [
-      'Define the internal weakness and the external goal before adding any surface detail.',
-      'Test the premise for a desire line long enough to sustain the whole thing, and an opponent strong enough to sustain conflict.',
-      'Name the form you are working in, then find the version of each required beat nobody has seen.',
-      'Fix structure before sentences, every time.',
-    ],
+    get hook() { return t('lib.weakness-and-goal.hook'); },
+    get thesis() { return t('lib.weakness-and-goal.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.weakness-and-goal.idea.${i}.name`),
+        body: t(`lib.weakness-and-goal.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.weakness-and-goal.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.weakness-and-goal.practice.${i}`));
+    },
     habits: [
-      { id: 'd_notes', because: 'His whole framework came out of taking notes on what recurred — the method is available to anyone willing to write down what they noticed.' },
-      { id: 'd_read', because: 'Recognising the beats of a form requires having consumed enough of it to feel where they land, which is a volume problem.' },
-      { id: 's_makecreate', because: 'Premise tests are cheap and abstract until something is being built against them.' },
+      { id: 'd_notes', get because() { return t('lib.weakness-and-goal.habit.d_notes.because'); } },
+      { id: 'd_read', get because() { return t('lib.weakness-and-goal.habit.d_read.because'); } },
+      { id: 's_makecreate', get because() { return t('lib.weakness-and-goal.habit.s_makecreate.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'Structure-before-dialogue is only a real discipline on a piece carried to done — an unfinished draft never reaches the stage where it would bite.' },
-      { id: 'q_portfolio', because: 'Whether a beat actually surprised anyone is not answerable from inside your own head.' },
+      { id: 'q_makeweekly', get because() { return t('lib.weakness-and-goal.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.weakness-and-goal.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Truby — Genre, Character Weakness and the Craft of Premise',
+    get vaultSource() { return t('lib.weakness-and-goal.vaultSource'); },
   },
   {
     slug: 'plan-so-the-poetic-brain-is-free',
     attr: 'brightness',
-    title: 'Solve the problems first, so the making can be instinctive',
-    origin: 'Amor Towles — novelist, on planning, vocabulary and noticing',
+    get title() { return t('lib.plan-so-the-poetic-brain-is-free.title'); },
+    get origin() { return t('lib.plan-so-the-poetic-brain-is-free.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Front-load every analytical decision, so that while working, the analytical part has nothing left to argue about.',
-    thesis:
-      'The working method is extreme front-loading: years of handwritten notebooks resolving plot, setting and backstory before drafting a single chapter — specifically so that during the writing the analytical brain is already satisfied and the instinctive side is free to produce surprising language. And description works when filtered through a specific character\'s actual noticing rather than through the maker\'s inventory of researched facts.',
-    ideas: [
-      {
-        name: 'Vocabulary as a collected toolkit',
-        body: 'Every domain has its own vocabulary, and the ongoing job is tuning the ear to collect striking words across all of them for later use. His example: weaving period-appropriate French into a novel because that society genuinely spoke it, so the vocabulary signals class and sensibility without anything being stated.',
-      },
-      {
-        name: 'Immersive reading instead of research',
-        body: 'Before writing a book set in a particular year, he read four novels written inside that same narrow window — chosen because they are radically different in subject and milieu despite being contemporaneous. The aim is period sensibility rather than period facts.',
-      },
-      {
-        name: 'Description is presence, not decoration',
-        body: 'Sharp and concise enough that a reader can locate themselves; not so spare the space could be anywhere, not so dense that they bog down. A practical move: front-load the spatial geography early so later scenes can rely on a map the reader has already built.',
-      },
-      {
-        name: 'Tempo without urgency',
-        body: 'Genre page-turners generate urgency from action. Literary pacing can generate it from psychological interest or sentence-level phrasing alone — which permits deliberately slow stretches, provided something else keeps pulling. The editing test he gives: if a section still bores him on the third pass, it goes.',
-      },
-      {
-        name: 'The opening of doors',
-        body: 'A test for an idea: does imagining it spontaneously generate many directions, or does it stay flat and singular? Useful before committing time rather than after.',
-      },
-    ],
-    notes: [
-      'Ground a period or a place in one character\'s small specific noticing rather than reaching for the obvious landmark — the specific detail carries more than the famous one.',
-      'A named, verifiable novelist describing his own documented method, consistent with his other public accounts. The anecdotes illustrate process rather than establish facts, and his opinions on other writers are presented explicitly as personal taste.',
-    ],
-    practices: [
-      'Do the structural thinking before starting, so that the making itself can be instinctive.',
-      'Collect vocabulary continuously, from domains you do not work in.',
-      'Establish the geography early, then trust it for everything that follows.',
-      'Run the opening-of-doors test on an idea before committing months to it.',
-      'Cut what still bores you on the third read.',
-    ],
+    get hook() { return t('lib.plan-so-the-poetic-brain-is-free.hook'); },
+    get thesis() { return t('lib.plan-so-the-poetic-brain-is-free.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.plan-so-the-poetic-brain-is-free.idea.${i}.name`),
+        body: t(`lib.plan-so-the-poetic-brain-is-free.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 2 }, (_, i) => t(`lib.plan-so-the-poetic-brain-is-free.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.plan-so-the-poetic-brain-is-free.practice.${i}`));
+    },
     habits: [
-      { id: 'c_plan', because: 'Front-loading the analytical work is the entire method — and it only works if the planning happens somewhere other than the moment of making.' },
-      { id: 'd_read', because: 'Immersive reading is his substitute for research: sensibility is absorbed rather than looked up.' },
-      { id: 'd_notes', because: 'The notebooks are the method. A striking word or a noticed detail is only available later if it was written down when it appeared.' },
+      { id: 'c_plan', get because() { return t('lib.plan-so-the-poetic-brain-is-free.habit.c_plan.because'); } },
+      { id: 'd_read', get because() { return t('lib.plan-so-the-poetic-brain-is-free.habit.d_read.because'); } },
+      { id: 'd_notes', get because() { return t('lib.plan-so-the-poetic-brain-is-free.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'The point of the planning is that the making goes fast when it starts — which only gets tested by carrying one thing to done.' },
-      { id: 'q_tryfive', because: 'The opening-of-doors test needs several candidate ideas to compare, and ideas come from contact with unfamiliar things.' },
+      { id: 'q_makeweekly', get because() { return t('lib.plan-so-the-poetic-brain-is-free.quest.q_makeweekly.because'); } },
+      { id: 'q_tryfive', get because() { return t('lib.plan-so-the-poetic-brain-is-free.quest.q_tryfive.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Amor Towles — The Mindset Behind an Unforgettable Novel',
+    get vaultSource() { return t('lib.plan-so-the-poetic-brain-is-free.vaultSource'); },
   },
-
   {
     slug: 'different-doors',
     attr: 'spirituality',
-    title: 'You answer for delivering it, not for the result',
-    origin: 'Gimatdinov — imam, on dialogue, different doors and the forgotten pillar',
+    get title() { return t('lib.different-doors.title'); },
+    get origin() { return t('lib.different-doors.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Children repeat what their parents do, not what their parents say — and the same is true of everyone you are trying to convince.',
-    thesis:
-      'Three practical claims. Raising children in a practice works through dialogue and shared desire rather than compulsion. Persuasion has a methodology — different people are reached through different doors, and choosing the wrong one is a failure of method rather than of the listener. And the release from burnout in any persuasive effort is the same: you are answerable for the delivery, not for the outcome.',
-    ideas: [
-      {
-        name: 'Dialogue is in the text, not a modern fashion',
-        body: 'The Qur\'anic conversations between fathers and sons are described as friendly, containing the direct question "how do you see this yourself?" — even where the decision has already been settled from above and submission is inevitable. Asking a child\'s view and listening to it is therefore modelled in the source text rather than borrowed from contemporary psychology.',
-      },
-      {
-        name: 'The sentence that fixed a practice for life',
-        body: 'A personal account: after a missed dawn prayer the father did not reproach him, but said that the prayer is his own and not performed for anyone else — and that it would nonetheless help the father before God. The observation attached is that this framing, rather than shame, is why it was never missed again.',
-      },
-      {
-        name: 'Fear of the parent produces bad advice from elsewhere',
-        body: 'From pastoral experience: children facing serious problems, dependencies included, do not go to their parents precisely because they are afraid — and take advice from worse sources instead. The prevention named is not declared availability but actual presence and listening at the moment someone wants to say something.',
-      },
-      {
-        name: 'Enter through different doors',
-        body: 'For each type of person a different route: conversation for the talkative, a book for the reader, a film for the watcher, audio for someone who drives, and for some simply being listened to. The historical illustration offered is a region converted not through war but through the observed honesty of traders.',
-      },
-      {
-        name: 'Character is the most effective argument',
-        body: 'The recurring claim: how you conduct yourself does more persuasive work than what you say, which is the same mechanism as children copying behaviour rather than instruction.',
-      },
-    ],
-    notes: [
-      'Patience rather than reaction to hostility is presented as a tested strategy, with a transmitted story used as illustration — passed on rather than personally witnessed, and flagged as such.',
-      'Checking the reputation of a charitable fund before giving is offered as an ordinary practical habit rather than a caveat.',
-      'A practising imam with formal theological training, drawing on pastoral experience and citing sources explicitly. The biography that made up much of the original conversation is deliberately not carried here.',
-    ],
-    practices: [
-      'Ask "how do you see this yourself?" even when the decision is already made.',
-      'Be present at the moment someone wants to speak, rather than announcing you are available.',
-      'Choose the door that fits the person — a book, a conversation, a recording, or simply being heard.',
-      'Hold yourself answerable for delivering it and not for whether it landed.',
-      'Check who you are giving to before you give.',
-    ],
+    get hook() { return t('lib.different-doors.hook'); },
+    get thesis() { return t('lib.different-doors.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.different-doors.idea.${i}.name`),
+        body: t(`lib.different-doors.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.different-doors.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.different-doors.practice.${i}`));
+    },
     habits: [
-      { id: 'm_charity', because: 'The pillar he calls the least understood is the one that only becomes real as a repeated act rather than an annual calculation.' },
-      { id: 'f_remember', because: 'Being present at the moment someone wants to talk is built from having listened last time — that is what makes a person try again.' },
-      { id: 's_forgive', because: 'Patience instead of reaction is the strategy the source puts most weight on, and it is trained on small things before it is available for large ones.' },
+      { id: 'm_charity', get because() { return t('lib.different-doors.habit.m_charity.because'); } },
+      { id: 'f_remember', get because() { return t('lib.different-doors.habit.f_remember.because'); } },
+      { id: 's_forgive', get because() { return t('lib.different-doors.habit.s_forgive.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The warning is specific: the conversation not had, out of fear, is the one that gets answered by someone worse.' },
-      { id: 'q_learnfaith', because: 'He names one pillar as the least understood even among practising people — which makes it a thing to study rather than assume.' },
+      { id: 'q_hardconversation', get because() { return t('lib.different-doors.quest.q_hardconversation.because'); } },
+      { id: 'q_learnfaith', get because() { return t('lib.different-doors.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Гиматдинов — Диалог как воспитание, дауат через разные двери и закят как забытый столп',
+    get vaultSource() { return t('lib.different-doors.vaultSource'); },
   },
   {
     slug: 'environment-is-fuel',
     attr: 'spirituality',
-    title: 'Check the source before you repeat it',
-    origin: 'Two first-person accounts on practice, environment and verification',
+    get title() { return t('lib.environment-is-fuel.title'); },
+    get origin() { return t('lib.environment-is-fuel.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'If your practice slipped after the company changed, that is the finding — not the excuse.',
-    thesis:
-      'This is personal testimony rather than instruction, and two transferable patterns come out of it. The first: environment is fuel — conviction is described as something that needs feeding, and proximity decides which direction it moves. The second: verify a quotation before repeating it, because material circulating on social platforms is frequently distorted or stripped of its context.',
-    ideas: [
-      {
-        name: 'Environment as the input, not the excuse',
-        body: 'The mechanism given: near someone knowledgeable, knowledge accumulates; near someone devoted, the pull toward practice grows; near someone outside it, either vigilance quietly drops or it sharpens. The illustration is two strawberries, one spoiled — proximity to the spoiled one does its work by default unless the arrangement changes first.',
-      },
-      {
-        name: 'The audit that follows from it',
-        body: 'The concrete action: if practice started slipping after the company changed, treat that as the signal to change the circle rather than as a reason to blame circumstances. One account describes doing exactly that, and treats the arrival of a better circle as an answer rather than a coincidence.',
-      },
-      {
-        name: 'Verify before repeating',
-        body: 'Both speakers warn that verses and quotations circulating on short-video platforms are often distorted or cut from their context, and recommend opening a commentary and checking the whole passage yourself rather than trusting the clip.',
-      },
-      {
-        name: 'Conscious practice versus performed practice',
-        body: 'The distinction they draw from their own history — an early, formal observance that did not match the rest of how they were living, and a later, deliberate acceptance. The transferable marker is the difference between doing something because it is expected and doing it having actually agreed to it.',
-      },
-      {
-        name: 'The order of asking',
-        body: 'Their reformulation of reliance: ask God first, then recognise His hand in the people who help — rather than working the other way around.',
-      },
-    ],
-    notes: [
-      'They also report that hostility they experienced years ago has since subsided, and separately note that a colour convention they encountered was a school uniform rule rather than a religious requirement — a local norm rather than a ruling.',
-      'This is the testimony of two non-specialists, and the podcast itself says so in its preamble. Its value is in the psychological patterns and the lived account, not in theological precision.',
-      'One hadith is conveyed by meaning without a chain, one claim about where a practice occurs is an unverified personal impression the speaker flags herself, and the striking coincidences both describe as direct answers are an interpretation common in this genre rather than a demonstrated mechanism — worth reading as how conviction gets reinforced rather than as evidence of how it works.',
-    ],
-    practices: [
-      'Audit the company: if the practice slipped when the circle changed, change the circle.',
-      'Open the commentary and read the whole passage before repeating a quotation you saw in a clip.',
-      'Ask whether a practice is being performed or actually agreed to.',
-      'Take instruction from a person you can verify rather than from an algorithmic feed.',
-    ],
+    get hook() { return t('lib.environment-is-fuel.hook'); },
+    get thesis() { return t('lib.environment-is-fuel.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.environment-is-fuel.idea.${i}.name`),
+        body: t(`lib.environment-is-fuel.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.environment-is-fuel.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.environment-is-fuel.practice.${i}`));
+    },
     habits: [
-      { id: 's_quran', because: 'Reading the passage yourself is the verification habit in its ordinary form — the clip is only persuasive while the source stays unopened.' },
-      { id: 'f_meet', because: 'If environment is the input, then who you are actually in a room with is the variable, and it does not change by intention.' },
-      { id: 's_dhikr', because: 'The thing described as needing feeding does not survive on occasional attention, which is what makes the small daily version the load-bearing one.' },
+      { id: 's_quran', get because() { return t('lib.environment-is-fuel.habit.s_quran.because'); } },
+      { id: 'f_meet', get because() { return t('lib.environment-is-fuel.habit.f_meet.because'); } },
+      { id: 's_dhikr', get because() { return t('lib.environment-is-fuel.habit.s_dhikr.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'Their own conclusion is to take it from a verified teacher and a real commentary rather than assembling it from fragments.' },
-      { id: 'q_reconnect', because: 'Changing the circle is the action the environment argument actually points at, and it is done by contacting specific people.' },
+      { id: 'q_learnfaith', get because() { return t('lib.environment-is-fuel.quest.q_learnfaith.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.environment-is-fuel.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Dinde Podcast — Осознанность хиджаба, окружение как топливо имана и таваккуль через причины',
+    get vaultSource() { return t('lib.environment-is-fuel.vaultSource'); },
   },
-
   {
     slug: 'three-sources-of-an-idea',
     attr: 'career',
-    title: 'Your own head is the worst source of an idea',
-    origin: 'Seisembay — investor, on where opportunities come from and when to stop',
+    get title() { return t('lib.three-sources-of-an-idea.title'); },
+    get origin() { return t('lib.three-sources-of-an-idea.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The ideas that feel most like yours are the ones with the worst record.',
-    thesis:
-      'Opportunities arrive from exactly three sources: somebody else\'s validated pain, an event or a piece of news, and your own head — and the third is named as the worst and most dangerous. The claim attached is personal and blunt: the overwhelming majority of businesses he personally started from "great idea" failed. The rule that follows is not to fall in love with your own idea.',
-    ideas: [
-      {
-        name: 'Somebody else\'s pain, already validated',
-        body: 'The strongest source is a problem someone brought to you because they have it — the examples given are founders who started after direct contact with an organisation that had a real, specific operational problem, or after a friend complained about a logistics failure. The validation happened before the idea existed.',
-      },
-      {
-        name: 'Events and news',
-        body: 'The second source is what is changing rather than what is bothering someone. His own example is a large contract found through a small news item — the opportunity was public and available to anyone reading with the right attention.',
-      },
-      {
-        name: 'Four ways to train noticing',
-        body: 'See things differently, do things differently, see different things, do different things — illustrated with a single glass of water yielding different ideas depending on the angle of attention.',
-      },
-      {
-        name: 'Three decisions before choosing a niche',
-        body: 'First, the base decision: are you willing to do this at all, independent of the niche? Second, intention — if the intention is to make money, failures are close to guaranteed; the workable intention is solving someone\'s pain, with money as consequence. Third, belief in the outcome, because without it nobody follows you: people do not follow a salary, they follow meaning.',
-      },
-      {
-        name: 'Obstacles as a filter, and planning backwards',
-        body: 'Someone who does not love the work magnifies small problems and leaves at the first refusal; someone who does minimises them and keeps the large goal in view. So the size obstacles appear to be is a diagnostic. The planning instruction that follows is to decompose backwards from the goal rather than forwards from current resources — his observation being that resources arrive during movement rather than existing beforehand.',
-      },
-    ],
-    notes: [
-      'On building a team: look first at engagement and genuine interest rather than at credentials — stated as the opposite of the instinct to select by diploma.',
-      'A panel of practising entrepreneurs rather than an academic source, hosted by an investor openly promoting his own investment philosophy. That frame is useful but not neutral — he has an obvious interest in presenting his approach as universally correct.',
-      'The specific founder cases are first-hand and checkable; the general claims about faith and luck are personal conviction rather than empirical statements, and the religious framing of belief as a mechanism is explicitly his own.',
-    ],
-    practices: [
-      'Classify any new idea by which of the three sources it came from — and distrust yourself most on the third.',
-      'Before committing, answer the three decisions: willing at all, what the intention is, and whether you actually believe it.',
-      'Read obstacle size as a signal about fit rather than about the obstacle.',
-      'Decompose backwards from the goal instead of forwards from what you currently have.',
-      'Select people by engagement rather than by credential.',
-    ],
+    get hook() { return t('lib.three-sources-of-an-idea.hook'); },
+    get thesis() { return t('lib.three-sources-of-an-idea.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.three-sources-of-an-idea.idea.${i}.name`),
+        body: t(`lib.three-sources-of-an-idea.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.three-sources-of-an-idea.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.three-sources-of-an-idea.practice.${i}`));
+    },
     habits: [
-      { id: 'd_askquestion', because: 'The best source is a problem someone else already has — which only reaches you if you are in the habit of asking about it.' },
-      { id: 'd_read', because: 'The second source is events, and his own example was a small news item nobody else acted on.' },
-      { id: 'c_onelesson', because: 'Training the four ways of noticing is a daily observation practice, and observations that go unwritten do not accumulate.' },
+      { id: 'd_askquestion', get because() { return t('lib.three-sources-of-an-idea.habit.d_askquestion.because'); } },
+      { id: 'd_read', get because() { return t('lib.three-sources-of-an-idea.habit.d_read.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.three-sources-of-an-idea.habit.c_onelesson.because'); } },
     ],
     quests: [
-      { id: 'q_promise', because: 'The three decisions — willingness, intention, belief — stay abstract until something has been said out loud to someone who will remember it.' },
-      { id: 'q_skill', because: 'Planning backwards from the goal produces a list of capabilities you do not yet have, which is where the next concrete skill comes from.' },
+      { id: 'q_promise', get because() { return t('lib.three-sources-of-an-idea.quest.q_promise.because'); } },
+      { id: 'q_skill', get because() { return t('lib.three-sources-of-an-idea.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Сейсембай — Три источника бизнес-идей, найм по вовлечённости и решение о пивоте',
+    get vaultSource() { return t('lib.three-sources-of-an-idea.vaultSource'); },
   },
   {
     slug: 'narrow-then-infinite',
     attr: 'career',
-    title: 'Start in the narrowest real niche, then change modes',
-    origin: 'Alexandr Wang — founder, on market sequencing and hiring for care',
+    get title() { return t('lib.narrow-then-infinite.title'); },
+    get origin() { return t('lib.narrow-then-infinite.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The market that was "obviously too small" is exactly what made speed possible.',
-    thesis:
-      'A deliberate two-mode strategy: begin in the narrowest defensible niche to build real momentum, then consciously switch to searching for markets with no structural ceiling. Both halves are load-bearing, and the mistake is doing either alone — designing for an infinite market on day one, or never leaving the niche that made the early speed possible.',
-    ideas: [
-      {
-        name: 'Early ideas are memetic',
-        body: 'His own diagnosis of his first attempts: young founders\' ideas tend to be copies of whatever is visibly trending, because they lack a developed sense of where they are uniquely positioned to win. The actual founding insight arrived almost accidentally — noticing that every company around them needed the same unglamorous thing.',
-      },
-      {
-        name: 'Both judgements about the niche were true',
-        body: 'An investor called the initial market obviously too small to build anything large on. That was correct — and narrow-and-real was also exactly what allowed them to build fast and reach real scale quickly. The two are not in conflict; they describe different stages.',
-      },
-      {
-        name: 'What makes a credible second act',
-        body: 'He studied the canonical example of a large unrelated-seeming business built on internal capability, and extracts two ingredients: genuine conviction that the underlying market is structurally growing without a ceiling, and real cost advantages from scale — not merely having a capability lying around.',
-      },
-      {
-        name: 'Hire for care, not credentials',
-        body: 'Stated as a direct interview heuristic — and it converges with the same principle arrived at independently by other operators, which is worth more than either statement alone.',
-      },
-      {
-        name: 'Quality is fractal',
-        body: 'Standards do not hold below a level where care about them is visibly modelled above. The consequence for anyone leading anything: the standard is set by what you are seen to care about, not by what you ask for.',
-      },
-    ],
-    notes: [
-      'A practical engineering discipline offered in passing: check whether the simple approach already clears the bar before reaching for the elaborate one.',
-      'A named founder with an obvious incentive to frame his own strategy and leadership favourably, in a friendly rather than adversarial interview — pushback is minimal.',
-      'The concrete business facts are specific and checkable. His geopolitical claims are stated with more confidence than the evidence offered supports, and are best held as one well-placed person\'s judgement rather than as settled.',
-    ],
-    practices: [
-      'Start in the narrowest niche you can actually defend, and accept that it is too small to end in.',
-      'Decide deliberately when to switch modes rather than drifting.',
-      'Before a second act, check both ingredients: no ceiling, and a real cost advantage.',
-      'Interview for whether someone cares, not for what they have completed.',
-      'Model the standard visibly, because it will not hold above the level you are seen to hold it.',
-    ],
+    get hook() { return t('lib.narrow-then-infinite.hook'); },
+    get thesis() { return t('lib.narrow-then-infinite.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.narrow-then-infinite.idea.${i}.name`),
+        body: t(`lib.narrow-then-infinite.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.narrow-then-infinite.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.narrow-then-infinite.practice.${i}`));
+    },
     habits: [
-      { id: 'd_build', because: 'The founding insight came from noticing what everyone around them actually needed — which is visible from inside the building, not from planning.' },
-      { id: 'c_ship', because: 'Quality being fractal means the standard is set by what others see you care about, which requires the work to be seen at all.' },
-      { id: 'c_plan', because: 'Switching modes is a decision that has to be made deliberately at some point, and drift is what happens when nothing is scheduled to ask.' },
+      { id: 'd_build', get because() { return t('lib.narrow-then-infinite.habit.d_build.because'); } },
+      { id: 'c_ship', get because() { return t('lib.narrow-then-infinite.habit.c_ship.because'); } },
+      { id: 'c_plan', get because() { return t('lib.narrow-then-infinite.habit.c_plan.because'); } },
     ],
     quests: [
-      { id: 'q_portfolio', because: 'A narrow, real, finished thing is the evidence that makes the second act credible — the capability has to exist before it can be redeployed.' },
-      { id: 'q_skill', because: 'The two ingredients for a second act are a market read and a genuine cost advantage, and both are capabilities rather than opinions.' },
+      { id: 'q_portfolio', get because() { return t('lib.narrow-then-infinite.quest.q_portfolio.because'); } },
+      { id: 'q_skill', get because() { return t('lib.narrow-then-infinite.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Alexandr Wang — Infinite Markets, the Swarm-of-Agents Manager, and Hiring for Care',
+    get vaultSource() { return t('lib.narrow-then-infinite.vaultSource'); },
   },
-
   {
     slug: 'truth-then-plan',
     attr: 'money',
-    title: 'Truth first. The plan comes after.',
-    origin: 'Rublev — entrepreneur, on debt crisis, boundaries and neutrality',
+    get title() { return t('lib.truth-then-plan.title'); },
+    get origin() { return t('lib.truth-then-plan.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The energy to build the plan does not arrive until after you have told everyone the truth.',
-    thesis:
-      'The account of climbing out of a large cash-flow collapse puts the order deliberately: not a plan first, but public honesty with every creditor — reaching out yourself, naming the real situation and at most a draft plan, rather than waiting until a finished solution exists. His claim is that the energy to build the plan only appears after that step, not before it.',
-    ideas: [
-      {
-        name: 'Reach out first',
-        body: 'The protocol is to contact people rather than hide, and to do it before there is anything good to report. Silence is what converts a solvable situation into an unrecoverable relationship.',
-      },
-      {
-        name: 'Neutrality rather than reconciliation',
-        body: 'His counterintuitive claim: what matters financially is not the state of the relationship with a parent but your internal state about it. He describes the drive to prove something operating as fuel while a relationship was severed, and part of that drive disappearing when it was restored. The goal he proposes is neither restoring the tie for its own sake nor holding on to the injury for its energy, but a neutral state in which proximity or distance stops steering decisions.',
-      },
-      {
-        name: 'The order of the oxygen mask',
-        body: 'An explicit hierarchy — yourself, then partner, then children, then parents, then everyone else — argued through the aircraft metaphor: it is not selfishness but the condition under which helping anyone is sustainable. He applies the same logic to giving.',
-      },
-      {
-        name: 'The garden',
-        body: 'A visualisation: your own space with a fence you set at whatever height you choose. Anyone or anything spending your energy without agreement does not automatically get access, regardless of relation or of what politeness prescribes. Whether to keep distance from a difficult relative is framed as a deliberate boundary decision rather than a moral verdict.',
-      },
-      {
-        name: 'Repeated public giving escalates expectation',
-        body: 'Unbounded, repeated and visible generosity is described as producing the same escalating cycle as any other pattern of help without conditions — offered from his own experience rather than as a theory.',
-      },
-    ],
-    notes: [
-      'The systemic family model he draws on is an alternative, non-evidence-based therapeutic approach, and his causal statements about parents and money are one person\'s narrative reading of a single life rather than a demonstrated mechanism.',
-      'Worth noting across this sector: three different sources here offer three different stories about a father\'s role in financial development, and they do not agree with each other. None is verified. They are best held as three viewpoints rather than as converging evidence.',
-      'A personal, unstructured conversation between acquaintances — not a therapist, not a financial adviser, and he says as much about the limits of his own view.',
-    ],
-    practices: [
-      'Make contact before you have a solution, and say the real number.',
-      'Aim for a neutral internal state rather than for either reconciliation or estrangement.',
-      'Set the height of the fence deliberately, and stop treating access as socially obligatory.',
-      'Put yourself first in the order, because everything downstream depends on it holding.',
-    ],
+    get hook() { return t('lib.truth-then-plan.hook'); },
+    get thesis() { return t('lib.truth-then-plan.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.truth-then-plan.idea.${i}.name`),
+        body: t(`lib.truth-then-plan.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.truth-then-plan.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.truth-then-plan.practice.${i}`));
+    },
     habits: [
-      { id: 'm_owed', because: 'The whole protocol is one message sent before it is comfortable — and it is the same message every month it goes unsent.' },
-      { id: 'm_checkbalance', because: 'Telling the truth to creditors requires knowing the truth first, and avoidance starts with not looking.' },
-      { id: 'm_log', because: 'The collapse he describes began with treating money received as money earned — which a record distinguishes and memory does not.' },
+      { id: 'm_owed', get because() { return t('lib.truth-then-plan.habit.m_owed.because'); } },
+      { id: 'm_checkbalance', get because() { return t('lib.truth-then-plan.habit.m_checkbalance.because'); } },
+      { id: 'm_log', get because() { return t('lib.truth-then-plan.habit.m_log.because'); } },
     ],
     quests: [
-      { id: 'q_debts', because: 'Truth-then-plan needs the truth to exist in one place first: every debt at its real number, before any conversation.' },
-      { id: 'q_hardconversation', because: 'The first step is explicitly a conversation you initiate rather than a plan you finish.' },
+      { id: 'q_debts', get because() { return t('lib.truth-then-plan.quest.q_debts.because'); } },
+      { id: 'q_hardconversation', get because() { return t('lib.truth-then-plan.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Рублёв — Нейтральность к родителям, техника «сад» и правда как первый шаг из долгового кризиса',
+    get vaultSource() { return t('lib.truth-then-plan.vaultSource'); },
   },
   {
     slug: 'name-it-to-lower-it',
     attr: 'friends',
-    title: 'An unnamed feeling runs hotter than a named one',
-    origin: 'Shevchenko — gestalt therapist, on the thought-feeling-body triad',
+    get title() { return t('lib.name-it-to-lower-it.title'); },
+    get origin() { return t('lib.name-it-to-lower-it.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'When the feeling has no name, the body finds a substitute for what you actually needed.',
-    thesis:
-      'Thoughts, feelings and body are treated as one interconnected organism: ignore one part and another compensates. Someone disconnected from their feelings starts explaining decisions rationally — I just need a rest — while the body takes its share through compulsive spending or eating, and the real need is replaced with a substitute.',
-    ideas: [
-      {
-        name: 'Where the vocabulary comes from',
-        body: 'A child does not know the names of their internal states; an adult names them on their behalf — I can see you are upset, I can see you are angry — and through that a vocabulary of feeling is built early. The adult also acts as a container, temporarily holding part of the affect because the child cannot yet carry it alone.',
-      },
-      {
-        name: 'Naming lowers the temperature',
-        body: 'When a feeling stays undifferentiated and unspoken its intensity runs high; saying it — I am angry, this infuriates me — legitimises it and lowers the heat. Immediately usable, and it requires no analysis of where the feeling came from.',
-      },
-      {
-        name: 'Inventory of beliefs',
-        body: 'Beliefs absorbed uncritically from significant adults need periodic review, like going through a wardrobe: which of these are still current and have become values, and which are being kept out of inertia? The worked example is an assumption about qualifications and job security that no longer matches how fast skills now turn over.',
-      },
-      {
-        name: 'Two reasons people arrive',
-        body: 'On her estimate the large majority arrive because they are already at the bottom and cannot manage. The smaller group are broadly fine and want the quality raised — deeper relationships, more freedom. Framing the second as legitimate is the useful part, since it is the one people talk themselves out of.',
-      },
-      {
-        name: 'Small decisions train the large ones',
-        body: 'Asking "do I actually want this?" on ordinary daily choices is offered as the practice that builds the capacity to recognise a desire at all — before it is needed for something that matters.',
-      },
-    ],
-    notes: [
-      'A reframe offered for hard experience: move from "what was this for" in the sense of blame to "what is this for" in the sense of use — presented as the working alternative to a victim position.',
-      'The source also advances a causal claim linking suppressed aggression to a specific category of illness. It rests on five consecutive clients — her own description — rather than on any epidemiological basis, and it is not carried here; a medical claim from a self-selected sample of five is the kind of thing this library exists not to repeat.',
-      'A practising gestalt therapist speaking from clinical work in a long unstructured conversation. Several positions are delivered with conversational confidence but are the personal view of one practitioner rather than consensus, and one physiological explanation is a simplified popularisation useful as metaphor rather than as mechanism.',
-    ],
-    practices: [
-      'Say the feeling out loud before deciding anything while it is running.',
-      'Run the wardrobe check on your beliefs: still mine, or kept out of inertia?',
-      'Ask "do I want this?" on small daily choices, so the answer is available on large ones.',
-      'Treat wanting the quality raised as a sufficient reason, not a luxury.',
-    ],
+    get hook() { return t('lib.name-it-to-lower-it.hook'); },
+    get thesis() { return t('lib.name-it-to-lower-it.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.name-it-to-lower-it.idea.${i}.name`),
+        body: t(`lib.name-it-to-lower-it.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.name-it-to-lower-it.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.name-it-to-lower-it.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'The inventory only happens if it has a slot — beliefs kept out of inertia are exactly the ones that never come up on their own.' },
-      { id: 'b_morningjoy', because: 'A small deliberate pleasure is the "do I actually want this?" question in its daily, low-stakes form.' },
-      { id: 'f_thanks', because: 'Naming something specific out loud is the same muscle as naming a feeling, trained where the stakes are low.' },
+      { id: 'd_review', get because() { return t('lib.name-it-to-lower-it.habit.d_review.because'); } },
+      { id: 'b_morningjoy', get because() { return t('lib.name-it-to-lower-it.habit.b_morningjoy.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.name-it-to-lower-it.habit.f_thanks.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The substitute appears when the real need goes unspoken — and the unspoken need is usually addressed to a particular person.' },
-      { id: 'q_wheel', because: 'The inventory of inherited beliefs is a whole-life audit, which is what scoring the wheel actually is.' },
+      { id: 'q_hardconversation', get because() { return t('lib.name-it-to-lower-it.quest.q_hardconversation.because'); } },
+      { id: 'q_wheel', get because() { return t('lib.name-it-to-lower-it.quest.q_wheel.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Шевченко — Триада мысли-чувства-тело, инвентаризация установок и жетон вместо цели',
+    get vaultSource() { return t('lib.name-it-to-lower-it.vaultSource'); },
   },
-
   {
     slug: 'rupture-and-repair',
     attr: 'family',
-    title: 'Repair, not perfect attunement, is what builds security',
-    origin: 'Allan Schore — on right-brain attachment and regulation theory',
+    get title() { return t('lib.rupture-and-repair.title'); },
+    get origin() { return t('lib.rupture-and-repair.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'The bar was never getting it right every time. It was coming back afterwards.',
-    thesis:
-      'Attachment is psychobiological rather than primarily psychological. The right hemisphere is dominant for roughly the first two to three years, and it is through wordless right-brain-to-right-brain communication — face, voice, gesture — that a caregiver regulates an infant\'s emotional and autonomic states. That early regulation becomes the template later reused for adult relationships, friendships and the therapeutic one: the same circuitry, not an analogy.',
-    ideas: [
-      {
-        name: 'Before words, everything is implicit',
-        body: 'The growth spurt runs from before birth through the second or third year, with the right hemisphere accelerating across that window while the left does not begin its own until the end of it. Because there is no speech yet, everything about attachment in this period is nonverbal and beneath conscious awareness.',
-      },
-      {
-        name: 'Regulation, not just bonding',
-        body: 'The caregiver reads face, voice — prosody rather than words — and gesture, synchronises with the child\'s rising and falling arousal, and then regulates it. That includes down-regulating distress, which classical attachment theory emphasised, and up-regulating positive states like joy and excitement, which it historically under-studied and which he names as a corrective emphasis of his own work.',
-      },
-      {
-        name: 'Misattunement then repair is the mechanism',
-        body: 'A good-enough caregiver inevitably gets it wrong sometimes. What makes attachment secure is returning and resynchronising afterwards. Security is built out of the repair cycle rather than out of unbroken attunement — which makes the standard for any close relationship less perfectionistic than people assume.',
-      },
-      {
-        name: 'Two regulation modes, and access to both',
-        body: 'Auto-regulation is self-soothing alone; interactive regulation is co-regulating with another person, under stress or to share joy. Secure attachment means flexible access to both rather than being stuck in either — which is a usable diagnostic on your own default: under stress, do you move toward people or away?',
-      },
-      {
-        name: 'Widening attention is a learnable move',
-        body: 'The shift away from tracking literal word content toward tone, face and body is described as a specific, practiceable skill rather than an innate trait or a mystical state — directly usable in any conversation where the goal is understanding someone\'s state rather than their argument.',
-      },
-    ],
-    notes: [
-      'His stronger claim is that the right hemisphere is the unconscious mind in a neurobiological rather than metaphorical sense, continuously processing whether it is safe to be with someone, beneath awareness.',
-      'A UCLA figure central to this research programme, and the core claims reflect a decades-long body of work rather than a one-off popular claim. Several specific figures are given without in-episode citation — treat them as pointers to a real literature rather than as verified numbers.',
-      'Where he was uncertain he said so: one physiological question he explicitly declined to settle, and one therapeutic discussion is flagged as speculative by both participants.',
-    ],
-    practices: [
-      'Aim for returning after a rupture rather than for avoiding one.',
-      'Attend to tone, face and body rather than only to the content of the words.',
-      'Notice whether you default to soothing alone or with people, and practise the other one.',
-      'Up-regulate the good states deliberately, not only calm the bad ones.',
-    ],
+    get hook() { return t('lib.rupture-and-repair.hook'); },
+    get thesis() { return t('lib.rupture-and-repair.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.rupture-and-repair.idea.${i}.name`),
+        body: t(`lib.rupture-and-repair.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.rupture-and-repair.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.rupture-and-repair.practice.${i}`));
+    },
     habits: [
-      { id: 'f_voice', because: 'Prosody rather than words is the channel described as carrying the regulation — and it is the one that text removes entirely.' },
-      { id: 'f_meet', because: 'Face, voice and gesture are the whole mechanism, and only one of the three survives a screen.' },
-      { id: 'f_remember', because: 'Attunement is reading the other person\'s state accurately, which starts from having actually registered it last time.' },
+      { id: 'f_voice', get because() { return t('lib.rupture-and-repair.habit.f_voice.because'); } },
+      { id: 'f_meet', get because() { return t('lib.rupture-and-repair.habit.f_meet.because'); } },
+      { id: 'f_remember', get because() { return t('lib.rupture-and-repair.habit.f_remember.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Repair is a specific act of returning after a rupture — which is a conversation, not a decision to feel differently.' },
-      { id: 'q_reconnect', because: 'Interactive regulation requires people to be available, and availability is built before it is needed rather than during.' },
+      { id: 'q_hardconversation', get because() { return t('lib.rupture-and-repair.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.rupture-and-repair.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Schore — Right-Brain Attachment, Regulation Theory and the Roots of Personality',
+    get vaultSource() { return t('lib.rupture-and-repair.vaultSource'); },
   },
   {
     slug: 'speech-markers',
     attr: 'family',
-    title: 'You cannot spot it in the moment. Check the body afterwards.',
-    origin: 'Orlova — psychologist, on manipulation, speech and boundaries',
+    get title() { return t('lib.speech-markers.title'); },
+    get origin() { return t('lib.speech-markers.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'If a motive is open, you can disagree with it. Hidden is what makes it manipulation.',
-    thesis:
-      'Not all influence is manipulation. It becomes so when the motive is concealed and the other person is being handled as an object — moved and used for one party\'s benefit alone. If the motive is stated, the listener can refuse, and it is an honest position rather than a manoeuvre. Recognising it live is close to impossible without a paranoid vigilance that costs more than it saves; the reliable route is analysis afterwards.',
-    ideas: [
-      {
-        name: 'Three focuses in a conversation',
-        body: 'What is happening for me, what is happening for the other person, and what is happening between us. Without the third, a conversation becomes a sequence of monologues where each side waits for a pause to insert their argument rather than listening.',
-      },
-      {
-        name: 'Diagnose after the fact, through the body',
-        body: 'The practical method: did the body change — tightness, disrupted breathing, unexplained tiredness? Did the mood drop sharply, and if so, which sentence started it? The body registers it faster than the analysis does.',
-      },
-      {
-        name: 'Help as a hiding place',
-        body: 'Constant instruction in how to live, combined with a complete unwillingness to accept help in return, is described as establishing oneself through a demonstration of strength over another\'s weakness — avoiding contact with one\'s own vulnerability by permanently improving someone else.',
-      },
-      {
-        name: 'Speech markers',
-        body: 'Passive constructions — it turned out, I had to, it is not working out — shed responsibility for the outcome. "Honestly speaking" is read as the moment the speaker is convincing themselves rather than the listener. And "by the way" is named as a technique: lead someone through medium-weight questions long enough to tire their resistance, then insert the real request as though it were incidental.',
-      },
-      {
-        name: 'The painful question',
-        body: 'When are you getting married, when are you getting promoted — these land on the area where things are currently not going well, producing a light trance and disorientation. The speaker experiences it as care and the recipient as manipulation, especially when it recurs.',
-      },
-    ],
-    notes: [
-      'For people who love you and mean no harm, the recommended move is a direct statement of the discomfort rather than a defence. For people who are aiming at the weak point deliberately, a light redirection back to them rather than justification or attack.',
-      'She describes a recognisable escalation pattern in a dangerous partner — capturing not only time but space, contacts, and financial and educational independence — but this is a heuristic from practice, not a diagnostic checklist, and a real assessment of danger requires more than a list of signs.',
-      'A practising psychologist working phenomenologically, who says outright that she works without templates. That is an honest methodological frame, and it also means nearly all of this is clinical observation rather than research with citable data. One psychodynamic explanation she offers is her reading of specific cases rather than a general law.',
-    ],
-    practices: [
-      'Run the review after the conversation: what did the body do, when did the mood turn, which sentence did it.',
-      'Say the discomfort plainly to people who mean well, instead of defending.',
-      'Listen to your own passive constructions and apologetic filler as a signal to stop and ask what is actually happening.',
-      'Treat a stated motive as a position you may decline, and a hidden one as the actual problem.',
-    ],
+    get hook() { return t('lib.speech-markers.hook'); },
+    get thesis() { return t('lib.speech-markers.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.speech-markers.idea.${i}.name`),
+        body: t(`lib.speech-markers.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.speech-markers.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.speech-markers.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'Her whole method is post-hoc: the pattern only appears when the week\'s conversations get looked at rather than relived.' },
-      { id: 'f_thanks', because: 'Naming something specific and open is the structural opposite of the two-layer sentence she spends the episode taking apart.' },
-      { id: 'f_nogossip', because: 'The hidden motive survives best when the conversation is about someone who cannot answer.' },
+      { id: 'd_review', get because() { return t('lib.speech-markers.habit.d_review.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.speech-markers.habit.f_thanks.because'); } },
+      { id: 'f_nogossip', get because() { return t('lib.speech-markers.habit.f_nogossip.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The recommended move with people who love you is a direct statement of the discomfort — which is the conversation that keeps getting postponed.' },
+      { id: 'q_hardconversation', get because() { return t('lib.speech-markers.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Орлова — Манипуляция, речевые маркеры и границы',
+    get vaultSource() { return t('lib.speech-markers.vaultSource'); },
   },
-
   {
     slug: 'fear-as-fuel',
     attr: 'development',
-    title: 'Craving and dread run on the same chemistry',
-    origin: 'Andrew Huberman — on fear as fuel, no-go circuits and mentors',
+    get title() { return t('lib.fear-as-fuel.title'); },
+    get origin() { return t('lib.fear-as-fuel.origin'); },
     medium: 'podcast',
     minutes: 7,
-    hook: 'The agitation you read as a signal to back off is the same molecule that drives pursuit switching on.',
-    thesis:
-      'Motivation and fear run through one pathway — dopamine metabolises into adrenaline — so craving and dread are cousins rather than opposites, and treating fear only as a cue to retreat discards a real source of drive. Discipline, correspondingly, is less about raw will than about using the body to redirect the mind and training a specific, separate skill: suppressing an impulse on command.',
-    ideas: [
-      {
-        name: 'Activation is not a verdict',
-        body: 'Dopamine\'s role is craving and pursuit rather than pleasure itself. Because it metabolises into the molecule underlying fear, agitation and a raised heart rate when you want something are the pursuit system switching on. Reading that activation as a cue to freeze is a learned interpretation rather than a biological necessity, which means it can be relearned.',
-      },
-      {
-        name: 'Both directions are legitimate',
-        body: 'Moving toward — love, joy, gratitude — and moving away from — fear, craving — are both real motivational paths. Treating only the first as valid is named explicitly as a mistake rather than a virtue.',
-      },
-      {
-        name: 'No-go circuits train like a muscle',
-        body: 'Suppressing an impulse on command is a distinct neural skill that strengthens with repeated small practice. His version is a rough daily quota of resisting one low-stakes impulse — usually reaching for the phone — which trains impulse control directly rather than through shame or willpower framing.',
-      },
-      {
-        name: 'REM as nightly exposure',
-        body: 'Later-night sleep carries the emotional load of recent days. During REM the body is atonic while the nervous system runs emotionally intense material with adrenaline release blocked — functioning like built-in exposure therapy. Deprived of that stage, people report small things weighing more. You do not erase a memory; you uncouple it from its emotional charge.',
-      },
-      {
-        name: 'Structure creates freedom, and success erodes it',
-        body: 'The paradox named: success brings more distraction rather than less, so protecting focused blocks gets harder exactly when it matters most. When the routine slips as things improve, that is expected rather than a personal failure — the move is to rebuild quickly instead of interrogating it.',
-      },
-      {
-        name: 'A committee rather than a role model',
-        body: 'Where a mentor is not available, name two or three people — met or known only through their work — and the single specific trait each represents, instead of searching for one complete example to copy.',
-      },
-    ],
-    notes: [
-      'Deliberate visualisation of something wanted, phone away, for a few minutes, is offered as a way to observe and train this chemistry rather than waiting for motivation to appear.',
-      'Private journaling nobody will read is suggested as a low-cost stand-in between sessions or where therapy is unavailable — explicitly not written for an imagined reader.',
-      'Same credentialed neuroscientist, same informal long-form format. Several items here are his own frameworks offered as personal tools rather than findings: the daily quota, the committee, and his framing of REM as built-in exposure therapy are his synthesis, though the underlying sleep science is real and the collaborators named are verifiable.',
-    ],
-    practices: [
-      'Reinterpret pre-action agitation as the pursuit system engaging rather than as a stop signal.',
-      'Practise refusing one small impulse repeatedly through the day, on a rough quota.',
-      'Protect the later-night sleep that carries the emotional processing.',
-      'Name two or three people and the one trait each represents, instead of hunting for a complete model.',
-      'Rebuild the structure fast when it slips, rather than treating the slip as evidence about you.',
-    ],
+    get hook() { return t('lib.fear-as-fuel.hook'); },
+    get thesis() { return t('lib.fear-as-fuel.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.fear-as-fuel.idea.${i}.name`),
+        body: t(`lib.fear-as-fuel.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.fear-as-fuel.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.fear-as-fuel.practice.${i}`));
+    },
     habits: [
-      { id: 'f_nodoom', because: 'The no-go practice needs one specific low-stakes impulse to train on, and reaching for the phone is the one he names.' },
-      { id: 'h_lightsout', because: 'The emotional processing happens in the later part of the night — which is exactly the part a late bedtime removes.' },
-      { id: 'c_plan', because: 'Structure is described as what creates freedom, and it erodes precisely when things are going well unless something re-establishes it.' },
+      { id: 'f_nodoom', get because() { return t('lib.fear-as-fuel.habit.f_nodoom.because'); } },
+      { id: 'h_lightsout', get because() { return t('lib.fear-as-fuel.habit.h_lightsout.because'); } },
+      { id: 'c_plan', get because() { return t('lib.fear-as-fuel.habit.c_plan.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'Rebuilding quickly after a slip is only possible if there was a defined structure to return to.' },
-      { id: 'q_skill', because: 'Fear as fuel is unusable in the abstract — it needs one thing you actually want badly enough to feel the activation about.' },
+      { id: 'q_habitsystem', get because() { return t('lib.fear-as-fuel.quest.q_habitsystem.because'); } },
+      { id: 'q_skill', get because() { return t('lib.fear-as-fuel.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Huberman — Fear as Fuel, No-Go Circuits and the Committee of Mentors',
+    get vaultSource() { return t('lib.fear-as-fuel.vaultSource'); },
   },
   {
     slug: 'the-choice-makes-you',
     attr: 'development',
-    title: 'You make the choice, and the choice makes you',
-    origin: 'Asmolov — psychologist, on the act, individuality and forgetting',
+    get title() { return t('lib.the-choice-makes-you.title'); },
+    get origin() { return t('lib.the-choice-makes-you.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Personality is not found by looking inward. It is produced by acting.',
-    thesis:
-      'Personality forms through the act rather than through introspection — a thought becomes itself only when it turns into action. The three-step formula: you are born an individual, you become a person by absorbing society\'s roles and rules, and you assert individuality when you begin choosing roles rather than living out ones handed to you. And the choosing runs both ways: you make the choice, and the choice makes you.',
-    ideas: [
-      {
-        name: 'Self-creation through self-action',
-        body: 'Each act produces not only a result but the person acting. You make yourself through your own particular actions rather than through analysis of an inner world in a closed loop. The failure mode named is living by guess-and-please — becoming an adapter fitted to other people\'s expectations.',
-      },
-      {
-        name: 'The third step is choosing the role',
-        body: 'Becoming a person means absorbing social roles; individuality begins when you stop merely performing the ones assigned and start selecting and creating them. The distinction is between playing roles and choosing which to play.',
-      },
-      {
-        name: 'A choice is a formative event',
-        body: 'Not a neutral decision point but something that constitutes identity — which reframes the question before a large decision from what am I choosing to who will this choice make me.',
-      },
-      {
-        name: 'Loneliness and solitude are opposites',
-        body: 'Loneliness is imposed; solitude is chosen, the state in which you find yourself decent company. They look similar from outside and are structurally opposed — and the claim underneath is that nobody communicates only with themselves anyway; even the hermit is in dialogue with the world.',
-      },
-      {
-        name: 'The art of forgetting',
-        body: 'Humans are described as the only creature able to put down the weight of their own biography and remake themselves. That is presented not as a weakness of memory but as a separate and difficult skill — part of healthy development is being able to stop carrying the past as the explanation for present behaviour.',
-      },
-      {
-        name: 'Trust maps to values, not to goals',
-        body: 'Trust extends to those whose value-and-motive pattern matches yours, rather than those whose objectives currently coincide. Shared goals are temporary; the pattern is what holds when they diverge.',
-      },
-    ],
-    notes: [
-      'Projection is described as constructing the other person rather than merely describing them — the traits you look for tend to appear.',
-      'A recognised psychologist with a long teaching record, in a free philosophical conversation rather than a scientific report. Much of the material is his own metaphor, literary taste and recollection rather than empirical data.',
-      'The thinkers and concepts he cites are real and independently checkable. One widely repeated anthropological claim he uses is popular and frequently quoted but not rigorously verified.',
-    ],
-    practices: [
-      'Before a large decision, ask who the choice will make you, not only what it gets you.',
-      'Test whether your current state is imposed loneliness or chosen solitude, because they need opposite responses.',
-      'Check trust against a shared pattern of values rather than a current alignment of goals.',
-      'Stop requiring yourself to keep re-examining the past as the explanation for the present.',
-      'Turn the thought into an act, since that is where it becomes yours.',
-    ],
+    get hook() { return t('lib.the-choice-makes-you.hook'); },
+    get thesis() { return t('lib.the-choice-makes-you.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-choice-makes-you.idea.${i}.name`),
+        body: t(`lib.the-choice-makes-you.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-choice-makes-you.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-choice-makes-you.practice.${i}`));
+    },
     habits: [
-      { id: 'd_build', because: 'The claim is that the act produces the actor — which makes building with the thing the only version of learning that changes anything.' },
-      { id: 'd_nopassive', because: 'Guess-and-please is consumption of other people\'s expectations; making something first is the structural opposite.' },
-      { id: 'c_onelesson', because: 'If each act produces the actor, then noticing what you actually did is how the production becomes visible instead of accidental.' },
+      { id: 'd_build', get because() { return t('lib.the-choice-makes-you.habit.d_build.because'); } },
+      { id: 'd_nopassive', get because() { return t('lib.the-choice-makes-you.habit.d_nopassive.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.the-choice-makes-you.habit.c_onelesson.because'); } },
     ],
     quests: [
-      { id: 'q_promise', because: 'A choice that constitutes identity has to be made somewhere it cannot be quietly withdrawn — which is what a public commitment is.' },
-      { id: 'q_wheel', because: 'Choosing roles rather than performing inherited ones requires first seeing which ones you are currently living out.' },
+      { id: 'q_promise', get because() { return t('lib.the-choice-makes-you.quest.q_promise.because'); } },
+      { id: 'q_wheel', get because() { return t('lib.the-choice-makes-you.quest.q_wheel.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Асмолов — Личность, поступок и искусство забывания',
+    get vaultSource() { return t('lib.the-choice-makes-you.vaultSource'); },
   },
-
   {
     slug: 'build-backward-from-the-ending',
     attr: 'brightness',
-    title: 'Know the ending before you write the beginning',
-    origin: 'Eric Edson — screenwriting professor, on structure and goal sequences',
+    get title() { return t('lib.build-backward-from-the-ending.title'); },
+    get origin() { return t('lib.build-backward-from-the-ending.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'Writing forward without knowing where it lands is named as the direct cause of drafts abandoned halfway.',
-    thesis:
-      'Structure is not a constraint imposed on creativity but how the mind processes story, and on this account it has not changed in millennia. Three elements are non-negotiable: a sympathetic and physically active hero, a visible high-stakes goal, and a powerful adversary. Visual storytelling has no narrator, so interior states can only be shown through external behaviour in pursuit of something.',
-    ideas: [
-      {
-        name: 'Structure is psychology, not convention',
-        body: 'The argument opens on a play two and a half thousand years old, read against the same framework used on modern hits — because story-processing has not changed. Structure exists because life is chaotic and ambiguous, and story is the ritual that turns it into meaning.',
-      },
-      {
-        name: 'The adversary is where conflict actually comes from',
-        body: 'Defined as the character most committed to stopping the hero. Without one there is no story — only someone wanting something and getting it. This is the element most often missing from a draft that feels flat despite a clear goal.',
-      },
-      {
-        name: 'Every character helps or hinders',
-        body: 'The fourteen character roles all serve one function: helping or obstructing the pursuit. A character doing neither is not meaningful and should be cut unless purely atmospheric — offered directly as the antidote to thin subplots.',
-      },
-      {
-        name: 'The hero goal sequence',
-        body: 'His own contribution: a short unit in which the hero pursues one immediate goal, hits fresh news that ends that goal, and launches the next. It gives a countable structural unit rather than a general sense of pacing.',
-      },
-      {
-        name: 'Build backward',
-        body: 'Before writing anything you need the idea — hero, goal, adversary — the ending as the emotional target of the final scene, and roughly where the two largest reversals will land. Writing forward without the ending is named as the specific cause of drafts abandoned mid-way.',
-      },
-    ],
-    notes: [
-      'Hold the quantitative claim with real scepticism, as the source assessment does: the assertion that successful films reliably contain a near-fixed count of these units per act is an extremely strong, falsifiable claim in a creative domain, arrived at by counting sequences retroactively in films already known to have succeeded. The unit is useful; the count is not evidence.',
-      'This sits on the opposite side of a genuine professional disagreement from the Truby entry in this same sector: Edson builds explicitly on the three-act paradigm and cites its earlier names approvingly, while Truby dismisses that paradigm outright as fabricated. Both are credentialed working educators. The dispute is real and unresolved rather than a case of one being uninformed — reading both is the point.',
-      'A screenwriting professor teaching a graduate seminar, drawing on his own published textbook; the core framework is consistent with mainstream pedagogy in the field.',
-    ],
-    practices: [
-      'Name the adversary explicitly. If there is not one, that is the problem rather than the pacing.',
-      'Decide the ending before writing toward it.',
-      'Cut any character who neither helps nor hinders the pursuit.',
-      'Diagnose a stalled draft by counting real turning points per section rather than by feeling something is off.',
-    ],
+    get hook() { return t('lib.build-backward-from-the-ending.hook'); },
+    get thesis() { return t('lib.build-backward-from-the-ending.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.build-backward-from-the-ending.idea.${i}.name`),
+        body: t(`lib.build-backward-from-the-ending.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.build-backward-from-the-ending.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.build-backward-from-the-ending.practice.${i}`));
+    },
     habits: [
-      { id: 'c_plan', because: 'Building backward is a planning act that has to happen before the making, not during it — which means it needs its own slot.' },
-      { id: 'd_notes', because: 'The countable unit is only usable if you have written the structure of things you have consumed down in the same terms.' },
-      { id: 'd_read', because: 'The claim that the shape is ancient is checkable, and checking it requires reading old material rather than taking it on trust.' },
+      { id: 'c_plan', get because() { return t('lib.build-backward-from-the-ending.habit.c_plan.because'); } },
+      { id: 'd_notes', get because() { return t('lib.build-backward-from-the-ending.habit.d_notes.because'); } },
+      { id: 'd_read', get because() { return t('lib.build-backward-from-the-ending.habit.d_read.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'Knowing the ending in advance only pays off in a piece carried to that ending.' },
-      { id: 'q_portfolio', because: 'Whether the structure actually held is answered by other people meeting the finished thing, not by the outline.' },
+      { id: 'q_makeweekly', get because() { return t('lib.build-backward-from-the-ending.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.build-backward-from-the-ending.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Edson — Screenplay Structure and the Hero Goal Sequence',
+    get vaultSource() { return t('lib.build-backward-from-the-ending.vaultSource'); },
   },
-
   {
     slug: 'check-the-adjacent-markers',
     attr: 'health',
-    title: 'Nothing in the body works in isolation',
-    origin: 'Kononenko — physician and nutritionist, on fatigue and deficiencies',
+    get title() { return t('lib.check-the-adjacent-markers.title'); },
+    get origin() { return t('lib.check-the-adjacent-markers.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Taking iron on the strength of one number is the reason the deficiency comes back in six months.',
-    thesis:
-      'The methodological claim is differential diagnosis rather than self-prescription: almost any popular recommendation works only where that specific deficiency has actually been identified, and an excess of a nominally beneficial substance can itself become the harm. The body is described as an interconnected system in which no single marker means anything alone.',
-    ideas: [
-      {
-        name: 'Fatigue is a sequence to work through, not a diagnosis',
-        body: 'The order given: exclude chronic viral causes, then chronic stress, then deficiencies — water, macro- and micronutrients. Dehydration of even a per cent or two is cited as measurably reducing cognitive and physical function, with individual water needs scaled to body weight rather than a universal figure, and a meaningful share arriving through food and metabolism.',
-      },
-      {
-        name: 'Why iron alone fails',
-        body: 'Before supplementing on one result, the adjacent markers have to be checked: zinc, which antagonises it; total protein, since the carriers are proteins rather than iron itself; the B vitamins involved in producing red cells before iron is incorporated; stomach acidity, which governs absorption from plant sources; and gut flora, where overgrowth can consume it. Without that, the familiar pattern follows — a course taken, and the deficiency back within months.',
-      },
-      {
-        name: 'Aging theories are shifting from damage to excess',
-        body: 'The move described is away from loss-of-function models — oxidative stress, telomere shortening — toward excess function, meaning hyperactivity of growth signalling. That changes the practical advice toward fewer eating occasions and attention to overall intake rather than only toward fighting free radicals.',
-      },
-      {
-        name: 'Cooking method as a lever',
-        body: 'Boiling, stewing and low-temperature baking are preferred over frying, with prolonged frying of coated protein singled out — a change of method rather than of ingredients.',
-      },
-      {
-        name: 'Two changes that need no diagnostics',
-        body: 'Remove snacking and move the last meal earlier. Both are low-risk and reproducible without waiting for any test results.',
-      },
-    ],
-    notes: [
-      'A basic panel worth having in hand is named — glucose, glycated haemoglobin, insulin, a lipid profile, total protein, urea and uric acid — as an addition to whatever a routine check already covers.',
-      'Worth reading against the strength-training entry in this sector, which gives a protein target as a general reference: this source raises the opposite concern, that intake above average warrants measuring the breakdown products rather than assuming them harmless. Neither is wrong — one is addressing training adaptation and the other cumulative load, and the right number depends on which problem you have.',
-      'A practising physician with a doctorate and fifteen years of practice, citing studies and meta-analyses by year but without titles or authors — the specific percentages quoted cannot be independently checked from the conversation.',
-      'She marks her own clinical observations as practical experience rather than controlled findings, and presents one aging theory as a competing position rather than consensus. That separation is worth noting as a mark of care, not a hedge.',
-    ],
-    practices: [
-      'Check the adjacent markers before supplementing anything on the strength of one number.',
-      'Work fatigue as a sequence — viral, then stress, then deficiency — rather than guessing at the end of it.',
-      'Scale water to your own body weight rather than to a universal figure.',
-      'Change the cooking method before changing the ingredients.',
-      'Drop snacking and move the last meal earlier, which needs no test to justify.',
-    ],
+    get hook() { return t('lib.check-the-adjacent-markers.hook'); },
+    get thesis() { return t('lib.check-the-adjacent-markers.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.check-the-adjacent-markers.idea.${i}.name`),
+        body: t(`lib.check-the-adjacent-markers.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.check-the-adjacent-markers.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.check-the-adjacent-markers.practice.${i}`));
+    },
     habits: [
-      { id: 'h_water', because: 'A shortfall of a per cent or two already costs cognitive and physical function, which makes this the cheapest intervention on the whole list.' },
-      { id: 'h_nolate', because: 'Moving the last meal earlier is one of the two changes she says need no diagnostics at all.' },
-      { id: 'h_realmeal', because: 'Complex sources sustain energy while simple ones deepen the fatigue through the day — which is decided one meal at a time.' },
+      { id: 'h_water', get because() { return t('lib.check-the-adjacent-markers.habit.h_water.because'); } },
+      { id: 'h_nolate', get because() { return t('lib.check-the-adjacent-markers.habit.h_nolate.because'); } },
+      { id: 'h_realmeal', get because() { return t('lib.check-the-adjacent-markers.habit.h_realmeal.because'); } },
     ],
     quests: [
-      { id: 'q_healthcheck', because: 'The whole argument is that a single marker means nothing — which requires the panel to exist before any decision gets made from it.' },
-      { id: 'q_energyaudit', because: 'Chronic stress sits second in her sequence, and it is the step most likely to be skipped without a record of where the week goes.' },
+      { id: 'q_healthcheck', get because() { return t('lib.check-the-adjacent-markers.quest.q_healthcheck.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.check-the-adjacent-markers.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Кононенко — Хроническая усталость, дефициты, теории старения и опасность избытка белка',
+    get vaultSource() { return t('lib.check-the-adjacent-markers.vaultSource'); },
   },
-
   {
     slug: 'message-in-a-bottle',
     attr: 'career',
-    title: 'An agent has no intuition to fill your gaps',
-    origin: 'Jack Clark — on agentic tools, specification and what stays scarce',
+    get title() { return t('lib.message-in-a-bottle.title'); },
+    get origin() { return t('lib.message-in-a-bottle.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The burden of detail moves entirely onto the instruction, because nothing on the other end will guess what you meant.',
-    thesis:
-      'The practical distinction is between something that responds in one exchange and something that takes an instruction and acts over time using tools. That shift moves the burden of specification: a human colleague fills gaps from context and shared intuition, and an agent does not, so vague instructions produce work that looks right and is not.',
-    ideas: [
-      {
-        name: 'Have it interview you into a spec',
-        body: 'His own fix for the gap problem: rather than issuing a casual instruction, he had the tool interview him about what he actually wanted, turned that interview into a detailed specification, and handed the specification over instead. The generalisable move is producing the spec through questioning rather than trying to write it cold.',
-      },
-      {
-        name: 'Where the apparent problem-solving comes from',
-        body: 'The account given is that training inside environments where problems must actually be solved — including hitting dead ends and resetting — is what produces behaviour resembling intuition, rather than scale alone.',
-      },
-      {
-        name: 'Delegate everything outside the two to four real hours',
-        body: 'The work-design filter that falls out of it: identify the hours in a day that are genuinely creative and high-value, and deliberately delegate the rest — scheduling, documentation, first-pass research — rather than spreading attention evenly across all of it.',
-      },
-      {
-        name: 'Judgement is the thing that gets scarcer',
-        body: 'Taste and judgement are named as what to protect and grow deliberately, precisely because this kind of automation devalues it fastest for people who have not developed it and rewards it most for those who have.',
-      },
-      {
-        name: 'The disruption does not have a natural end',
-        body: 'The tension the conversation keeps returning to: individual productivity gains are immediate and real, while the economic effects are diffuse, uneven and — unlike previous shocks — not time-limited, because the underlying capability keeps improving.',
-      },
-    ],
-    notes: [
-      'A senior insider with an obvious institutional interest in framing his own organisation favourably; claims about internal practice are self-reported and unaudited.',
-      'What makes this more balanced than a friendly interview: the interviewer pushes back substantively throughout — on incentives, on the claim that time does not heal a compounding disruption, on the absence of any public agenda — and the disagreements are left unresolved rather than smoothed over.',
-      'Predictions about which work is affected and on what timeline are speculative by nature, and both speakers say so.',
-    ],
-    practices: [
-      'Produce the specification by being interviewed into it, rather than writing a one-line instruction and hoping.',
-      'Name the two to four genuinely creative hours in your day and defend them; delegate the rest deliberately.',
-      'Invest in judgement as the durable skill, since it is the one that stops being cheap.',
-      'Assume no gap will be filled from context that you did not state.',
-    ],
+    get hook() { return t('lib.message-in-a-bottle.hook'); },
+    get thesis() { return t('lib.message-in-a-bottle.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.message-in-a-bottle.idea.${i}.name`),
+        body: t(`lib.message-in-a-bottle.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.message-in-a-bottle.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.message-in-a-bottle.practice.${i}`));
+    },
     habits: [
-      { id: 'c_deepblock', because: 'The two-to-four-hours filter is worthless as an observation and useful as a defended block in the calendar.' },
-      { id: 'c_plan', because: 'Deciding in advance what gets delegated is the only version of that decision that survives a busy morning.' },
-      { id: 'd_build', because: 'Judgement about these tools is not acquirable by reading about them — it comes from having built something and seen where it broke.' },
+      { id: 'c_deepblock', get because() { return t('lib.message-in-a-bottle.habit.c_deepblock.because'); } },
+      { id: 'c_plan', get because() { return t('lib.message-in-a-bottle.habit.c_plan.because'); } },
+      { id: 'd_build', get because() { return t('lib.message-in-a-bottle.habit.d_build.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'If judgement is what stays scarce, it has to be deliberately trained on something concrete rather than accumulated by exposure.' },
-      { id: 'q_portfolio', because: 'Taste is demonstrated rather than asserted, which requires the work to be somewhere it can be seen.' },
+      { id: 'q_skill', get because() { return t('lib.message-in-a-bottle.quest.q_skill.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.message-in-a-bottle.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Jack Clark — Agentic AI, the O-Ring Economy, and the Missing Public AI Agenda',
+    get vaultSource() { return t('lib.message-in-a-bottle.vaultSource'); },
   },
-
   {
     slug: 'against-essentialism',
     attr: 'spirituality',
-    title: 'A tradition is not a set of rules everyone shares',
-    origin: 'Alekseev — historian, on Islam as a discursive tradition',
+    get title() { return t('lib.against-essentialism.title'); },
+    get origin() { return t('lib.against-essentialism.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'The predictive power was never in the label. It is in the particular school, community and person.',
-    thesis:
-      'An academic rather than theological account of why explaining behaviour by group membership is methodologically risky. The unity of a large tradition is not found in shared practice or in a shared theological picture — the norms are understood differently and sometimes in mutually exclusive ways. The unity is that these varied and even contradictory practices are all made sense of by their holders through the tradition\'s own categories.',
-    ideas: [
-      {
-        name: 'The discursive tradition',
-        body: 'Different, even conflicting practices are related to one another not by a common canon but by all being understood in reference to the same tradition — either directly as belonging to it, or, where they look like they do not, still being evaluated against a personal sense of what it requires and approved or condemned on that basis.',
-      },
-      {
-        name: 'Why the label predicts nothing',
-        body: 'The practical consequence stated plainly: the tradition as such gives no predictive power. What predicts is the specific theological school, the specific community, the specific person. Any explanation that stops at the label has skipped the part doing the work.',
-      },
-      {
-        name: 'Effort, not war',
-        body: 'The term commonly translated as holy war literally means effort or striving, and classical jurisprudence recognises a broad concept — of the tongue, of the soul, of the heart, with the last named in several traditions as the greater form against the lesser one of the sword.',
-      },
-      {
-        name: 'Forced conversion is void',
-        body: 'Even restricting the term to its military sense, the doctrine does not permit compelling conversion: it is prohibited in the text, and an acceptance obtained by force is legally invalid. The stated aim of the doctrine is political dominance of the community rather than universal conversion by force.',
-      },
-      {
-        name: 'Protected status and religious autonomy',
-        body: 'Non-Muslims under Muslim rule retained internal religious autonomy and lived under their own law in exchange for a specific tax — assessed by the lecturer as an early case of tolerance fixed within a religious legal framework itself rather than arising situationally.',
-      },
-      {
-        name: 'The essentialism check',
-        body: 'Generalised beyond religion: before accepting "because that is how it is done among X", ask whether that is the only factor or one of several competing ones, and whether it has been tested against a comparison that isolates the variable.',
-      },
-    ],
-    notes: [
-      'The unity of worldly and religious life is traced to the structure of the pre-Islamic society the tradition emerged from rather than presented as an innovation.',
-      'On radicalisation the lecturer states directly that there is no scholarly consensus — an epistemically careful position rather than a settled answer, and worth taking at face value.',
-      'A named specialist affiliated with recognised research institutions, openly self-critical about his own discipline\'s history. The lecture also contains a political opinion on a European legal question which he himself qualifies as outside his expertise; it is left out here for that reason rather than reported as part of the scholarship.',
-    ],
-    practices: [
-      'Ask which school, community or person a claim actually comes from before treating it as what the tradition says.',
-      'Run the essentialism check on any explanation that rests on group membership, in any domain.',
-      'Look for the pre-existing structure a practice emerged from before calling it an innovation.',
-      'Accept "there is no consensus" as an answer where the specialist says so.',
-    ],
+    get hook() { return t('lib.against-essentialism.hook'); },
+    get thesis() { return t('lib.against-essentialism.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.against-essentialism.idea.${i}.name`),
+        body: t(`lib.against-essentialism.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.against-essentialism.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.against-essentialism.practice.${i}`));
+    },
     habits: [
-      { id: 'd_read', because: 'The whole argument is that the specific source is where the meaning sits — which requires reading it rather than the summary of it.' },
-      { id: 'd_notes', because: 'Restating a position in your own words is where you discover whether you have understood a school\'s view or a slogan about it.' },
-      { id: 'd_askquestion', because: 'The essentialism check is literally a question asked of a claim that would otherwise pass unexamined.' },
+      { id: 'd_read', get because() { return t('lib.against-essentialism.habit.d_read.because'); } },
+      { id: 'd_notes', get because() { return t('lib.against-essentialism.habit.d_notes.because'); } },
+      { id: 'd_askquestion', get because() { return t('lib.against-essentialism.habit.d_askquestion.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'His central point is that the label carries no information and the particular tradition carries all of it — which is an argument for studying one thing properly rather than collecting impressions.' },
+      { id: 'q_learnfaith', get because() { return t('lib.against-essentialism.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Алексеев — Ислам как дискурсивная традиция, джихад без принуждения и ловушка эссенциализма',
+    get vaultSource() { return t('lib.against-essentialism.vaultSource'); },
   },
-
   {
     slug: 'three-solutions-to-debt',
     attr: 'money',
-    title: 'A large national debt has exactly three exits',
-    origin: 'Vyugin — economist, on debt, inflation and a two-pole world',
+    get title() { return t('lib.three-solutions-to-debt.title'); },
+    get origin() { return t('lib.three-solutions-to-debt.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Growth, default, or inflation. There is no fourth road — which tells you what to expect.',
-    thesis:
-      'A framework for reading macroeconomic news rather than a personal-finance method: the problem of a large sovereign debt is solved in exactly three ways — fast sustained growth, default, or inflation. There is no fourth. Once that is fixed, the question about any indebted state becomes which of the three is politically available to it, and the answer is usually predictable.',
-    ideas: [
-      {
-        name: 'Reserve status is a burden as well as a privilege',
-        body: 'The mechanism described: reserve-currency status holds a currency artificially strong, which prices domestic labour out of competitiveness and moves manufacturing abroad, leaving behind only sectors where labour cost is not decisive. The dependence of critical supply chains on external links then gets read as a strategic risk rather than an efficiency.',
-      },
-      {
-        name: 'Why the default option is closed',
-        body: 'Default on sovereign obligations is treated as politically impossible for the largest issuer, because it would undermine confidence in the entire system. A softer variant — converting debt into very long-dated near-zero-coupon paper — is described as having been discussed and rejected: a deferral onto later generations rather than a solution.',
-      },
-      {
-        name: 'Inflation as the path of least resistance',
-        body: 'Which leaves the third exit. Cheaper debt service through lower rates predictably feeds inflation — bad for the population, and politically more acceptable than the alternatives. The prediction is offered as a scenario rather than a forecast.',
-      },
-      {
-        name: 'De-dollarisation means a smaller share, not a replacement',
-        body: 'The term is deflated: what is actually happening is a reduction in share rather than the arrival of a substitute. Reading it as replacement produces expectations the data does not support.',
-      },
-      {
-        name: 'Do not read institutional moves as a personal signal',
-        body: 'Simultaneous rises across gold, equities and crypto are described as the movement of very large institutional money, and specifically not as an investment signal addressed to a private individual.',
-      },
-    ],
-    notes: [
-      'A gravity model of economic positioning is offered for reading how a mid-sized economy sits relative to large neighbours — useful as a frame rather than as a prediction.',
-      'On anxiety about events you do not control, his practical line is to feed the mind with tasks rather than with doubts, and switch to something concrete and completable.',
-      'A practising economist with senior regulatory and central-banking experience who states plainly where he is speaking as a personal view or a hypothesis rather than from expertise. The forward-looking material is explicitly framed as scenarios with stated uncertainty, and one explanation of a country\'s technological trajectory is his own political reading rather than a settled account.',
-    ],
-    practices: [
-      'Read any sovereign-debt story by asking which of the three exits is politically available.',
-      'Treat "de-dollarisation" claims as questions about share rather than about replacement.',
-      'Do not convert a broad institutional asset move into a personal buying signal.',
-      'When macro anxiety rises, switch to a concrete completable task rather than to more analysis.',
-    ],
+    get hook() { return t('lib.three-solutions-to-debt.hook'); },
+    get thesis() { return t('lib.three-solutions-to-debt.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.three-solutions-to-debt.idea.${i}.name`),
+        body: t(`lib.three-solutions-to-debt.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.three-solutions-to-debt.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.three-solutions-to-debt.practice.${i}`));
+    },
     habits: [
-      { id: 'm_payday', because: 'If inflation is the politically likeliest exit, then money that sits still loses quietly — which makes the automatic transfer a defence rather than a virtue.' },
-      { id: 'm_nodebt', because: 'The same mechanism that erodes a state\'s debt does not erode yours: household borrowing is priced against it in advance.' },
-      { id: 'm_subs', because: 'Inflation is felt first in recurring charges, which drift upward without a decision being made anywhere.' },
+      { id: 'm_payday', get because() { return t('lib.three-solutions-to-debt.habit.m_payday.because'); } },
+      { id: 'm_nodebt', get because() { return t('lib.three-solutions-to-debt.habit.m_nodebt.because'); } },
+      { id: 'm_subs', get because() { return t('lib.three-solutions-to-debt.habit.m_subs.because'); } },
     ],
     quests: [
-      { id: 'q_emergencyfund', because: 'The buffer is what makes macro turbulence survivable at household scale, where none of the three exits are available to you.' },
-      { id: 'q_debts', because: 'Reading the three exits properly means noticing which of them applies to your own balance — and only one of them does.' },
+      { id: 'q_emergencyfund', get because() { return t('lib.three-solutions-to-debt.quest.q_emergencyfund.because'); } },
+      { id: 'q_debts', get because() { return t('lib.three-solutions-to-debt.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Вьюгин — Двухполярный мир, инфляция как путь наименьшего сопротивления и теория гравитации',
+    get vaultSource() { return t('lib.three-solutions-to-debt.vaultSource'); },
   },
-
   {
     slug: 'the-formula-is-memory',
     attr: 'brightness',
-    title: 'The epithet is not decoration. It is scaffolding.',
-    origin: 'Zakharyan — on Homer, oral tradition and formula theory',
+    get title() { return t('lib.the-formula-is-memory.title'); },
+    get origin() { return t('lib.the-formula-is-memory.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'Knowing how oral epic is built is the difference between reading it and abandoning it in book two.',
-    thesis:
-      'The Homeric poems are dictated rather than written — oral composition by singers, recorded much later, with "Homer" most likely a name that a rich tradition converged on rather than a documented person. Three archaic barriers stop a modern reader: the form, which is built for a singer\'s memory rather than for literary effect; the optics, which do not rank detail by importance; and the language, which any translation archaises further.',
-    ideas: [
-      {
-        name: 'The question was settled in the field, not in the study',
-        body: 'In the 1930s a philologist went to the Balkans to test whether an illiterate singer could physically hold an epic of that length in memory, and found one performing songs comparable in scale. That fieldwork turned "could this have existed in an oral culture" from a speculation into something empirically answered.',
-      },
-      {
-        name: 'The formula holds metre and memory at once',
-        body: 'Fixed word-combinations — the swift-footed hero, the lord of men — are structural rather than ornamental: they bind the oral text together and let the singer carry metre and content simultaneously. The system bends toward metrical necessity rather than toward local accuracy of meaning.',
-      },
-      {
-        name: 'Ossified epithets',
-        body: 'The epithet loses its literal sense in exchange for constancy: the swift-footed hero sitting by a fire, a starry sky in daylight. Read as literary choice this looks like carelessness; read as scaffolding it is the mechanism working.',
-      },
-      {
-        name: 'Each performance recreates the text',
-        body: 'Recordings of one singer performing the same song show a stable plot frame and unstable details — the drink in the hero\'s hand changes between versions. Oral epic is recomposed at each performance rather than reproduced word for word, closer to a comedian repeating material than to reciting a script.',
-      },
-      {
-        name: 'Retardation is a device, not a pacing fault',
-        body: 'The deliberate deferral of a climax — cutting away into backstory at the moment of recognition — is a working technique when the digression is itself substantial, rather than an error of tempo.',
-      },
-      {
-        name: 'A collective author does not exclude an individual one',
-        body: 'The quoted position dissolves the false choice between a single genius and impersonal folklore: oral tradition presupposes individual authorship rather than ruling it out.',
-      },
-    ],
-    notes: [
-      'A practical entry strategy for any dense text: an accessible translation or retelling first, the original after — applicable well beyond this one.',
-      'A literary essayist rather than an academic, but the episode rests on a well-documented mainstream tradition in classical philology rather than on an invention of his own, and the technical term used is correctly attributed.',
-      'One quotation is given without a clear attribution, and his comparison of translations is offered openly as personal taste rather than as a ranking.',
-    ],
-    practices: [
-      'Read repeated structure as a memory device before judging it as style.',
-      'Enter a dense text through an accessible version first, then go to the original.',
-      'Use deliberate deferral of a climax when the digression carries its own weight.',
-      'Expect a stable frame and unstable detail in anything transmitted by performance.',
-    ],
+    get hook() { return t('lib.the-formula-is-memory.hook'); },
+    get thesis() { return t('lib.the-formula-is-memory.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-formula-is-memory.idea.${i}.name`),
+        body: t(`lib.the-formula-is-memory.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-formula-is-memory.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-formula-is-memory.practice.${i}`));
+    },
     habits: [
-      { id: 'd_read', because: 'The barriers described are dissolved by contact with the material rather than by more explanation of it.' },
-      { id: 'd_onepage', because: 'His whole practical point is that these texts defeat people who attempt them in bulk — a page held is worth more than a book abandoned.' },
-      { id: 'd_notes', because: 'The formula only becomes visible once you have written down what recurs, which is the same method the fieldwork used.' },
+      { id: 'd_read', get because() { return t('lib.the-formula-is-memory.habit.d_read.because'); } },
+      { id: 'd_onepage', get because() { return t('lib.the-formula-is-memory.habit.d_onepage.because'); } },
+      { id: 'd_notes', get because() { return t('lib.the-formula-is-memory.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'This is a canonical body of work with a real scholarly tradition behind it — precisely what studying one thing properly means rather than skimming.' },
-      { id: 'q_makeweekly', because: 'Retardation and repeated structure are devices for making, and they only teach you anything once used in something finished.' },
+      { id: 'q_learnfaith', get because() { return t('lib.the-formula-is-memory.quest.q_learnfaith.because'); } },
+      { id: 'q_makeweekly', get because() { return t('lib.the-formula-is-memory.quest.q_makeweekly.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Захарян — Гомер, устная эпическая традиция и теория формул',
+    get vaultSource() { return t('lib.the-formula-is-memory.vaultSource'); },
   },
-
   {
     slug: 'the-asymmetric-bet',
     attr: 'career',
-    title: 'Eight failures and two successes, if the downside is bounded',
-    origin: 'A founders\' panel on business models and repeated betting',
+    get title() { return t('lib.the-asymmetric-bet.title'); },
+    get origin() { return t('lib.the-asymmetric-bet.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'What survives repeated failure is not judgement about sectors. It is conviction.',
-    thesis:
-      'The organising idea is an asymmetric bet: a self-reported ratio of roughly eight failures to two successes, where each failure costs a bounded amount and each success pays a large multiple. On that arithmetic the sector timing and the gut feel matter far less than the ability to keep going through the eight — which makes self-conviction the resource that actually gets consumed.',
-    ideas: [
-      {
-        name: 'Name the tournament',
-        body: 'One founder reframes his product as a tournament business rather than an education one: the customer is not buying teaching but coaching toward winning a specific competitive outcome that functions as a mobility gateway. The generalisable question is what concrete, named outcome your offer actually points at, since motivation follows a specific result far more reliably than a general promise of improvement.',
-      },
-      {
-        name: 'Education versus exposure',
-        body: 'The distinction that decides product design: is the customer\'s real constraint the quality of instruction, or the absence of a legible credential or pathway? They look similar from outside and call for different products.',
-      },
-      {
-        name: 'Views are not revenue',
-        body: 'A decade-scale example: enormous audience existed years before any working monetisation did. Reaching product-market fit on attention is a different and earlier event than reaching it on revenue, and confusing the two is what makes the second one feel like a failure.',
-      },
-      {
-        name: 'Ten pivots is normal, not a warning sign',
-        body: 'The same company went through at least ten business-model changes over four years before the revenue model appeared. That is presented as the ordinary shape of the process rather than as evidence of a broken thesis.',
-      },
-      {
-        name: 'Value where the model is not yet legible',
-        body: 'The stated thesis of the harder path: outsized value tends to be created precisely where a lot of people think they have not understood what you are building — offered as a reason to prefer the less obviously defensible position over the safer one.',
-      },
-      {
-        name: 'The unlock is interaction, not delivery',
-        body: 'Both operators converge on the same diagnosis of what is broken in online education: it optimises for delivering content when the actual mechanism is peer interaction, gamification and storytelling — the same things that make other products hard to put down.',
-      },
-    ],
-    notes: [
-      'A practical design question that follows: does the format have an accessible entry mode, or does it implicitly restrict engagement to the strongest participants?',
-      'A peer conversation among named, checkable operators rather than a research source. The market and salary figures are stated confidently without citation — plausible insider estimates rather than audited numbers.',
-      'The panel preserves genuine unresolved disagreement between successful people in the same sector rather than converging on one thesis, which is worth more for calibration than agreement would be.',
-    ],
-    practices: [
-      'Bound the downside deliberately, so that eight failures remain survivable.',
-      'Name the specific outcome your work points at, rather than promising general improvement.',
-      'Separate attention fit from revenue fit, and expect the second much later.',
-      'Ask whether the real constraint is instruction or exposure before designing anything.',
-    ],
+    get hook() { return t('lib.the-asymmetric-bet.hook'); },
+    get thesis() { return t('lib.the-asymmetric-bet.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.the-asymmetric-bet.idea.${i}.name`),
+        body: t(`lib.the-asymmetric-bet.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-asymmetric-bet.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-asymmetric-bet.practice.${i}`));
+    },
     habits: [
-      { id: 'd_build', because: 'Ten pivots is a claim about iterations survived, and iterations only happen where something is being built rather than planned.' },
-      { id: 'c_onelesson', because: 'Eight failures teach nothing unless what each one actually showed gets written down while it is still specific.' },
-      { id: 'c_ship', because: 'The distinction between attention and revenue is only observable once the thing is in front of people.' },
+      { id: 'd_build', get because() { return t('lib.the-asymmetric-bet.habit.d_build.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.the-asymmetric-bet.habit.c_onelesson.because'); } },
+      { id: 'c_ship', get because() { return t('lib.the-asymmetric-bet.habit.c_ship.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'Conviction is what the model says gets consumed — and it is far easier to sustain on ground where you are demonstrably getting better.' },
-      { id: 'q_portfolio', because: 'A bounded bet needs the previous attempts to be visible, or each new one starts from zero credibility.' },
+      { id: 'q_skill', get because() { return t('lib.the-asymmetric-bet.quest.q_skill.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.the-asymmetric-bet.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Kamath, Screwvala, Munjal & Kotak — EdTech Business Models and the Asymmetric-Bet Theory of Founding',
+    get vaultSource() { return t('lib.the-asymmetric-bet.vaultSource'); },
   },
-
   {
     slug: 'understanding-without-forgiving',
     attr: 'friends',
-    title: 'Understanding why does not oblige you to forgive',
-    origin: 'A first-person account on trauma bonding, forgiveness and fear',
+    get title() { return t('lib.understanding-without-forgiving.title'); },
+    get origin() { return t('lib.understanding-without-forgiving.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'The alternative to forgiving is not staying angry. It is leaving them where they are.',
-    thesis:
-      'Two claims here are worth carrying, and both push against widely repeated advice. Understanding where someone\'s behaviour came from is instrumentally useful — it removes the maddening quality of not knowing — and is entirely separable from any obligation to forgive or reconcile. And forgiveness is treated as optional rather than as a therapeutic requirement, with disengagement offered as the alternative to both forgiving and continuing to carry it.',
-    ideas: [
-      {
-        name: 'Understanding is for you, not for them',
-        body: 'The recurring framing: it does not mean the behaviour has to be accepted, but understanding where it came from is pursued for one\'s own clarity. The contrast drawn is with being cut off without explanation, which is described as intolerable precisely because it withholds the causal account.',
-      },
-      {
-        name: 'Forgiveness as optional',
-        body: 'Direct pushback on the "forgive or you will suffer" framing: not everyone is owed your forgiveness, and the alternative on offer is not continued suffering but simply leaving them where they are. Whatever one concludes, the separation of the two ideas is the useful part.',
-      },
-      {
-        name: 'The nervous system prefers familiar over healthy',
-        body: 'The pull is toward what is recognisable rather than what is good — which means someone calibrated on chaos or abandonment in childhood may experience those dynamics as comfort. The reformulation offered: people say they are seeking happiness in a relationship and are often seeking familiarity.',
-      },
-      {
-        name: 'Blame and responsibility as a pivot',
-        body: 'Named as the turning point in recovery. The practical test: does identifying the past cause change anything actionable today, or does it hand continued power to someone who is no longer present? An accurate explanation can still be doing the second thing.',
-      },
-      {
-        name: 'Coercive power runs entirely on fear',
-        body: 'Someone\'s leverage over you is described as contingent on your fear of the consequence, and as evaporating when the fear does — which converts a vague sense of being trapped into a specific question: what exactly am I afraid of here?',
-      },
-    ],
-    notes: [
-      'Neither speaker is a credentialed mental-health professional; this is lived-experience testimony and self-assembled framework rather than clinical material, and it belongs in that register.',
-      'Several ideas here overlap substantially with clinically grounded entries already in this sector — the pull toward familiar dynamics is covered from a clinical angle elsewhere. What this adds that they do not is the explicit decoupling of understanding from forgiving, and the reading of coercive power as purely a function of fear.',
-      'Where it touches a real criminal case, it is used to illustrate understanding a person\'s desperation without endorsing what was done — a distinction worth keeping intact rather than collapsing in either direction.',
-    ],
-    practices: [
-      'Pursue the understanding for your own clarity, and treat the question of forgiveness as separate and optional.',
-      'Ask whether naming the past cause changes anything you can act on today.',
-      'When something feels familiar rather than good, treat the familiarity itself as the information.',
-      'Name the specific consequence you are afraid of, since that is where the leverage actually sits.',
-    ],
+    get hook() { return t('lib.understanding-without-forgiving.hook'); },
+    get thesis() { return t('lib.understanding-without-forgiving.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.understanding-without-forgiving.idea.${i}.name`),
+        body: t(`lib.understanding-without-forgiving.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.understanding-without-forgiving.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.understanding-without-forgiving.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'The blame-versus-responsibility test is a question about a pattern over time, which is not answerable in the moment the grievance is active.' },
-      { id: 's_forgive', because: 'Letting one thing go here means stopping carrying it — which the source explicitly separates from absolving the person or resuming contact.' },
-      { id: 'f_nogossip', because: 'Rehearsing a grievance to people who were not there is how it keeps its power without ever getting resolved.' },
+      { id: 'd_review', get because() { return t('lib.understanding-without-forgiving.habit.d_review.because'); } },
+      { id: 's_forgive', get because() { return t('lib.understanding-without-forgiving.habit.s_forgive.because'); } },
+      { id: 'f_nogossip', get because() { return t('lib.understanding-without-forgiving.habit.f_nogossip.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Naming the exact feared consequence is usually the thing being avoided by not having one specific conversation.' },
-      { id: 'q_reconnect', because: 'Disengaging from what was familiar leaves a gap, and the gap is what the pull back is actually made of.' },
+      { id: 'q_hardconversation', get because() { return t('lib.understanding-without-forgiving.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.understanding-without-forgiving.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / The Wizard Liz — Trauma Bonding, Forgiveness as Optional, and Power Through Fear',
+    get vaultSource() { return t('lib.understanding-without-forgiving.vaultSource'); },
   },
-
   {
     slug: 'the-image-comes-first',
     attr: 'brightness',
-    title: 'It starts with an image that will not leave you alone',
-    origin: 'Poliarinov — novelist, on where a book actually begins',
+    get title() { return t('lib.the-image-comes-first.title'); },
+    get origin() { return t('lib.the-image-comes-first.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Not a plot. An image or an emotion that lodges and causes discomfort.',
-    thesis:
-      'A book never begins with a plot — it begins with an image or an emotion that lodges in the head for a long time and is uncomfortable to carry. Everything else is attached to that cornerstone afterwards. Without it the text spreads, because there is nothing to fasten it to. The through-line is blunt: art has no obligation to make you feel pleasantly warm, and a good story is almost always built around an unresolved feeling of the author\'s.',
-    ideas: [
-      {
-        name: 'The nuclear image, in practice',
-        body: 'His own examples are all concrete and visual: a gravestone whose engraved face was being erased by rain; a warm steaming bone thrown to dogs; dry ice tipped from a bucket onto asphalt and melting; a newspaper photograph of a thousand couples married simultaneously in a stadium. In each case the plot was assembled around the image by trial and rewriting, not the other way round.',
-      },
-      {
-        name: 'The first step is admitting you cannot do it yet',
-        body: 'Framed half-jokingly as steps of sobriety, but used seriously: the hardest and first is conceding that you are not yet any good. In his experience that does not arrive early, and it requires giving up the assumption of exceptional talent that adolescent work runs on.',
-      },
-      {
-        name: 'From compiling other people to being honest',
-        body: 'His early work was direct copying of the pop culture he loved, without structure. The turn came while translating a novel about an entirely ordinary childhood — he realised he had spent his career avoiding the banality of his own, compiling other people\'s material instead of using his own honestly.',
-      },
-      {
-        name: 'A second language changes the thinking',
-        body: 'Not merely more vocabulary: some concepts take one sentence in one language and are absent in another. Translation, correspondingly, is separate labour rather than neutral transmission — a translator can distort a text with their own hand.',
-      },
-      {
-        name: 'Successful and good are different measurements',
-        body: 'Immediate response is not the same as lasting value, and he keeps the two apart when judging his own work. A related heuristic for filtering feedback: whether a reaction is about what was actually written or about something itching in the reader.',
-      },
-    ],
-    notes: [
-      'On unpleasant material: the question is not whether to add difficulty but whether it is unavoidable for the thing you are trying to say.',
-      'A working novelist and translator speaking from practice rather than theory. Much of this is stated as personal conviction rather than as critical consensus, and he says so himself — he calls himself an apologist for the harsh and is ironic about it.',
-      'One unusual quality of the conversation: his opinion on specific books visibly changes mid-discussion under the other person\'s argument, rather than being a rehearsed position.',
-    ],
-    practices: [
-      'Look for the image or feeling that will not leave you alone before inventing any plot around it.',
-      'Judge your own work by whether it lasts, separately from how it lands immediately.',
-      'When you receive criticism, ask whether it is about the work or about the reader.',
-      'Use your own ordinary material rather than compiling what you admire.',
-    ],
+    get hook() { return t('lib.the-image-comes-first.hook'); },
+    get thesis() { return t('lib.the-image-comes-first.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-image-comes-first.idea.${i}.name`),
+        body: t(`lib.the-image-comes-first.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-image-comes-first.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-image-comes-first.practice.${i}`));
+    },
     habits: [
-      { id: 'd_notes', because: 'An image that lodges has to be caught when it appears — the gravestone and the melting ice were noticed years before they were used.' },
-      { id: 's_makecreate', because: 'The plot is assembled around the image by rewriting, which is a volume of ordinary sessions rather than one insight.' },
-      { id: 'd_read', because: 'His own turning point came through close work with someone else\'s book, not through thinking about his own.' },
+      { id: 'd_notes', get because() { return t('lib.the-image-comes-first.habit.d_notes.because'); } },
+      { id: 's_makecreate', get because() { return t('lib.the-image-comes-first.habit.s_makecreate.because'); } },
+      { id: 'd_read', get because() { return t('lib.the-image-comes-first.habit.d_read.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'The cornerstone only proves itself by holding a finished thing together — an unfinished draft never tests whether it was load-bearing.' },
-      { id: 'q_portfolio', because: 'Separating successful from good requires work that has been out long enough for the immediate response to fade.' },
+      { id: 'q_makeweekly', get because() { return t('lib.the-image-comes-first.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.the-image-comes-first.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Поляринов — Сильный образ как ядро истории, трезвость писателя и природа насилия в искусстве',
+    get vaultSource() { return t('lib.the-image-comes-first.vaultSource'); },
   },
-
   {
     slug: 'dopamine-capture',
     attr: 'development',
-    title: 'When the reward system is already occupied',
-    origin: 'Abu Saad — counselling psychologist, on attention capture and raising children',
+    get title() { return t('lib.dopamine-capture.title'); },
+    get origin() { return t('lib.dopamine-capture.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'It does not only take your time. It takes the capacity to feel rewarded by anything else.',
-    thesis:
-      'The argument he makes about device dependency is that its danger is not the hours consumed but the capture of the reward system itself: someone dependent stops feeling satisfaction from study, from achievement, from ordinary self-care — not because those stopped mattering but because the system that registers them is already occupied. His framing of the generational challenges is fourfold: killing time, the pull of empty content, and dependency itself.',
-    ideas: [
-      {
-        name: 'The mechanism, as he describes it',
-        body: 'The reward system is normally engaged by effortful and meaningful acts, each returning a felt reward. Dependency redirects that return, so the same acts stop paying. The practical implication is that willpower applied to the acts is aimed at the wrong place.',
-      },
-      {
-        name: 'Escalation through content',
-        body: 'From his counselling practice he describes a progression in which the previous level stops producing the same response and the material sought becomes more extreme, and eventually participatory. He uses the type of material found as a rough indicator of how long a pattern has been running.',
-      },
-      {
-        name: 'Nobody is exempt by discipline or belief',
-        body: 'His observation is that this appears across every level of education and religious practice — including a case of someone with decades of standing whose practice collapsed. The claim is aimed at the assumption that being serious about something protects you from this.',
-      },
-      {
-        name: 'Symptoms he lists',
-        body: 'Waking at night and sleeping through the day, persistent fatigue, loss of concentration and memory, falling performance, neglected hygiene, changed eating in either direction, headaches and digestive complaints, and emotional flattening — not reacting even to things that should land.',
-      },
-      {
-        name: 'Two things time can be',
-        body: 'His personal filter: time is either achievement or enjoyment, and what falls outside both is killing it. The useful part is that it permits genuine rest rather than treating all non-productive time as waste.',
-      },
-      {
-        name: 'Thirty seconds, more often',
-        body: 'For advice to anyone close: shorter and more frequent rather than long correction, which produces closure. Paired with the instruction to listen rather than only instruct — offered for children but not limited to them.',
-      },
-    ],
-    notes: [
-      'His stated priority order under overload: connection to God, then your own state, then family, then everything else — with the second placed deliberately above the third.',
-      'He takes a hard prescriptive position on no internet-capable devices before adulthood, arguing that the conflict over a removed device is far cheaper than the alternative. That is his position, stated as such, rather than a consensus recommendation.',
-      'A practising counselling psychologist speaking from daily clinical work in a religious-educational format rather than a scientific one. Several striking figures — proportions of device owners affected, support-group populations, divorce percentages — are given without any citation or methodology and should be treated as indicative rather than verified.',
-      'On inflated statistics generally, his own advice is useful: ask for the percentage and the comparison period rather than the absolute number.',
-    ],
-    practices: [
-      'Sort the day into achievement, enjoyment, and time killed — and let the second count.',
-      'Aim the effort at the capture rather than at the acts that stopped feeling rewarding.',
-      'Give correction in thirty seconds, more often, instead of at length.',
-      'Listen before instructing, with anyone younger than you.',
-      'Ask for the percentage and the period before accepting an alarming number.',
-    ],
+    get hook() { return t('lib.dopamine-capture.hook'); },
+    get thesis() { return t('lib.dopamine-capture.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.dopamine-capture.idea.${i}.name`),
+        body: t(`lib.dopamine-capture.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.dopamine-capture.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.dopamine-capture.practice.${i}`));
+    },
     habits: [
-      { id: 'f_nodoom', because: 'The capture happens through repeated small reaches, which makes the barrier more useful than the resolution.' },
-      { id: 'h_lightsout', because: 'Night waking and daytime sleeping head his list of symptoms — the sleep pattern is where the capture shows first.' },
-      { id: 'd_nopassive', because: 'Making something before consuming is the direct test of whether the reward system still responds to effort.' },
+      { id: 'f_nodoom', get because() { return t('lib.dopamine-capture.habit.f_nodoom.because'); } },
+      { id: 'h_lightsout', get because() { return t('lib.dopamine-capture.habit.h_lightsout.because'); } },
+      { id: 'd_nopassive', get because() { return t('lib.dopamine-capture.habit.d_nopassive.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'His priority order is a structure, and structures under overload survive only if they were decided in advance.' },
-      { id: 'q_declutter', because: 'His hardest recommendation is environmental rather than motivational — the device leaves the room.' },
+      { id: 'q_habitsystem', get because() { return t('lib.dopamine-capture.quest.q_habitsystem.because'); } },
+      { id: 'q_declutter', get because() { return t('lib.dopamine-capture.quest.q_declutter.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Абу Саад — Воспитание, захват дофамина и вызовы поколения',
+    get vaultSource() { return t('lib.dopamine-capture.vaultSource'); },
   },
-
   {
     slug: 'equal-but-not-identical',
     attr: 'spirituality',
-    title: 'Agree the procedure before you need it',
-    origin: 'Haifaa Younis — on marriage as an institution with rules',
+    get title() { return t('lib.equal-but-not-identical.title'); },
+    get origin() { return t('lib.equal-but-not-identical.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'Every institution has written rules made by whoever understands it best. The argument is about who that is.',
-    thesis:
-      'Marriage is presented not as a romantic feeling but as a formally constituted institution with rights, duties and a procedure for resolving disputes. The framing offered for the surrounding rules is preventive rather than prohibitive — an architecture built to stop a thing failing, by analogy with quarantine measures, rather than restriction for its own sake.',
-    ideas: [
-      {
-        name: 'A contract includes how disagreements get settled',
-        body: 'The practical advice is to agree before marriage not only who will work but the procedure for resolving future disagreement — explicitly not my way or yours. It generalises well past marriage to any partnership.',
-      },
-      {
-        name: 'Equal but not identical',
-        body: 'The distinction she puts most weight on: equal in standing and in reward, not identical in nature or function. Confusing equality with sameness is named as the root of most of the argument around the topic.',
-      },
-      {
-        name: 'A contested verse and a named translation',
-        body: 'On the most disputed verse, she works from a specific published translation rendering the key term as caregiver rather than as controller, and argues the role parallels a parent\'s care rather than authority over. She names the translation she is using rather than presenting it as the only possible reading.',
-      },
-      {
-        name: 'Three images of the pair',
-        body: 'The Qur\'anic images she draws on describe tranquillity as the aim, and garment — something that covers, protects, adorns and warms — as the relation, with the point that the role does not change with circumstance.',
-      },
-      {
-        name: 'Worship defined by intention, not by the other\'s merit',
-        body: 'The consequence she draws: an obligation performed as worship does not become conditional on whether the other person has earned it. That detaches doing your part from adjudicating theirs.',
-      },
-    ],
-    notes: [
-      'Her own professional background is medical, and the physiological claims come from that position while the theological readings are identified as a particular interpretive stance rather than the only one.',
-      'Divorce statistics and a survey she cites are given without precise references — illustrative rather than verified.',
-      'She closes with an explicit caveat that her interpretation may be wrong, which is an unusually clean marker of where a source places its own confidence.',
-    ],
-    practices: [
-      'Agree the dispute-resolution procedure in advance, in any partnership that matters.',
-      'Keep equality and sameness apart when arguing about roles.',
-      'Check which translation or reading a strong claim rests on before adopting it.',
-      'Do your part as your own commitment rather than as a response to whether the other person deserves it.',
-    ],
+    get hook() { return t('lib.equal-but-not-identical.hook'); },
+    get thesis() { return t('lib.equal-but-not-identical.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.equal-but-not-identical.idea.${i}.name`),
+        body: t(`lib.equal-but-not-identical.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.equal-but-not-identical.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.equal-but-not-identical.practice.${i}`));
+    },
     habits: [
-      { id: 'f_remember', because: 'The garment image is about constancy regardless of circumstance, which is made of small attention rather than of declarations.' },
-      { id: 'f_thanks', because: 'Detaching your part from the other person\'s merit is easiest to practise where the stakes are low and specific.' },
-      { id: 's_gratitude', because: 'Tranquillity is named as the aim rather than intensity — and it is noticed by looking, not by waiting for it to announce itself.' },
+      { id: 'f_remember', get because() { return t('lib.equal-but-not-identical.habit.f_remember.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.equal-but-not-identical.habit.f_thanks.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.equal-but-not-identical.habit.s_gratitude.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Agreeing a procedure before it is needed is a conversation people postpone precisely because nothing is wrong yet.' },
-      { id: 'q_learnfaith', because: 'Her own method is to name the reading she is using — which is only possible for someone who studied rather than absorbed it.' },
+      { id: 'q_hardconversation', get because() { return t('lib.equal-but-not-identical.quest.q_hardconversation.because'); } },
+      { id: 'q_learnfaith', get because() { return t('lib.equal-but-not-identical.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Хайфа Юнис — Права супругов и богословие брака как института',
+    get vaultSource() { return t('lib.equal-but-not-identical.vaultSource'); },
   },
-
   {
     slug: 'are-you-in-the-boat',
     attr: 'family',
-    title: 'Are you actually in the boat, or just hoping it works?',
-    origin: 'Robbins — one couple\'s account of thirty years',
+    get title() { return t('lib.are-you-in-the-boat.title'); },
+    get origin() { return t('lib.are-you-in-the-boat.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The diagnostic is not dramatic conflict. It is the quiet drift into being roommates.',
-    thesis:
-      'Before any technique matters, the question is whether you are actually choosing the relationship or standing outside it hoping it works. Her own admission: years spent in a raft alongside, complaining to friends, rather than in the boat — physically present and emotionally elsewhere, judging rather than committing. What signals it is not a fight but the slide into coexistence.',
-    ideas: [
-      {
-        name: 'Two people rowing, neither one looking up',
-        body: 'The failure mode described is not neglect but parallel effort: both partners working genuinely hard, each fully occupied by their own half of the load, each keeping score of their own contribution and quietly resentful that the other has not noticed. In their case one travelled constantly as the earner and one carried the home, both under real pressure, both invisible to the other.',
-      },
-      {
-        name: 'One question, asked daily',
-        body: 'The move out of that state is deliberately small: is there one thing I can do today that shows I had my partner in mind? It is a question about attention rather than about effort, which is why more effort had not been fixing it.',
-      },
-      {
-        name: 'Find out what actually reads as being thought of',
-        body: 'The story about flowers is the vehicle, not the lesson. He was making large, real contributions that did not land, while one small specific signal did. Both people have one, they are rarely the obvious thing, and neither can guess the other\'s.',
-      },
-      {
-        name: 'Explain the impact, not the behaviour',
-        body: 'Swap the always-and-never formulation for what actually happens: when this happens, it leaves me feeling that. It is the same information without the character verdict attached.',
-      },
-      {
-        name: 'Refuelling in ten seconds',
-        body: 'A brief deliberate contact — a hand on the shoulder, eye contact held a moment longer — offered as a specific low-cost ritual rather than a metaphor. The term itself comes from developmental attachment work rather than from them.',
-      },
-    ],
-    notes: [
-      'They also name the way role and money dynamics operate silently unless someone says them out loud, from a period where earning and caring were split unevenly and neither was acknowledging the other\'s position.',
-      'This is one couple\'s self-report of their own marriage, not clinical or research material. It is candid — including an unflattering account of heavy drinking during a financial crisis — and specific, and that is its value.',
-      'Read it as one successful couple\'s working framework worth testing item by item, and not as validated relationship science. The clinically grounded entries in this sector are the ones to weigh it against rather than to replace with it.',
-    ],
-    practices: [
-      'Ask honestly and periodically whether you are choosing this right now, or waiting to see.',
-      'Do one thing today that shows the other person was in your mind, and ask what actually reads that way to them.',
-      'Say the impact rather than the pattern — when this happens, this is what it does.',
-      'Try the ten-second contact deliberately rather than filing it as a nice idea.',
-      'Name the power and role dynamics out loud instead of letting them run silently.',
-    ],
+    get hook() { return t('lib.are-you-in-the-boat.hook'); },
+    get thesis() { return t('lib.are-you-in-the-boat.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.are-you-in-the-boat.idea.${i}.name`),
+        body: t(`lib.are-you-in-the-boat.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.are-you-in-the-boat.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.are-you-in-the-boat.practice.${i}`));
+    },
     habits: [
-      { id: 'f_remember', because: 'The whole repair is a question about attention rather than effort — and attention shows as remembering what they said last time.' },
-      { id: 'f_thanks', because: 'Naming the specific thing is how you find out what actually lands, which neither person can guess for the other.' },
-      { id: 'f_meet', because: 'The refuelling ritual is physical and brief, which makes it available only where you actually are in the same room.' },
+      { id: 'f_remember', get because() { return t('lib.are-you-in-the-boat.habit.f_remember.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.are-you-in-the-boat.habit.f_thanks.because'); } },
+      { id: 'f_meet', get because() { return t('lib.are-you-in-the-boat.habit.f_meet.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Asking what actually reads as being thought of is a conversation nobody starts, because nothing is visibly wrong.' },
-      { id: 'q_reconnect', because: 'Her own account of the drift includes complaining to friends instead of speaking to him — the circle is part of the mechanism.' },
+      { id: 'q_hardconversation', get because() { return t('lib.are-you-in-the-boat.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.are-you-in-the-boat.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Robbins — Being in the Boat, Loving the Person Over the Potential and Refueling Through Micro-Moments',
+    get vaultSource() { return t('lib.are-you-in-the-boat.vaultSource'); },
   },
-
   {
     slug: 'calibrating-future-regret',
     attr: 'money',
-    title: 'Calibrate the regret, do not optimise the formula',
-    origin: 'Morgan Housel — a second conversation, on regret, identity and extremes',
+    get title() { return t('lib.calibrating-future-regret.title'); },
+    get origin() { return t('lib.calibrating-future-regret.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Every behaviour makes sense with enough information about the person doing it.',
-    thesis:
-      'Financial behaviour cannot be judged as sensible or foolish in a vacuum — it always follows from a personal history. The skill that matters is a well-calibrated sense of future regret rather than optimisation against a formula. And money makes people happier only indirectly, through independence and purpose; it becomes a weight the moment it turns into the core of an identity rather than an instrument.',
-    ideas: [
-      {
-        name: 'All behaviour makes sense given enough information',
-        body: 'A line borrowed from social work: apparently irrational financial behaviour is explained by upbringing, by what someone lived through, by the generation they formed in. The practical consequence is less cynicism about how other people spend and save — this is not arithmetic where the same answer holds for everyone.',
-      },
-      {
-        name: 'Regret is the thing to calibrate, and it moves',
-        body: 'Asked what it takes to handle money well, the answer he cites is an accurately calibrated sense of future regret. The difficulty is that the calibration shifts across a life — he describes himself as a committed saver who today would not regret a single unspent pound, while allowing that at eighty he might regret not having lived a little more. Someone else\'s calibration cannot be copied.',
-      },
-      {
-        name: 'The end-of-history illusion',
-        body: 'People can see how much they changed over twenty years and cannot imagine changing as much again — because that would mean conceding their current beliefs are wrong. It is what makes genuinely long-horizon decisions hard.',
-      },
-      {
-        name: 'Avoid both ends of the spectrum',
-        body: 'The practical antidote he offers: neither extreme saving toward very early retirement nor speculative all-in behaviour. Both are the positions most likely to produce future regret, and the cost of the same error is tolerable at twenty and not at forty-eight.',
-      },
-      {
-        name: 'Credit as a hole rather than a convenience',
-        body: 'Against the framing of credit as merely bringing consumption forward: it offers the false hope that a purchase will close a psychological gap, and because the gap does not close, the mechanism repeats.',
-      },
-      {
-        name: 'Identity as a verb, not a noun',
-        body: 'Defining yourself by what you do rather than by a title or a metric makes the identity less brittle when a particular attempt fails.',
-      },
-    ],
-    notes: [
-      'This is the second conversation with the same author in this sector; the first covers rich versus wealthy and savings as a bill. The overlap is real — independence as the goal appears in both — and what is new here is regret calibration, the extremes argument, and the identity framing.',
-      'Environment design over willpower is restated here with supporting examples: the automatic transfer works because it does not require a decision later.',
-      'A practitioner and writer rather than a researcher. Several anecdotes are retold from memory at second hand, and two widely quoted statistics are given as common knowledge without a source — treat them as orders of magnitude rather than as figures.',
-    ],
-    practices: [
-      'Ask which choice you will regret from the far end, rather than which optimises now.',
-      'Stay off both extremes of the spectrum, because that is where regret concentrates.',
-      'Before borrowing, ask what gap the purchase is expected to close.',
-      'Describe yourself by what you do rather than by the title you are aiming at.',
-      'Change the environment rather than relying on deciding well later.',
-    ],
+    get hook() { return t('lib.calibrating-future-regret.hook'); },
+    get thesis() { return t('lib.calibrating-future-regret.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.calibrating-future-regret.idea.${i}.name`),
+        body: t(`lib.calibrating-future-regret.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.calibrating-future-regret.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.calibrating-future-regret.practice.${i}`));
+    },
     habits: [
-      { id: 'm_waitlist', because: 'A day\'s delay is where the question of which hole this is filling can actually get asked.' },
-      { id: 'm_payday', because: 'Environment design over willpower, in its cheapest form: the decision is made once rather than every month.' },
-      { id: 'm_log', because: 'Regret is calibrated against what actually happened, and a year of spending is not reconstructable from memory.' },
+      { id: 'm_waitlist', get because() { return t('lib.calibrating-future-regret.habit.m_waitlist.because'); } },
+      { id: 'm_payday', get because() { return t('lib.calibrating-future-regret.habit.m_payday.because'); } },
+      { id: 'm_log', get because() { return t('lib.calibrating-future-regret.habit.m_log.because'); } },
     ],
     quests: [
-      { id: 'q_emergencyfund', because: 'The buffer is the position furthest from both extremes — neither speculation nor deprivation.' },
-      { id: 'q_raise', because: 'Independence and purpose are named as the two things money buys, and income is the constraint on the first.' },
+      { id: 'q_emergencyfund', get because() { return t('lib.calibrating-future-regret.quest.q_emergencyfund.because'); } },
+      { id: 'q_raise', get because() { return t('lib.calibrating-future-regret.quest.q_raise.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Housel — Future Regret, Identity and Raising Kids With Money',
+    get vaultSource() { return t('lib.calibrating-future-regret.vaultSource'); },
   },
-
   {
     slug: 'i-notice-the-thought',
     attr: 'development',
-    title: 'A belief is a thought repeated until it became the default',
-    origin: 'Zakhrai — behavioural researcher, on self-doubt and self-image',
+    get title() { return t('lib.i-notice-the-thought.title'); },
+    get origin() { return t('lib.i-notice-the-thought.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'External success does not update the self-image, which is why it keeps not being enough.',
-    thesis:
-      'Four trainable attributes — self-acceptance, agency, locus of control, emotional adaptability — combine into how a person sees themselves. Following Maltz: fixing behaviour or accumulating external success does not change the underlying self-image, and people unconsciously seek confirmation of how they already see themselves, so a low estimate reproduces itself through selective attention.',
-    ideas: [
-      {
-        name: 'The anxious overachiever',
-        body: 'The most common profile described: low acceptance, so approval is sought externally and self-worth is tied to results; middling agency, confident in the skills until questioned; high autonomy, sometimes to the point of taking responsibility for what is outside their control; and low-to-middling adaptability, with background anxiety steering behaviour.',
-      },
-      {
-        name: 'Distinguishing doubt from a real mismatch',
-        body: 'The test: imagine you had none of the current feelings about it — would you still want to do this? If yes, it is growth through discomfort, which is where learning actually happens. If no, it is a signal about values rather than fear. His own example is physical illness before work at a firm, which turned out not to be impostor feeling but the body reporting the wrong place.',
-      },
-      {
-        name: 'Cognitive distancing',
-        body: 'A specific change of language: "I am a failure" becomes "I notice the thought that I am a failure"; "I am anxious" becomes "I notice anxiety in me". The shift is from identification to observation, on the reasoning that a belief is a thought repeated often enough to become the default — and what was written by repetition can be rewritten the same way.',
-      },
-      {
-        name: 'Why fixing the outside does not hold',
-        body: 'The surgeon whose patients corrected a visible flaw and soon returned to the previous self-perception, because the underlying blueprint of beliefs about their own worth had not moved. The practical conclusion is to work on the self-image directly rather than waiting for achievements to do it.',
-      },
-      {
-        name: 'Should, could, will',
-        body: 'A three-step replacement against getting stuck in guilt: move the sentence from should to could, and then to will.',
-      },
-    ],
-    notes: [
-      'Two immediate physical techniques are offered for the minutes before something stressful — both small postural interventions rather than mental ones.',
-      'For a recurring belittling remark from someone close, the recommended form is not a request but an if-then boundary with a consequence you will actually carry out.',
-      'A behavioural researcher and coach with a doctorate in the area, speaking to a general audience. The studies referenced come without methodology, sample sizes or citations, and his profile model is his own construction on top of a more widely accepted underlying construct rather than an independently validated instrument.',
-    ],
-    practices: [
-      'Run the test: without the feelings, would you still want this? Growth and mismatch need opposite responses.',
-      'Say "I notice the thought that…" instead of stating it as a fact about you.',
-      'Move a stuck sentence from should to could to will.',
-      'Set an if-then boundary with a consequence rather than making a request.',
-      'Work on the self-image directly instead of waiting for achievements to update it.',
-    ],
+    get hook() { return t('lib.i-notice-the-thought.hook'); },
+    get thesis() { return t('lib.i-notice-the-thought.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.i-notice-the-thought.idea.${i}.name`),
+        body: t(`lib.i-notice-the-thought.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.i-notice-the-thought.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.i-notice-the-thought.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'Self-verification works by selective attention, which is invisible in the moment and visible across a week.' },
-      { id: 'b_nocompare', because: 'The external-approval loop is fed most efficiently by a feed of other people\'s results.' },
-      { id: 'c_onelesson', because: 'If achievements do not update the self-image on their own, then noticing what actually worked is the deliberate version of letting them.' },
+      { id: 'd_review', get because() { return t('lib.i-notice-the-thought.habit.d_review.because'); } },
+      { id: 'b_nocompare', get because() { return t('lib.i-notice-the-thought.habit.b_nocompare.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.i-notice-the-thought.habit.c_onelesson.because'); } },
     ],
     quests: [
-      { id: 'q_wheel', because: 'The four attributes are a self-assessment, and scoring yourself honestly is the same move at a different scale.' },
-      { id: 'q_skill', because: 'Growth through discomfort is his description of learning, which needs one thing you are genuinely bad at to practise on.' },
+      { id: 'q_wheel', get because() { return t('lib.i-notice-the-thought.quest.q_wheel.because'); } },
+      { id: 'q_skill', get because() { return t('lib.i-notice-the-thought.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Захрай — Профили сомнения, самообраз по Мальцу и техники против самокритики',
+    get vaultSource() { return t('lib.i-notice-the-thought.vaultSource'); },
   },
-
   {
     slug: 'anger-with-a-function',
     attr: 'friends',
-    title: 'The question is not whether it was too much',
-    origin: 'Shimanskaya — a second conversation, on emotion, cause and function',
+    get title() { return t('lib.anger-with-a-function.title'); },
+    get origin() { return t('lib.anger-with-a-function.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'It is whether the emotion was pointed at a solution.',
-    thesis:
-      'The live demonstration is the substance here: a real episode of strong anger, worked through in the conversation itself as emotion, then cause, then function. The conclusion drawn is that the size of the reaction was not the problem — without that anger the situation would not have been resolved. What matters is whether the emotion was directed at a solution rather than at surrender or at a grievance.',
-    ideas: [
-      {
-        name: 'The worked case',
-        body: 'A long-postponed veterinary procedure, conditions changed at the last moment, and a burst of anger at the whole staff. Stepped through: the feeling named specifically as anger rather than diffuse stress; the cause identified as a prepared plan colliding with reality; and the function recognised — the anger was what drove the search that found another clinic the same day.',
-      },
-      {
-        name: 'Stress is a mismatch, not a substance',
-        body: 'The definition offered: there is no such thing as stress in itself, only the gap between expectation and what happened. The direct consequence is that the more precisely someone plans their life, the harder they will react when a plan breaks — which makes the skill more necessary, not less.',
-      },
-      {
-        name: 'Who actually shows the lowest emotional skill',
-        body: 'Not children, whose limits are developmental, and not senior people, whose difficulty is specifically control — but those who have played a work role long enough to lose themselves in it, or who have switched the feelings off entirely. The portrait given is of someone with no clear goals and no sense of meaning in the work, who nonetheless does not leave.',
-      },
-      {
-        name: 'Name the good ones out loud too',
-        body: 'The same formula applied in the other direction: saying gratitude, calm or tenderness aloud to the people close to you, rather than reserving the practice for anxiety and irritation.',
-      },
-      {
-        name: 'Two tools for rumination',
-        body: 'Widening to peripheral attention as a physically different intervention from breath work, and a timer every few hours as a plain diagnostic for whether the same thought has been running unnoticed.',
-      },
-    ],
-    notes: [
-      'On raising children, the claim is that emotional honesty in the adult is the foundation — children read the actual state rather than the words describing it.',
-      'This is the second conversation with the same specialist in this sector. The first covers the three-stage model and the "I feel X because Y" formula; what is new here is the cause-to-function reading of a real episode and the tools for rumination.',
-      'The headline comparison of emotional skill against IQ is attributed to a business-review study without year, authors or publication, and two efficiency figures are given the same way. Treat them as claimed rather than checked; the demonstration of the method in real time is the part that stands on its own.',
-      'One term used for the ideal state is her own coinage rather than an established concept.',
-    ],
-    practices: [
-      'Work a real flare-up backwards: name it, find the cause, then ask what it drove you to do.',
-      'Judge an emotion by whether it pointed at a solution, not by its size.',
-      'Say the positive states out loud as specifically as the negative ones.',
-      'Set a timer every few hours and check whether one thought has been running the whole time.',
-      'Expect stronger reactions to broken plans the more precisely you plan.',
-    ],
+    get hook() { return t('lib.anger-with-a-function.hook'); },
+    get thesis() { return t('lib.anger-with-a-function.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.anger-with-a-function.idea.${i}.name`),
+        body: t(`lib.anger-with-a-function.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.anger-with-a-function.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.anger-with-a-function.practice.${i}`));
+    },
     habits: [
-      { id: 'f_thanks', because: 'The formula applied to good states is exactly this — said out loud and specifically, rather than assumed to be understood.' },
-      { id: 'd_review', because: 'Cause and function are only visible after the fact, which makes the standing look-back the place the method actually runs.' },
-      { id: 'f_voice', because: 'Naming a state to someone carries in tone what the same sentence loses in text.' },
+      { id: 'f_thanks', get because() { return t('lib.anger-with-a-function.habit.f_thanks.because'); } },
+      { id: 'd_review', get because() { return t('lib.anger-with-a-function.habit.d_review.because'); } },
+      { id: 'f_voice', get because() { return t('lib.anger-with-a-function.habit.f_voice.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'An emotion pointed at a solution usually means saying the thing to the person it concerns rather than about them afterwards.' },
+      { id: 'q_hardconversation', get because() { return t('lib.anger-with-a-function.quest.q_hardconversation.because'); } },
     ],
-    vaultSource: 'Social & friends / Resource / Шиманская — Красные флаги низкого EQ и эмоциональная честность с детьми',
+    get vaultSource() { return t('lib.anger-with-a-function.vaultSource'); },
   },
-
   {
     slug: 'you-cannot-write-to-a-trend',
     attr: 'brightness',
-    title: 'The forklift lifts the weight, and you get no stronger',
-    origin: 'Bardugo & Sanderson — two working novelists, in conversation',
+    get title() { return t('lib.you-cannot-write-to-a-trend.title'); },
+    get origin() { return t('lib.you-cannot-write-to-a-trend.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The discomfort is the mechanism, not a side effect to engineer away.',
-    thesis:
-      'Two arguments carry this one. You cannot write to a trend, because by the time the work is finished the market has moved — both describe being told what not to submit and watching the market swing the opposite way within a few years. And the case against handing the hard cognitive work to a tool: the difficulty of making something is specifically how the maker improves, not an obstacle in front of the output.',
-    ideas: [
-      {
-        name: 'The forklift',
-        body: 'Using a tool to do the hard part is compared to having a forklift lift your weights at the gym. The weight goes up and you get nothing, because the resistance was the entire point. A second objection is named alongside it — the loss of the pleasure of having done it — which she treats as the less discussed of the two.',
-      },
-      {
-        name: 'A heist has two marks',
-        body: 'The character being fooled, and the reader, who has to be genuinely fooled by the same misdirection. The fantastical element then has to be a constraint or one additional tool rather than a solution to any problem, or nothing in the plot feels earned.',
-      },
-      {
-        name: 'Street level versus world-altering',
-        body: 'The parallel distinction: some work operates at a scale where the extraordinary drives everything, while heist structure works best where the plot runs on character talent and cunning with the extraordinary as an accent.',
-      },
-      {
-        name: 'Define tomorrow\'s question before you stop',
-        body: 'Finish a session by writing down the specific question the next one opens with. Directly usable in any short or interrupted work, not only writing.',
-      },
-      {
-        name: 'Three kinds of stuck',
-        body: 'A fixable problem in the work; a possibly unfixable one; or a problem with your own capacity right now. They are not the same and do not respond to the same treatment, and the first move is deciding which one you are in.',
-      },
-      {
-        name: 'The second idea may belong inside the first',
-        body: 'When a new idea intrudes on a stalled project, ask whether it belongs in the stalled thing before discarding it as distraction. Often the intrusion is the missing piece rather than an escape from it.',
-      },
-    ],
-    notes: [
-      'A concrete vetting question for anyone whose changes you will rely on: where do they see this sitting on the shelf? An answer reveals whether they understand what it is.',
-      'This is the second entry in this sector featuring one of these authors; the earlier one covers promises, escalation and finishing. What is new here is the collaboration and career material, and the argument about tools.',
-      'Two commercially successful novelists talking candidly rather than teaching — strong on lived specifics, weaker as generalisable method than the structured craft sources already in this sector. They flag the limit themselves: on the mechanics of breaking in, they say plainly not to ask them, because they did it a decade ago.',
-    ],
-    practices: [
-      'Write the book you believe in, because the trend you are chasing will have turned by the time you finish.',
-      'Keep the hard part yours — the resistance is where the improvement comes from.',
-      'End every session by writing the question the next one starts with.',
-      'Diagnose which of the three kinds of stuck you are in before trying to fix it.',
-      'Ask a prospective collaborator where they see the thing on the shelf.',
-    ],
+    get hook() { return t('lib.you-cannot-write-to-a-trend.hook'); },
+    get thesis() { return t('lib.you-cannot-write-to-a-trend.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.you-cannot-write-to-a-trend.idea.${i}.name`),
+        body: t(`lib.you-cannot-write-to-a-trend.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.you-cannot-write-to-a-trend.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.you-cannot-write-to-a-trend.practice.${i}`));
+    },
     habits: [
-      { id: 's_makecreate', because: 'The forklift argument only means anything if there is a regular session where the resistance is actually met.' },
-      { id: 'd_notes', because: 'Defining tomorrow\'s question before stopping is a written act — held in the head it does not survive the night.' },
-      { id: 'c_ship', because: 'The reader is the second mark, and whether the misdirection worked is not knowable from the inside.' },
+      { id: 's_makecreate', get because() { return t('lib.you-cannot-write-to-a-trend.habit.s_makecreate.because'); } },
+      { id: 'd_notes', get because() { return t('lib.you-cannot-write-to-a-trend.habit.d_notes.because'); } },
+      { id: 'c_ship', get because() { return t('lib.you-cannot-write-to-a-trend.habit.c_ship.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'Their three-way diagnosis of stuck only becomes available to someone who has carried enough things to done to tell the kinds apart.' },
-      { id: 'q_portfolio', because: 'Both describe the market moving under them — which is an argument for the work existing publicly rather than waiting for the right moment.' },
+      { id: 'q_makeweekly', get because() { return t('lib.you-cannot-write-to-a-trend.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.you-cannot-write-to-a-trend.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Bardugo & Sanderson — Fantasy Heist Craft, the AI-as-Forklift Argument and Outlining as the Career Unlock',
+    get vaultSource() { return t('lib.you-cannot-write-to-a-trend.vaultSource'); },
   },
-
   {
     slug: 'three-positions',
     attr: 'family',
-    title: 'Separation and completion are not the same thing',
-    origin: 'Khlomov — gestalt therapist, on positions, contact and love',
+    get title() { return t('lib.three-positions.title'); },
+    get origin() { return t('lib.three-positions.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Withdrawing to be alone is read as punishment. Constant attention is read as invasion. Both are wrong.',
-    thesis:
-      'Personality is treated as a dynamic system of habits and directions continuously adapting to changing conditions rather than as a fixed thing. Three positions run inside one person at once — orienting toward safety, relating toward attachment, and achieving toward a goal — and moving through life healthily means switching between them rather than getting stuck in one.',
-    ideas: [
-      {
-        name: 'Three heads, in different proportions',
-        body: 'The orienting position assesses safety and needs distance and solitude; the relating position weighs attachment and closeness; the achieving position moves toward a goal and wants recognition. Everyone has all three in different proportion, and progress requires changing which one is leading rather than staying in the same one.',
-      },
-      {
-        name: 'Creative adaptation',
-        body: 'What suited someone at twenty may be genuinely inadequate to their capacities and risks at fifty. The move is finding a new form for the same drive rather than simply forbidding it to yourself — the drive is not the problem, the unchanged form is.',
-      },
-      {
-        name: 'The contact cycle',
-        body: 'Pre-contact is checking yourself and the situation for safety and finding enough energy to act. Full contact is the point where the checking is dropped and the thing can actually be received. Post-contact is assimilation rather than parting — and confusing parting with completion is named as the common error: a relationship can end while the connection and part of the experience stay.',
-      },
-      {
-        name: 'The mismatch that generates the fight',
-        body: 'The relating partner reads withdrawal as aggression or punishment; the orienting partner reads intense attention as invasion. Neither need is the wrong one, and the resolution is not suppressing either but agreeing an explicit code — if I have gone to sit alone, that is not a statement about you.',
-      },
-      {
-        name: 'Solitude as a physiological requirement',
-        body: 'Social load has a ceiling of roughly six hours a day before overload, on the study he cites, and a couple of hours of solitude after intensive contact is treated as a physiological need rather than as unsociability.',
-      },
-      {
-        name: 'Jealousy read as unexpressed love',
-        body: 'His reframe: treat jealousy not as evidence that the partner does not love you but as a signal that you are currently not managing to love as much as you could — and look for where the unexpressed part should go, rather than increasing control.',
-      },
-    ],
-    notes: [
-      'On small discomforts: say them immediately rather than accumulating, which is the same conclusion several other sources here reach from different directions.',
-      'A gestalt therapist of long standing working within his own theoretical frame and terminology. Read it as one school of psychological thought rather than as empirically settled — the material is clinical hypothesis, not quantitative research.',
-      'The conversation also contains a cross-cultural claim relayed second-hand and a sharp biological account of sexual strategy; both are flagged in the source itself as personal opinion or unverified extrapolation, and neither is carried here.',
-    ],
-    practices: [
-      'Say the code out loud: what your withdrawal means, and what it does not mean.',
-      'Notice which of the three positions you have been stuck in, and what switching would require.',
-      'Find a new form for a drive that no longer fits, rather than banning it.',
-      'Treat solitude after heavy contact as a requirement rather than a preference.',
-      'When jealous, look for where your own unexpressed care should be going.',
-    ],
+    get hook() { return t('lib.three-positions.hook'); },
+    get thesis() { return t('lib.three-positions.thesis'); },
+    get ideas() {
+      return Array.from({ length: 6 }, (_, i) => ({
+        name: t(`lib.three-positions.idea.${i}.name`),
+        body: t(`lib.three-positions.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.three-positions.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.three-positions.practice.${i}`));
+    },
     habits: [
-      { id: 'f_voice', because: 'The code only works if it is actually said — and tone is what distinguishes an explanation from a rejection.' },
-      { id: 'f_meet', because: 'Full contact in his sense is the part that cannot be reached through checking and managing at a distance.' },
-      { id: 'f_remember', because: 'Assimilation rather than parting means what someone told you stays available afterwards, which requires having held it.' },
+      { id: 'f_voice', get because() { return t('lib.three-positions.habit.f_voice.because'); } },
+      { id: 'f_meet', get because() { return t('lib.three-positions.habit.f_meet.because'); } },
+      { id: 'f_remember', get because() { return t('lib.three-positions.habit.f_remember.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Agreeing the code is a conversation held before the next withdrawal, not during it.' },
-      { id: 'q_reconnect', because: 'His distinction between ending and completing implies some connections are still there to be picked up rather than mourned.' },
+      { id: 'q_hardconversation', get because() { return t('lib.three-positions.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.three-positions.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Хломов — Личность, циклы контакта и любовь',
+    get vaultSource() { return t('lib.three-positions.vaultSource'); },
   },
-
   {
     slug: 'ask-for-the-number',
     attr: 'career',
-    title: 'Make them say a number',
-    origin: 'Jesse Zhang — founder, on discovery and where value actually lands',
+    get title() { return t('lib.ask-for-the-number.title'); },
+    get origin() { return t('lib.ask-for-the-number.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: '"That would be cool" is not data. A figure, an approval chain, and how they would justify it — that is data.',
-    thesis:
-      'The idea was not chosen up front; it emerged from deliberately uncomfortable questions asked directly to prospective customers. If we built this, exactly what would you pay? Would someone have to approve it? How would you present the return to your leadership? A founder can ask these bluntly in a way a salesperson cannot, and the questions force concrete numbers where enthusiasm would otherwise sit.',
-    ideas: [
-      {
-        name: 'Aggregate the figures rather than trusting a conversation',
-        body: 'Tally the amounts named across every idea being explored. The one whose total is an order of magnitude above the rest is the signal — not intuition, and not which felt most obvious. "Build something people want" is true and unusable; extracting a number is what makes it actionable.',
-      },
-      {
-        name: 'The uncomfortable question opens the bigger door',
-        body: 'Putting a customer into a concrete frame of mind frequently surfaces a larger adjacent opportunity they volunteer themselves. Their own real opportunity appeared only because a smaller conversation had already got the customer thinking in specifics.',
-      },
-      {
-        name: 'Two ends of the labour spectrum',
-        body: 'Map the cost of the human work being touched. At the expensive, skilled end the effect is augmentation — the work is effectively unbounded, so nobody reduces headcount, they multiply leverage. At the low-paid, high-turnover end it is replacement, because the work is tokenisable and the return is a straightforward cost line. The two areas with clearest traction sit at these extremes precisely for that reason.',
-      },
-      {
-        name: 'Why one category broke out first',
-        body: 'Two properties: the return is trivially quantifiable because the organisation already tracks the relevant numbers, and the work was already high-turnover. Where a buyer can compute the saving without being persuaded of it, the sale is a different kind of conversation.',
-      },
-      {
-        name: 'Watch the effort before the commitment',
-        body: 'How much work someone puts in while still courting you is the best available signal of how much they will put in afterwards. Stated about investors, but it generalises to any partner or collaborator.',
-      },
-    ],
-    notes: [
-      'On pricing early: do not run negative, and do not over-optimise margin before the thing is established.',
-      'A named founder with verifiable traction, interviewed by a host willing to push back, making specific and falsifiable claims rather than vague ones.',
-      'Naturally self-serving in places — his own margin philosophy is presented as obviously correct and the standard critique of his category is waved off. Take the strategy as one practitioner\'s working model rather than as settled.',
-    ],
-    practices: [
-      'Ask for the exact figure, the approval chain, and how they would justify it upward.',
-      'Tally willingness-to-pay across every idea and follow the order-of-magnitude gap.',
-      'Before building, place the work on the labour spectrum and decide whether you are augmenting or replacing.',
-      'Prefer the case where the buyer can compute the return without being convinced of it.',
-      'Judge a prospective partner by their effort before they have committed.',
-    ],
+    get hook() { return t('lib.ask-for-the-number.hook'); },
+    get thesis() { return t('lib.ask-for-the-number.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.ask-for-the-number.idea.${i}.name`),
+        body: t(`lib.ask-for-the-number.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.ask-for-the-number.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.ask-for-the-number.practice.${i}`));
+    },
     habits: [
-      { id: 'd_askquestion', because: 'The entire method is one uncomfortable question asked to a real person, repeatedly, rather than a better internal analysis.' },
-      { id: 'c_onelesson', because: 'The signal only appears once figures from many conversations are tallied — which requires them to have been written down.' },
-      { id: 'd_build', because: 'The bigger opportunity surfaced because something concrete already existed to talk about.' },
+      { id: 'd_askquestion', get because() { return t('lib.ask-for-the-number.habit.d_askquestion.because'); } },
+      { id: 'c_onelesson', get because() { return t('lib.ask-for-the-number.habit.c_onelesson.because'); } },
+      { id: 'd_build', get because() { return t('lib.ask-for-the-number.habit.d_build.because'); } },
     ],
     quests: [
-      { id: 'q_skill', because: 'Asking for a number without flinching is a skill people avoid rather than lack, and it improves only with reps.' },
-      { id: 'q_raise', because: 'Naming a figure and holding the pause is the same muscle, pointed at your own work rather than at a product.' },
+      { id: 'q_skill', get because() { return t('lib.ask-for-the-number.quest.q_skill.because'); } },
+      { id: 'q_raise', get because() { return t('lib.ask-for-the-number.quest.q_raise.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Jesse Zhang — Building an AI Agent Company (Decagon)',
+    get vaultSource() { return t('lib.ask-for-the-number.vaultSource'); },
   },
-
   {
     slug: 'five-components',
     attr: 'development',
-    title: 'To succeed you have to run. To be content you have to stop.',
-    origin: 'Seisembay — on the components of a good life and acceptance',
+    get title() { return t('lib.five-components.title'); },
+    get origin() { return t('lib.five-components.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'The narrowest constraint for most people is not external. It is the permission they never gave themselves.',
-    thesis:
-      'Contentment is distinguished from joy: joy is a short hormonal spike, while the state being described is balance and acceptance. The claimed proportion is roughly sixty-forty good to bad, and that proportion is normal rather than a problem to solve. Five components — health, safety, freedom, people you love, work you love — do not guarantee it between them, but the absence of any one of them guarantees its opposite.',
-    ideas: [
-      {
-        name: 'Where the bottleneck usually is',
-        body: 'Each component divides further — freedom into physical, financial, legal and mental. For most people the narrowest is the last: self-built constraints made of fear of other people\'s judgement, of making the call, of being seen wanting something. The external barriers are rarely the binding ones.',
-      },
-      {
-        name: 'Noticed only in its absence',
-        body: 'Like health and safety, this state is felt most sharply when it is missing and is invisible while present — which is why it is chronically under-defended and over-postponed.',
-      },
-      {
-        name: 'Acceptance comes first, not last',
-        body: 'Accepting the world as it is — including unfairness, loss and failure — is treated as a precondition rather than a result. While something in the world should not be the way it is, it will keep arriving and keep interfering.',
-      },
-      {
-        name: 'The chase is self-defeating',
-        body: 'The paradox stated: pursuing success directly lowers the odds of reaching it, because hurry creates vulnerability to circumstance and to other people, and burns energy on cleaning up what haste produced. Stopping means ceasing to want only the good outcomes.',
-      },
-      {
-        name: 'Gratitude against the fear that follows good news',
-        body: 'A specific pattern he names in people who have done well: the arrival of something good produces dread that payment is coming. The tool offered is deliberate gratitude at the moment of the good thing rather than waiting for the reckoning. It is a practitioner\'s device, not a clinically tested one.',
-      },
-    ],
-    notes: [
-      'The five components are offered as a quick self-check between fuller reviews rather than as a replacement for one.',
-      'An informal group conversation which describes itself in its own opening as kitchen-table talk rather than an expert forum.',
-      'Several attributions are paraphrased from memory and at least two of the quotations he uses are widely repeated but probably apocryphal. One cited posture-and-hormone study is named without reference. Treat the framework as his, and the supporting citations as decoration rather than evidence.',
-    ],
-    practices: [
-      'Run the five components as a fast check: which one is actually missing right now?',
-      'Look for the constraint in mental freedom before looking for it outside.',
-      'Practise gratitude at the moment something good arrives, rather than bracing.',
-      'Accept the proportion instead of treating the bad forty per cent as a fault to be fixed.',
-      'Write down the recurring pattern and test whether the belief under it is necessarily true.',
-    ],
+    get hook() { return t('lib.five-components.hook'); },
+    get thesis() { return t('lib.five-components.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.five-components.idea.${i}.name`),
+        body: t(`lib.five-components.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.five-components.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.five-components.practice.${i}`));
+    },
     habits: [
-      { id: 's_gratitude', because: 'His one concrete device is gratitude aimed at the good thing as it happens, which only works if the habit already exists.' },
-      { id: 'b_morningjoy', because: 'A state noticed only in its absence needs something small and deliberate to make it visible while present.' },
-      { id: 'd_review', because: 'Which of the five is actually missing is not answerable in the moment it is missed.' },
+      { id: 's_gratitude', get because() { return t('lib.five-components.habit.s_gratitude.because'); } },
+      { id: 'b_morningjoy', get because() { return t('lib.five-components.habit.b_morningjoy.because'); } },
+      { id: 'd_review', get because() { return t('lib.five-components.habit.d_review.because'); } },
     ],
     quests: [
-      { id: 'q_wheel', because: 'He offers the five components explicitly as the quick version — the full audit is the thing they are meant to sit between.' },
-      { id: 'q_energyaudit', because: 'The claim that hurry is self-defeating is checkable only against a record of where the week actually went.' },
+      { id: 'q_wheel', get because() { return t('lib.five-components.quest.q_wheel.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.five-components.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Сейсембай — Пять компонентов счастья и благодарность как антидот',
+    get vaultSource() { return t('lib.five-components.vaultSource'); },
   },
-
   {
     slug: 'contempt-not-anger',
     attr: 'family',
-    title: 'Anger is survivable. Contempt is the warning.',
-    origin: 'Arthur Brooks — social scientist, on love\'s stages and what ends it',
+    get title() { return t('lib.contempt-not-anger.title'); },
+    get origin() { return t('lib.contempt-not-anger.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'The couples who leave at year three are rarely disappointed by fading passion. They discover they were never friends.',
-    thesis:
-      'The aim of a relationship is not to stay in its early chemistry but to arrive, over roughly two to five years, at companionate love — a friendship-based bond with passion inside it rather than passion as the foundation. And what ends marriages is less an absence of chemistry than contempt: disgust fused with anger, which is a different and far more corrosive thing than ordinary conflict.',
-    ideas: [
-      {
-        name: 'Anger and contempt are not the same signal',
-        body: 'Drawing on the marriage-research literature: anger is not the predictor people assume — it often means I care and want this to change. Contempt is the one that forecasts the end. The self-check is whether a recurring conflict is hot anger or has shaded into eye-rolling, sarcasm and treating the other person\'s traits as beneath you.',
-      },
-      {
-        name: 'What the third year actually reveals',
-        body: 'Couples separating at three to five years are usually not mourning the chemistry. They discover they were never compatible as friends — they slept together and travelled together and do not much like each other. The inverse case he cites is couples with little sex who describe each other as their closest friend, reporting the more durable satisfaction.',
-      },
-      {
-        name: 'Why early infatuation resembles depression',
-        body: 'In the rumination stage serotonin drops, activating the structure the brain uses for not letting things go — the same one implicated in clinical depression, and the same one that drives creative work. Obsessive thinking about someone is that generic mechanism running, not a pathology and not a measure of how right the person is.',
-      },
-      {
-        name: 'Emotions are for survival, not for truth',
-        body: 'The limbic system exists to signal approach or avoid so you do not die, not to deliver accurate information about what you should do. That is what makes the prefrontal override a skill rather than a betrayal of feeling.',
-      },
-      {
-        name: 'Practice approach when you feel avoidance',
-        body: 'The direct application: when you notice the impulse to withdraw from someone close, treat it as the cue for a small connecting gesture rather than as instruction to withdraw.',
-      },
-    ],
-    notes: [
-      'The stage model here overlaps the entry in this sector drawn from Fisher\'s three-system account; what is new is companionate love as the stated destination, the anger-versus-contempt distinction, and the approach-on-avoidance move.',
-      'He describes a pattern of falling in love disproportionately fast and running the whole sequence almost at once, and argues it acts as a signal that attracts exploitative partners. His accompanying claim about how this distributes by sex is a clinical impression rather than a finding, and is not carried here.',
-      'Expect several failed attempts as the ordinary cost of looking for a real relationship rather than as evidence of a fault in you.',
-      'A credentialed social scientist who is also explicit about a religious lens shaping his reading — a stated bias rather than a hidden one. The marriage-lab findings on contempt are well established; where he moves into theological territory, that is where the stated lens is doing the work.',
-    ],
-    practices: [
-      'Audit a recurring conflict for contempt rather than for volume.',
-      'Ask whether you would choose this person as a friend, separately from anything else.',
-      'When you want to withdraw from someone close, make one small approach instead.',
-      'Treat an emotion as a signal about survival rather than as a report on reality.',
-      'Keep one or two friends who will tell you that you are wrong.',
-    ],
+    get hook() { return t('lib.contempt-not-anger.hook'); },
+    get thesis() { return t('lib.contempt-not-anger.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.contempt-not-anger.idea.${i}.name`),
+        body: t(`lib.contempt-not-anger.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.contempt-not-anger.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.contempt-not-anger.practice.${i}`));
+    },
     habits: [
-      { id: 'f_meet', because: 'Companionate love is friendship, and friendship is built by ordinary shared time rather than by resolving things.' },
-      { id: 'f_thanks', because: 'Contempt grows in the space where nothing specific is appreciated out loud — this is the cheapest available counterweight.' },
-      { id: 'f_remember', because: 'Practising approach when you feel avoidance needs something concrete to approach with, and last week\'s detail is it.' },
+      { id: 'f_meet', get because() { return t('lib.contempt-not-anger.habit.f_meet.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.contempt-not-anger.habit.f_thanks.because'); } },
+      { id: 'f_remember', get because() { return t('lib.contempt-not-anger.habit.f_remember.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'Naming contempt where it has appeared is the conversation that anger, however loud, keeps postponing.' },
-      { id: 'q_reconnect', because: 'His own prescription includes people who will contradict you — which requires having them close enough to bother.' },
+      { id: 'q_hardconversation', get because() { return t('lib.contempt-not-anger.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.contempt-not-anger.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Brooks — Neurochemistry of Falling in Love and the Discipline of Staying in It',
+    get vaultSource() { return t('lib.contempt-not-anger.vaultSource'); },
   },
-
   {
     slug: 'five-pillars-of-resilience',
     attr: 'development',
-    title: 'When one pillar goes down, deliberately raise the other four',
-    origin: 'Julie Smith — clinical psychologist, on the physiological base',
+    get title() { return t('lib.five-pillars-of-resilience.title'); },
+    get origin() { return t('lib.five-pillars-of-resilience.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'If you set out to break someone psychologically, you would attack exactly these five.',
-    thesis:
-      'Her blunt framing: to break a person you would disturb their routine, deprive them of sleep, isolate them, and disrupt their eating — and that is precisely what happens in some unavoidable life circumstances, while being attributed to hormones rather than recognised as a structural assault on the base. The five supports are nutrition, routine and daylight, movement, sleep, and social connection.',
-    ideas: [
-      {
-        name: 'The rule that makes it usable',
-        body: 'When one support is unavoidably down — sleep during a period when sleep is not available — the move is to consciously strengthen the other four. It does not remove the problem; it creates enough stability to hold until the temporary situation changes. The failure mode is trying to compensate for a collapsed physiological base with psychological work.',
-      },
-      {
-        name: 'Why the base is invisible as a cause',
-        body: 'Anxious and catastrophising thoughts occur statistically more often in states of tiredness, hunger and stress — meaning the propensity itself is situational rather than a fixed trait. That reframes a bad fortnight of thinking as a question about the base rather than about the person.',
-      },
-      {
-        name: 'An emotion is information, not a fact about you',
-        body: 'The brain assembles an emotional state from a limited set of signals — breath, pulse, external stimulus — and that state may or may not accurately reflect the situation. So an emotion is never an objective fact, because fatigue and hunger are among its inputs.',
-      },
-      {
-        name: 'External focus against social anxiety',
-        body: 'A concrete task in the room — recording facts, noting something specific — moves attention from self-monitoring outward, and lowers the anxiety in the moment rather than after it.',
-      },
-      {
-        name: 'A test for guilt',
-        body: 'Was something you actually value violated? If yes, the guilt is informative and asks for a change in behaviour. If not, it is not reporting on anything and does not need to be resolved before acting.',
-      },
-    ],
-    notes: [
-      'The distancing technique she teaches — I notice the thought that, rather than I am — is already covered in this sector by a separate entry from a different source. What this entry adds is the five supports and the substitution rule when one of them fails.',
-      'On comparison with someone further ahead, the question offered is not whether you will catch up but what of what they do you could start doing now.',
-      'A clinical psychologist with long public-health and private practice, in an interview rather than a publication. One study on attention and social anxiety is cited without sample details, and the five-support model is her own adaptation of a supervisor\'s teaching frame rather than a validated protocol — though each of the five separately has a broad evidence base elsewhere.',
-    ],
-    practices: [
-      'Name which of the five is currently down, and raise the other four on purpose.',
-      'Check the base before interrogating the thought — tiredness and hunger are inputs to it.',
-      'In a socially anxious moment, give yourself a concrete external task.',
-      'Test guilt against whether something you actually value was violated.',
-      'Ask what of theirs you could start doing, rather than whether you will catch up.',
-    ],
+    get hook() { return t('lib.five-pillars-of-resilience.hook'); },
+    get thesis() { return t('lib.five-pillars-of-resilience.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.five-pillars-of-resilience.idea.${i}.name`),
+        body: t(`lib.five-pillars-of-resilience.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.five-pillars-of-resilience.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.five-pillars-of-resilience.practice.${i}`));
+    },
     habits: [
-      { id: 'h_lightsout', because: 'Sleep is the support most often unavoidably lost, and the one whose absence most reliably degrades the other four.' },
-      { id: 'b_outside', because: 'Routine and daylight are one support in her list, and this is the version of it that survives a bad week.' },
-      { id: 'f_reachout', because: 'Social connection is a pillar rather than a luxury — and isolation is named as a method of breaking someone, not a side effect.' },
+      { id: 'h_lightsout', get because() { return t('lib.five-pillars-of-resilience.habit.h_lightsout.because'); } },
+      { id: 'b_outside', get because() { return t('lib.five-pillars-of-resilience.habit.b_outside.because'); } },
+      { id: 'f_reachout', get because() { return t('lib.five-pillars-of-resilience.habit.f_reachout.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'Raising four supports deliberately is a structural act, and structure decided during a hard stretch does not get built.' },
-      { id: 'q_sleepreset', because: 'The support she names as most commonly collapsed is the one that needs rebuilding rather than tolerating.' },
+      { id: 'q_habitsystem', get because() { return t('lib.five-pillars-of-resilience.quest.q_habitsystem.because'); } },
+      { id: 'q_sleepreset', get because() { return t('lib.five-pillars-of-resilience.quest.q_sleepreset.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Julie Smith — Постнатальная уязвимость, пять опор защиты и переход от осуждения к любопытству',
+    get vaultSource() { return t('lib.five-pillars-of-resilience.vaultSource'); },
   },
-
   {
     slug: 'the-personality-layer',
     attr: 'money',
-    title: 'Tools and tactics move you a fifth. The rest is the person.',
-    origin: 'Dmitrieva — a second conversation, on the layers growth happens in',
+    get title() { return t('lib.the-personality-layer.title'); },
+    get origin() { return t('lib.the-personality-layer.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'The angle of the torch decides how many tools you can even see.',
-    thesis:
-      'Change happens in five layers — tools, actions, configurations, relationships, and the person. The last is the source of the torch: the angle of light set by your own development decides how many tools and configurations are visible and available at all. Ten or twenty per cent of growth is available in the first two layers; anything multiplicative comes only through the last.',
-    ideas: [
-      {
-        name: 'Student mode is a precondition for insight',
-        body: 'Insight is only available to someone open to the idea that the source of new knowledge could be anyone rather than only a recognised authority. In teacher mode — I already know this — even the most valuable ideas pass by unheard.',
-      },
-      {
-        name: 'Rest is not the same as contentment',
-        body: 'From the middle of a year without obligations: passive rest did not appear among the genuinely happy moments; every peak she recalls involved realising some capacity. And the paradox she reports — without a work load you get less done rather than more, because the brain calibrates energy to perceived urgency.',
-      },
-      {
-        name: 'Do not fear the hard stretch at the start',
-        body: 'Against the framing that money should arrive easily: a period of intense work at the beginning is often required and is not evidence the path is wrong. Her method for handling such periods is to conscript yourself for a defined term — two weeks of intense effort, everything else switched off — and then deliberately discharge yourself.',
-      },
-      {
-        name: 'A belief was once a defence',
-        body: 'Any limiting belief was adaptive at some point — a protection, a way of staying loyal to a parent, a response to something a child could not carry. Which yields the working metaphor: beliefs as clothing you can consciously select for the situation rather than errors to be ashamed of.',
-      },
-      {
-        name: 'Testing whether a want is yours',
-        body: 'A bodily test for authenticity of desire — the physical response when looking at something with no intention of buying it. Offered as a calibration usable at any income.',
-      },
-    ],
-    notes: [
-      'Her observation that the capacity for joy on a small budget is a skill worth training now rather than after the money arrives — it does not appear automatically with income.',
-      'This is the second conversation with the same author in this sector; the first covers money shame and the belief-rewriting protocol. What is new here is the layer model, student mode, and the authenticity test.',
-      'A practising psychologist and entrepreneur speaking from her own verifiable experience of scaling. The claim that money is proportional to willingness to take responsibility is presented explicitly as a personal hypothesis rather than as established.',
-    ],
-    practices: [
-      'Ask which layer a problem actually sits in before reaching for another tool.',
-      'Stay in student mode, including with people who do not look like sources.',
-      'Conscript yourself for a defined intense stretch, then deliberately end it.',
-      'Test a want by the physical response when you have no intention of buying.',
-      'Train the capacity for joy at the budget you have now.',
-    ],
+    get hook() { return t('lib.the-personality-layer.hook'); },
+    get thesis() { return t('lib.the-personality-layer.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-personality-layer.idea.${i}.name`),
+        body: t(`lib.the-personality-layer.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.the-personality-layer.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.the-personality-layer.practice.${i}`));
+    },
     habits: [
-      { id: 'm_waitlist', because: 'A day\'s gap is where the bodily test can actually run, since it requires not being about to buy the thing.' },
-      { id: 'b_morningjoy', because: 'Joy on a small budget is named as a trainable skill that does not arrive with income — which makes it a daily practice rather than a stage.' },
-      { id: 'm_log', because: 'Which layer a problem sits in is not answerable from impression, and spending is the layer most easily mistaken for the others.' },
+      { id: 'm_waitlist', get because() { return t('lib.the-personality-layer.habit.m_waitlist.because'); } },
+      { id: 'b_morningjoy', get because() { return t('lib.the-personality-layer.habit.b_morningjoy.because'); } },
+      { id: 'm_log', get because() { return t('lib.the-personality-layer.habit.m_log.because'); } },
     ],
     quests: [
-      { id: 'q_raise', because: 'Her claim is that multiplicative change comes through the person rather than the tactics — and asking is the act that tests which layer you are actually stuck in.' },
-      { id: 'q_skill', because: 'The defined intense stretch is her own method, and it needs one concrete thing to be aimed at.' },
+      { id: 'q_raise', get because() { return t('lib.the-personality-layer.quest.q_raise.because'); } },
+      { id: 'q_skill', get because() { return t('lib.the-personality-layer.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Дмитриева — Пять слоёв трансформации, разумное потребление и деньги как функция ответственности',
+    get vaultSource() { return t('lib.the-personality-layer.vaultSource'); },
   },
-
   {
     slug: 'the-soul-of-the-intention',
     attr: 'spirituality',
-    title: 'Praised once, and the fruit stops there',
-    origin: 'A lecture on sincerity, permanence and what a deed is worth',
+    get title() { return t('lib.the-soul-of-the-intention.title'); },
+    get origin() { return t('lib.the-soul-of-the-intention.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'The size of an act is not what decides its weight.',
-    thesis:
-      'The formula the theological section turns on: the soul of any action is the intention, and the soul of the intention is sincerity. A good deed performed for people\'s praise has had its own lifespan set by the doer — the praise arrives and the fruit stops there. Done for its own proper end, the consequences are treated as effectively unbounded.',
-    ideas: [
-      {
-        name: 'The shadow of a shadow',
-        body: 'Everything beautiful in the world is treated as a faint reflection of a permanent source rather than as the source. The image used is bubbles on a wave, each catching the same sunlight and bursting — the light never belonged to the bubbles. The consequence drawn for grief: loss is softened not by denying it but by moving the attachment from the temporary to what it was reflecting.',
-      },
-      {
-        name: 'Why sincerity is a lifespan',
-        body: 'The claim is mechanical rather than moral: an act aimed at recognition is complete when recognition arrives. An act not aimed there has no such stopping point, and its consequences continue through everything they touch.',
-      },
-      {
-        name: 'The chain from one small thing',
-        body: 'Illustrated with a single raindrop and the endless sequence of what grows from it and what follows from that. A secular parallel is offered from a nature documentary tracing an ecological chain from one animal\'s waste — the same structure of consequence, made visible.',
-      },
-      {
-        name: 'Scale is not weight',
-        body: 'The transmitted story of a scholar whose weightiest deed turned out not to be his books but a small unremarked kindness — used to argue that the visible scale of an act is not what determines what it is worth.',
-      },
-      {
-        name: 'Continuous creation',
-        body: 'The reading offered of the creation account is not that it happened and finished but that it is ongoing, with the word for a period not meaning a day and time described elsewhere in relative terms. That continuity is then used as the argument for resurrection: what you see renewed daily is the same act.',
-      },
-    ],
-    notes: [
-      'On debt, the position given is not only prohibition but a psychological argument: a debt is a condition imposed on a future you do not control.',
-      'This is the second entry in this sector from the same channel; the first covers the prayer of Yunus and self-justification. What is new here is the sincerity formula and the treatment of loss.',
-      'The theological portion is a structured transmission of a recognised tradition with direct references to specific texts. The live question-and-answer portion that follows is quick personal positioning that does not necessarily reflect consensus across schools — the speaker flags one such position as his own.',
-      'The parables are given as instructive stories without primary sources or firm attribution — useful as teaching material rather than as documented events.',
-    ],
-    practices: [
-      'Ask what an act is aimed at before doing it, since that sets where its effect stops.',
-      'When something is lost, move the attachment to what it was reflecting rather than arguing with the loss.',
-      'Stop grading your acts by their visible size.',
-      'Treat a debt as a condition placed on a future you do not control.',
-    ],
+    get hook() { return t('lib.the-soul-of-the-intention.hook'); },
+    get thesis() { return t('lib.the-soul-of-the-intention.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.the-soul-of-the-intention.idea.${i}.name`),
+        body: t(`lib.the-soul-of-the-intention.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-soul-of-the-intention.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.the-soul-of-the-intention.practice.${i}`));
+    },
     habits: [
-      { id: 's_dhikr', because: 'Moving attachment from the reflection to the source is a daily orientation rather than a conclusion reached once.' },
-      { id: 'm_charity', because: 'The argument that scale is not weight only becomes real where small giving is ordinary rather than occasional.' },
-      { id: 's_gratitude', because: 'The bubbles image is about noticing the light rather than the vessel, which is what naming what went right actually trains.' },
+      { id: 's_dhikr', get because() { return t('lib.the-soul-of-the-intention.habit.s_dhikr.because'); } },
+      { id: 'm_charity', get because() { return t('lib.the-soul-of-the-intention.habit.m_charity.because'); } },
+      { id: 's_gratitude', get because() { return t('lib.the-soul-of-the-intention.habit.s_gratitude.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'The theological section works through specific numbered texts — the kind of material that rewards study rather than summary.' },
-      { id: 'q_debts', because: 'His argument against debt is about a claim on an uncontrollable future, which requires knowing what has already been claimed.' },
+      { id: 'q_learnfaith', get because() { return t('lib.the-soul-of-the-intention.quest.q_learnfaith.because'); } },
+      { id: 'q_debts', get because() { return t('lib.the-soul-of-the-intention.quest.q_debts.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Из мрака к свету — Слова о смерти как переселении, искренность намерения и харам кредита',
+    get vaultSource() { return t('lib.the-soul-of-the-intention.vaultSource'); },
   },
-
   {
     slug: 'when-a-symptom-stops-on-its-own',
     attr: 'health',
-    title: 'A symptom that resolves by itself is the alarming one',
-    origin: 'Vyalov — gastroenterologist, on reading signals and preparing for a doctor',
+    get title() { return t('lib.when-a-symptom-stops-on-its-own.title'); },
+    get origin() { return t('lib.when-a-symptom-stops-on-its-own.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Relief is the wrong reading. The tissue may simply have stopped reporting.',
-    thesis:
-      'The counterintuitive claim at the centre: when a chronic symptom disappears without treatment, that is not recovery but a sign the organ has begun adapting pathologically — the lining has coarsened and lost sensitivity, in the same way skin does. The signal stopped; the process did not. The same applies elsewhere, where suddenly normal function after a long disturbance can mean the system has settled into a chronically inflamed state rather than a resolved one.',
-    ideas: [
-      {
-        name: 'The case that makes the point',
-        body: 'He recounts a relative in whom gallstones were found painlessly, and in whom a further condition was discovered incidentally before surgery — one that reliably progresses but is fully reversible with about six months of treatment. Treatment was postponed. Five years later it had progressed to cancer, and then to death. Both findings were preventable at the point they were discovered.',
-      },
-      {
-        name: 'A timing map you can use yourself',
-        body: 'Rough transit times by segment: seconds through the oesophagus, one to two hours in the stomach, around two hours for the biliary and pancreatic response, and ten to twenty hours through the intestine after that. Where discomfort falls in that window points at which segment is involved — though the map becomes unreliable in specific conditions that alter motility.',
-      },
-      {
-        name: 'Being a professional customer of your own care',
-        body: 'The patient\'s job, stated as an obligation rather than a courtesy: write down beforehand what hurts, where, when, and its relation to food, to bowel habit, and to time of day. Reconstructing that during the appointment produces a worse consultation than arriving with it.',
-      },
-      {
-        name: 'A fibre test as an objective marker',
-        body: 'Rather than judging by how you feel, take a full day at the reference fibre intake and observe the response — offered as a way to get an objective read on the state of the gut instead of a subjective one.',
-      },
-      {
-        name: 'A date rather than a symptom',
-        body: 'Colonoscopy at forty to forty-five regardless of whether anything is wrong — the whole argument being that the early phase produces nothing to react to.',
-      },
-    ],
-    notes: [
-      'This is the third entry in this sector from the same gastroenterologist. The first covers digestion myths and counting in grams; what is new here is the self-resolving-symptom claim, the timing map, and the preparation discipline. Where this source repeats itself across episodes, the repetition is consistency rather than new evidence.',
-      'An ultrasound of the gallbladder before any deliberate weight loss is named as a specific precaution.',
-      'Several figures — risk multiples, annual case counts, a placebo percentage — are given without in-episode citation and are working estimates from a practising clinician rather than verified numbers.',
-      'His positions on gluten and lactose in the absence of a diagnosed intolerance, and against megadosing vitamins, align with mainstream gastroenterology. One historical aside carries an audible national-pride framing worth separating from the medical content.',
-    ],
-    practices: [
-      'Treat the disappearance of a long-standing symptom without treatment as a reason to investigate, not to relax.',
-      'Write down what, where, when and in what relation to eating — before the appointment, not during it.',
-      'Use where discomfort falls in the timing window to say which segment you mean.',
-      'Put the screening date in the calendar rather than waiting for a symptom to justify it.',
-    ],
+    get hook() { return t('lib.when-a-symptom-stops-on-its-own.hook'); },
+    get thesis() { return t('lib.when-a-symptom-stops-on-its-own.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.when-a-symptom-stops-on-its-own.idea.${i}.name`),
+        body: t(`lib.when-a-symptom-stops-on-its-own.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.when-a-symptom-stops-on-its-own.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.when-a-symptom-stops-on-its-own.practice.${i}`));
+    },
     habits: [
-      { id: 'd_notes', because: 'Arriving as a professional customer means the record exists before the appointment, and memory reconstructed in the room is the thing he says produces a worse consultation.' },
-      { id: 'h_realmeal', because: 'The fibre test is a deliberate day of eating rather than a supplement, which only works from a base of actual meals.' },
-      { id: 'h_nolate', because: 'The reflux mechanism he describes is what coarsens the lining in the first place — this is the version of the fix that costs nothing.' },
+      { id: 'd_notes', get because() { return t('lib.when-a-symptom-stops-on-its-own.habit.d_notes.because'); } },
+      { id: 'h_realmeal', get because() { return t('lib.when-a-symptom-stops-on-its-own.habit.h_realmeal.because'); } },
+      { id: 'h_nolate', get because() { return t('lib.when-a-symptom-stops-on-its-own.habit.h_nolate.because'); } },
     ],
     quests: [
-      { id: 'q_healthcheck', because: 'His hardest instruction is a date rather than a reaction: the screening happens because of age, not because something started hurting.' },
-      { id: 'q_energyaudit', because: 'The relation of symptoms to food, sleep and time of day is exactly the pattern a week\'s record makes visible and memory does not.' },
+      { id: 'q_healthcheck', get because() { return t('lib.when-a-symptom-stops-on-its-own.quest.q_healthcheck.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.when-a-symptom-stops-on-its-own.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Вялов — Ловушка самопроходящих симптомов, хронометраж ЖКТ и правда о голодании',
+    get vaultSource() { return t('lib.when-a-symptom-stops-on-its-own.vaultSource'); },
   },
-
   {
     slug: 'separate-the-three',
     attr: 'health',
-    title: 'Two hours apart is the whole intervention',
-    origin: 'Vyalov — gastroenterologist, on how acute pancreatitis is actually triggered',
+    get title() { return t('lib.separate-the-three.title'); },
+    get origin() { return t('lib.separate-the-three.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Not alcohol, not fat, not nicotine. The simultaneity.',
-    thesis:
-      'Acute pancreatitis is described as triggered not by any one of alcohol, a large fat load, or nicotine, but by their combination and simultaneity. Each independently thickens the pancreatic secretion; arriving together, they block the duct so the enzyme cannot leave, and the gland begins digesting itself from the tail. Spreading the three across time — roughly two-hour intervals — removes most of the risk without changing the totals.',
-    ideas: [
-      {
-        name: 'Why simultaneity is the variable',
-        body: 'Alcohol and nicotine each thicken the secretion, the latter through compounds reaching the blood; a large quantity of fat eaten at once adds the third load. Individually the system copes with each. Together the duct occludes.',
-      },
-      {
-        name: 'Divide rather than abstain',
-        body: 'The practical instruction is not removal but separation — about two hours between episodes of each factor, which he says takes out the main part of the risk even across a long evening.',
-      },
-      {
-        name: 'The organ prepares weeks in advance',
-        body: 'The enzymes used today were synthesised two to three weeks ago from signals about the previous diet. A sudden change — a lot of rich food after months of light eating — is a load on biochemistry that has not had time to prepare, rather than a failure of restraint. Hence preparing weeks ahead rather than hours.',
-      },
-      {
-        name: 'Capacity is not the constraint',
-        body: 'Daily enzyme production runs far above what an ordinary meal consumes, so a single episode of overeating is not itself the threat to a healthy pancreas. The threat is the duct blocking, which is a different failure entirely.',
-      },
-      {
-        name: 'Why the pharmacy enzymes do not do what people think',
-        body: 'A tablet contains a small fraction of daily natural production; an uncoated one is destroyed by stomach acid before arriving; and by the time a coated form dissolves, the discomfort has passed on its own. They have real uses under a diagnosis — insurance against overeating is not one of them.',
-      },
-    ],
-    notes: [
-      'This is the fourth entry in this sector from the same clinician, and the second in this batch. The mechanism here is genuinely separate from the others — it concerns one organ and one failure mode — but the density is worth knowing: a large share of this sector now rests on one practitioner\'s account.',
-      'For sudden sharp pain under the right ribs, his instruction is an antispasmodic and a pause rather than pushing through.',
-      'Specific numbers — the alcohol thresholds, the daily enzyme figure — are given without in-episode sourcing. He does not promote a supplement of his own, which removes the conflict of interest that made another nutrition source in this vault unusable.',
-    ],
-    practices: [
-      'Separate alcohol, nicotine and a heavy fat load by about two hours rather than taking them together.',
-      'Prepare for a change of diet weeks ahead, not hours.',
-      'Do not treat pharmacy enzymes as insurance against a single excess.',
-      'Treat sharp pain under the right ribs as a stop, not something to sit through.',
-    ],
+    get hook() { return t('lib.separate-the-three.hook'); },
+    get thesis() { return t('lib.separate-the-three.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.separate-the-three.idea.${i}.name`),
+        body: t(`lib.separate-the-three.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.separate-the-three.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.separate-the-three.practice.${i}`));
+    },
     habits: [
-      { id: 'h_nosmoke', because: 'Nicotine is one of the three factors by mechanism rather than by general disapproval — removing it takes a leg off the triple load.' },
-      { id: 'h_water', because: 'The failure is a secretion becoming too thick to move, which makes ordinary hydration the least glamorous protective input available.' },
-      { id: 'c_plan', because: 'The organ adapts on a two-to-three week lag, so a heavy occasion is prepared for in advance or not at all.' },
+      { id: 'h_nosmoke', get because() { return t('lib.separate-the-three.habit.h_nosmoke.because'); } },
+      { id: 'h_water', get because() { return t('lib.separate-the-three.habit.h_water.because'); } },
+      { id: 'c_plan', get because() { return t('lib.separate-the-three.habit.c_plan.because'); } },
     ],
     quests: [
-      { id: 'q_healthcheck', because: 'The distinction between a healthy pancreas coping and a damaged one failing is not self-assessable — it needs the actual examination.' },
-      { id: 'q_habitsystem', because: 'Separating the three by two hours is a structural rule set before the evening rather than a decision made during it.' },
+      { id: 'q_healthcheck', get because() { return t('lib.separate-the-three.quest.q_healthcheck.because'); } },
+      { id: 'q_habitsystem', get because() { return t('lib.separate-the-three.quest.q_habitsystem.because'); } },
     ],
-    vaultSource: 'Health & sport / Resource / Вялов — Тройной удар по поджелудочной (алкоголь, жир, никотин)',
+    get vaultSource() { return t('lib.separate-the-three.vaultSource'); },
   },
-
   {
     slug: 'expectations-as-a-joint-project',
     attr: 'family',
-    title: 'Say it as something to build together, not as a requirement',
-    origin: 'Baranov — psychologist, on partner choice and unspoken expectations',
+    get title() { return t('lib.expectations-as-a-joint-project.title'); },
+    get origin() { return t('lib.expectations-as-a-joint-project.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'The window where everything feels compatible is the window where compatibility cannot be assessed.',
-    thesis:
-      'The central claim is that partner choice is not random but follows an unconscious pattern relative to an earlier attachment injury — either a close repetition of it or its mirror image. Around that sit the more practically useful pieces: why the early period systematically distorts the assessment, and why expectations have to be a continuing conversation rather than one settled discussion.',
-    ideas: [
-      {
-        name: 'Five fears underneath',
-        body: 'The working typology he uses: rejection, betrayal, loneliness, error, abandonment. Which one dominates is treated as the thing to identify before trying to explain why the same pattern of choice keeps recurring.',
-      },
-      {
-        name: 'The early window is hormonal, not diagnostic',
-        body: 'The initial period is described as a chemically driven state of fusion that systematically distorts the perception of compatibility. The risk named is specific: if goals are not stated explicitly during it, the mismatch surfaces only once it has passed, when discovering it is far more expensive.',
-      },
-      {
-        name: 'A scar rather than a filled hole',
-        body: 'On the pattern of using partners, objects or achievements to fill an internal emptiness: the therapeutic aim offered is not to close it but to end up with a scar — to live with it and reframe it as part of who you are rather than as a defect awaiting repair.',
-      },
-      {
-        name: 'Expectations, phrased as a joint build',
-        body: 'The reframe that does the most work: say what you want as something you would like to build together rather than as a requirement placed on the other person. It lowers the defensive response and distributes the responsibility instead of assigning it.',
-      },
-      {
-        name: 'What do I give, rather than what do I want',
-        body: 'Offered as a compact test of whether a request about a relationship is mature — asked of yourself before the conversation rather than during it.',
-      },
-    ],
-    notes: [
-      'A quick honest check he suggests: draw the relationship. It applies as readily to family and friendships as to a partner.',
-      'The archetype framework presented alongside this is the speaker\'s own commercial product, offered as a finished instrument without reference to research or any wider consensus, and the live demonstrations are single illustrative cases rather than controlled ones. The psychological theses — the pattern of choice, the early window, responsibility for expectations — hold up alongside better-grounded sources already in this sector; the archetype model should be treated as his own.',
-      'An entertainment-format conversation with open promotion in it, in an expressive and at times provocative register that does not undermine the substantive points but is worth separating from them.',
-    ],
-    practices: [
-      'State goals explicitly early, rather than trusting the feeling of compatibility.',
-      'Phrase what you want as something to build together, not as a requirement.',
-      'Ask what you are giving before asking what you want to receive.',
-      'Identify which of the five fears is actually driving the recurring pattern.',
-      'Keep the conversation about expectations running rather than settling it once.',
-    ],
+    get hook() { return t('lib.expectations-as-a-joint-project.hook'); },
+    get thesis() { return t('lib.expectations-as-a-joint-project.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.expectations-as-a-joint-project.idea.${i}.name`),
+        body: t(`lib.expectations-as-a-joint-project.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.expectations-as-a-joint-project.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.expectations-as-a-joint-project.practice.${i}`));
+    },
     habits: [
-      { id: 'f_thanks', because: 'A joint build is expressed in specifics rather than in position statements, and this is the low-stakes version of saying one.' },
-      { id: 'f_remember', because: 'Expectations as a continuing conversation only works if the previous instalment was retained.' },
-      { id: 'd_review', because: 'A recurring pattern of choice is only visible across time, which is not where it is ever noticed in the moment.' },
+      { id: 'f_thanks', get because() { return t('lib.expectations-as-a-joint-project.habit.f_thanks.because'); } },
+      { id: 'f_remember', get because() { return t('lib.expectations-as-a-joint-project.habit.f_remember.because'); } },
+      { id: 'd_review', get because() { return t('lib.expectations-as-a-joint-project.habit.d_review.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The goals conversation he says to have early is precisely the one the early period makes feel unnecessary.' },
-      { id: 'q_reconnect', because: 'The pattern he describes runs through every close relationship, and the honest drawing test applies to all of them.' },
+      { id: 'q_hardconversation', get because() { return t('lib.expectations-as-a-joint-project.quest.q_hardconversation.because'); } },
+      { id: 'q_reconnect', get because() { return t('lib.expectations-as-a-joint-project.quest.q_reconnect.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Баранов — Травма-выбор партнёра, архетипы и невысказанные ожидания',
+    get vaultSource() { return t('lib.expectations-as-a-joint-project.vaultSource'); },
   },
-
   {
     slug: 'no-one-left-to-blame',
     attr: 'career',
-    title: 'A failed business has no cover story',
-    origin: 'Gary Vaynerchuk — operator, on exposure, fit and reaction',
+    get title() { return t('lib.no-one-left-to-blame.title'); },
+    get origin() { return t('lib.no-one-left-to-blame.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Being fired comes with a narrative everyone accepts. Losing does not.',
-    thesis:
-      'Entrepreneurial failure is uniquely exposing because there is no external party left to blame — losing a job carries a ready-made explanation that people accept, and a failed business does not. Most of what follows is technique for absorbing that exposure, in yourself and in the people you lead, without becoming defensive or dependent on other people\'s opinions.',
-    ideas: [
-      {
-        name: 'Why the halo is dangerous',
-        body: 'Going in under a cultural halo rather than as a clear-eyed contest leaves people with no framework for absorbing public failure when it arrives. His concern is not the difficulty of the work but the oversupply of people chasing the identity rather than the work.',
-      },
-      {
-        name: 'The pedestal moves; fit does not',
-        body: 'He refuses to rank the roles — founder above franchisee, either above employee or parent — and notes that which role is admired is era-dependent, with professions that once drew admiration now drawing complaints. What does not move is whether a particular role suits a particular person.',
-      },
-      {
-        name: 'The franchisee reframe',
-        body: 'Argued as underrated: it retains most of the texture of running something — operations, staffing, the numbers — while trading brand-building risk for a working playbook and existing demand. Which makes it, in his framing, a serious option rather than a lesser one.',
-      },
-      {
-        name: 'Your reaction is the outcome',
-        body: 'Interpretation is treated as the controllable upstream variable: decide the situation is hopeless and nothing that subsequently happens will move you off it. The claim is not that circumstances are irrelevant but that the reading of them is where the leverage sits.',
-      },
-      {
-        name: 'Set the intention, not only the number',
-        body: 'A standard of behaviour or quality holds up under pressure better than a revenue target, and narrows the gap between missing a number and having done poor work — which are not the same thing and get conflated.',
-      },
-    ],
-    notes: [
-      'A concrete phrasing device he recommends for critical feedback — explicitly marking a judgement as your own subjective opinion — on the claim that the exact framing, not merely a softer tone, reduces defensiveness.',
-      'A long-standing and highly public figure whose views here are consistent with his wider output, so this is a reliable record of what he thinks. It is unstructured panel talk — personal philosophy and anecdote rather than research — and the business figures mentioned by participants are self-reported.',
-    ],
-    practices: [
-      'Enter on the merits rather than on the identity, and know which one is pulling you.',
-      'Judge the role by fit rather than by how admired it currently is.',
-      'Set a standard of work alongside the number, so a missed target is not read as bad work.',
-      'Mark a critical judgement as your own opinion when you give it.',
-      'Treat your reading of a situation as the part you actually control.',
-    ],
+    get hook() { return t('lib.no-one-left-to-blame.hook'); },
+    get thesis() { return t('lib.no-one-left-to-blame.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.no-one-left-to-blame.idea.${i}.name`),
+        body: t(`lib.no-one-left-to-blame.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 2 }, (_, i) => t(`lib.no-one-left-to-blame.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.no-one-left-to-blame.practice.${i}`));
+    },
     habits: [
-      { id: 'c_onelesson', because: 'Absorbing a loss without a cover story requires knowing specifically what happened, which is only available if it was recorded.' },
-      { id: 'c_ship', because: 'Exposure is the thing being trained for, and it is trained in small doses rather than saved up for one public failure.' },
-      { id: 'd_askquestion', because: 'The subjective-opinion framing is a way of speaking to people, and it needs occasions where you actually say the uncomfortable thing.' },
+      { id: 'c_onelesson', get because() { return t('lib.no-one-left-to-blame.habit.c_onelesson.because'); } },
+      { id: 'c_ship', get because() { return t('lib.no-one-left-to-blame.habit.c_ship.because'); } },
+      { id: 'd_askquestion', get because() { return t('lib.no-one-left-to-blame.habit.d_askquestion.because'); } },
     ],
     quests: [
-      { id: 'q_promise', because: 'His whole point is that a stated intention is what you are held to when the number does not arrive.' },
-      { id: 'q_skill', because: 'Fit is discovered by doing the work rather than by deciding in advance which role deserves the pedestal.' },
+      { id: 'q_promise', get because() { return t('lib.no-one-left-to-blame.quest.q_promise.because'); } },
+      { id: 'q_skill', get because() { return t('lib.no-one-left-to-blame.quest.q_skill.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Gary Vaynerchuk — Business Tactics and Lessons (Podcast With Friends)',
+    get vaultSource() { return t('lib.no-one-left-to-blame.vaultSource'); },
   },
-
   {
     slug: 'independence-plus-purpose',
     attr: 'money',
-    title: 'What you display is usually what you once lacked',
-    origin: 'Morgan Housel — a third conversation, on spending as a window',
+    get title() { return t('lib.independence-plus-purpose.title'); },
+    get origin() { return t('lib.independence-plus-purpose.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Independence without purpose turns out to be emptiness, not freedom.',
-    thesis:
-      'Spending is treated as a window into the person and often into an unhealed part of them: what someone displays conspicuously usually points at what they did not have. And the one formula he says he allowed into his book is that a good life needs both independence and purpose — either alone fails, and the failure mode of independence without purpose is specific and documented.',
-    ideas: [
-      {
-        name: 'Retributive materialism',
-        body: 'A line from a newspaper headline a century ago: the more you were looked down on while poor, the more you enjoy displaying wealth. The display is frequently aimed at yourself rather than at anyone else — proof that the child from the bottom got here. The general pattern he draws: chasing money often follows having felt unfree, chasing beauty follows having felt unattractive, chasing power follows having felt powerless.',
-      },
-      {
-        name: 'The large house as a burden',
-        body: 'From an industrialist\'s memoir: every wealthy person he knew bought an enormous house, and every one of them found it a weight. In practice the occupants contract into one or two rooms that feel like home, and the rest becomes an uninhabited museum of status.',
-      },
-      {
-        name: 'Independence without purpose',
-        body: 'The failure is concrete rather than theoretical: people who reached early financial independence and stopped working describe sliding into serious depression within months and returning to work, because the work had been supplying meaning rather than only money. The purpose can be anything — children, work, faith — but it is not optional.',
-      },
-      {
-        name: 'Trajectory beats position',
-        body: 'The skier who moved from a hundred and fiftieth to a hundredth feels better than the one who was first and is now second. He extends it with a finding from evolutionary psychology: the more attractive prospect is the one with the potential to acquire resources rather than the one who already has them — people value the getting more than the having.',
-      },
-      {
-        name: 'Wealth is relative, and the comparison set exploded',
-        body: 'There is no objective version of it. What changed is scale: the comparison used to run against neighbours and colleagues, and now runs against an algorithmically assembled feed of the most successful people alive.',
-      },
-    ],
-    notes: [
-      'This is the third conversation with the same author in this sector. The first covers rich versus wealthy and savings as a bill; the second, calibrating regret. What is new here is spending as a window into an old wound, the independence-and-purpose formula with its documented failure mode, and trajectory over position.',
-      'Temperament is treated as largely fixed: the task is not to reform yourself but to build a plan around who you actually are.',
-      'A practitioner and writer rather than a researcher, in a long informal format. Two experiments he cites are recalled without attribution and function as illustration rather than evidence, and one quotation is paraphrased from memory.',
-      'Also present in the source and not carried here: claims about risk appetite differing by sex, given as personal opinion without any reference.',
-    ],
-    practices: [
-      'Before a status purchase, ask what it is proving and to whom — including to yourself.',
-      'Plan for both independence and purpose, and treat reaching the first without the second as a known failure.',
-      'Build the plan around your actual temperament rather than the one you think you should have.',
-      'Notice that nobody is watching as closely as it feels, and price the display accordingly.',
-    ],
+    get hook() { return t('lib.independence-plus-purpose.hook'); },
+    get thesis() { return t('lib.independence-plus-purpose.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.independence-plus-purpose.idea.${i}.name`),
+        body: t(`lib.independence-plus-purpose.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.independence-plus-purpose.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.independence-plus-purpose.practice.${i}`));
+    },
     habits: [
-      { id: 'b_nocompare', because: 'Wealth is only ever relative, and the feed is what expanded the comparison set from a neighbourhood to the planet.' },
-      { id: 'm_nospend', because: 'The display purchase is the one that needs a gap between impulse and payment, because its real audience is internal.' },
-      { id: 'm_charity', because: 'Giving is the version of using money that cannot double as proof of anything to yourself.' },
+      { id: 'b_nocompare', get because() { return t('lib.independence-plus-purpose.habit.b_nocompare.because'); } },
+      { id: 'm_nospend', get because() { return t('lib.independence-plus-purpose.habit.m_nospend.because'); } },
+      { id: 'm_charity', get because() { return t('lib.independence-plus-purpose.habit.m_charity.because'); } },
     ],
     quests: [
-      { id: 'q_wheel', because: 'Purpose is the half of the formula that no financial decision supplies, and it has to be located somewhere specific.' },
-      { id: 'q_emergencyfund', because: 'Independence is the other half, and it starts as a concrete number rather than as an aspiration.' },
+      { id: 'q_wheel', get because() { return t('lib.independence-plus-purpose.quest.q_wheel.because'); } },
+      { id: 'q_emergencyfund', get because() { return t('lib.independence-plus-purpose.quest.q_emergencyfund.because'); } },
     ],
-    vaultSource: 'Finance & money / Resource / Housel — Financial Psychology, Independence and Identity',
+    get vaultSource() { return t('lib.independence-plus-purpose.vaultSource'); },
   },
-
   {
     slug: 'push-them-to-the-wall',
     attr: 'brightness',
-    title: 'Give them two real values, then make both impossible',
-    origin: 'Richard Powers — novelist, on voice, character and conflict',
+    get title() { return t('lib.push-them-to-the-wall.title'); },
+    get origin() { return t('lib.push-them-to-the-wall.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'Drama grows out of character, character out of voice, and voice out of word choice.',
-    thesis:
-      'One chain runs through the whole account: drama grows out of character, character grows out of voice, and voice grows out of choices at the level of the word and the sentence. Structure, tension and pacing are built from that chain rather than imposed on it — which makes the smallest decisions the load-bearing ones.',
-    ideas: [
-      {
-        name: 'The character onion',
-        body: 'The outer shell is what is visible — clothing, appearance. Beneath it are mannerisms, habitual ways of behaving, such as reflexively undercutting people by asking what they mean by that. Beneath those sit core values, a handful of words rather than a list. Several mannerisms can come from one value, and the same mannerism from different values.',
-      },
-      {
-        name: 'Push them to the wall',
-        body: 'The craft move that generates drama: give a character two genuine core values, then engineer a situation in which both cannot be honoured. The forced choice is the story. Left alone, values coexist quietly and nothing happens — which is the diagnostic for a scene that feels flat.',
-      },
-      {
-        name: 'Three levels of conflict',
-        body: 'Against yourself, where two incompatible values collide — what he calls the drama of being alive. Against another person, where each holds a different value and the reader rather than the author has to judge. And against the elements, the oldest kind, which he argues nearly vanished from serious literary fiction for over a century while people assumed that war had been won, survived in genres treated as lesser, and is returning now that it is clear it is being lost.',
-      },
-      {
-        name: 'Voice is built at word level',
-        body: 'English carries a built-in doubleness from its history, so house against mansion, or freedom against liberty, carry different registers of class and formality. Character reaches a reader largely through how someone explains and performs themselves in speech, which makes register a characterisation tool rather than a stylistic preference.',
-      },
-      {
-        name: 'Read it aloud',
-        body: 'A cheap and immediate check on dialogue before finalising anything — the ear catches what the eye has stopped seeing.',
-      },
-    ],
-    notes: [
-      'A four-part scaffolding — hook, exposition, rising action, climax and resolution — is offered as reusable for anything that has to hold attention across time, not only for fiction.',
-      'His own practice has shifted over decades from disciplined word counts toward disciplined attention to the living world as the actual source material.',
-      'A publicly verifiable, prize-winning novelist who taught writing for years, describing his own method — which is exactly what this kind of source is good for. The single empirical claim in the conversation is recalled without citation and points at a real research tradition rather than establishing a specific finding.',
-    ],
-    practices: [
-      'Name two real values for the character, then build the situation where both cannot hold.',
-      'When a scene is flat, check whether anything is actually in irreconcilable conflict yet.',
-      'Choose the register at word level — it is doing characterisation whether you intend it or not.',
-      'Read the dialogue out loud before you call it finished.',
-    ],
+    get hook() { return t('lib.push-them-to-the-wall.hook'); },
+    get thesis() { return t('lib.push-them-to-the-wall.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.push-them-to-the-wall.idea.${i}.name`),
+        body: t(`lib.push-them-to-the-wall.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.push-them-to-the-wall.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.push-them-to-the-wall.practice.${i}`));
+    },
     habits: [
-      { id: 'c_ship', because: 'Reading aloud is the cheap check, and reading aloud to a person is the version that also tells you whether it landed.' },
-      { id: 'd_notes', because: 'His shift was from word counts toward attention to the world, which only accumulates if what is noticed gets written down.' },
-      { id: 's_makecreate', because: 'The chain from word to voice to character is only trainable at the level of sentences actually written.' },
+      { id: 'c_ship', get because() { return t('lib.push-them-to-the-wall.habit.c_ship.because'); } },
+      { id: 'd_notes', get because() { return t('lib.push-them-to-the-wall.habit.d_notes.because'); } },
+      { id: 's_makecreate', get because() { return t('lib.push-them-to-the-wall.habit.s_makecreate.because'); } },
     ],
     quests: [
-      { id: 'q_makeweekly', because: 'Pushing a character to the wall is a structural decision that only gets tested by carrying something to done.' },
-      { id: 'q_portfolio', because: 'Whether the reader judged rather than the author decided is not answerable without readers.' },
+      { id: 'q_makeweekly', get because() { return t('lib.push-them-to-the-wall.quest.q_makeweekly.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.push-them-to-the-wall.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Memories & Fun / Resource / Richard Powers — Writing Process and the Craft of Fiction',
+    get vaultSource() { return t('lib.push-them-to-the-wall.vaultSource'); },
   },
-
   {
     slug: 'context-before-the-verse',
     attr: 'spirituality',
-    title: 'Arranged by length, not by chronology',
-    origin: 'A religious-studies lecture on the sources of Islamic doctrine',
+    get title() { return t('lib.context-before-the-verse.title'); },
+    get origin() { return t('lib.context-before-the-verse.origin'); },
     medium: 'lecture',
     minutes: 6,
-    hook: 'The first revealed chapter sits near the end of the book. That fact alone changes how a quotation should be read.',
-    thesis:
-      'This is structural and historical rather than devotional: how the two sources of doctrine are composed, how the text was fixed, and how authority is assessed. The single most practically useful fact is that the chapters are ordered by descending length rather than chronologically — the earliest revealed material sits near the end — so a verse quoted without its circumstances is being read out of the sequence it belongs to.',
-    ideas: [
-      {
-        name: 'Structure and ordering',
-        body: 'One hundred and fourteen chapters, arranged longest to shortest. Because the ordering is not chronological, the sequence of revelation is known from the tradition rather than from the text itself — which makes the discipline of the circumstances of revelation a prerequisite for reading a passage rather than an optional refinement.',
-      },
-      {
-        name: 'Chronology as an anchor',
-        body: 'The calendar begins from the migration; revelation ran from roughly a decade before it until the Prophet\'s death. The Meccan and Medinan periods divide the chapters accordingly, and knowing which period a passage belongs to is part of reading it.',
-      },
-      {
-        name: 'The doctrine of uncreatedness, and the dispute it produced',
-        body: 'The text is held to be the uncreated direct speech of God rather than a formulation of the Prophet. The lecture traces the theological problem that produced, the movement that denied it, and the historical episode in which scholars were compelled to affirm the opposite — offered as an example of doctrine having a contested history rather than arriving settled.',
-      },
-      {
-        name: 'Abrogation as a reading tool',
-        body: 'The principle that a passage may have been superseded means the first question about any categorical quotation is whether it still stands in the form being quoted. Presented as a general critical instrument against decontextualised citation.',
-      },
-      {
-        name: 'Chain and content',
-        body: 'Reports are assessed on both the text itself and the chain of transmitters. Beyond its own subject this is a transferable epistemology: authority derived from a traceable line of transmission rather than from the content sounding right.',
-      },
-    ],
-    notes: [
-      'The vantage point matters and should be stated: this is a comparative religious-studies lecture given from outside the tradition, drawing explicit parallels to Christian theology. That makes it useful for structural understanding and unsuitable as a normative account of the faith — for that, sources from within are the ones to read.',
-      'The factual scaffolding — chronology, structure, the mechanics of assessing reports — is specific and checkable. The lecturer\'s evaluative asides, including scepticism about numerological claims and remarks on internal tensions, are his own judgements and worth separating from that scaffolding.',
-    ],
-    practices: [
-      'Ask what the circumstances of a passage were before accepting a reading of it.',
-      'Check whether a categorical quotation still stands in the form being quoted.',
-      'Assess a report on both its content and the line it came through.',
-      'For normative understanding, read from inside the tradition as well as about it.',
-    ],
+    get hook() { return t('lib.context-before-the-verse.hook'); },
+    get thesis() { return t('lib.context-before-the-verse.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.context-before-the-verse.idea.${i}.name`),
+        body: t(`lib.context-before-the-verse.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 2 }, (_, i) => t(`lib.context-before-the-verse.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.context-before-the-verse.practice.${i}`));
+    },
     habits: [
-      { id: 's_quran', because: 'Reading a page at a time is what builds the sense of sequence that the ordering by length otherwise hides.' },
-      { id: 'd_read', because: 'The circumstances of revelation are a separate literature, and reading about the text is a different act from reading it.' },
-      { id: 'd_notes', because: 'Chain-and-content assessment is a habit of recording where something came from, not only what it said.' },
+      { id: 's_quran', get because() { return t('lib.context-before-the-verse.habit.s_quran.because'); } },
+      { id: 'd_read', get because() { return t('lib.context-before-the-verse.habit.d_read.because'); } },
+      { id: 'd_notes', get because() { return t('lib.context-before-the-verse.habit.d_notes.because'); } },
     ],
     quests: [
-      { id: 'q_learnfaith', because: 'The lecture\'s own conclusion is that the structure has to be understood before the content can be, which is the definition of studying rather than sampling.' },
-      { id: 'q_anchor', because: 'Structural knowledge from outside becomes practice only when something regular is anchored to the day.' },
+      { id: 'q_learnfaith', get because() { return t('lib.context-before-the-verse.quest.q_learnfaith.because'); } },
+      { id: 'q_anchor', get because() { return t('lib.context-before-the-verse.quest.q_anchor.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Основы ислама — Коран и Сунна как источники вероучения',
+    get vaultSource() { return t('lib.context-before-the-verse.vaultSource'); },
   },
-
   {
     slug: 'energy-relationships-tasks',
     attr: 'development',
-    title: 'Energy, then relationships, then tasks — in that order',
-    origin: 'Muzhitskaya — trainer, on the three axes and procrastination',
+    get title() { return t('lib.energy-relationships-tasks.title'); },
+    get origin() { return t('lib.energy-relationships-tasks.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Most productivity problems are an attempt to start on the third axis.',
-    thesis:
-      'Every interaction and every morning decomposes into three parallel layers: tasks, which carry the information; relationships, which carry who you are to each other; and energy, which carries what state each of you is in. The practical claim is that they have to be taken in reverse order — start with energy, not with tasks — and that most difficulty with discipline and balance comes from starting at the wrong end.',
-    ideas: [
-      {
-        name: 'The three axes, illustrated',
-        body: 'Listening to voice messages at double speed saves time on the task axis while damaging the other two: the speaker sounds unserious, and a sped-up voice is hard to respect. Her conclusion is to use native speed when the relationship and state matter, and convert to text when only the information does.',
-      },
-      {
-        name: 'The order of a morning',
-        body: 'Energy first — let the body and mind load after sleep, by whatever means. Then relationships: contact with a living creature, partner, child, even an animal. Only then tasks. Which specific technique is used is treated as secondary to the order.',
-      },
-      {
-        name: 'Procrastination as a desync, not laziness',
-        body: 'It begins at the moment attention switches from the goal, which you like, to the process, which you have labelled unpleasant. The cortisol route — frightening yourself with the worst case to generate action — works and is expensive, and she voices the body\'s objection to it directly. The alternative is the question of what this is for, which restores contact with the goal.',
-      },
-      {
-        name: 'Stopwatch before timer',
-        body: 'For the chronic sense of not having enough time: measure how long the task actually takes at a comfortable pace before imposing a deadline on it. A reproducible diagnostic rather than an exhortation.',
-      },
-      {
-        name: 'Selection rather than balance',
-        body: 'Under overload the question she substitutes is not how to balance everything but which of these you actually want to be working with — reducing the number of obligatory contexts rather than distributing yourself across all of them.',
-      },
-    ],
-    notes: [
-      'An alternative to the unpleasant alarm: go to sleep having formulated what tomorrow is for, rather than relying on a morning fright to start the motivation.',
-      'A long-practising trainer and author, in a conversational format with substantial self-promotion. Her techniques come from an NLP lineage whose standing in academic psychology is contested — worth holding separately from whether a specific technique is useful to you in practice, which only your own use can establish.',
-      'Her rejection of the balance-wheel framing and her distinction between two kinds of time are her own formulations rather than established constructs, and the neuroscience references are gestural rather than mechanistic.',
-    ],
-    practices: [
-      'Run the morning in the order: energy, then people, then work.',
-      'When procrastinating, notice the switch from goal to process and restate what it is for.',
-      'Time the task at a comfortable pace before setting any deadline for it.',
-      'Under overload, cut the number of contexts rather than trying to balance them.',
-      'Decide tonight what tomorrow is for, so the alarm is not doing the motivating.',
-    ],
+    get hook() { return t('lib.energy-relationships-tasks.hook'); },
+    get thesis() { return t('lib.energy-relationships-tasks.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.energy-relationships-tasks.idea.${i}.name`),
+        body: t(`lib.energy-relationships-tasks.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.energy-relationships-tasks.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.energy-relationships-tasks.practice.${i}`));
+    },
     habits: [
-      { id: 'c_plan', because: 'Deciding tonight what tomorrow is for is the version of her morning order that gets made while you still have capacity.' },
-      { id: 'b_morningjoy', because: 'The energy axis comes first and is satisfied by something small and deliberate rather than by a regime.' },
-      { id: 'd_review', because: 'Which contexts to cut is a selection question, and it is not answerable inside the week that is overloading you.' },
+      { id: 'c_plan', get because() { return t('lib.energy-relationships-tasks.habit.c_plan.because'); } },
+      { id: 'b_morningjoy', get because() { return t('lib.energy-relationships-tasks.habit.b_morningjoy.because'); } },
+      { id: 'd_review', get because() { return t('lib.energy-relationships-tasks.habit.d_review.because'); } },
     ],
     quests: [
-      { id: 'q_habitsystem', because: 'The order of the axes is a structure rather than an intention, and it survives only if it is built once.' },
-      { id: 'q_energyaudit', because: 'The stopwatch-before-timer method is an audit in miniature — measure what is actually happening before prescribing.' },
+      { id: 'q_habitsystem', get because() { return t('lib.energy-relationships-tasks.quest.q_habitsystem.because'); } },
+      { id: 'q_energyaudit', get because() { return t('lib.energy-relationships-tasks.quest.q_energyaudit.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Мужицкая — Три оси, папки подсознания и калибровка своей скорости',
+    get vaultSource() { return t('lib.energy-relationships-tasks.vaultSource'); },
   },
-
   {
     slug: 'trauma-as-a-marketing-term',
     attr: 'family',
-    title: 'Could you be all right without it?',
-    origin: 'A staged debate between two practitioners who disagree',
+    get title() { return t('lib.trauma-as-a-marketing-term.title'); },
+    get origin() { return t('lib.trauma-as-a-marketing-term.origin'); },
     medium: 'podcast',
     minutes: 6,
-    hook: 'One of them argues the word "trauma" has been borrowed from the clinic and sold back to you.',
-    thesis:
-      'This is a deliberate confrontation between two incompatible positions rather than a synthesis, and it earns its place as a counterweight: much of this sector is written in the language of attachment injury, and one participant argues that popular usage of "trauma" is a diffuse appropriation of a real diagnostic term, sold as courses to an audience whose vulnerability is the product.',
-    ideas: [
-      {
-        name: 'What the clinical term actually requires',
-        body: 'His correction is technically accurate: the diagnosis turns on a flashback to a specific trigger — the person bitten in a lift who then physically cannot enter one. "Fear of closeness because a parent left" is a different kind of claim, and marketing programmes in that vocabulary is what he calls fraud rather than therapy. The other participant agrees with him here almost entirely.',
-      },
-      {
-        name: 'A more useful axis than trauma',
-        body: 'He offers the level of personality organisation — neurotic versus borderline — as the distinction that actually predicts what goes wrong in relationships, on the basis that the difficulties differ in kind. He also notes that a standard psychology degree supplies diagnosis rather than treatment, and that real help requires training in a specific modality suited to that register.',
-      },
-      {
-        name: 'Relationships as a side effect',
-        body: 'His central claim: good relationships are a by-product of a developed person rather than the output of a method for entering them. Setting "I want a relationship" as the goal is itself the signal, because it makes emotional wellbeing conditional on another person being present.',
-      },
-      {
-        name: 'The readiness test',
-        body: 'Before any large step — a relationship, marriage, children — ask whether you could be all right without it. Where the foundation is there, changes and endings are survivable; where it is not, the relationship gets used to hold the person together.',
-      },
-      {
-        name: 'Where they agree despite themselves',
-        body: 'Both name deliberate techniques for making someone attach to you by working their psychological weak points as harmful and as not being love. That agreement is the most reliable part of the exchange precisely because it does not serve either of their commercial positions.',
-      },
-    ],
-    notes: [
-      'The other participant\'s position is that personality is the foundation and specific communication and self-presentation skills are still worth learning deliberately — a pragmatic coaching stance rather than a rejection of the first.',
-      'Both have a direct commercial interest in the position they hold, and the format is billed as a debate rather than a neutral examination. Read both as advertised viewpoints; the agreement noted above is the exception.',
-      'His broader claim that almost no relationships are love but mutual filling of psychological gaps is rhetoric rather than a finding, and is not carried here as one.',
-      'Observing someone under stress, in anger, or drinking is offered as a more concrete test of knowing a person than general advice not to rush.',
-    ],
-    practices: [
-      'Ask whether you would be all right without the thing before taking the large step toward it.',
-      'Be precise about the word: a diffuse "trauma" story and a clinical diagnosis are not the same claim.',
-      'If you are looking for help, know whether you need diagnosis or a specific modality of treatment.',
-      'Watch how someone behaves under stress rather than only how they behave with you.',
-    ],
+    get hook() { return t('lib.trauma-as-a-marketing-term.hook'); },
+    get thesis() { return t('lib.trauma-as-a-marketing-term.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.trauma-as-a-marketing-term.idea.${i}.name`),
+        body: t(`lib.trauma-as-a-marketing-term.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.trauma-as-a-marketing-term.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.trauma-as-a-marketing-term.practice.${i}`));
+    },
     habits: [
-      { id: 'd_review', because: 'Whether your wellbeing is currently conditional on another person is not a question you can answer honestly in the middle of a good week.' },
-      { id: 'f_meet', because: 'The proposed test is observation across ordinary and unflattering conditions, which requires actually being around someone.' },
-      { id: 'b_nocompare', because: 'The market he is criticising runs on the feeling that everyone else has resolved something you have not.' },
+      { id: 'd_review', get because() { return t('lib.trauma-as-a-marketing-term.habit.d_review.because'); } },
+      { id: 'f_meet', get because() { return t('lib.trauma-as-a-marketing-term.habit.f_meet.because'); } },
+      { id: 'b_nocompare', get because() { return t('lib.trauma-as-a-marketing-term.habit.b_nocompare.because'); } },
     ],
     quests: [
-      { id: 'q_hardconversation', because: 'The readiness question is worth asking out loud with someone rather than settling privately in your own favour.' },
-      { id: 'q_wheel', because: 'Personality as the foundation is a claim about the whole of a life, and the audit is where that gets scored rather than asserted.' },
+      { id: 'q_hardconversation', get because() { return t('lib.trauma-as-a-marketing-term.quest.q_hardconversation.because'); } },
+      { id: 'q_wheel', get because() { return t('lib.trauma-as-a-marketing-term.quest.q_wheel.because'); } },
     ],
-    vaultSource: 'Family & relationship / Resource / Красиков vs Силко — Психотравма как маркетинг, личность как фундамент и теневая мотивация',
+    get vaultSource() { return t('lib.trauma-as-a-marketing-term.vaultSource'); },
   },
-
   {
     slug: 'equity-instead-of-collateral',
     attr: 'career',
-    title: 'When there is no collateral, reputation is the collateral',
-    origin: 'Sultanov & Abdrazakov — on venture and non-collateral financing',
+    get title() { return t('lib.equity-instead-of-collateral.title'); },
+    get origin() { return t('lib.equity-instead-of-collateral.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'They check how you parted with your last partners. That is not a character question — it is the underwriting.',
-    thesis:
-      'Where banks are structurally uninterested in lending to smaller businesses — risk is high, collateral is thin, and consumer lending pays better — two alternatives fill the gap: equity investment, which takes a share instead of security and makes the investor a partner rather than a creditor, and non-collateral platform financing for businesses with demonstrated turnover. In both, the founder\'s reputation and personal guarantee weigh more than the company\'s assets.',
-    ideas: [
-      {
-        name: 'Partner rather than creditor',
-        body: 'A bank lends against security; an equity investor buys a share, typically a modest one, and is therefore personally exposed to whether it works — which is why the useful part is often the introductions and partnerships rather than the money.',
-      },
-      {
-        name: 'Reputation is the first screen',
-        body: 'Assessment covers how the founder behaves with employees in hiring and firing, and specifically how they separated from previous partners and co-founders — on the explicit reasoning that someone who handles one set of obligations badly will handle the next set the same way. This is stated as an operative criterion rather than a sentiment.',
-      },
-      {
-        name: 'The one that got away',
-        body: 'He recounts turning down what became the country\'s first billion-dollar startup two years earlier, because he did not understand how it would make money, while a colleague invested. The admission is the point: recognising what will work is partly judgement rather than only metrics, and experienced investors get it wrong.',
-      },
-      {
-        name: 'Two different products for two different stages',
-        body: 'Equity suits an idea or an early product. Non-collateral platform financing suits an operating business with verified turnover and a period of trading behind it — no hard security required, but a personal guarantee and a clean credit history are.',
-      },
-      {
-        name: 'The relay metaphor',
-        body: 'An early investor\'s job is to carry the company to the stage where larger international funds take over — the baton has to reach the finish rather than the first runner having to run the whole distance.',
-      },
-    ],
-    notes: [
-      'Portfolio figures cited are self-reported within the conversation — specific and internally consistent, but not independently verified here. Sector-level statistics are given as common industry knowledge without a source.',
-      'Two identifiable professionals speaking about their own products and portfolios, which makes the factual core reliable and the framing naturally favourable to those products.',
-      'The conversation also contains personal generalisations about categories of borrower that are subjective impressions from experience rather than data, and those are not carried here.',
-    ],
-    practices: [
-      'Assume how you ended the last partnership is being read as underwriting information.',
-      'Document equity cleanly before money moves, not after.',
-      'Match the instrument to the stage: a share for an idea, turnover-based finance for a running business.',
-      'Expect judgement to be part of the assessment, including when it goes against you.',
-    ],
+    get hook() { return t('lib.equity-instead-of-collateral.hook'); },
+    get thesis() { return t('lib.equity-instead-of-collateral.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.equity-instead-of-collateral.idea.${i}.name`),
+        body: t(`lib.equity-instead-of-collateral.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.equity-instead-of-collateral.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.equity-instead-of-collateral.practice.${i}`));
+    },
     habits: [
-      { id: 'c_onelesson', because: 'The story he tells against himself is a missed judgement he can still articulate years later — which is only possible for someone who recorded it.' },
-      { id: 'm_log', because: 'Non-collateral finance is granted against demonstrated turnover and a clean history, both of which are records rather than claims.' },
-      { id: 'd_askquestion', because: 'Which instrument fits which stage is knowable by asking the people who issue them rather than by inferring it.' },
+      { id: 'c_onelesson', get because() { return t('lib.equity-instead-of-collateral.habit.c_onelesson.because'); } },
+      { id: 'm_log', get because() { return t('lib.equity-instead-of-collateral.habit.m_log.because'); } },
+      { id: 'd_askquestion', get because() { return t('lib.equity-instead-of-collateral.habit.d_askquestion.because'); } },
     ],
     quests: [
-      { id: 'q_raise', because: 'Every route described here starts with asking a specific person for a specific amount and being able to justify it.' },
-      { id: 'q_portfolio', because: 'If reputation is the first screen, then what can be found about your previous work is doing the underwriting before you arrive.' },
+      { id: 'q_raise', get because() { return t('lib.equity-instead-of-collateral.quest.q_raise.because'); } },
+      { id: 'q_portfolio', get because() { return t('lib.equity-instead-of-collateral.quest.q_portfolio.because'); } },
     ],
-    vaultSource: 'Business & career / Resource / Султанов и Абдразаков — Венчурное и альтернативное финансирование МСБ в Казахстане',
+    get vaultSource() { return t('lib.equity-instead-of-collateral.vaultSource'); },
   },
-
   {
     slug: 'stand-where-you-are-placed',
     attr: 'spirituality',
-    title: 'Stand where you are placed',
-    origin: 'Haifaa Younis — a second conversation, on roles and sincerity',
+    get title() { return t('lib.stand-where-you-are-placed.title'); },
+    get origin() { return t('lib.stand-where-you-are-placed.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'The overload does not come from the number of roles. It comes from holding all of them at once.',
-    thesis:
-      'The exhaustion of carrying many roles is attributed not to the roles themselves but to trying to hold all of them in mind simultaneously. The correction offered is a change of frame rather than of workload: attend to the single role you are actually in right now, treated as service in itself — which makes preparing a meal no less weighty than the work you are credentialed for.',
-    ideas: [
-      {
-        name: 'Priority as a skill, not a list',
-        body: 'The worked example from jurisprudence: if a child cries during an obligatory prayer and you can reach them, the prayer is interrupted and the child attended to — and that is itself compliance rather than a failure of duty. Priorities are determined by the moment rather than by an abstract ranking made in advance.',
-      },
-      {
-        name: 'Worship defined broadly',
-        body: 'On the definition she cites, it covers everything God loves and is pleased by — words and acts, outward and inward — rather than the ritual obligations alone. Answering a greeting, or cooking for your family with the intention of care, falls inside it. The practical effect is that the religiously significant surface expands to cover ordinary life rather than being confined to a few appointments in it.',
-      },
-      {
-        name: 'Self-care as an obligation',
-        body: 'Stated directly: your body and your soul have rights over you. Refusing care for yourself in order to carry more of everyone else is named as an injustice rather than a virtue, and time spent on yourself does not require guilt.',
-      },
-      {
-        name: 'Diagnosing sincerity through criticism',
-        body: 'The practical test she offers: if being criticised or not being praised upsets you, that is a signal to re-examine the intention behind the act — it may not have been done only for the reason you told yourself. The reframe attached is that criticism is a gift showing a blind spot rather than an attack.',
-      },
-    ],
-    notes: [
-      'This is the second conversation with the same speaker in this sector; the first covers marriage as an institution and agreeing a procedure in advance. What is new here is the single-role frame, the expanded definition of worship, and the sincerity test.',
-      'An identifiable specialist working within mainstream scholarship with explicit references to specific reports and named jurists, which makes it more checkable than an anonymous account.',
-      'Some illustrative remarks touch on medical territory and are used rhetorically rather than as clinical claims, despite her background — not something to rely on without separate checking.',
-    ],
-    practices: [
-      'Attend to the role you are actually in, rather than holding all of them at once.',
-      'Let the moment set the priority rather than a ranking decided in advance.',
-      'Take the time your body and mind require without treating it as a debt to someone.',
-      'When criticism stings disproportionately, treat that as information about the intention rather than about the critic.',
-    ],
+    get hook() { return t('lib.stand-where-you-are-placed.hook'); },
+    get thesis() { return t('lib.stand-where-you-are-placed.thesis'); },
+    get ideas() {
+      return Array.from({ length: 4 }, (_, i) => ({
+        name: t(`lib.stand-where-you-are-placed.idea.${i}.name`),
+        body: t(`lib.stand-where-you-are-placed.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.stand-where-you-are-placed.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 4 }, (_, i) => t(`lib.stand-where-you-are-placed.practice.${i}`));
+    },
     habits: [
-      { id: 's_dhikr', because: 'The single-role frame is a returning-to rather than a decision, and five quiet minutes is where the returning gets practised.' },
-      { id: 'f_thanks', because: 'If ordinary acts of care count as worship, then naming someone else\'s specifically is the version that is available all day.' },
-      { id: 'd_review', because: 'The sincerity test asks about a pattern of reactions to criticism, which is visible over weeks rather than in the moment of stinging.' },
+      { id: 's_dhikr', get because() { return t('lib.stand-where-you-are-placed.habit.s_dhikr.because'); } },
+      { id: 'f_thanks', get because() { return t('lib.stand-where-you-are-placed.habit.f_thanks.because'); } },
+      { id: 'd_review', get because() { return t('lib.stand-where-you-are-placed.habit.d_review.because'); } },
     ],
     quests: [
-      { id: 'q_anchor', because: 'A frame that has to be returned to constantly needs one fixed practice in the day to return to it from.' },
-      { id: 'q_learnfaith', because: 'Both the priority ruling and the definition of worship she uses come from named scholarship rather than from intuition.' },
+      { id: 'q_anchor', get because() { return t('lib.stand-where-you-are-placed.quest.q_anchor.because'); } },
+      { id: 'q_learnfaith', get because() { return t('lib.stand-where-you-are-placed.quest.q_learnfaith.because'); } },
     ],
-    vaultSource: 'Spirituality & Religion / Resource / Хайфа Юнис — Роли, искренность и брак с точки зрения ислама',
+    get vaultSource() { return t('lib.stand-where-you-are-placed.vaultSource'); },
   },
-
   {
     slug: 'take-it-to-the-end',
     attr: 'development',
-    title: 'Run the success all the way out and see what frightens you',
-    origin: 'MacDonald — on identity, procrastination and cheap reward',
+    get title() { return t('lib.take-it-to-the-end.title'); },
+    get origin() { return t('lib.take-it-to-the-end.origin'); },
     medium: 'podcast',
     minutes: 5,
-    hook: 'Often it is not fear of failing. It is fear of what succeeding would require you to become.',
-    thesis:
-      'Three causes are offered for being stuck, and the one worth the entry is the first: a mismatch between the identity you hold and the behaviour the goal requires. If the self-narrative does not include being the sort of person who does this, the behaviour does not get promoted — so the shift has to be made before the result rather than as its reward.',
-    ideas: [
-      {
-        name: 'Identity before result',
-        body: 'The recommendation is a deliberate shift in self-description ahead of the evidence — I am already someone who does this. The analogy given is falling asleep: you close your eyes, slow the breathing and act as though it is happening until it becomes true.',
-      },
-      {
-        name: 'Take it all the way to the end',
-        body: 'The diagnostic that gives the entry its title: run the goal out to its fullest realisation and notice what surfaces. Her own example is not fear of failing but the exposure that a larger audience would bring. Naming the specific fear is described as the move that reduces its grip, rather than resolving to be braver.',
-      },
-      {
-        name: 'Withholding the reward',
-        body: 'A concrete rule against cheap reward: the small pleasure comes after the task you are avoiding, not instead of it. Free to apply, and it works on the ordering rather than on the wanting.',
-      },
-      {
-        name: 'The evening compounds into the morning',
-        body: 'The reward system recovers during sleep, so late scrolling and late eating do both things at once — they degrade the sleep and blunt the system that recovers in it. Which is offered as the explanation for low motivation specifically in the mornings after such an evening.',
-      },
-      {
-        name: 'Discipline as care for a future self',
-        body: 'Motivation does not hold; what holds better is clarity about who you will have become. The question she substitutes for the goal: who is this asking me to become?',
-      },
-    ],
-    notes: [
-      'This sector already holds several accounts of the same reward mechanism from different directions — the pleasure-pain balance, the accumulation model of ending a habit, and capture of the reward system. What is new here is the identity framing and the take-it-to-the-end diagnostic; the dopamine material overlaps and is not independent confirmation of it.',
-      'She holds a doctorate in the pharmacology of addiction but appears here as a coach and content-maker rather than as a researcher, and the transcript contains no citations.',
-      'More importantly, manifestation and law-of-attraction vocabulary is mixed with established neuroscience terms without the boundary being drawn by the speaker. The techniques above stand on their own; the framing around them should not be taken as carrying the same evidential weight as the terminology it borrows.',
-    ],
-    practices: [
-      'Describe yourself as the person who does this before you have the result to justify it.',
-      'Run the success out to the end and name what specifically frightens you there.',
-      'Put the small pleasure after the avoided task rather than instead of it.',
-      'Protect the evening, because the morning motivation is decided there.',
-      'Ask who the goal is asking you to become, not only what it gets you.',
-    ],
+    get hook() { return t('lib.take-it-to-the-end.hook'); },
+    get thesis() { return t('lib.take-it-to-the-end.thesis'); },
+    get ideas() {
+      return Array.from({ length: 5 }, (_, i) => ({
+        name: t(`lib.take-it-to-the-end.idea.${i}.name`),
+        body: t(`lib.take-it-to-the-end.idea.${i}.body`),
+      }));
+    },
+    get notes() {
+      return Array.from({ length: 3 }, (_, i) => t(`lib.take-it-to-the-end.note.${i}`));
+    },
+    get practices() {
+      return Array.from({ length: 5 }, (_, i) => t(`lib.take-it-to-the-end.practice.${i}`));
+    },
     habits: [
-      { id: 'c_plan', because: 'Acting as the person before the evidence needs the day arranged as that person would arrange it, which is decided the night before.' },
-      { id: 'd_build', because: 'The identity shift stays a slogan unless something is actually being made by the person you are claiming to be.' },
-      { id: 'h_lightsout', because: 'Her mechanism puts the recovery in the sleep, which makes the bedtime the lever on the next morning rather than the morning itself.' },
+      { id: 'c_plan', get because() { return t('lib.take-it-to-the-end.habit.c_plan.because'); } },
+      { id: 'd_build', get because() { return t('lib.take-it-to-the-end.habit.d_build.because'); } },
+      { id: 'h_lightsout', get because() { return t('lib.take-it-to-the-end.habit.h_lightsout.because'); } },
     ],
     quests: [
-      { id: 'q_promise', because: 'An identity claimed only privately is easy to withdraw; said out loud to someone, it has to be lived with.' },
-      { id: 'q_habitsystem', because: 'Ordering the reward after the task is a rule about structure, and it only survives if built rather than intended.' },
+      { id: 'q_promise', get because() { return t('lib.take-it-to-the-end.quest.q_promise.because'); } },
+      { id: 'q_habitsystem', get because() { return t('lib.take-it-to-the-end.quest.q_habitsystem.because'); } },
     ],
-    vaultSource: 'Personal growth / Resource / Макдональд — Идентичность, дешёвый дофамин и нейронаука манифестации',
+    get vaultSource() { return t('lib.take-it-to-the-end.vaultSource'); },
   },
+
 ];
 
 /** Entries filed under a sector, in listing order. */

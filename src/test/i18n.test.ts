@@ -11,9 +11,37 @@ describe('dictionary parity', () => {
   // forgotten one — a key added to a page in English and never mirrored. That
   // shows up as an English sentence marooned in a Russian screen, which is
   // exactly what these two tests refuse to let through.
-  it('has a Russian entry for every English key', () => {
-    const missing = Object.keys(EN).filter(k => !(k in RU));
+  it('has a Russian entry for every English key outside the Library', () => {
+    // The Library is 100 entries and ~67k words, translated sector by sector; see
+    // the progress test below, which is what holds that migration honest. Every
+    // other key must be present in both languages, always.
+    const missing = Object.keys(EN).filter(k => !k.startsWith('lib.') && !(k in RU));
     expect(missing, `missing Russian for: ${missing.join(', ')}`).toEqual([]);
+  });
+
+  /**
+   * Library translation progress.
+   *
+   * A missing `lib.*` key falls back to English, so an unfinished Library never
+   * breaks a page — which is exactly why it needs a test that notices. This one
+   * fails if the count ever drops, so finished sectors cannot be silently lost.
+   * Raise TRANSLATED_LIBRARY_KEYS as sectors land.
+   */
+  const TRANSLATED_LIBRARY_KEYS = 0;
+
+  it('does not lose ground on the Library', () => {
+    const done = Object.keys(EN).filter(k => k.startsWith('lib.') && k in RU).length;
+    const total = Object.keys(EN).filter(k => k.startsWith('lib.')).length;
+    expect(
+      done,
+      `Library: ${done}/${total} keys translated — expected at least ${TRANSLATED_LIBRARY_KEYS}. ` +
+        'If you translated more, raise TRANSLATED_LIBRARY_KEYS to match.',
+    ).toBeGreaterThanOrEqual(TRANSLATED_LIBRARY_KEYS);
+  });
+
+  it('has no Russian Library key without an English original', () => {
+    const orphans = Object.keys(RU).filter(k => k.startsWith('lib.') && !(k in EN));
+    expect(orphans, `orphaned Russian Library keys: ${orphans.join(', ')}`).toEqual([]);
   });
 
   it('has an English entry for every Russian key', () => {
