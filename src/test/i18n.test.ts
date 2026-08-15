@@ -27,7 +27,7 @@ describe('dictionary parity', () => {
    * fails if the count ever drops, so finished sectors cannot be silently lost.
    * Raise TRANSLATED_LIBRARY_KEYS as sectors land.
    */
-  const TRANSLATED_LIBRARY_KEYS = 202;
+  const TRANSLATED_LIBRARY_KEYS = 256;
 
   it('does not lose ground on the Library', () => {
     const done = Object.keys(EN).filter(k => k.startsWith('lib.') && k in RU).length;
