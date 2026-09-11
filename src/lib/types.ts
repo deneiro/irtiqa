@@ -58,6 +58,8 @@ export interface Vault {
   root: string;
   pages: Page[];
   byRel: Map<string, Page>;
+  /** Raw file text per rel, for surgical frontmatter edits. */
+  rawByRel: Map<string, string>;
   raw: RawEntry[];
   life: MdFile[];
   logText: string;

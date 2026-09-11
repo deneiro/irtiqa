@@ -222,7 +222,11 @@ export default function DayPage() {
     setTx({ amount: "", category: "", account: tx.account, note: "" });
   };
 
-  const xpCtx = useMemo<XpContext>(() => ({ habits, quests: life?.quests ?? [], days: life?.days ?? new Map() }), [habits, life]);
+  const reads = useMemo(
+    () => (vault?.pages ?? []).filter((p) => p.zone === "resource" && p.fm.read).map((p) => ({ date: String(p.fm.read instanceof Date ? p.fm.read.toISOString() : p.fm.read).slice(0, 10), theme: p.theme })),
+    [vault],
+  );
+  const xpCtx = useMemo<XpContext>(() => ({ habits, quests: life?.quests ?? [], days: life?.days ?? new Map(), reads }), [habits, life, reads]);
   const xp = useMemo(() => xpForDay(draft, xpCtx), [draft, xpCtx]);
   const activeQuests = useMemo(() => (life?.quests ?? []).filter((q) => q.status === "active"), [life]);
   const xpTotal = [...xp.values()].reduce((a, b) => a + b, 0);

@@ -556,6 +556,8 @@ export interface XpContext {
   habits: Habit[];
   quests: Quest[];
   days: Map<string, Day>;
+  /** Resource pages marked `read: <date>` — one entry per page. */
+  reads?: { date: string; theme: string | undefined }[];
 }
 
 export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
@@ -567,6 +569,7 @@ export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
     add(q?.theme, questXp(questMinutes(name, ctx.days.values())));
   }
   if (d.journal.trim()) { add("Personal growth", XP.journal); add("Spirituality & Religion", XP.journal); }
+  for (const r of ctx.reads ?? []) if (r.date === d.date) add(r.theme, XP.resourceRead);
   return xp;
 }
 

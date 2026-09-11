@@ -14,7 +14,7 @@ export function PageItem({ page, sub, meta }: { page: Page; sub?: string; meta?:
         <div className="t">{page.title}</div>
         <div className="sub">{where}</div>
       </span>
-      <span className="meta">{meta ?? relDate(page.updated)}</span>
+      <span className="meta">{page.fm.read ? "✓ " : ""}{meta ?? relDate(page.updated)}</span>
     </Link>
   );
 }

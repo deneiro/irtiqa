@@ -6,6 +6,7 @@ import { openExternal, revealInFinder } from "../lib/native";
 import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import { TagChips } from "../components/Bits";
+import ResourceActions from "../components/ResourceActions";
 
 export default function PageView() {
   const { rel = "" } = useParams();
@@ -54,6 +55,8 @@ export default function PageView() {
           <button className="btn ghost" onClick={() => void revealInFinder(`${root}/${page.rel}`)}>{t("btn_finder")}</button>
         </div>
       </div>
+
+      {page.zone === "resource" && <ResourceActions page={page} />}
 
       <div className="pagecols">
         <Markdown source={body} />

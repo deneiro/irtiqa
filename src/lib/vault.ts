@@ -13,7 +13,7 @@ function asString(v: unknown): string | undefined {
   return s.length ? s : undefined;
 }
 
-function asList(v: unknown): string[] {
+export function asList(v: unknown): string[] {
   if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
   if (typeof v === "string") {
     const s = v.trim();
@@ -123,6 +123,7 @@ export function buildVault(scan: Scan): Vault {
     .filter((f) => f.rel !== "wiki/index.md")
     .map((f) => buildPage(f.rel, f.content, f.mtime));
   const byRel = new Map(pages.map((p) => [p.rel, p]));
+  const rawByRel = new Map(scan.pages.map((f) => [f.rel.normalize("NFC"), f.content]));
 
   // Resolution indexes.
   const byFile = new Map<string, Page[]>();
@@ -195,6 +196,7 @@ export function buildVault(scan: Scan): Vault {
     root: scan.root,
     pages,
     byRel,
+    rawByRel,
     raw: scan.raw,
     life: scan.life ?? [],
     logText: scan.log,
