@@ -5,7 +5,7 @@ import { themeUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 
 export default function Sidebar() {
-  const { vault, setPaletteOpen, reload, loading, lang, setLang } = useStore();
+  const { vault, life, timer, setPaletteOpen, reload, loading, lang, setLang } = useStore();
   const { t, themeLabel, themeBlurb } = useT();
   const nav = useNavigate();
   const counts = new Map<string, number>();
@@ -26,6 +26,12 @@ export default function Sidebar() {
       </button>
 
       <NavLink to="/" end className={cls}>{t("nav_day")}</NavLink>
+      <NavLink to="/habits" className={cls}>
+        {t("nav_habits")} <span className="count">{life?.habits.filter((h) => h.status === "active").length ?? ""}</span>
+      </NavLink>
+      <NavLink to="/quests" className={cls}>
+        {t("nav_quests")} {timer && <span className="livedot" title={timer.quest} />}<span className="count">{life?.quests.filter((q) => q.status === "active").length ?? ""}</span>
+      </NavLink>
       <NavLink to="/vault" className={cls}>{t("nav_home")}</NavLink>
       <NavLink to="/log" className={cls}>
         {t("nav_log")} <span className="count">{vault?.log.length ?? ""}</span>

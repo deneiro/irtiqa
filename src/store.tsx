@@ -6,11 +6,13 @@ import type { Scan, Vault } from "./lib/types";
 import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
 import { buildIndex, type SearchDoc } from "./lib/search";
-import { buildLife, type Life } from "./lib/life";
+import { buildLife, dayRel, emptyDay, serializeDay, type Day, type Life } from "./lib/life";
+import { todayStr } from "./lib/dates";
 import { runCmd, writeText, type CmdResult } from "./lib/fs";
 
 const KEY = "irtiqa.vaultRoot";
 const LANG_KEY = "irtiqa.lang";
+const TIMER_KEY = "irtiqa.timer";
 export type Lang = "en" | "ru";
 export const DEFAULT_ROOT =
   "/Users/eldar/Library/Mobile Documents/com~apple~CloudDocs/Documents/personal-obsidian";
@@ -26,6 +28,13 @@ interface Store {
   saveText: (rel: string, content: string) => Promise<void>;
   /** `git add` the paths and commit. Returns null outside the desktop app. */
   commitVault: (paths: string[], message: string) => Promise<CmdResult | null>;
+  /** Read-modify-write today's day file from the latest scan (used by pages other than Day). */
+  updateToday: (fn: (d: Day) => Day) => Promise<void>;
+  /** One running quest timer, kept in localStorage so a reload does not lose it. */
+  timer: { quest: string; startedAt: number } | null;
+  startTimer: (quest: string) => void;
+  /** Stop the timer and log the session into today's day file. Returns minutes. */
+  stopTimer: () => Promise<number>;
   loading: boolean;
   error: string | null;
   reload: () => Promise<void>;
@@ -94,7 +103,46 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const index = useMemo(() => (vault ? buildIndex(vault.pages) : null), [vault]);
   const life = useMemo(() => (vault ? buildLife(vault.life) : null), [vault]);
 
-  const saveText = useCallback((rel: string, content: string) => writeText(root, rel, content), [root]);
+  // In the desktop app the watcher rescans after every write; in browser dev
+  // mode nothing watches, so rescan ourselves (debounced) to keep `life` fresh.
+  const rescan = useRef<number | undefined>(undefined);
+  const saveText = useCallback(
+    async (rel: string, content: string) => {
+      await writeText(root, rel, content);
+      if (!inTauri) {
+        window.clearTimeout(rescan.current);
+        rescan.current = window.setTimeout(() => void reload(), 300);
+      }
+    },
+    [root, reload],
+  );
+
+  const updateToday = useCallback(
+    async (fn: (d: Day) => Day) => {
+      const today = todayStr();
+      const cur = vault ? buildLife(vault.life).days.get(today) : undefined;
+      const next = fn(cur ?? emptyDay(today));
+      await saveText(dayRel(today), serializeDay(next));
+    },
+    [vault, saveText],
+  );
+
+  const [timer, setTimer] = useState<{ quest: string; startedAt: number } | null>(() => {
+    try { const raw = localStorage.getItem(TIMER_KEY); return raw ? (JSON.parse(raw) as { quest: string; startedAt: number }) : null; } catch { return null; }
+  });
+  const startTimer = useCallback((quest: string) => {
+    const t = { quest, startedAt: Date.now() };
+    localStorage.setItem(TIMER_KEY, JSON.stringify(t));
+    setTimer(t);
+  }, []);
+  const stopTimer = useCallback(async () => {
+    if (!timer) return 0;
+    const minutes = Math.round((Date.now() - timer.startedAt) / 60000);
+    localStorage.removeItem(TIMER_KEY);
+    setTimer(null);
+    if (minutes > 0) await updateToday((d) => ({ ...d, sessions: [...d.sessions, { quest: timer.quest, minutes }] }));
+    return minutes;
+  }, [timer, updateToday]);
   const commitVault = useCallback(
     async (paths: string[], message: string): Promise<CmdResult | null> => {
       if (!inTauri) return null;
@@ -105,7 +153,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [root],
   );
 
-  const value: Store = { root, setRoot, vault, index, life, saveText, commitVault, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
+  const value: Store = { root, setRoot, vault, index, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

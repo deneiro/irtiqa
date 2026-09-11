@@ -7,9 +7,10 @@ import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import {
   ACCOUNTS_REL, HABIT_DIR, applyDayToAccounts, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue,
   markOf, safeFilename, serializeAccounts, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
-  type Day, type DayMark, type Habit, type HabitKind, type Tx,
+  type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
 } from "../lib/life";
 import type { CmdResult } from "../lib/fs";
+import QuestRows from "../components/QuestRows";
 
 const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined };
 const MARK_GLYPH: Record<string, string> = { none: "", done: "✓", failed: "✗", skipped: "→" };
@@ -78,7 +79,13 @@ export default function DayPage() {
     [persist],
   );
 
-  useEffect(() => () => window.clearTimeout(timer.current), []);
+  // Leaving the page flushes a pending write so no other page reads a stale file.
+  useEffect(() => () => {
+    window.clearTimeout(timer.current);
+    if (dirty.current) void persist(draftRef.current);
+  }, [persist]);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
 
   // ----- closing -----
   const [report, setReport] = useState<CloseReport | null>(null);
@@ -215,7 +222,9 @@ export default function DayPage() {
     setTx({ amount: "", category: "", account: tx.account, note: "" });
   };
 
-  const xp = useMemo(() => xpForDay(draft, habits), [draft, habits]);
+  const xpCtx = useMemo<XpContext>(() => ({ habits, quests: life?.quests ?? [], days: life?.days ?? new Map() }), [habits, life]);
+  const xp = useMemo(() => xpForDay(draft, xpCtx), [draft, xpCtx]);
+  const activeQuests = useMemo(() => (life?.quests ?? []).filter((q) => q.status === "active"), [life]);
   const xpTotal = [...xp.values()].reduce((a, b) => a + b, 0);
 
   const week = useMemo(() => {
@@ -257,7 +266,7 @@ export default function DayPage() {
             {report.day.mood !== undefined && <span>настроение <b>{report.day.mood}</b></span>}
           </div>
           <div style={{ marginTop: 10 }}>
-            {[...xpForDay(report.day, habits).entries()].map(([theme, n]) => (
+            {[...xpForDay(report.day, xpCtx).entries()].map(([theme, n]) => (
               <div className="xp-row" key={theme}><span>{themeLabel(theme)}</span><b>+{n} XP</b></div>
             ))}
           </div>
@@ -389,12 +398,16 @@ export default function DayPage() {
             ))}
           </div>
 
-          {draft.sessions.length > 0 && (
-            <div className="card">
-              <h3>Работа <span className="n">{draft.sessions.reduce((s, x) => s + x.minutes, 0)} мин</span></h3>
-              {draft.sessions.map((s, i) => <div className="bul" key={i}><span>{s.quest}</span><span className="mono" style={{ marginLeft: "auto" }}>{s.minutes}</span></div>)}
-            </div>
-          )}
+          <div className="card">
+            <h3>Квесты <span className="n">{draft.sessions.reduce((s, x) => s + x.minutes, 0)} мин</span></h3>
+            <QuestRows quests={activeQuests} compact />
+            {draft.sessions.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                {draft.sessions.map((s, i) => <div className="bul small" key={i}><span>{s.quest}</span><span className="mono" style={{ marginLeft: "auto" }}>{s.minutes} мин</span></div>)}
+              </div>
+            )}
+            {draft.questsClosed.length > 0 && <div className="small muted" style={{ marginTop: 8 }}>Закрыто сегодня: {draft.questsClosed.join(", ")}</div>}
+          </div>
 
           <div className={`closebar ${locked ? "closed" : ""}`}>
             {locked ? (

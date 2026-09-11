@@ -4,6 +4,8 @@ import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
 import Home from "./pages/Home";
 import DayPage from "./pages/Day";
+import HabitsPage from "./pages/Habits";
+import QuestsPage from "./pages/Quests";
 import ThemePage from "./pages/Theme";
 import PageView from "./pages/Page";
 import LogPage from "./pages/Log";
@@ -58,6 +60,8 @@ function Shell() {
         <Routes>
           <Route path="/" element={<DayPage />} />
           <Route path="/vault" element={<Home />} />
+          <Route path="/habits" element={<HabitsPage />} />
+          <Route path="/quests" element={<QuestsPage />} />
           <Route path="/theme/:name" element={<ThemePage />} />
           <Route path="/page/:rel" element={<PageView />} />
           <Route path="/log" element={<LogPage />} />

@@ -8,7 +8,7 @@
  */
 import type { MdFile } from "./types";
 import { parseFrontmatter } from "./vault";
-import { WEEKDAYS_EN, WEEKDAYS_RU, weekdayIndex } from "./dates";
+import { WEEKDAYS_EN, WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
 
 // ---------- types ----------
 
@@ -24,6 +24,20 @@ export interface Habit {
   freq: string | string[];
   status: HabitStatus;
   created: string | undefined;
+  source: string | undefined;
+  body: string;
+}
+
+export type QuestStatus = "proposed" | "active" | "done" | "dropped";
+
+export interface Quest {
+  rel: string;
+  title: string;
+  theme: string | undefined;
+  status: QuestStatus;
+  created: string | undefined;
+  due: string | undefined;
+  project: string | undefined;
   source: string | undefined;
   body: string;
 }
@@ -66,12 +80,14 @@ export interface AccountRow {
 
 export interface Life {
   habits: Habit[];
+  quests: Quest[];
   days: Map<string, Day>;
   accounts: AccountRow[] | null; // null = no accounts.md yet
 }
 
 export const DAY_DIR = "life/days";
 export const HABIT_DIR = "life/habits";
+export const QUEST_DIR = "life/quests";
 export const ACCOUNTS_REL = "life/finance/accounts.md";
 
 // ---------- small helpers ----------
@@ -158,6 +174,51 @@ export function habitDue(h: Habit, date: string): boolean {
   }
   if (h.freq === "weekly") return wd === 0; // last chance of the week is Sunday
   return true; // daily
+}
+
+// ---------- quests ----------
+
+const QUEST_STATUSES: QuestStatus[] = ["proposed", "active", "done", "dropped"];
+
+export function parseQuest(f: MdFile): Quest {
+  const { fm, body } = parseFrontmatter(f.content);
+  const file = f.rel.split("/").pop()!.replace(/\.md$/i, "");
+  const st = str(fm.status) as QuestStatus | undefined;
+  return {
+    rel: f.rel,
+    title: str(fm.title) ?? file,
+    theme: str(fm.theme),
+    status: st && QUEST_STATUSES.includes(st) ? st : "active",
+    created: str(fm.created),
+    due: str(fm.due),
+    project: str(fm.project),
+    source: str(fm.source),
+    body: body.trim(),
+  };
+}
+
+export function serializeQuest(q: Omit<Quest, "rel">): string {
+  const lines = ["---", `title: ${yamlScalar(q.title)}`, "type: quest"];
+  if (q.theme) lines.push(`theme: ${q.theme}`);
+  lines.push(`status: ${q.status}`);
+  if (q.created) lines.push(`created: ${q.created}`);
+  if (q.due) lines.push(`due: ${q.due}`);
+  if (q.project) lines.push(`project: ${yamlScalar(q.project)}`);
+  if (q.source) lines.push(`source: ${JSON.stringify(q.source)}`);
+  lines.push("---");
+  const body = q.body.trim();
+  return lines.join("\n") + "\n" + (body ? body + "\n" : "");
+}
+
+/** Minutes logged for a quest across all days. Sessions under the minimum do not count. */
+export function questMinutes(title: string, days: Iterable<Day>): number {
+  let n = 0;
+  for (const d of days) for (const s of d.sessions) if (s.quest === title && s.minutes >= XP.questMinMinutes) n += s.minutes;
+  return n;
+}
+
+export function questXp(minutes: number): number {
+  return XP.questDone + Math.round((XP.questPerHour * minutes) / 60);
 }
 
 // ---------- days ----------
@@ -378,25 +439,70 @@ export function streak(habit: string, days: Map<string, Day>, upTo: string): num
 /** Provisional XP numbers from the v1 spec. Edited in one place. */
 export const XP = { habitDone: 10, journal: 8, questDone: 20, questPerHour: 55, questMinMinutes: 15, resourceRead: 10 };
 
-export function xpForDay(d: Day, habits: Habit[]): Map<string, number> {
+export interface XpContext {
+  habits: Habit[];
+  quests: Quest[];
+  days: Map<string, Day>;
+}
+
+export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
   const xp = new Map<string, number>();
   const add = (theme: string | undefined, n: number) => { const k = theme ?? "—"; xp.set(k, (xp.get(k) ?? 0) + n); };
-  for (const name of d.habitsDone) add(habits.find((h) => h.title === name)?.theme, XP.habitDone);
+  for (const name of d.habitsDone) add(ctx.habits.find((h) => h.title === name)?.theme, XP.habitDone);
+  for (const name of d.questsClosed) {
+    const q = ctx.quests.find((x) => x.title === name);
+    add(q?.theme, questXp(questMinutes(name, ctx.days.values())));
+  }
   if (d.journal.trim()) { add("Personal growth", XP.journal); add("Spirituality & Religion", XP.journal); }
   return xp;
+}
+
+/** Completion rate over the last `n` days the habit was due. */
+export function habitRate(h: Habit, days: Map<string, Day>, upTo: string, n = 30): { done: number; due: number } {
+  let done = 0, due = 0;
+  let cur = upTo;
+  for (let i = 0; i < n; i++) {
+    if (habitDue(h, cur)) {
+      const d = days.get(cur);
+      const m = d ? markOf(d, h.title) : undefined;
+      if (m !== "skipped") { due++; if (m === "done") done++; }
+    }
+    const prev = new Date(cur + "T12:00:00");
+    prev.setDate(prev.getDate() - 1);
+    cur = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+  }
+  return { done, due };
+}
+
+export function bestStreak(habit: string, days: Map<string, Day>): number {
+  const dates: string[] = [...days.keys()].sort();
+  let best = 0;
+  let run = 0;
+  let prevDate: string | null = null;
+  for (const date of dates) {
+    const m = markOf(days.get(date)!, habit);
+    if (prevDate !== null && addDays(prevDate, 1) !== date) run = 0; // a gap in the files breaks the run
+    if (m === "done") { run++; best = Math.max(best, run); }
+    else if (m !== "skipped") run = 0;
+    prevDate = date;
+  }
+  return best;
 }
 
 // ---------- assembling ----------
 
 export function buildLife(files: MdFile[]): Life {
   const habits: Habit[] = [];
+  const quests: Quest[] = [];
   const days = new Map<string, Day>();
   let accounts: AccountRow[] | null = null;
   for (const f of files) {
     if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
+    else if (f.rel.startsWith(QUEST_DIR + "/")) quests.push(parseQuest(f));
     else if (f.rel.startsWith(DAY_DIR + "/")) { const d = parseDay(f); days.set(d.date, d); }
     else if (f.rel === ACCOUNTS_REL) accounts = parseAccounts(f.content);
   }
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
-  return { habits, days, accounts };
+  quests.sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.title.localeCompare(b.title, "ru"));
+  return { habits, quests, days, accounts };
 }
