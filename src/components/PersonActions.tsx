@@ -1,0 +1,99 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useStore } from "../store";
+import type { Page } from "../lib/types";
+import { openExternal } from "../lib/native";
+import { todayStr } from "../lib/dates";
+import { setFrontmatterKeys } from "../lib/frontmatter";
+import { rawPageText } from "../lib/rawpage";
+import { CONTACT_KEYS, CONTACT_LABELS, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, type Contacts } from "../lib/people";
+
+function fmt(n: number): string {
+  return Math.round(n).toLocaleString("ru-RU");
+}
+
+/** The contact bar on a People page: deep links, editable contact fields, debts. */
+export default function PersonActions({ page }: { page: Page }) {
+  const { vault, life, saveText, reload } = useStore();
+  const today = todayStr();
+  const saved = contactsOf(page);
+  const [edit, setEdit] = useState(false);
+  const [form, setForm] = useState<Contacts>(saved);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => { setForm(contactsOf(page)); }, [page]);
+
+  const links = deepLinks(saved);
+  const debts = debtsFor(page, life?.debts ?? []);
+  const open = debts.filter((d) => !d.closed);
+  const since = daysSinceContact(saved.last_contact, today);
+  const bday = daysToBirthday(saved.birthday, today);
+
+  const write = async (patch: Record<string, string | null>) => {
+    const raw = vault ? rawPageText(vault, page.rel) : null;
+    if (raw === null) throw new Error("не нашёл исходный текст страницы");
+    await saveText(page.rel, setFrontmatterKeys(raw, patch));
+  };
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const patch: Record<string, string | null> = {};
+      for (const k of CONTACT_KEYS) {
+        const v = (form[k] ?? "").trim();
+        if (v !== (saved[k] ?? "")) patch[k] = v || null;
+      }
+      if (Object.keys(patch).length) await write(patch);
+      setEdit(false);
+      setErr(null);
+      await reload();
+    } catch (e) { setErr(String(e)); } finally { setBusy(false); }
+  };
+
+  const touch = async () => {
+    setBusy(true);
+    try { await write({ last_contact: today }); setErr(null); await reload(); } catch (e) { setErr(String(e)); } finally { setBusy(false); }
+  };
+
+  return (
+    <div className="ractions person">
+      <div className="row wrap" style={{ gap: 8 }}>
+        {links.map((l) => (
+          <button key={l.key} className="btn" onClick={() => void openExternal(l.url)} title={l.url}>{l.label}</button>
+        ))}
+        {links.length === 0 && <span className="small muted">Контактов нет. Добавь телефон или ник, и появятся кнопки для чата.</span>}
+        <span className="grow" />
+        <button className="btn" onClick={() => void touch()} disabled={busy} title="поставить last_contact = сегодня">
+          {since === undefined ? "Связались сегодня" : since === 0 ? "✓ общались сегодня" : `Связались сегодня · ${since} дн. назад`}
+        </button>
+        <button className="btn ghost" onClick={() => setEdit(!edit)}>{edit ? "скрыть" : "контакты"}</button>
+      </div>
+
+      {(bday !== undefined || open.length > 0) && (
+        <div className="row wrap small" style={{ marginTop: 10, gap: 14 }}>
+          {bday !== undefined && <span className={bday <= 7 ? "hl" : "muted"}>🎂 {bday === 0 ? "день рождения сегодня" : `день рождения через ${bday} дн.`} ({saved.birthday})</span>}
+          {open.map((d, i) => (
+            <Link key={i} to="/finance" className={d.direction === "я должен" ? "muted" : ""}>{d.direction}: <b>{fmt(d.amount)} {d.currency}</b>{d.note ? ` · ${d.note}` : ""}</Link>
+          ))}
+        </div>
+      )}
+
+      {edit && (
+        <form className="cform" onSubmit={(e) => { e.preventDefault(); void save(); }}>
+          {CONTACT_KEYS.map((k) => (
+            <label key={k} className="cfield">
+              <span>{CONTACT_LABELS[k]}</span>
+              <input className="text" type={k === "last_contact" ? "date" : "text"} value={form[k] ?? ""} placeholder={k === "birthday" ? "ГГГГ-ММ-ДД или ММ-ДД" : ""} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
+            </label>
+          ))}
+          <div className="row" style={{ gridColumn: "1 / -1" }}>
+            <button className="btn primary" type="submit" disabled={busy}>сохранить</button>
+            <button className="btn ghost" type="button" onClick={() => { setForm(saved); setEdit(false); }}>отмена</button>
+            <span className="small faint">Пишется только во frontmatter страницы, текст не трогается.</span>
+          </div>
+        </form>
+      )}
+      {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
+    </div>
+  );
+}

@@ -7,6 +7,7 @@ import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import { TagChips } from "../components/Bits";
 import ResourceActions from "../components/ResourceActions";
+import PersonActions from "../components/PersonActions";
 
 export default function PageView() {
   const { rel = "" } = useParams();
@@ -57,6 +58,7 @@ export default function PageView() {
       </div>
 
       {page.zone === "resource" && <ResourceActions page={page} />}
+      {page.zone === "person" && <PersonActions page={page} />}
 
       <div className="pagecols">
         <Markdown source={body} />

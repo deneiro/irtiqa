@@ -402,3 +402,10 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .practices li:hover .pacts { opacity: 1; }
 .addrow.rform { grid-template-columns: 1fr 180px 170px auto auto; margin-top: 12px; }
 @media (max-width: 1100px) { .addrow.rform { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- people ---------- */
+.ractions.person { border-left-color: var(--accent-2); }
+.cform { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+@media (max-width: 1000px) { .cform { grid-template-columns: 1fr 1fr; } }
+.cfield { display: flex; flex-direction: column; gap: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.cfield input { text-transform: none; letter-spacing: 0; }
