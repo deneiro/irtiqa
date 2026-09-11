@@ -46,6 +46,8 @@ export const RU_GAME: Dict = {
   'toast.sessionLoggedSub': v => `${v.time} за ${v.day}. Награда придёт, когда квест будет завершён.`,
   'toast.finishSessionFirst': 'Сначала завершите сессию',
   'toast.finishSessionFirstSub': 'Остановите работающий таймер, прежде чем завершать квест.',
+  'toast.questNoWork': 'Пока ничего не записано',
+  'toast.questNoWorkSub': v => `Квест платит за работу, которая за ним стоит. Проведите сессию или запишите уже отработанные часы — минимум ${v.min} ${plural(Number(v.min), 'минута', 'минуты', 'минут')}.`,
   'toast.goalMustBeEarned': 'Цель нужно заслужить',
   'toast.goalMustBeEarnedSub': 'Привяжите к этой цели хотя бы один квест и завершите его — тогда приходите за вехой.',
   'toast.entryRewritten': 'Запись переписана',

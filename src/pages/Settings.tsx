@@ -15,6 +15,7 @@ import {
 } from '../game/constants';
 import { CUSTOM_THEME_TOKENS, charLevel, isThemeUnlocked, rankFor } from '../game/engine';
 import { CURRENCIES, fmtMoney } from '../game/money';
+import { isSupabaseConfigured } from '../lib/supabase';
 import type { AttributeKey, PersonalityArchetype } from '../game/types';
 import { LANGS, LANG_LABEL, type Lang, useLang, useT } from '../i18n';
 import { fmtDate, fmtDateTime } from '../lib/format';
@@ -96,17 +97,21 @@ export function Settings() {
 
       <section className="card">
         <div className="card-head"><h2>{t('settings.theme')}</h2></div>
-        <label className="toggle-row">
-          <input
-            type="checkbox"
-            checked={s.adminUnlockAll}
-            onChange={e => s.setAdminUnlockAll(e.target.checked)}
-          />
-          <span>
-            <Icon name="unlock" size={14} /> <strong>{t('settings.ownerMode')}</strong>
-            {' — '}{t('settings.ownerModeDesc')}
-          </span>
-        </label>
+        {/* Development affordance only. In a production build there is no way to switch
+            it on, so themes cost what they cost. */}
+        {import.meta.env.DEV && (
+          <label className="toggle-row">
+            <input
+              type="checkbox"
+              checked={s.adminUnlockAll}
+              onChange={e => s.setAdminUnlockAll(e.target.checked)}
+            />
+            <span>
+              <Icon name="unlock" size={14} /> <strong>{t('settings.ownerMode')}</strong>
+              {' — '}{t('settings.ownerModeDesc')}
+            </span>
+          </label>
+        )}
         <div className="theme-row">
           {THEMES.map(theme => {
             const unlocked = isThemeUnlocked(theme, { adminUnlockAll: s.adminUnlockAll, ownedThemes: s.ownedThemes });
@@ -117,14 +122,14 @@ export function Settings() {
                 className={`theme-pick theme-preview-${theme.id} ${active ? 'theme-active' : ''}`}
                 disabled={!unlocked}
                 onClick={() => s.setTheme(theme.id)}
-                title={unlocked ? theme.desc : t('settings.themeLocked', { price: theme.price?.toFixed(2) })}
+                title={unlocked ? theme.desc : t('settings.themeLocked', { price: theme.goldPrice })}
               >
                 <span className="theme-pick-emoji"><Icon name={theme.icon} size={26} /></span>
                 <span>{theme.name}</span>
                 {active
                   ? <span className="status status-done heading-icon"><Icon name="check" size={12} /> {t('settings.active')}</span>
                   : !unlocked
-                    ? <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> ${theme.price?.toFixed(2)}</span>
+                    ? <span className="status status-locked heading-icon"><Icon name="lock" size={12} /> {theme.goldPrice} <Icon name="gold" size={12} /></span>
                     : null}
               </button>
             );
@@ -164,7 +169,11 @@ export function Settings() {
 
       <section className="card">
         <div className="card-head"><h2>{t('settings.saveData')}</h2></div>
-        <p className="muted">{t('settings.saveDataDesc')}</p>
+        {/* The card above already says whether sync is on. Saying the opposite here is
+            worse than saying nothing: the player has to guess which sentence is true. */}
+        <p className="muted">
+          {isSupabaseConfigured ? t('settings.saveDataDesc') : t('settings.saveDataLocalOnly')}
+        </p>
         <div className="btn-pair">
           <button className="btn btn-primary heading-icon" onClick={exportSave}>
             <Icon name="download" size={14} /> {t('settings.exportSave')}

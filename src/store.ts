@@ -52,6 +52,8 @@ import {
   journalXp,
   MAX_CATCHUP_DAYS,
   MAX_SESSION_MINUTES,
+  MIN_QUEST_MINUTES,
+  questPayable,
   missDamage,
   momentumMult,
   monthKey,
@@ -250,6 +252,7 @@ export interface GameState {
   buyItem: (id: ItemId) => void;
   useItem: (id: ItemId, payload?: UseItemPayload) => void;
   setTheme: (themeId: string) => void;
+  buyTheme: (themeId: string) => void;
   setLanguage: (lang: Lang) => void;
   setAdminUnlockAll: (on: boolean) => void;
   setThemeColor: (themeId: string, token: string, value: string) => void;
@@ -565,7 +568,10 @@ const initialData = () => ({
   ownedThemes: ['midnight'],
   theme: 'midnight',
   lang: detectLang(),
-  adminUnlockAll: true, // owner mode on by default — everything free to test
+  // Owner mode is a development affordance, not a player setting: it hands out every
+  // theme and cosmetic for free, which is exactly the economy the game is built to
+  // protect. It ships OFF, and the toggle only renders in a dev build.
+  adminUnlockAll: import.meta.env.DEV,
   themeOverrides: {} as Record<string, Record<string, string>>,
 
   habits: [] as Habit[],
@@ -1046,6 +1052,16 @@ export const useGame = create<GameState>()(
             pushCeleb(d, { type: 'info', title: tr('toast.finishSessionFirst'), subtitle: tr('toast.finishSessionFirstSub') });
             return;
           }
+          // The gate lives here, not only on the button: nothing may mint a payout for a
+          // quest with no work behind it, whatever route the call arrived by.
+          if (!questPayable(q)) {
+            pushCeleb(d, {
+              type: 'info',
+              title: tr('toast.questNoWork'),
+              subtitle: tr('toast.questNoWorkSub', { min: MIN_QUEST_MINUTES }),
+            });
+            return;
+          }
           const payout = questPayout(q, d.character?.classes);
           q.completedAt = new Date().toISOString();
           q.priority = false;
@@ -1418,6 +1434,33 @@ export const useGame = create<GameState>()(
           }
         }),
 
+      /** Buy a theme with Gold and wear it immediately. Owning is permanent. */
+      buyTheme: themeId =>
+        set(d => {
+          if (!d.character) return;
+          const theme = THEMES.find(t => t.id === themeId);
+          if (!theme || theme.free || d.ownedThemes.includes(themeId)) return;
+          const price = theme.goldPrice ?? 0;
+          if (d.character.gold < price) {
+            pushCeleb(d, {
+              type: 'info',
+              title: tr('market.notEnoughGold'),
+              subtitle: tr('market.themeShort', { n: price - d.character.gold }),
+            });
+            return;
+          }
+          d.character.gold -= price;
+          d.ownedThemes.push(themeId);
+          d.theme = themeId; // a theme you just paid for is one you want to see
+          pushCeleb(d, {
+            type: 'item',
+            icon: theme.icon,
+            title: tr('market.themeBought', { name: theme.name }),
+            subtitle: tr('market.themeBoughtSub'),
+          });
+          checkAchievementsD(d);
+        }),
+
       setLanguage: lang =>
         set(d => {
           d.lang = lang;
@@ -1608,7 +1651,8 @@ export const useGame = create<GameState>()(
     })),
     {
       name: 'irtiqa-save',
-      version: 13, // v13: UI language (lang)
+      version: 14, // v14: owner mode retired as a player setting
+      // v13: UI language (lang)
       // v12: the sector Library (libraryRead)
       // v11: guided tour (tutorialStep, seenPages)
       // v10: currency, retired themes, wishlist removed, one identity
@@ -1635,6 +1679,10 @@ export const useGame = create<GameState>()(
         if (RETIRED_THEME_IDS.includes(merged.theme)) merged.theme = 'midnight';
         merged.ownedThemes = (merged.ownedThemes ?? []).filter(t => !RETIRED_THEME_IDS.includes(t));
         for (const id of RETIRED_THEME_IDS) delete merged.themeOverrides?.[id];
+        // v14: owner mode shipped on by default, so every existing save carries it as
+        // `true`. Left merged through, the fix would only ever reach new players.
+        // `reconcile` catches anyone left standing on a now-locked theme.
+        merged.adminUnlockAll = import.meta.env.DEV;
         return merged;
       },
       partialize: state => {

@@ -173,9 +173,14 @@ export const RANKS: RankDef[] = (
   },
 }));
 
-// One symbolic price for every non-free theme. Display-only for now — no payment path.
-// Owner mode (store.adminUnlockAll, default on) unlocks everything regardless.
-export const THEME_PRICE = 4.99;
+/**
+ * Themes are bought with Gold, the game's only currency — the same coins habits,
+ * quests and journal entries pay out. A theme is the most expensive thing in the
+ * game on purpose: dearer than Focus Unlock (200), so wearing one says the hours
+ * were real. Nothing here costs real money, and nothing is locked behind a wall
+ * the player cannot reach by playing.
+ */
+export const THEME_GOLD_PRICE = 250;
 
 /**
  * Four themes, each finished.
@@ -193,9 +198,9 @@ export const THEMES: ThemeDef[] = (
   [
     // Midnight is the one free default — the safe fallback when a theme is locked.
     { id: 'midnight', icon: 'themeMidnight', free: true, motion: 'aurora' },
-    { id: 'skeuo', icon: 'themeSkeuo', price: THEME_PRICE, motion: 'bevel' },
-    { id: 'parchment', icon: 'themeParchment', price: THEME_PRICE, motion: 'none' },
-    { id: 'neon', icon: 'themeNeon', price: THEME_PRICE, motion: 'pulse' },
+    { id: 'skeuo', icon: 'themeSkeuo', goldPrice: THEME_GOLD_PRICE, motion: 'bevel' },
+    { id: 'parchment', icon: 'themeParchment', goldPrice: THEME_GOLD_PRICE, motion: 'none' },
+    { id: 'neon', icon: 'themeNeon', goldPrice: THEME_GOLD_PRICE, motion: 'pulse' },
   ] as Omit<ThemeDef, 'name' | 'desc'>[]
 ).map(shape => ({
   ...shape,

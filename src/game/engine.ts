@@ -338,14 +338,34 @@ export function questMinutes(q: Quest): number {
   return q.sessions.reduce((a, s) => a + s.minutes, 0);
 }
 
+/**
+ * A quest under this much logged work pays nothing at all. Without it, a title and two
+ * clicks minted the flat part of the payout, forever — the one thing the whole design
+ * exists to prevent. Fifteen minutes is deliberately low: it is the shortest stretch
+ * that is still a real sitting, so the gate catches empty quests without punishing
+ * genuinely small ones.
+ */
+export const MIN_QUEST_MINUTES = 15;
+
+/** Whether this quest has enough logged work to be worth completing yet. */
+export function questPayable(q: Quest): boolean {
+  return questMinutes(q) >= MIN_QUEST_MINUTES;
+}
+
 /** One big payout at the end, scaled by actual logged work. A priority quest is the
- *  "Great Work": the Sovereign's attunement deepens its bonus (up to +50% on top). */
+ *  "Great Work": the Sovereign's attunement deepens its bonus (up to +50% on top).
+ *
+ *  The curve is anchored so a four-hour quest pays what it always did (240 XP / 78 gold);
+ *  what changed is where it starts. The old flat 80/30 intercept paid out at zero hours,
+ *  so the reward barely moved between doing nothing and doing an afternoon's work. Now
+ *  the intercept is small and the slope carries the weight: the hours are the payout. */
 export function questPayout(q: Quest, classes?: ClassId[]): { xp: number; gold: number; minutes: number } {
   const minutes = questMinutes(q);
+  if (minutes < MIN_QUEST_MINUTES) return { xp: 0, gold: 0, minutes };
   const hours = minutes / 60;
   const priorityMult = q.priority ? 1.25 + 0.5 * classWeight(classes, 'sovereign') : 1;
-  const xp = Math.round((80 + hours * 40) * priorityMult);
-  const gold = Math.round(30 + hours * 12);
+  const xp = Math.round((20 + hours * 55) * priorityMult);
+  const gold = Math.round(6 + hours * 18);
   return { xp, gold, minutes };
 }
 

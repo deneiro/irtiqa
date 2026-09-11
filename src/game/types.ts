@@ -421,8 +421,8 @@ export interface ThemeDef {
   icon: IconName;
   /** The one always-unlocked default. Free themes never show a price and never lock. */
   free?: boolean;
-  /** Symbolic real-money price shown on non-free themes. Display-only — no payment path yet. */
-  price?: number;
+  /** Cost in Gold. Every non-free theme has one, and it is the only way to unlock it. */
+  goldPrice?: number;
   /**
    * Motion-signature key the juice layer reads in Phase 2 (e.g. 'specular', 'squish').
    * Stored now so themes are complete; ambient CSS motion in Phase 1 keys off `id` in styles.css.

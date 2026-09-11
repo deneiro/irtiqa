@@ -188,10 +188,13 @@ function ThemeCard({ theme }: { theme: ThemeDef }) {
         ) : unlocked ? (
           <button className="btn btn-primary btn-sm" onClick={() => s.setTheme(theme.id)}>{t('market.apply')}</button>
         ) : (
-          // Symbolic price, display-only — no purchase path yet (owner mode is the only unlock today).
-          <span className="status status-locked inline-icon" title={t('market.lockedOwnerOff')}>
-            <Icon name="lock" size={13} /> ${theme.price?.toFixed(2)}
-          </span>
+          <button
+            className="btn btn-gold btn-sm"
+            disabled={(s.character?.gold ?? 0) < (theme.goldPrice ?? 0)}
+            onClick={() => s.buyTheme(theme.id)}
+          >
+            {t('market.buy')} · {theme.goldPrice} <Icon name="gold" size={13} />
+          </button>
         )}
       </div>
     </div>

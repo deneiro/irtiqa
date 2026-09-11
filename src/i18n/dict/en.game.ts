@@ -43,6 +43,8 @@ export const EN_GAME: Dict = {
   'toast.sessionLoggedSub': v => `${v.time} on ${v.day}. The payout comes when the quest is done.`,
   'toast.finishSessionFirst': 'Finish your session first',
   'toast.finishSessionFirstSub': 'Stop the running timer before completing the quest.',
+  'toast.questNoWork': 'Nothing logged yet',
+  'toast.questNoWorkSub': v => `A quest pays for the work behind it. Run a session, or log the hours you already did — ${v.min} minutes is the floor.`,
   'toast.goalMustBeEarned': 'A goal must be earned',
   'toast.goalMustBeEarnedSub': 'Link at least one quest to this goal and finish it — then come claim the milestone.',
   'toast.entryRewritten': 'Entry rewritten',

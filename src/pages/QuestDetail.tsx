@@ -5,11 +5,13 @@ import { AttrTags, Bar, Empty, Modal } from '../components/ui';
 import { QUEST_DURATIONS } from '../game/constants';
 import {
   MAX_SESSION_MINUTES,
+  MIN_QUEST_MINUTES,
   fmtDay,
   fmtDayFull,
   fmtMinutes,
   questDeadlineProgress,
   questMinutes,
+  questPayable,
   questPayout,
   questTargetDate,
   todayStr,
@@ -44,6 +46,7 @@ export function QuestDetail() {
   const today = todayStr();
   const todayMinutes = quest.sessions.filter(x => x.date === today).reduce((a, x) => a + x.minutes, 0);
   const payout = questPayout(quest, s.character?.classes);
+  const payable = questPayable(quest);
   const sessions = [...quest.sessions].reverse();
   const target = questTargetDate(quest);
   const progress = questDeadlineProgress(quest);
@@ -127,9 +130,18 @@ export function QuestDetail() {
             <p className="muted center">{t('qd.noDeadline')}</p>
           )}
           {!quest.completedAt && (
-            <button className="btn btn-gold btn-lg" disabled={isRunning} onClick={() => setConfirmDone(true)}>
-              <Icon name="flag" size={15} /> {t('qd.completeClaim', { xp: payout.xp, gold: payout.gold })} <Icon name="gold" size={14} />
-            </button>
+            <>
+              <button className="btn btn-gold btn-lg" disabled={isRunning || !payable} onClick={() => setConfirmDone(true)}>
+                <Icon name="flag" size={15} />{' '}
+                {payable
+                  ? t('qd.completeClaim', { xp: payout.xp, gold: payout.gold })
+                  : t('qd.completeLocked')}{' '}
+                {payable && <Icon name="gold" size={14} />}
+              </button>
+              {/* Saying why the button is dark matters more than the button: the player
+                  needs to know the work is the price, not that something is broken. */}
+              {!payable && <p className="muted center">{t('qd.completeLockedHint', { min: MIN_QUEST_MINUTES })}</p>}
+            </>
           )}
         </section>
 
