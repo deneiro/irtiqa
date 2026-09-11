@@ -6,7 +6,7 @@ import { pageUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
-import { contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks } from "../lib/people";
+import { contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor } from "../lib/people";
 
 type Sort = "name" | "contact" | "birthday";
 
@@ -18,11 +18,12 @@ export default function PeoplePage() {
   const [q, setQ] = useState("");
   const [theme, setTheme] = useState("");
   const [sort, setSort] = useState<Sort>("name");
+  const [showAuthors, setShowAuthors] = useState(false);
 
   const people = useMemo(
     () =>
       v.pages
-        .filter((p) => p.zone === "person")
+        .filter((p) => p.zone === "person" && p.file !== "_Overview" && (showAuthors || !isAuthor(p)))
         .map((p) => {
           const c = contactsOf(p);
           const open = debtsFor(p, life?.debts ?? []).filter((d) => !d.closed);
@@ -43,7 +44,7 @@ export default function PeoplePage() {
           if (sort === "birthday") return (a.bday ?? 1e9) - (b.bday ?? 1e9);
           return a.p.title.localeCompare(b.p.title);
         }),
-    [v, life, q, theme, sort, today],
+    [v, life, q, theme, sort, today, showAuthors],
   );
 
   const soon = people.filter((x) => x.bday !== undefined && x.bday <= 30).sort((a, b) => a.bday! - b.bday!);
@@ -71,7 +72,8 @@ export default function PeoplePage() {
           <option value="contact">давно не общались</option>
           <option value="birthday">ближайшие дни рождения</option>
         </select>
-        <span className="small faint" style={{ marginLeft: "auto" }}>{people.length}</span>
+        <label className="small muted row" style={{ gap: 6, marginLeft: "auto" }}><input type="checkbox" checked={showAuthors} onChange={(e) => setShowAuthors(e.target.checked)} /> показать авторов источников</label>
+        <span className="small faint">{people.length}</span>
       </div>
       <table className="tbl">
         <thead><tr><th>{t("col_name")}</th><th>{t("col_connection")}</th><th>{t("col_theme")}</th><th>контакт</th><th>общались</th><th style={{ textAlign: "right" }}>долг</th></tr></thead>

@@ -10,8 +10,8 @@ import FinancePage from "./pages/Finance";
 import { useSubscriptionCharges } from "./lib/useSubscriptionCharges";
 import ThemePage from "./pages/Theme";
 import PageView from "./pages/Page";
-import LogPage from "./pages/Log";
-import ChartsPage from "./pages/Charts";
+import FeedPage from "./pages/Feed";
+import TrendsPage from "./pages/Trends";
 import SearchPage from "./pages/Search";
 import ProfilePage from "./pages/Profile";
 import PeoplePage from "./pages/People";
@@ -68,10 +68,12 @@ function Shell() {
           <Route path="/finance" element={<FinancePage />} />
           <Route path="/theme/:name" element={<ThemePage />} />
           <Route path="/page/:rel" element={<PageView />} />
-          <Route path="/log" element={<LogPage />} />
-          <Route path="/charts" element={<ChartsPage />} />
+          <Route path="/log" element={<FeedPage />} />
+          <Route path="/charts" element={<TrendsPage />} />
+          <Route path="/trends" element={<TrendsPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:section" element={<ProfilePage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/raw" element={<RawPage />} />
           <Route path="/setup" element={<SetupPage />} />

@@ -28,3 +28,7 @@ export function formatDayTitle(date: string): string {
   const s = d.toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
+
+export function monthOfToday(date: string): string {
+  return date.slice(0, 7);
+}

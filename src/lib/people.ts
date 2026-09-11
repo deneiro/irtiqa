@@ -68,3 +68,10 @@ export function daysSinceContact(last: string | undefined, today: string): numbe
   if (!last || !/^\d{4}-\d{2}-\d{2}$/.test(last)) return undefined;
   return Math.round((new Date(today + "T12:00:00").getTime() - new Date(last + "T12:00:00").getTime()) / 86400000);
 }
+
+/** Voices, not relationships: authors of sources living in People/ (schema 3.1). */
+const AUTHOR_RE = /^(author|translator|lecturer|channel|автор|переводчик|лектор|канал)\b/i;
+export function isAuthor(page: Page): boolean {
+  const c = typeof page.fm.connection === "string" ? page.fm.connection : "";
+  return AUTHOR_RE.test(c.trim());
+}
