@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import DayPage from "./pages/Day";
 import HabitsPage from "./pages/Habits";
 import QuestsPage from "./pages/Quests";
+import FinancePage from "./pages/Finance";
+import { useSubscriptionCharges } from "./lib/useSubscriptionCharges";
 import ThemePage from "./pages/Theme";
 import PageView from "./pages/Page";
 import LogPage from "./pages/Log";
@@ -22,6 +24,7 @@ function Shell() {
   const { vault, loading, error, setPaletteOpen, lang } = useStore();
   const { t } = useT();
   const loc = useLocation();
+  useSubscriptionCharges();
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -62,6 +65,7 @@ function Shell() {
           <Route path="/vault" element={<Home />} />
           <Route path="/habits" element={<HabitsPage />} />
           <Route path="/quests" element={<QuestsPage />} />
+          <Route path="/finance" element={<FinancePage />} />
           <Route path="/theme/:name" element={<ThemePage />} />
           <Route path="/page/:rel" element={<PageView />} />
           <Route path="/log" element={<LogPage />} />

@@ -32,6 +32,7 @@ export default function Sidebar() {
       <NavLink to="/quests" className={cls}>
         {t("nav_quests")} {timer && <span className="livedot" title={timer.quest} />}<span className="count">{life?.quests.filter((q) => q.status === "active").length ?? ""}</span>
       </NavLink>
+      <NavLink to="/finance" className={cls}>{t("nav_finance")}</NavLink>
       <NavLink to="/vault" className={cls}>{t("nav_home")}</NavLink>
       <NavLink to="/log" className={cls}>
         {t("nav_log")} <span className="count">{vault?.log.length ?? ""}</span>

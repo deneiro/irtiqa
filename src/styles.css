@@ -374,3 +374,18 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .livedot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-2); display: inline-block; margin-left: 4px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-2) 25%, transparent); }
 .bul.small { font-size: 13px; }
 @media (max-width: 1000px) { .hrow { grid-template-columns: 1fr auto; } .hrow .dots { display: none; } }
+
+/* ---------- finance ---------- */
+.fin-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+.fin-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; align-items: start; }
+@media (max-width: 1100px) { .fin-grid, .fin-cols { grid-template-columns: 1fr; } }
+.cats { display: flex; flex-direction: column; gap: 6px; }
+.cat { display: grid; grid-template-columns: 110px 1fr 70px; gap: 8px; align-items: center; font-size: 12px; }
+.cat .cname { color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat .cbar { height: 8px; background: var(--raised); border-radius: 4px; overflow: hidden; }
+.cat .cbar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.cat .cnum { font-family: var(--font-mono); text-align: right; color: var(--ink); }
+.addrow.acc { grid-template-columns: 1fr 100px 110px auto; }
+.addrow.subs { grid-template-columns: 1fr 90px 100px 60px 110px auto; }
+.addrow.debt { grid-template-columns: 1fr 140px 100px 70px 1fr auto; }
+@media (max-width: 1100px) { .addrow.acc, .addrow.subs, .addrow.debt { grid-template-columns: 1fr 1fr; } }

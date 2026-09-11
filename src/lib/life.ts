@@ -78,17 +78,42 @@ export interface AccountRow {
   asOf: string;
 }
 
+export interface Subscription {
+  name: string;
+  amount: number; // positive; charged as a negative transaction
+  account: string;
+  day: number; // day of month, clamped to the month's length
+  category: string;
+}
+
+export const DEBT_THEY_OWE = "мне должны";
+export const DEBT_I_OWE = "я должен";
+
+export interface Debt {
+  who: string; // "[[Person]]" or plain text
+  direction: string; // DEBT_THEY_OWE | DEBT_I_OWE
+  amount: number;
+  currency: string;
+  since: string;
+  note: string;
+  closed: string | undefined; // date when settled
+}
+
 export interface Life {
   habits: Habit[];
   quests: Quest[];
   days: Map<string, Day>;
   accounts: AccountRow[] | null; // null = no accounts.md yet
+  subscriptions: Subscription[];
+  debts: Debt[];
 }
 
 export const DAY_DIR = "life/days";
 export const HABIT_DIR = "life/habits";
 export const QUEST_DIR = "life/quests";
 export const ACCOUNTS_REL = "life/finance/accounts.md";
+export const SUBS_REL = "life/finance/subscriptions.md";
+export const DEBTS_REL = "life/finance/debts.md";
 
 // ---------- small helpers ----------
 
@@ -416,6 +441,94 @@ export function applyDayToAccounts(rows: AccountRow[], d: Day): { rows: AccountR
   return { rows: next, changed };
 }
 
+// ---------- subscriptions & debts ----------
+
+/** Every markdown table row in the file, with the H2 it sits under. Header and separator rows are dropped. */
+function tableRows(content: string): { section: string; cells: string[] }[] {
+  const out: { section: string; cells: string[] }[] = [];
+  let section = "";
+  for (const line of content.split(/\r?\n/)) {
+    const t = line.trim();
+    const h = t.match(/^## (.*)$/);
+    if (h) { section = h[1].trim(); continue; }
+    if (!t.startsWith("|")) continue;
+    const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
+    if (cells.every((c) => /^:?-+:?$/.test(c) || c === "")) continue;
+    out.push({ section, cells });
+  }
+  return out;
+}
+
+function ledgerHead(title: string, date: string): string[] {
+  return ["---", "type: ledger", `updated: ${date}`, "---", `# ${title}`, ""];
+}
+
+export function parseSubscriptions(content: string): Subscription[] {
+  const subs: Subscription[] = [];
+  for (const { cells } of tableRows(content)) {
+    if (cells[0] === "Название") continue;
+    const amount = num(cells[1]);
+    const day = num(cells[3]);
+    if (!cells[0] || amount === undefined || day === undefined) continue;
+    subs.push({ name: cells[0], amount: Math.abs(amount), account: cells[2] ?? "", day: Math.max(1, Math.min(31, Math.round(day))), category: cells[4] ?? "" });
+  }
+  return subs;
+}
+
+export function serializeSubscriptions(subs: Subscription[], date: string): string {
+  const out = [...ledgerHead("Подписки", date), "| Название | Сумма | Счёт | День списания | Категория |", "|---|---|---|---|---|"];
+  for (const x of subs) out.push(`| ${x.name} | ${fmtAmount(x.amount)} | ${x.account} | ${x.day} | ${x.category} |`);
+  return out.join("\n") + "\n";
+}
+
+export function subscriptionNote(s: Subscription): string {
+  return `подписка: ${s.name}`;
+}
+
+/** Subscriptions charged on `date`. A day past the month's end charges on its last day. */
+export function subscriptionsDue(subs: Subscription[], date: string): Subscription[] {
+  const [y, m, d] = date.split("-").map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return subs.filter((s) => Math.min(s.day, last) === d);
+}
+
+export function parseDebts(content: string): Debt[] {
+  const debts: Debt[] = [];
+  for (const { section, cells } of tableRows(content)) {
+    if (cells[0] === "Кто") continue;
+    const amount = num(cells[2]);
+    if (!cells[0] || amount === undefined) continue;
+    const closedSection = /закрыт/i.test(section);
+    debts.push({
+      who: cells[0], direction: cells[1] ?? "", amount, currency: cells[3] ?? "", since: cells[4] ?? "", note: cells[5] ?? "",
+      closed: closedSection ? (cells[6] || "—") : undefined,
+    });
+  }
+  return debts;
+}
+
+export function serializeDebts(debts: Debt[], date: string): string {
+  const open = debts.filter((d) => !d.closed);
+  const closed = debts.filter((d) => d.closed);
+  const out = [...ledgerHead("Долги", date), "## Открытые", "", "| Кто | Направление | Сумма | Валюта | С даты | Заметка |", "|---|---|---|---|---|---|"];
+  for (const d of open) out.push(`| ${d.who} | ${d.direction} | ${fmtAmount(d.amount)} | ${d.currency} | ${d.since} | ${d.note} |`);
+  out.push("", "## Закрытые", "", "| Кто | Направление | Сумма | Валюта | С даты | Заметка | Закрыт |", "|---|---|---|---|---|---|---|");
+  for (const d of closed) out.push(`| ${d.who} | ${d.direction} | ${fmtAmount(d.amount)} | ${d.currency} | ${d.since} | ${d.note} | ${d.closed} |`);
+  return out.join("\n") + "\n";
+}
+
+// ---------- month views ----------
+
+export function monthOf(date: string): string {
+  return date.slice(0, 7);
+}
+
+export function txsInMonth(days: Map<string, Day>, ym: string): { date: string; tx: Tx }[] {
+  const out: { date: string; tx: Tx }[] = [];
+  for (const [date, d] of days) if (date.startsWith(ym)) for (const tx of d.txs) out.push({ date, tx });
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+
 // ---------- derived numbers ----------
 
 /** Consecutive days with the habit done, counting back from `upTo` (inclusive). Skipped days don't break a streak. */
@@ -496,13 +609,17 @@ export function buildLife(files: MdFile[]): Life {
   const quests: Quest[] = [];
   const days = new Map<string, Day>();
   let accounts: AccountRow[] | null = null;
+  let subscriptions: Subscription[] = [];
+  let debts: Debt[] = [];
   for (const f of files) {
     if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
     else if (f.rel.startsWith(QUEST_DIR + "/")) quests.push(parseQuest(f));
     else if (f.rel.startsWith(DAY_DIR + "/")) { const d = parseDay(f); days.set(d.date, d); }
     else if (f.rel === ACCOUNTS_REL) accounts = parseAccounts(f.content);
+    else if (f.rel === SUBS_REL) subscriptions = parseSubscriptions(f.content);
+    else if (f.rel === DEBTS_REL) debts = parseDebts(f.content);
   }
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
   quests.sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.title.localeCompare(b.title, "ru"));
-  return { habits, quests, days, accounts };
+  return { habits, quests, days, accounts, subscriptions, debts };
 }
