@@ -1,23 +1,7 @@
-node_modules/
-dist/
-graphify-out/
-
-# Vercel
-.vercel/
-
-# Local env / secrets
-.env
-.env.local
-.env.*.local
-
-# Editor / OS
+node_modules
+dist
+src-tauri/target
+src-tauri/gen/schemas
 .DS_Store
-*.log
-.vscode/
-.idea/
-
-# Claude Code local settings (machine-specific)
+*.local
 .claude/settings.local.json
-
-# Scratch output from the Chronicle preview test (snapshots are the real record)
-chronicle-preview.txt
