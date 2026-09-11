@@ -2,11 +2,13 @@ use notify::{RecommendedWatcher, RecursiveMode, Watcher};
 use serde::Serialize;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
-use std::process::Command;
+use std::collections::HashMap;
+use std::io::{BufRead, BufReader};
+use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::channel;
 use std::sync::Mutex;
 use std::time::{Duration, Instant, UNIX_EPOCH};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use walkdir::WalkDir;
 
 #[derive(Serialize)]
@@ -167,8 +169,7 @@ fn write_text(root: String, rel: String, content: String) -> Result<(), String> 
 /// Run a program inside the vault folder and wait for it. Used for `git` on
 /// day close and for `claude -p` from the Claude panel. Finder-launched apps get
 /// a bare PATH, so the usual tool locations are appended.
-#[tauri::command]
-fn run_cmd(root: String, program: String, args: Vec<String>) -> Result<CmdResult, String> {
+fn tool_path() -> String {
     let home = std::env::var("HOME").unwrap_or_default();
     let mut path = std::env::var("PATH").unwrap_or_default();
     for extra in [
@@ -183,12 +184,26 @@ fn run_cmd(root: String, program: String, args: Vec<String>) -> Result<CmdResult
             path.push_str(&extra);
         }
     }
-    let out = Command::new(&program)
-        .args(&args)
-        .current_dir(&root)
-        .env("PATH", path)
-        .output()
-        .map_err(|e| format!("{program}: {e}"))?;
+    path
+}
+
+/// A child `claude` must not inherit the environment of a Claude Code session
+/// that may have launched this app (nested-session guards, proxy base URL,
+/// messaging tokens) — it should authenticate the way a terminal `claude` does.
+fn clean_env(cmd: &mut Command) {
+    for (k, _) in std::env::vars() {
+        if k.starts_with("CLAUDE") || k == "ANTHROPIC_BASE_URL" {
+            cmd.env_remove(k);
+        }
+    }
+}
+
+#[tauri::command]
+fn run_cmd(root: String, program: String, args: Vec<String>) -> Result<CmdResult, String> {
+    let mut cmd = Command::new(&program);
+    cmd.args(&args).current_dir(&root).env("PATH", tool_path());
+    clean_env(&mut cmd);
+    let out = cmd.output().map_err(|e| format!("{program}: {e}"))?;
     Ok(CmdResult {
         status: out.status.code().unwrap_or(-1),
         stdout: String::from_utf8_lossy(&out.stdout).into_owned(),
@@ -198,6 +213,83 @@ fn run_cmd(root: String, program: String, args: Vec<String>) -> Result<CmdResult
 
 #[derive(Default)]
 struct WatchState(Mutex<Option<RecommendedWatcher>>);
+
+#[derive(Default)]
+struct Runs(Mutex<HashMap<String, Child>>);
+
+#[derive(Serialize, Clone)]
+struct StreamLine {
+    id: String,
+    stream: String, // "out" | "err"
+    line: String,
+}
+
+#[derive(Serialize, Clone)]
+struct StreamExit {
+    id: String,
+    code: i32,
+}
+
+/// Spawn a program inside the vault and stream its output as `stream-line`
+/// events, then `stream-exit`. Used by the Claude panel for `claude -p`.
+#[tauri::command]
+fn run_stream(app: AppHandle, state: State<Runs>, root: String, id: String, program: String, args: Vec<String>) -> Result<(), String> {
+    let mut cmd = Command::new(&program);
+    cmd.args(&args)
+        .current_dir(&root)
+        .env("PATH", tool_path())
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    clean_env(&mut cmd);
+    let mut child = cmd.spawn().map_err(|e| format!("{program}: {e}"))?;
+    let stdout = child.stdout.take().ok_or("no stdout")?;
+    let stderr = child.stderr.take().ok_or("no stderr")?;
+    for (reader, name) in [(Box::new(stdout) as Box<dyn std::io::Read + Send>, "out"), (Box::new(stderr), "err")] {
+        let app = app.clone();
+        let id = id.clone();
+        std::thread::spawn(move || {
+            for line in BufReader::new(reader).lines().map_while(Result::ok) {
+                let _ = app.emit("stream-line", StreamLine { id: id.clone(), stream: name.to_string(), line });
+            }
+        });
+    }
+    state.0.lock().map_err(|e| e.to_string())?.insert(id.clone(), child);
+    let app2 = app.clone();
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(Duration::from_millis(150));
+            let code = {
+                let st = app2.state::<Runs>();
+                let mut map = match st.0.lock() { Ok(m) => m, Err(_) => break };
+                match map.get_mut(&id) {
+                    Some(child) => match child.try_wait() {
+                        Ok(Some(status)) => { map.remove(&id); Some(status.code().unwrap_or(-1)) }
+                        Ok(None) => None,
+                        Err(_) => { map.remove(&id); Some(-1) }
+                    },
+                    None => Some(-2), // killed
+                }
+            };
+            if let Some(code) = code {
+                // Give the reader threads a moment to flush the last lines.
+                std::thread::sleep(Duration::from_millis(200));
+                let _ = app2.emit("stream-exit", StreamExit { id: id.clone(), code });
+                break;
+            }
+        }
+    });
+    Ok(())
+}
+
+#[tauri::command]
+fn kill_stream(state: State<Runs>, id: String) -> Result<(), String> {
+    let mut map = state.0.lock().map_err(|e| e.to_string())?;
+    if let Some(mut child) = map.remove(&id) {
+        let _ = child.kill();
+    }
+    Ok(())
+}
 
 /// Watch the vault root and emit `vault-changed` (debounced) when a markdown
 /// file under `wiki/` or `life/` changes — whoever changed it: this app,
@@ -244,7 +336,8 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .manage(WatchState::default())
-        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, run_cmd, watch_vault])
+        .manage(Runs::default())
+        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, run_cmd, run_stream, kill_stream, watch_vault])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

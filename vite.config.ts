@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
+import { spawn } from "node:child_process";
 // @ts-expect-error type error without @types/node package
 import process from "node:process";
 
@@ -36,6 +37,43 @@ function vaultDevServer(): Plugin {
             writeFileSync(target + ".tmp", content);
             renameSync(target + ".tmp", target);
             res.end("ok");
+          } catch (e) {
+            res.statusCode = 400;
+            res.end(String(e));
+          }
+        });
+      });
+      // Dev stand-in for the Tauri `run_stream` command: spawn a program in the
+      // vault and stream its stdout/stderr as prefixed lines ("O ", "E ", "X code").
+      server.middlewares.use("/__vault/stream", (req, res) => {
+        let body = "";
+        req.on("data", (c) => (body += c));
+        req.on("end", () => {
+          try {
+            const { root, program, args } = JSON.parse(body) as { root: string; program: string; args: string[] };
+            const env: Record<string, string> = {};
+            for (const [k, v] of Object.entries(process.env as Record<string, string>)) if (!k.startsWith("CLAUDE") && k !== "ANTHROPIC_BASE_URL") env[k] = v;
+            env.PATH = [env.PATH, `${env.HOME}/.local/bin`, `${env.HOME}/.cargo/bin`, "/opt/homebrew/bin", "/usr/local/bin"].filter(Boolean).join(":");
+            const child = spawn(program, args, { cwd: root, env, stdio: ["ignore", "pipe", "pipe"] });
+            res.setHeader("content-type", "text/plain; charset=utf-8");
+            res.setHeader("cache-control", "no-cache");
+            res.setHeader("x-content-type-options", "nosniff");
+            (res as unknown as { flushHeaders?: () => void }).flushHeaders?.();
+            const pipe = (stream: NodeJS.ReadableStream, tag: string) => {
+              let buf = "";
+              stream.on("data", (c: Buffer) => {
+                buf += c.toString("utf8");
+                const lines = buf.split("\n");
+                buf = lines.pop() ?? "";
+                for (const l of lines) res.write(`${tag} ${l}\n`);
+              });
+              stream.on("end", () => { if (buf) res.write(`${tag} ${buf}\n`); });
+            };
+            pipe(child.stdout!, "O");
+            pipe(child.stderr!, "E");
+            child.on("close", (code) => { res.write(`X ${code ?? -1}\n`); res.end(); });
+            child.on("error", (e) => { res.write(`E ${String(e)}\nX -1\n`); res.end(); });
+            res.on("close", () => { if (child.exitCode === null) child.kill(); });
           } catch (e) {
             res.statusCode = 400;
             res.end(String(e));

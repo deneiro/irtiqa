@@ -4,11 +4,13 @@ import { THEMES } from "../lib/themes";
 import { themeUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { isAuthor } from "../lib/people";
+import { anyRunning, useRuns } from "../lib/claudeRuns";
 
 export default function Sidebar() {
   const { vault, life, timer, setPaletteOpen, reload, loading, lang, setLang } = useStore();
   const { t, themeLabel, themeBlurb } = useT();
   const nav = useNavigate();
+  const claudeBusy = anyRunning(useRuns());
   const cls = ({ isActive }: { isActive: boolean }) => `nav ${isActive ? "active" : ""}`;
 
   return (
@@ -38,6 +40,7 @@ export default function Sidebar() {
       <NavLink to="/profile" className={cls}>{t("nav_profile")}</NavLink>
       <NavLink to="/log" className={cls}>{t("nav_log")}</NavLink>
       <NavLink to="/charts" className={cls}>{t("nav_charts")}</NavLink>
+      <NavLink to="/claude" className={cls}>Claude {claudeBusy && <span className="livedot" title="claude работает" />}</NavLink>
 
       <div className="section">{t("sec_themes")}</div>
       {THEMES.map((th) => (
