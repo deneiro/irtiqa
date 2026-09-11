@@ -302,7 +302,7 @@ export default function ThemePage() {
         <div>
           <div className="eyebrow" style={{ color: meta.color }}>{t("theme")}</div>
           <h1 className="title">{themeLabel(theme)}</h1>
-          <p className="lede">{state.intro ? <Markdown source={state.intro} compact /> : themeBlurb(theme, meta.blurb)}</p>
+          <div className="lede">{state.intro ? <Markdown source={state.intro} compact /> : themeBlurb(theme, meta.blurb)}</div>
         </div>
         <div className="theme-kpis">
           <div className="kpi"><b>{xpMonth}</b><span>XP в этом месяце</span></div>
