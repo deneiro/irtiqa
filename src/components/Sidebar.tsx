@@ -25,7 +25,8 @@ export default function Sidebar() {
         <kbd>⌘K</kbd>
       </button>
 
-      <NavLink to="/" end className={cls}>{t("nav_home")}</NavLink>
+      <NavLink to="/" end className={cls}>{t("nav_day")}</NavLink>
+      <NavLink to="/vault" className={cls}>{t("nav_home")}</NavLink>
       <NavLink to="/log" className={cls}>
         {t("nav_log")} <span className="count">{vault?.log.length ?? ""}</span>
       </NavLink>

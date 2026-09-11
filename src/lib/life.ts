@@ -1,0 +1,402 @@
+/**
+ * The `life/` zone: the app's own state, kept as markdown in the vault.
+ * Format contract: vault `CLAUDE.md`, `## life/`, and the v1 spec.
+ *
+ * Everything here is pure. Reading comes from the vault scan, writing goes
+ * through store helpers. Numbers such as streaks, XP and spending are
+ * computed from day files and never stored.
+ */
+import type { MdFile } from "./types";
+import { parseFrontmatter } from "./vault";
+import { WEEKDAYS_EN, WEEKDAYS_RU, weekdayIndex } from "./dates";
+
+// ---------- types ----------
+
+export type HabitKind = "good" | "bad";
+export type HabitStatus = "proposed" | "active" | "paused" | "archived";
+
+export interface Habit {
+  rel: string;
+  title: string;
+  theme: string | undefined;
+  kind: HabitKind;
+  /** "daily" | "weekly" | list of weekday names (ru or en) */
+  freq: string | string[];
+  status: HabitStatus;
+  created: string | undefined;
+  source: string | undefined;
+  body: string;
+}
+
+export interface Tx {
+  amount: number; // negative = spent, positive = earned
+  category: string;
+  account: string;
+  note: string;
+}
+
+export interface Session {
+  quest: string;
+  minutes: number;
+}
+
+export interface Day {
+  date: string;
+  habitsDone: string[];
+  habitsFailed: string[];
+  habitsSkipped: string[];
+  questsClosed: string[];
+  sessions: Session[];
+  mood: number | undefined;
+  stress: number | undefined;
+  closed: boolean;
+  done: string[]; // ## Сделано bullets
+  txs: Tx[]; // ## Деньги rows
+  journal: string; // ## Журнал text
+}
+
+export type DayMark = "done" | "failed" | "skipped";
+
+export interface AccountRow {
+  name: string;
+  kind: string;
+  balance: number;
+  asOf: string;
+}
+
+export interface Life {
+  habits: Habit[];
+  days: Map<string, Day>;
+  accounts: AccountRow[] | null; // null = no accounts.md yet
+}
+
+export const DAY_DIR = "life/days";
+export const HABIT_DIR = "life/habits";
+export const ACCOUNTS_REL = "life/finance/accounts.md";
+
+// ---------- small helpers ----------
+
+function str(v: unknown): string | undefined {
+  if (v === undefined || v === null) return undefined;
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  const s = String(v).trim();
+  return s.length ? s : undefined;
+}
+
+function list(v: unknown): string[] {
+  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+  if (typeof v === "string" && v.trim()) return [v.trim()];
+  return [];
+}
+
+function num(v: unknown): number | undefined {
+  if (v === undefined || v === null || v === "") return undefined;
+  const n = Number(String(v).replace(/\s/g, ""));
+  return Number.isFinite(n) ? n : undefined;
+}
+
+/** YAML flow scalar: bare when safe, double-quoted otherwise. */
+function yamlScalar(s: string): string {
+  if (s === "" || /[,:\[\]{}#"'\n]|^\s|\s$|^[-?&*!|>%@`]/.test(s) || /^(true|false|null|~|\d+(\.\d+)?)$/i.test(s)) {
+    return JSON.stringify(s);
+  }
+  return s;
+}
+
+function yamlList(items: string[]): string {
+  return `[${items.map(yamlScalar).join(", ")}]`;
+}
+
+/** Strip what breaks filesystems or wikilinks; the rest of the title stays. */
+export function safeFilename(title: string): string {
+  return title.replace(/[\\/:*?"<>|#\[\]^]/g, "").trim();
+}
+
+// ---------- habits ----------
+
+export function parseHabit(f: MdFile): Habit {
+  const { fm, body } = parseFrontmatter(f.content);
+  const file = f.rel.split("/").pop()!.replace(/\.md$/i, "");
+  const kind = str(fm.kind) === "bad" ? "bad" : "good";
+  const status = (str(fm.status) as HabitStatus | undefined) ?? "active";
+  const rawFreq = fm.freq;
+  const freq = Array.isArray(rawFreq) ? list(rawFreq) : (str(rawFreq) ?? "daily");
+  return {
+    rel: f.rel,
+    title: str(fm.title) ?? file,
+    theme: str(fm.theme),
+    kind,
+    freq,
+    status: ["proposed", "active", "paused", "archived"].includes(status) ? status : "active",
+    created: str(fm.created),
+    source: str(fm.source),
+    body: body.trim(),
+  };
+}
+
+export function serializeHabit(h: Omit<Habit, "rel" | "body"> & { body?: string }): string {
+  const lines = ["---", `title: ${yamlScalar(h.title)}`, "type: habit"];
+  if (h.theme) lines.push(`theme: ${h.theme}`);
+  lines.push(`kind: ${h.kind}`);
+  lines.push(`freq: ${Array.isArray(h.freq) ? yamlList(h.freq) : h.freq}`);
+  lines.push(`status: ${h.status}`);
+  if (h.created) lines.push(`created: ${h.created}`);
+  if (h.source) lines.push(`source: ${JSON.stringify(h.source)}`);
+  lines.push("---");
+  const body = (h.body ?? "").trim();
+  return lines.join("\n") + "\n" + (body ? body + "\n" : "");
+}
+
+/** Is this habit expected on that date? */
+export function habitDue(h: Habit, date: string): boolean {
+  if (h.status !== "active") return false;
+  if (h.created && date < h.created) return false; // not due before it existed
+  const wd = weekdayIndex(date);
+  if (Array.isArray(h.freq)) {
+    const names = h.freq.map((x) => x.toLowerCase());
+    return names.includes(WEEKDAYS_RU[wd]) || names.includes(WEEKDAYS_EN[wd]);
+  }
+  if (h.freq === "weekly") return wd === 0; // last chance of the week is Sunday
+  return true; // daily
+}
+
+// ---------- days ----------
+
+const H_DONE = /^## Сделано\s*$/;
+const H_MONEY = /^## Деньги\s*$/;
+const H_JOURNAL = /^## Журнал\s*$/;
+
+function sections(body: string): { done: string[]; txs: Tx[]; journal: string } {
+  const lines = body.split(/\r?\n/);
+  let cur: "done" | "money" | "journal" | null = null;
+  const done: string[] = [];
+  const txs: Tx[] = [];
+  const journal: string[] = [];
+  for (const line of lines) {
+    if (H_DONE.test(line)) { cur = "done"; continue; }
+    if (H_MONEY.test(line)) { cur = "money"; continue; }
+    if (H_JOURNAL.test(line)) { cur = "journal"; continue; }
+    if (/^## /.test(line)) { cur = null; continue; }
+    if (cur === "done") {
+      const m = line.match(/^\s*[-*]\s+(.*)$/);
+      if (m && m[1].trim()) done.push(m[1].trim());
+    } else if (cur === "money") {
+      const t = line.trim();
+      if (!t.startsWith("|")) continue;
+      const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
+      if (cells.length < 2) continue;
+      if (/^-+$/.test(cells[0]) || cells[0] === "Сумма") continue; // separator / header
+      const amount = num(cells[0]);
+      if (amount === undefined) continue;
+      txs.push({ amount, category: cells[1] ?? "", account: cells[2] ?? "", note: cells[3] ?? "" });
+    } else if (cur === "journal") {
+      journal.push(line);
+    }
+  }
+  return { done, txs, journal: journal.join("\n").trim() };
+}
+
+export function parseDay(f: MdFile): Day {
+  const { fm, body } = parseFrontmatter(f.content);
+  const file = f.rel.split("/").pop()!.replace(/\.md$/i, "");
+  const s = sections(body);
+  const sessions: Session[] = list(fm.sessions).map((x) => {
+    const m = x.match(/^(.*):\s*(\d+)\s*$/);
+    return m ? { quest: m[1].trim(), minutes: Number(m[2]) } : { quest: x, minutes: 0 };
+  });
+  return {
+    date: str(fm.date) ?? file,
+    habitsDone: list(fm.habits_done),
+    habitsFailed: list(fm.habits_failed),
+    habitsSkipped: list(fm.habits_skipped),
+    questsClosed: list(fm.quests_closed),
+    sessions,
+    mood: num(fm.mood),
+    stress: num(fm.stress),
+    closed: fm.closed === true || String(fm.closed).toLowerCase() === "true",
+    done: s.done,
+    txs: s.txs,
+    journal: s.journal,
+  };
+}
+
+export function emptyDay(date: string): Day {
+  return {
+    date, habitsDone: [], habitsFailed: [], habitsSkipped: [], questsClosed: [], sessions: [],
+    mood: undefined, stress: undefined, closed: false, done: [], txs: [], journal: "",
+  };
+}
+
+export function spentOf(d: Day): number {
+  return d.txs.filter((t) => t.amount < 0).reduce((s, t) => s - t.amount, 0);
+}
+export function earnedOf(d: Day): number {
+  return d.txs.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+}
+export function workMinutesOf(d: Day): number {
+  return d.sessions.reduce((s, x) => s + x.minutes, 0);
+}
+
+function fmtAmount(n: number): string {
+  return Number.isInteger(n) ? String(n) : n.toFixed(2);
+}
+
+export function serializeDay(d: Day): string {
+  const fm = [
+    "---",
+    `date: ${d.date}`,
+    "type: day",
+    `habits_done: ${yamlList(d.habitsDone)}`,
+    `habits_failed: ${yamlList(d.habitsFailed)}`,
+    `habits_skipped: ${yamlList(d.habitsSkipped)}`,
+    `quests_closed: ${yamlList(d.questsClosed)}`,
+    `sessions: ${yamlList(d.sessions.map((s) => `${s.quest}: ${s.minutes}`))}`,
+    `work_minutes: ${workMinutesOf(d)}`,
+    `spent: ${fmtAmount(spentOf(d))}`,
+    `earned: ${fmtAmount(earnedOf(d))}`,
+  ];
+  if (d.mood !== undefined) fm.push(`mood: ${d.mood}`);
+  if (d.stress !== undefined) fm.push(`stress: ${d.stress}`);
+  fm.push(`closed: ${d.closed}`, "---");
+
+  const body: string[] = ["## Сделано"];
+  for (const x of d.done) body.push(`- ${x}`);
+  body.push("", "## Деньги");
+  if (d.txs.length) {
+    body.push("| Сумма | Категория | Счёт | Заметка |", "|---|---|---|---|");
+    for (const t of d.txs) body.push(`| ${fmtAmount(t.amount)} | ${t.category} | ${t.account} | ${t.note} |`);
+  }
+  body.push("", "## Журнал");
+  if (d.journal.trim()) body.push(d.journal.trim());
+  return fm.join("\n") + "\n" + body.join("\n") + "\n";
+}
+
+export function dayRel(date: string): string {
+  return `${DAY_DIR}/${date}.md`;
+}
+
+export function markOf(d: Day, habit: string): DayMark | undefined {
+  if (d.habitsDone.includes(habit)) return "done";
+  if (d.habitsFailed.includes(habit)) return "failed";
+  if (d.habitsSkipped.includes(habit)) return "skipped";
+  return undefined;
+}
+
+export function withMark(d: Day, habit: string, mark: DayMark | undefined): Day {
+  const rm = (a: string[]) => a.filter((x) => x !== habit);
+  const next: Day = { ...d, habitsDone: rm(d.habitsDone), habitsFailed: rm(d.habitsFailed), habitsSkipped: rm(d.habitsSkipped) };
+  if (mark === "done") next.habitsDone = [...next.habitsDone, habit];
+  if (mark === "failed") next.habitsFailed = [...next.habitsFailed, habit];
+  if (mark === "skipped") next.habitsSkipped = [...next.habitsSkipped, habit];
+  return next;
+}
+
+/** Closing: every due habit without a mark becomes `failed`. The app records misses; the player does not confess them. */
+export function closeDay(d: Day, habits: Habit[]): Day {
+  let next: Day = { ...d, closed: true };
+  for (const h of habits) {
+    if (habitDue(h, d.date) && !markOf(next, h.title)) next = withMark(next, h.title, "failed");
+  }
+  return next;
+}
+
+function fmtMoney(n: number): string {
+  return Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
+}
+
+/** The one-line `day` entry appended to wiki/log.md. */
+export function dayLogLine(d: Day, habits: Habit[]): string {
+  const due = habits.filter((h) => habitDue(h, d.date)).length;
+  const parts = [`привычки ${d.habitsDone.length}/${due}`];
+  if (d.questsClosed.length) parts.push(`квесты ${d.questsClosed.length}`);
+  const wm = workMinutesOf(d);
+  if (wm) parts.push(`работа ${wm} мин`);
+  parts.push(`потрачено ${fmtMoney(spentOf(d))}`);
+  if (earnedOf(d)) parts.push(`получено ${fmtMoney(earnedOf(d))}`);
+  if (d.mood !== undefined) parts.push(`настроение ${d.mood}`);
+  return `## [${d.date}] day | ${parts.join(", ")}`;
+}
+
+// ---------- accounts ----------
+
+const ACCOUNTS_HEADER = ["---", "type: ledger", "updated: {date}", "---", "# Счета", "", "| Счёт | Тип | Баланс | На дату |", "|---|---|---|---|"];
+
+export function parseAccounts(content: string): AccountRow[] {
+  const rows: AccountRow[] = [];
+  for (const line of content.split(/\r?\n/)) {
+    const t = line.trim();
+    if (!t.startsWith("|")) continue;
+    const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
+    if (cells.length < 3 || cells[0] === "Счёт" || /^-+$/.test(cells[0])) continue;
+    rows.push({ name: cells[0], kind: cells[1] ?? "", balance: num(cells[2]) ?? 0, asOf: cells[3] ?? "" });
+  }
+  return rows;
+}
+
+export function serializeAccounts(rows: AccountRow[], date: string): string {
+  const out = ACCOUNTS_HEADER.map((l) => l.replace("{date}", date));
+  for (const r of rows) out.push(`| ${r.name} | ${r.kind} | ${fmtAmount(r.balance)} | ${r.asOf} |`);
+  return out.join("\n") + "\n";
+}
+
+/** Apply a day's transactions to account balances. Unknown accounts get a row. */
+export function applyDayToAccounts(rows: AccountRow[], d: Day): { rows: AccountRow[]; changed: boolean } {
+  const next = rows.map((r) => ({ ...r }));
+  let changed = false;
+  for (const t of d.txs) {
+    const name = t.account.trim();
+    if (!name) continue;
+    let row = next.find((r) => r.name === name);
+    if (!row) { row = { name, kind: "", balance: 0, asOf: "" }; next.push(row); }
+    row.balance += t.amount;
+    row.asOf = d.date;
+    changed = true;
+  }
+  return { rows: next, changed };
+}
+
+// ---------- derived numbers ----------
+
+/** Consecutive days with the habit done, counting back from `upTo` (inclusive). Skipped days don't break a streak. */
+export function streak(habit: string, days: Map<string, Day>, upTo: string): number {
+  let n = 0;
+  let cur = upTo;
+  for (let i = 0; i < 3650; i++) {
+    const d = days.get(cur);
+    if (!d) break;
+    const m = markOf(d, habit);
+    if (m === "done") n++;
+    else if (m === "skipped") { /* neutral */ }
+    else break;
+    const prev = new Date(cur + "T12:00:00");
+    prev.setDate(prev.getDate() - 1);
+    cur = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
+  }
+  return n;
+}
+
+/** Provisional XP numbers from the v1 spec. Edited in one place. */
+export const XP = { habitDone: 10, journal: 8, questDone: 20, questPerHour: 55, questMinMinutes: 15, resourceRead: 10 };
+
+export function xpForDay(d: Day, habits: Habit[]): Map<string, number> {
+  const xp = new Map<string, number>();
+  const add = (theme: string | undefined, n: number) => { const k = theme ?? "—"; xp.set(k, (xp.get(k) ?? 0) + n); };
+  for (const name of d.habitsDone) add(habits.find((h) => h.title === name)?.theme, XP.habitDone);
+  if (d.journal.trim()) { add("Personal growth", XP.journal); add("Spirituality & Religion", XP.journal); }
+  return xp;
+}
+
+// ---------- assembling ----------
+
+export function buildLife(files: MdFile[]): Life {
+  const habits: Habit[] = [];
+  const days = new Map<string, Day>();
+  let accounts: AccountRow[] | null = null;
+  for (const f of files) {
+    if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
+    else if (f.rel.startsWith(DAY_DIR + "/")) { const d = parseDay(f); days.set(d.date, d); }
+    else if (f.rel === ACCOUNTS_REL) accounts = parseAccounts(f.content);
+  }
+  habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
+  return { habits, days, accounts };
+}

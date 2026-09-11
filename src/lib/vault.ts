@@ -29,7 +29,7 @@ function asList(v: unknown): string[] {
   return [];
 }
 
-function parseFrontmatter(content: string): { fm: Record<string, unknown>; body: string } {
+export function parseFrontmatter(content: string): { fm: Record<string, unknown>; body: string } {
   const m = content.match(FM_RE);
   if (!m) return { fm: {}, body: content };
   const body = content.slice(m[0].length);
@@ -197,6 +197,7 @@ export function buildVault(scan: Scan): Vault {
     byRel,
     raw: scan.raw,
     life: scan.life ?? [],
+    logText: scan.log,
     log: parseLog(scan.log),
     claudeMd: scan.claude_md,
     resolve,

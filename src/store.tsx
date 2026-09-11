@@ -6,6 +6,8 @@ import type { Scan, Vault } from "./lib/types";
 import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
 import { buildIndex, type SearchDoc } from "./lib/search";
+import { buildLife, type Life } from "./lib/life";
+import { runCmd, writeText, type CmdResult } from "./lib/fs";
 
 const KEY = "irtiqa.vaultRoot";
 const LANG_KEY = "irtiqa.lang";
@@ -18,6 +20,12 @@ interface Store {
   setRoot: (r: string) => void;
   vault: Vault | null;
   index: MiniSearch<SearchDoc> | null;
+  /** Parsed life/ zone, rebuilt on every scan. */
+  life: Life | null;
+  /** Write one file inside the vault (app-owned paths only). */
+  saveText: (rel: string, content: string) => Promise<void>;
+  /** `git add` the paths and commit. Returns null outside the desktop app. */
+  commitVault: (paths: string[], message: string) => Promise<CmdResult | null>;
   loading: boolean;
   error: string | null;
   reload: () => Promise<void>;
@@ -84,8 +92,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [reload]);
 
   const index = useMemo(() => (vault ? buildIndex(vault.pages) : null), [vault]);
+  const life = useMemo(() => (vault ? buildLife(vault.life) : null), [vault]);
 
-  const value: Store = { root, setRoot, vault, index, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
+  const saveText = useCallback((rel: string, content: string) => writeText(root, rel, content), [root]);
+  const commitVault = useCallback(
+    async (paths: string[], message: string): Promise<CmdResult | null> => {
+      if (!inTauri) return null;
+      const add = await runCmd(root, "git", ["add", "--", ...paths]);
+      if (add.status !== 0) return add;
+      return runCmd(root, "git", ["commit", "-q", "-m", message]);
+    },
+    [root],
+  );
+
+  const value: Store = { root, setRoot, vault, index, life, saveText, commitVault, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

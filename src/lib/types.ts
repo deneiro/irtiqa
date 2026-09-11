@@ -60,6 +60,7 @@ export interface Vault {
   byRel: Map<string, Page>;
   raw: RawEntry[];
   life: MdFile[];
+  logText: string;
   log: LogEntry[];
   claudeMd: string;
   resolve: (target: string) => Page | undefined;

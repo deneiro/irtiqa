@@ -3,6 +3,7 @@ import { StoreProvider, useStore } from "./store";
 import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
 import Home from "./pages/Home";
+import DayPage from "./pages/Day";
 import ThemePage from "./pages/Theme";
 import PageView from "./pages/Page";
 import LogPage from "./pages/Log";
@@ -55,7 +56,8 @@ function Shell() {
       <Sidebar />
       <main className="main">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<DayPage />} />
+          <Route path="/vault" element={<Home />} />
           <Route path="/theme/:name" element={<ThemePage />} />
           <Route path="/page/:rel" element={<PageView />} />
           <Route path="/log" element={<LogPage />} />
