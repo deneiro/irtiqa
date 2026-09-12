@@ -38,3 +38,14 @@ export function mediaUrl(root: string, rel: string): string {
   }
   return `/__vault/file?root=${encodeURIComponent(root)}&rel=${encodeURIComponent(rel)}`;
 }
+
+/**
+ * Ask before something irreversible. The webview swallows `window.confirm`
+ * inside the packaged app, so destructive actions went through unasked; the
+ * dialog plugin shows a real sheet.
+ */
+export async function confirmAction(message: string, title = "Подтверждение"): Promise<boolean> {
+  if (!inTauri) return window.confirm(message);
+  const { confirm } = await import("@tauri-apps/plugin-dialog");
+  return confirm(message, { title, kind: "warning", okLabel: "Да", cancelLabel: "Отмена" });
+}

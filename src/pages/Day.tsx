@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../store";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
-import { inTauri } from "../lib/native";
+import { confirmAction, inTauri } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import {
   ACCOUNTS_REL, HABIT_DIR, applyDayToAccounts, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue,
@@ -145,7 +145,7 @@ export default function DayPage() {
    */
   const reopen = async () => {
     if (!life || closing) return;
-    if (!window.confirm(`Открыть день ${draft.date} заново? Баланс счетов вернётся к состоянию до закрытия, строка в логе обновится при следующем закрытии.`)) return;
+    if (!(await confirmAction(`Открыть день ${draft.date} заново? Баланс счетов вернётся к состоянию до закрытия, строка в логе обновится при следующем закрытии.`))) return;
     setClosing(true);
     try {
       const open = { ...draft, closed: false };
@@ -168,7 +168,7 @@ export default function DayPage() {
 
   const doClose = async () => {
     if (draft.closed || closing) return;
-    if (!window.confirm("Закрыть день? Неотмеченные привычки станут «не сделано», файл дня и лог уйдут в коммит.")) return;
+    if (!(await confirmAction("Закрыть день? Неотмеченные привычки станут «не сделано», файл дня и лог уйдут в коммит."))) return;
     window.clearTimeout(timer.current);
     setClosing(true);
     try {

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
+import { confirmAction } from "../lib/native";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { todayStr } from "../lib/dates";
@@ -35,7 +36,7 @@ export default function QuestsPage() {
   const setStatus = (q: Quest, status: QuestStatus) => void write(q, { status });
 
   const closeQuest = async (q: Quest) => {
-    if (!window.confirm(`Закрыть квест «${q.title}»? Он попадёт в файл сегодняшнего дня.`)) return;
+    if (!(await confirmAction(`Закрыть квест «${q.title}»? Он попадёт в файл сегодняшнего дня.`))) return;
     try {
       await saveText(q.rel, serializeQuest({ ...q, status: "done" }));
       await updateToday((d) => (d.questsClosed.includes(q.title) ? d : { ...d, questsClosed: [...d.questsClosed, q.title] }));

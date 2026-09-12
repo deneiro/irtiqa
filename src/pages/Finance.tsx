@@ -3,6 +3,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import { useStore } from "../store";
 import { ChartTip } from "../components/Bits";
 import SourceLink from "../components/SourceLink";
+import { confirmAction } from "../lib/native";
 import { addDays, todayStr } from "../lib/dates";
 import {
   ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, monthOf, serializeAccounts, serializeDebts, serializeSubscriptions,
@@ -75,6 +76,9 @@ export default function FinancePage() {
     setEditBal({ ...editBal, [a.name]: "" });
   };
   const total = accounts.reduce((s, a) => s + a.balance, 0);
+  const removeAccount = async (a: AccountRow) => {
+    if (await confirmAction(`Убрать счёт «${a.name}»? Операции в файлах дней останутся.`)) await saveAccounts(accounts.filter((x) => x !== a));
+  };
 
   // ----- subscriptions -----
   const [sub, setSub] = useState({ name: "", amount: "", account: "", day: "1", category: "подписки" });
@@ -88,6 +92,9 @@ export default function FinancePage() {
     setSub({ name: "", amount: "", account: sub.account, day: "1", category: sub.category });
   };
   const subsMonthly = subs.reduce((s, x) => s + x.amount, 0);
+  const removeSub = async (x: Subscription) => {
+    if (await confirmAction(`Убрать подписку «${x.name}»? Списания перестанут добавляться.`)) await saveSubs(subs.filter((s) => s !== x));
+  };
 
   // ----- debts -----
   const people = useMemo(() => (vault?.pages ?? []).filter((p) => p.zone === "person").map((p) => p.title).sort(), [vault]);
@@ -102,6 +109,9 @@ export default function FinancePage() {
     setDebt({ ...debt, who: "", amount: "", note: "" });
   };
   const closeDebt = (d: Debt) => void saveDebts(debts.map((x) => (x === d ? { ...x, closed: today } : x)));
+  const askCloseDebt = async (d: Debt) => {
+    if (await confirmAction(`Закрыть долг: ${d.who}, ${fmt(d.amount)} ${d.currency}?`)) closeDebt(d);
+  };
   const openDebts = debts.filter((d) => !d.closed);
   const owedToMe = openDebts.filter((d) => d.direction === DEBT_THEY_OWE).reduce((s, d) => s + d.amount, 0);
   const iOwe = openDebts.filter((d) => d.direction === DEBT_I_OWE).reduce((s, d) => s + d.amount, 0);
@@ -184,7 +194,7 @@ export default function FinancePage() {
                       <form className="row" onSubmit={(e) => { e.preventDefault(); setBalance(a); }} style={{ gap: 4 }}>
                         <input className="text" style={{ width: 90 }} placeholder="уточнить" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} />
                         <button className="btn small" type="submit">ок</button>
-                        <button className="btn small ghost" type="button" title="убрать счёт" onClick={() => window.confirm(`Убрать счёт «${a.name}»?`) && void saveAccounts(accounts.filter((x) => x !== a))}>×</button>
+                        <button className="btn small ghost" type="button" title="убрать счёт" onClick={() => void removeAccount(a)}>×</button>
                       </form>
                     </td>
                   </tr>
@@ -211,7 +221,7 @@ export default function FinancePage() {
                   <tr key={s.name}>
                     <td>{s.name}</td><td className="amt mono" style={{ textAlign: "right" }}>{fmt(s.amount)}</td>
                     <td className="muted">{s.account}</td><td className="mono">{s.day}</td><td className="muted">{s.category}</td>
-                    <td><button className="btn small ghost" title="убрать" onClick={() => window.confirm(`Убрать подписку «${s.name}»?`) && void saveSubs(subs.filter((x) => x !== s))}>×</button></td>
+                    <td><button className="btn small ghost" title="убрать" onClick={() => void removeSub(s)}>×</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -241,7 +251,7 @@ export default function FinancePage() {
                   <td className={d.direction === DEBT_I_OWE ? "muted" : ""}>{d.direction}</td>
                   <td className="amt mono" style={{ textAlign: "right" }}>{fmt(d.amount)} {d.currency}</td>
                   <td className="mono muted">{d.since}</td><td className="muted">{d.note}</td>
-                  <td><button className="btn small ghost" onClick={() => window.confirm(`Закрыть долг: ${d.who}, ${fmt(d.amount)} ${d.currency}?`) && closeDebt(d)}>закрыт</button></td>
+                  <td><button className="btn small ghost" onClick={() => void askCloseDebt(d)}>закрыт</button></td>
                 </tr>
               ))}
             </tbody>

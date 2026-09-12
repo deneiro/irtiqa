@@ -4,7 +4,7 @@ import { useStore, useVault } from "../store";
 import { themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { pageUrl } from "../lib/vault";
-import { mediaUrl, revealInFinder } from "../lib/native";
+import { confirmAction, mediaUrl, revealInFinder } from "../lib/native";
 import { deleteFile, writeBinary } from "../lib/fs";
 import { IMAGE_RE, personName, serializeEvent, type LifeEvent } from "../lib/events";
 import { isAuthor } from "../lib/people";
@@ -81,13 +81,13 @@ export default function EventPage() {
   };
 
   const removePhoto = async (photo: string) => {
-    if (!window.confirm("Удалить эту фотографию?")) return;
+    if (!(await confirmAction("Удалить эту фотографию?"))) return;
     setBusy(true);
     try { await deleteFile(root, photo); await reload(); } catch (e) { setErr(String(e)); } finally { setBusy(false); }
   };
 
   const removeEvent = async () => {
-    if (!ev || !window.confirm(`Удалить событие «${ev.title}» со всеми фотографиями?`)) return;
+    if (!ev || !(await confirmAction(`Удалить событие «${ev.title}» со всеми фотографиями?`))) return;
     setBusy(true);
     try { await deleteFile(root, ev.dir); await reload(); nav(`/theme/${encodeURIComponent(ev.theme ?? "Memories & Fun")}`); } catch (e) { setErr(String(e)); setBusy(false); }
   };
