@@ -32,6 +32,8 @@ pub struct Scan {
     pages: Vec<MdFile>,
     /// Everything under `life/` — the app-owned zone (days, habits, quests, finance).
     life: Vec<MdFile>,
+    /// Non-markdown files under `life/` (event photos), as vault-relative paths.
+    media: Vec<String>,
     raw: Vec<RawEntry>,
     log: String,
     claude_md: String,
@@ -103,6 +105,23 @@ fn scan_vault(root: String) -> Result<Scan, String> {
     // log.md is handled separately.
     let pages = md_files(&root_path, &root_path.join("wiki"), &["wiki/log.md"]);
     let life = md_files(&root_path, &root_path.join("life"), &[]);
+    let mut media: Vec<String> = Vec::new();
+    for entry in WalkDir::new(root_path.join("life")).into_iter().filter_map(Result::ok) {
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+        if path.extension().and_then(|e| e.to_str()).map(|e| e.eq_ignore_ascii_case("md")) == Some(true) {
+            continue;
+        }
+        if path.file_name().and_then(|n| n.to_str()).map(|n| n.starts_with('.')) == Some(true) {
+            continue;
+        }
+        if let Ok(rel) = path.strip_prefix(&root_path) {
+            media.push(rel.to_string_lossy().replace('\\', "/"));
+        }
+    }
+    media.sort();
 
     let mut raw = Vec::new();
     let raw_dir = root_path.join("raw");
@@ -124,7 +143,7 @@ fn scan_vault(root: String) -> Result<Scan, String> {
     let log = fs::read_to_string(root_path.join("wiki/log.md")).unwrap_or_default();
     let claude_md = fs::read_to_string(root_path.join("CLAUDE.md")).unwrap_or_default();
 
-    Ok(Scan { root, pages, life, raw, log, claude_md })
+    Ok(Scan { root, pages, life, media, raw, log, claude_md })
 }
 
 /// Join `rel` under `root`, refusing anything that could escape the vault.
@@ -196,6 +215,62 @@ fn clean_env(cmd: &mut Command) {
             cmd.env_remove(k);
         }
     }
+}
+
+/// Write a binary file (an event photo) into the app-owned zone. Base64 in,
+/// because the webview hands us bytes, not a path.
+#[tauri::command]
+fn write_binary(root: String, rel: String, base64_data: String) -> Result<(), String> {
+    if !rel.starts_with("life/") {
+        return Err(format!("Refusing to write {rel}"));
+    }
+    let target = safe_join(&root, &rel)?;
+    let bytes = base64_decode(&base64_data)?;
+    if let Some(parent) = target.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    fs::write(&target, bytes).map_err(|e| e.to_string())
+}
+
+/// Delete a file the app owns (an event photo, or an event folder's markdown).
+#[tauri::command]
+fn delete_file(root: String, rel: String) -> Result<(), String> {
+    if !rel.starts_with("life/") {
+        return Err(format!("Refusing to delete {rel}"));
+    }
+    let target = safe_join(&root, &rel)?;
+    if target.is_dir() {
+        fs::remove_dir_all(target).map_err(|e| e.to_string())
+    } else {
+        fs::remove_file(target).map_err(|e| e.to_string())
+    }
+}
+
+fn base64_decode(data: &str) -> Result<Vec<u8>, String> {
+    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut lookup = [255u8; 256];
+    for (i, c) in TABLE.iter().enumerate() {
+        lookup[*c as usize] = i as u8;
+    }
+    let mut out = Vec::with_capacity(data.len() / 4 * 3);
+    let mut buf = 0u32;
+    let mut bits = 0u32;
+    for b in data.bytes() {
+        if b == b'=' || b == b'\n' || b == b'\r' {
+            continue;
+        }
+        let v = lookup[b as usize];
+        if v == 255 {
+            return Err("bad base64".into());
+        }
+        buf = (buf << 6) | v as u32;
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            out.push((buf >> bits) as u8);
+        }
+    }
+    Ok(out)
 }
 
 #[tauri::command]
@@ -337,7 +412,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(WatchState::default())
         .manage(Runs::default())
-        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, run_cmd, run_stream, kill_stream, watch_vault])
+        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, write_binary, delete_file, run_cmd, run_stream, kill_stream, watch_vault])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

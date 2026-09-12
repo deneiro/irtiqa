@@ -42,6 +42,7 @@ export interface Scan {
   raw: RawEntry[];
   log: string;
   claude_md: string;
+  media: string[];
 }
 
 export interface LogEntry {
@@ -56,6 +57,8 @@ export interface LogEntry {
 
 export interface Vault {
   root: string;
+  /** Non-markdown files under life/ (event photos), vault-relative. */
+  media: string[];
   pages: Page[];
   byRel: Map<string, Page>;
   /** Raw file text per rel, for surgical frontmatter edits. */

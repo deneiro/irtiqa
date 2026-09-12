@@ -10,6 +10,7 @@ import FinancePage from "./pages/Finance";
 import ClaudePage from "./pages/Claude";
 import Back from "./components/Back";
 import WheelPage from "./pages/Wheel";
+import EventPage from "./pages/Event";
 import { useSubscriptionCharges } from "./lib/useSubscriptionCharges";
 import ThemePage from "./pages/Theme";
 import PageView from "./pages/Page";
@@ -72,6 +73,7 @@ function Shell() {
           <Route path="/finance" element={<FinancePage />} />
           <Route path="/claude" element={<ClaudePage />} />
           <Route path="/wheel" element={<WheelPage />} />
+          <Route path="/event/:rel" element={<EventPage />} />
           <Route path="/theme/:name" element={<ThemePage />} />
           <Route path="/page/:rel" element={<PageView />} />
           <Route path="/log" element={<FeedPage />} />

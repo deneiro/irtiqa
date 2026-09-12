@@ -195,6 +195,7 @@ export function buildVault(scan: Scan): Vault {
   return {
     root: scan.root,
     pages,
+    media: scan.media ?? [],
     byRel,
     rawByRel,
     raw: scan.raw,

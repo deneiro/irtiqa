@@ -7,6 +7,8 @@ import { todayStr } from "../lib/dates";
 import { setFrontmatterKeys } from "../lib/frontmatter";
 import { rawPageText } from "../lib/rawpage";
 import { CONTACT_KEYS, CONTACT_LABELS, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, type Contacts } from "../lib/people";
+import { eventUrl, eventsFor } from "../lib/events";
+import { mediaUrl } from "../lib/native";
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
@@ -14,7 +16,7 @@ function fmt(n: number): string {
 
 /** The contact bar on a People page: deep links, editable contact fields, debts. */
 export default function PersonActions({ page }: { page: Page }) {
-  const { vault, life, saveText, reload } = useStore();
+  const { root, vault, life, saveText, reload } = useStore();
   const today = todayStr();
   const saved = contactsOf(page);
   const [edit, setEdit] = useState(false);
@@ -26,6 +28,7 @@ export default function PersonActions({ page }: { page: Page }) {
   const links = deepLinks(saved);
   const debts = debtsFor(page, life?.debts ?? []);
   const open = debts.filter((d) => !d.closed);
+  const events = eventsFor([page.title, page.file, ...page.aliases], life?.events ?? []);
   const since = daysSinceContact(saved.last_contact, today);
   const bday = daysToBirthday(saved.birthday, today);
 
@@ -92,6 +95,22 @@ export default function PersonActions({ page }: { page: Page }) {
             <span className="small faint">Пишется только во frontmatter страницы, текст не трогается.</span>
           </div>
         </form>
+      )}
+      {events.length > 0 && (
+        <div className="pevents">
+          <div className="small muted">вместе: {events.length}</div>
+          <div className="row wrap" style={{ gap: 8, marginTop: 6 }}>
+            {events.map((e) => (
+              <Link key={e.rel} to={eventUrl(e)} className="pevent">
+                {e.photos[0] && <img src={mediaUrl(root, e.photos[0])} alt="" loading="lazy" />}
+                <span>
+                  <b>{e.title}</b>
+                  <span className="small faint">{e.date}{e.place ? ` · ${e.place}` : ""}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
       {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
     </div>

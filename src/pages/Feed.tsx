@@ -4,6 +4,7 @@ import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
 import { formatDayTitle, todayStr, addDays } from "../lib/dates";
 import { extractPractices } from "../lib/practices";
+import { eventUrl, personName } from "../lib/events";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
 
@@ -53,6 +54,10 @@ export default function FeedPage() {
       }
     }
     for (const h of life?.habits ?? []) if (h.created && h.created >= from) out.push({ id: `h-${h.rel}`, date: h.created, kind: "app", icon: h.status === "proposed" ? "📥" : "🌱", text: `${h.status === "proposed" ? "Предложена привычка" : "Новая привычка"}: ${h.title}`, to: "/habits" });
+    for (const e of life?.events ?? []) {
+      if (e.date < from) continue;
+      out.push({ id: `ev-${e.rel}`, date: e.date, kind: "app", icon: "📸", text: `Событие: ${e.title}`, sub: [e.place, e.people.map(personName).join(", "), e.photos.length ? `${e.photos.length} фото` : ""].filter(Boolean).join(" · "), to: eventUrl(e) });
+    }
     for (const qu of life?.quests ?? []) if (qu.created && qu.created >= from) out.push({ id: `q-${qu.rel}`, date: qu.created, kind: "app", icon: qu.status === "proposed" ? "📥" : "🗡", text: `${qu.status === "proposed" ? "Предложен квест" : "Новый квест"}: ${qu.title}`, to: "/quests" });
     for (const e of v.log) {
       if (e.date < from) continue;

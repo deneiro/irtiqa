@@ -1,5 +1,5 @@
-import { useMemo, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useMemo, useState, type ReactNode } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEME_BY_NAME } from "../lib/themes";
 import { pageUrl } from "../lib/vault";
@@ -13,6 +13,9 @@ import { habitDue, markOf, streak } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
+import EventForm from "../components/EventForm";
+import { eventUrl, personName } from "../lib/events";
+import { mediaUrl } from "../lib/native";
 import { themeXps } from "../lib/levels";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
@@ -22,7 +25,9 @@ export default function ThemePage() {
   const theme = decodeURIComponent(name);
   const meta = THEME_BY_NAME.get(theme);
   const v = useVault();
-  const { life } = useStore();
+  const { root, life } = useStore();
+  const nav = useNavigate();
+  const [adding, setAdding] = useState(false);
   const { t, themeLabel, themeBlurb, relDate } = useT();
   const today = todayStr();
 
@@ -113,6 +118,30 @@ export default function ThemePage() {
             {state.notes && <div className="small muted notes"><Markdown source={state.notes} compact /></div>}
           </section>
         );
+      case "events": {
+        const events = (life?.events ?? []).filter((e) => (e.theme ?? "Memories & Fun") === theme);
+        return (
+          <section key={key} className="tblock">
+            <h2 className="section">События <span className="n">{events.length}</span></h2>
+            {adding ? <EventForm theme={theme} onDone={(r) => { setAdding(false); nav(`/event/${encodeURIComponent(r)}`); }} />
+              : <button className="btn primary" onClick={() => setAdding(true)}>+ записать событие</button>}
+            <div className="evgrid">
+              {events.map((e) => (
+                <Link key={e.rel} to={eventUrl(e)} className="card evcard">
+                  {e.photos[0] ? <img className="evcover" src={mediaUrl(root, e.photos[0])} alt="" loading="lazy" /> : <div className="evcover none">нет фото</div>}
+                  <div className="evbody">
+                    <b>{e.title}</b>
+                    <span className="small muted">{e.date}{e.place ? ` · ${e.place}` : ""}</span>
+                    {e.people.length > 0 && <span className="small faint">{e.people.map(personName).join(", ")}</span>}
+                    {e.photos.length > 1 && <span className="small faint">{e.photos.length} фото</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+            {events.length === 0 && !adding && <div className="empty">Событий пока нет. Запиши первое: дата, название, кто был, фотографии.</div>}
+          </section>
+        );
+      }
       case "habits":
         return (
           <section key={key} className="tblock">

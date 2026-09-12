@@ -29,6 +29,34 @@ export async function writeText(root: string, rel: string, content: string): Pro
   if (!r.ok) throw new Error(await r.text());
 }
 
+/** Write an event photo. Base64 because the webview hands us bytes, not a path. */
+export async function writeBinary(root: string, rel: string, bytes: ArrayBuffer): Promise<void> {
+  if (!/^life\//.test(rel)) throw new Error(`Not app-owned: ${rel}`);
+  const b = new Uint8Array(bytes);
+  let bin = "";
+  for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode(...b.subarray(i, i + 0x8000));
+  const base64Data = btoa(bin);
+  if (inTauri) return invoke("write_binary", { root, rel, base64Data });
+  const r = await fetch("/__vault/write-binary", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ root, rel, base64: base64Data }),
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+/** Remove a file or folder the app owns (a photo, or a whole event). */
+export async function deleteFile(root: string, rel: string): Promise<void> {
+  if (!/^life\//.test(rel)) throw new Error(`Not app-owned: ${rel}`);
+  if (inTauri) return invoke("delete_file", { root, rel });
+  const r = await fetch("/__vault/delete", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ root, rel }),
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
 export interface CmdResult {
   status: number;
   stdout: string;

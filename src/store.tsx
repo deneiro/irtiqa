@@ -101,7 +101,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [reload]);
 
   const index = useMemo(() => (vault ? buildIndex(vault.pages) : null), [vault]);
-  const life = useMemo(() => (vault ? buildLife(vault.life) : null), [vault]);
+  const life = useMemo(() => (vault ? buildLife(vault.life, vault.media) : null), [vault]);
 
   // In the desktop app the watcher rescans after every write; in browser dev
   // mode nothing watches, so rescan ourselves (debounced) to keep `life` fresh.
@@ -120,7 +120,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateToday = useCallback(
     async (fn: (d: Day) => Day) => {
       const today = todayStr();
-      const cur = vault ? buildLife(vault.life).days.get(today) : undefined;
+      const cur = vault ? buildLife(vault.life, vault.media).days.get(today) : undefined;
       const next = fn(cur ?? emptyDay(today));
       await saveText(dayRel(today), serializeDay(next));
     },
