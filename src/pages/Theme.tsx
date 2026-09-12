@@ -9,10 +9,11 @@ import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
 import { todayStr, monthOfToday } from "../lib/dates";
-import { habitDue, markOf, streak, xpForDay, type XpContext } from "../lib/life";
+import { habitDue, markOf, streak } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
+import { themeXps } from "../lib/levels";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 
@@ -34,15 +35,7 @@ export default function ThemePage() {
   const quests = useMemo(() => (life?.quests ?? []).filter((q) => q.theme === theme && q.status === "active"), [life, theme]);
   const todayDay = life?.days.get(today);
 
-  const xpMonth = useMemo(() => {
-    if (!life) return 0;
-    const ym = monthOfToday(today);
-    const reads = v.pages.filter((p) => p.zone === "resource" && p.fm.read).map((p) => ({ date: String(p.fm.read instanceof Date ? p.fm.read.toISOString() : p.fm.read).slice(0, 10), theme: p.theme }));
-    const ctx: XpContext = { habits: life.habits, quests: life.quests, days: life.days, reads };
-    let sum = 0;
-    for (const [date, d] of life.days) if (date.startsWith(ym)) sum += xpForDay(d, ctx).get(theme) ?? 0;
-    return sum;
-  }, [life, v, theme, today]);
+  const txp = useMemo(() => (life ? themeXps(life, v.pages, today).find((x) => x.theme === theme) : undefined), [life, v, theme, today]);
 
   // ----- page groups -----
   const resources = useMemo(() => {
@@ -305,7 +298,7 @@ export default function ThemePage() {
           <div className="lede">{state.intro ? <Markdown source={state.intro} compact /> : themeBlurb(theme, meta.blurb)}</div>
         </div>
         <div className="theme-kpis">
-          <div className="kpi"><b>{xpMonth}</b><span>XP в этом месяце</span></div>
+          <Link to="/wheel" className="kpi" title={txp ? `${txp.level.into} / ${txp.level.need} XP до следующего уровня` : ""}><b>ур. {txp?.level.level ?? 1}</b><span>{txp?.last30 ?? 0} XP за 30 дней</span></Link>
           <div className="kpi"><b>{habits.length}</b><span>привычек</span></div>
           <div className="kpi"><b>{quests.length}</b><span>квестов</span></div>
           {overview && <Link to={pageUrl(overview)} className="small muted">обзор как страница · {relDate(overview.updated)}</Link>}

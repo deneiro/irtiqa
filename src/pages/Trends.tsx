@@ -39,14 +39,17 @@ export default function TrendsPage() {
         "настроение": d?.mood, "стресс": d?.stress,
       };
     });
-    const weeks = new Map<string, { week: string; "потрачено": number; "получено": number; "прочитано": number }>();
+    const weeks = new Map<string, { week: string; "потрачено": number; "получено": number; "прочитано": number; done: number; due: number; "привычки, %": number }>();
     const from = addDays(today, -7 * 12);
-    for (let d = weekKey(from); d <= today; d = addDays(d, 7)) weeks.set(d, { week: d.slice(5), "потрачено": 0, "получено": 0, "прочитано": 0 });
+    for (let d = weekKey(from); d <= today; d = addDays(d, 7)) weeks.set(d, { week: d.slice(5), "потрачено": 0, "получено": 0, "прочитано": 0, done: 0, due: 0, "привычки, %": 0 });
     for (const [date, d] of days) {
       if (date < from) continue;
       const w = weeks.get(weekKey(date)); if (!w) continue;
       for (const tx of d.txs) { if (tx.amount < 0) w["потрачено"] -= tx.amount; else w["получено"] += tx.amount; }
+      w.done += d.habitsDone.length;
+      w.due += habits.filter((h) => habitDue(h, date)).length;
     }
+    for (const w of weeks.values()) w["привычки, %"] = w.due ? Math.round((100 * w.done) / w.due) : 0;
     const reads = v.pages.filter((p) => p.zone === "resource" && p.fm.read).map((p) => ({ date: String(p.fm.read instanceof Date ? p.fm.read.toISOString() : p.fm.read).slice(0, 10), theme: p.theme }));
     for (const r of reads) { const w = weeks.get(weekKey(r.date)); if (w && r.date >= from) w["прочитано"]++; }
     const ctx: XpContext = { habits: life?.habits ?? [], quests: life?.quests ?? [], days, reads };
@@ -148,6 +151,20 @@ export default function TrendsPage() {
                 <span className="cnum">{r.xp}</span>
               </Link>
             ))}
+          </div>
+        </div>
+        <div className="card">
+          <h3>Доля выполненных привычек по неделям</h3>
+          <div className="chart" style={{ height: 160 }}>
+            <ResponsiveContainer>
+              <BarChart data={data.weekly.filter((w) => w.due > 0)} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+                <CartesianGrid vertical={false} stroke="var(--hair)" />
+                <XAxis dataKey="week" tick={axis} axisLine={false} tickLine={false} />
+                <YAxis domain={[0, 100]} tick={axis} axisLine={false} tickLine={false} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
+                <Bar dataKey="привычки, %" fill="var(--success)" radius={[3, 3, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
         <div className="card">

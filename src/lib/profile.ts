@@ -51,7 +51,7 @@ export function profileSections(body: string): { intro: string; sections: Profil
       const key = Object.keys(META).find((k) => s.heading.startsWith(k));
       const m = key ? META[key] : { label: s.heading, icon: "📄" as const };
       const text = plain(s.md);
-      return { ...s, slug: slugOf(s.heading), label: s.heading.startsWith("Колесо") ? "Колесо жизни" : m.label, icon: s.heading.startsWith("Колесо") ? "☸️" : m.icon, live: s.heading.startsWith("Колесо") ? { to: "/trends", label: "Тренды" } : m.live, words: s.md.split(/\s+/).length, excerpt: text.slice(0, 170) + (text.length > 170 ? "…" : "") };
+      return { ...s, slug: slugOf(s.heading), label: s.heading.startsWith("Колесо") ? "Колесо жизни" : m.label, icon: s.heading.startsWith("Колесо") ? "☸️" : m.icon, live: s.heading.startsWith("Колесо") ? { to: "/wheel", label: "Колесо" } : m.live, words: s.md.split(/\s+/).length, excerpt: text.slice(0, 170) + (text.length > 170 ? "…" : "") };
     });
   return { intro, sections: out };
 }

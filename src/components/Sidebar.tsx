@@ -39,6 +39,7 @@ export default function Sidebar() {
       </NavLink>
       <NavLink to="/profile" className={cls}>{t("nav_profile")}</NavLink>
       <NavLink to="/log" className={cls}>{t("nav_log")}</NavLink>
+      <NavLink to="/wheel" className={cls}>{t("nav_wheel")}</NavLink>
       <NavLink to="/charts" className={cls}>{t("nav_charts")}</NavLink>
       <NavLink to="/claude" className={cls}>Claude {claudeBusy && <span className="livedot" title="claude работает" />}</NavLink>
 
