@@ -8,6 +8,7 @@ import HabitsPage from "./pages/Habits";
 import QuestsPage from "./pages/Quests";
 import FinancePage from "./pages/Finance";
 import ClaudePage from "./pages/Claude";
+import Back from "./components/Back";
 import WheelPage from "./pages/Wheel";
 import { useSubscriptionCharges } from "./lib/useSubscriptionCharges";
 import ThemePage from "./pages/Theme";
@@ -62,6 +63,7 @@ function Shell() {
     <div className="app">
       <Sidebar />
       <main className="main">
+        <Back />
         <Routes>
           <Route path="/" element={<DayPage />} />
           <Route path="/vault" element={<Home />} />

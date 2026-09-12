@@ -511,3 +511,16 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .spark i { flex: 1; background: var(--c); opacity: 0.55; border-radius: 2px 2px 0 0; min-height: 2px; }
 .spark i:last-child { opacity: 1; }
 .theme-kpis a.kpi { text-decoration: none; }
+
+/* ---------- back bar, foldable folders, claude ops ---------- */
+.backbar { position: sticky; top: 0; z-index: 5; margin: -8px 0 4px; padding-bottom: 6px; background: linear-gradient(var(--bg) 65%, transparent); }
+.folder.foldable { border-top: 1px solid var(--hair); padding-top: 8px; margin-top: 8px; }
+.folder.foldable > summary { cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 4px 0; list-style: none; }
+.folder.foldable > summary::-webkit-details-marker { display: none; }
+.folder.foldable > summary::before { content: "▸"; color: var(--faint); font-size: 11px; transition: transform 0.12s; }
+.folder.foldable[open] > summary::before { transform: rotate(90deg); }
+.folder.foldable > summary:hover .fname { color: var(--ink); }
+.folder.foldable .fname { font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.folder.foldable .n.unread { color: var(--accent-2); }
+.ops { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.ops b { color: var(--ink-2); font-weight: 600; }

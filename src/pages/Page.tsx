@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { themeColor } from "../lib/themes";
 import { pageUrl, sourceTarget, themeUrl } from "../lib/vault";
+import type { Page } from "../lib/types";
 import { openExternal, revealInFinder } from "../lib/native";
 import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
@@ -19,6 +20,10 @@ export default function PageView() {
   if (!page) return <div className="empty">{t("page_gone")} <Link to="/">{t("go_home")}</Link>.</div>;
 
   const color = themeColor(page.theme);
+  // "Projects / <Name>" in the path is a place, not a label: make it lead somewhere.
+  const projectOverview: Page | undefined = page.project
+    ? v.pages.find((p) => p.file === "_Overview" && p.project === page.project && p.segments.length === 3)
+    : undefined;
   const backlinks = (v.backlinks.get(page.rel) ?? []).sort((a, b) => a.title.localeCompare(b.title));
   const outgoing = [...new Set(page.links.map((l) => v.resolve(l)).filter(Boolean).map((p) => p!.rel))]
     .map((r) => v.byRel.get(r)!)
@@ -34,9 +39,16 @@ export default function PageView() {
       <div className="pagehead" style={{ ["--c" as string]: color }}>
         <div className="crumbs">
           {page.theme && <Link to={themeUrl(page.theme)} style={{ color }}>{themeLabel(page.theme)}</Link>}
-          {page.segments.slice(1).map((s, i) => (
-            <span key={i} className="row" style={{ gap: 6 }}><span className="sep">/</span>{s}</span>
-          ))}
+          {page.segments.slice(1).map((s, i) => {
+            const isProject = !!page.project && s === page.project;
+            const to = isProject && projectOverview && projectOverview.rel !== page.rel ? pageUrl(projectOverview) : undefined;
+            return (
+              <span key={i} className="row" style={{ gap: 6 }}>
+                <span className="sep">/</span>
+                {to ? <Link to={to}>{s}</Link> : <span>{s}</span>}
+              </span>
+            );
+          })}
         </div>
         <h1 className="title">{page.title}</h1>
         <div className="metas">

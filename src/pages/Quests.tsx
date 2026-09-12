@@ -91,8 +91,8 @@ export default function QuestsPage() {
             <option value="">без проекта</option>
             {projects.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <input className="text" placeholder="Источник, например [[IrtiQa StartUp/_Overview]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
-          <input className="text" placeholder="Что считается сделанным (необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+          <input className="text" placeholder="Откуда взялось: страница vault, [[IrtiQa StartUp/_Overview]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
+          <input className="text" placeholder="Что считается сделанным — критерий закрытия (необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
           <div className="row"><button className="btn primary" type="submit">+ добавить</button></div>
         </form>
         {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}

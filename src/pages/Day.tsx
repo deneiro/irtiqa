@@ -115,10 +115,16 @@ export default function DayPage() {
             if (!paths.includes(ACCOUNTS_REL)) paths.push(ACCOUNTS_REL);
           }
         }
+        // The app owns its own `day` lines: refresh one in place, append a new one.
         const line = dayLogLine(closed, life.habits);
         const head = line.split(" | ")[0];
-        if (!logText.split("\n").some((l) => l.startsWith(head))) {
-          logText = logText.replace(/\s*$/, "") + "\n\n" + line + "\n";
+        const lines = logText.split("\n");
+        const at = lines.findIndex((l) => l.startsWith(head));
+        let nextLog = logText;
+        if (at >= 0) { if (lines[at] !== line) { lines[at] = line; nextLog = lines.join("\n"); } }
+        else nextLog = logText.replace(/\s*$/, "") + "\n\n" + line + "\n";
+        if (nextLog !== logText) {
+          logText = nextLog;
           await saveText("wiki/log.md", logText);
           if (!paths.includes("wiki/log.md")) paths.push("wiki/log.md");
         }
@@ -131,6 +137,34 @@ export default function DayPage() {
     },
     [vault, life, saveText, commitVault, today],
   );
+
+  /**
+   * Reopen a closed day. The balances the close had applied are rolled back by
+   * the inverse of the day's transactions, so closing again lands the corrected
+   * numbers once, not twice; the `day` line in the log is rewritten in place.
+   */
+  const reopen = async () => {
+    if (!life || closing) return;
+    if (!window.confirm(`Открыть день ${draft.date} заново? Баланс счетов вернётся к состоянию до закрытия, строка в логе обновится при следующем закрытии.`)) return;
+    setClosing(true);
+    try {
+      const open = { ...draft, closed: false };
+      await persist(open);
+      setDraft(open);
+      if (draft.txs.some((t) => t.account.trim())) {
+        const inverse = { ...draft, txs: draft.txs.map((t) => ({ ...t, amount: -t.amount })) };
+        const r = applyDayToAccounts(life.accounts ?? [], inverse);
+        if (r.changed) await saveText(ACCOUNTS_REL, serializeAccounts(r.rows, draft.date));
+      }
+      setReport(null);
+      setSaveError(null);
+      await reload();
+    } catch (e) {
+      setSaveError(String(e));
+    } finally {
+      setClosing(false);
+    }
+  };
 
   const doClose = async () => {
     if (draft.closed || closing) return;
@@ -321,7 +355,8 @@ export default function DayPage() {
           </div>
 
           <div className="card">
-            <h3>Сделано <span className="n">{draft.done.length}</span></h3>
+            <h3>Сделано за день <span className="n">{draft.done.length}</span></h3>
+            <div className="small faint" style={{ margin: "-4px 0 8px" }}>Свободные строки о том, что сегодня получилось. Квесты живут на своём экране.</div>
             {draft.done.map((x, i) => (
               <div className="bul" key={i}>
                 <span>— {x}</span>
@@ -338,6 +373,7 @@ export default function DayPage() {
 
           <div className="card">
             <h3>Деньги <span className="n">{draft.txs.length}</span></h3>
+            <div className="small faint" style={{ margin: "-4px 0 8px" }}>Операции этого дня. Месяц и счета считаются из них на экране «Финансы».</div>
             {draft.txs.length > 0 && (
               <table className="tbl">
                 <thead><tr><th style={{ textAlign: "right" }}>Сумма</th><th>Категория</th><th>Счёт</th><th>Заметка</th><th /></tr></thead>
@@ -417,7 +453,9 @@ export default function DayPage() {
             {locked ? (
               <>
                 <span className="badge ok">закрыт</span>
-                <span className="small muted">Файл дня зафиксирован. Правки только через Obsidian.</span>
+                <span className="small muted">День зафиксирован, поэтому привычки, деньги и ползунки не двигаются.</span>
+                <span className="grow" />
+                <button className="btn small" onClick={() => void reopen()} disabled={closing}>открыть заново</button>
               </>
             ) : (
               <>

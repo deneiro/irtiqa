@@ -164,8 +164,7 @@ export default function ThemePage() {
           <section key={key} className="tblock">
             <h2 className="section">Список чтения <span className="n">{resources.filter((p) => !p.fm.read).length} непрочитанных из {resources.length}</span></h2>
             {groupBySub(resources, 2).map(([sub, ps]) => (
-              <div key={sub} className="folder">
-                {sub && <h3>{sub} <span className="n">{ps.length}</span></h3>}
+              <Folder key={sub} name={sub} count={ps.length} unread={ps.filter((p) => !p.fm.read).length}>
                 <div className="plist">
                   {ps.map((p) => {
                     const n = extractPractices(p.body).length;
@@ -180,7 +179,7 @@ export default function ThemePage() {
                     );
                   })}
                 </div>
-              </div>
+              </Folder>
             ))}
             {resources.length === 0 && <div className="empty">Ресурсов пока нет.</div>}
           </section>
@@ -190,10 +189,9 @@ export default function ThemePage() {
           <section key={key} className="tblock">
             <h2 className="section">Своя база знаний <span className="n">{wikiPages.length}</span></h2>
             {groupBySub(wikiPages, 2).map(([sub, ps]) => (
-              <div key={sub} className="folder">
-                {sub && <h3>{sub} <span className="n">{ps.length}</span></h3>}
+              <Folder key={sub} name={sub} count={ps.length}>
                 <PageList pages={ps.sort((a, b) => a.title.localeCompare(b.title))} />
-              </div>
+              </Folder>
             ))}
             {wikiPages.length === 0 && <div className="empty">Wiki пока пуст: сюда попадёт то, что ты синтезируешь сам.</div>}
           </section>
@@ -306,6 +304,21 @@ export default function ThemePage() {
       </div>
       {sections.map(block)}
     </div>
+  );
+}
+
+/** A named subfolder folds away; the theme's own root pages stay in view. */
+function Folder({ name, count, unread, children }: { name: string; count: number; unread?: number; children: ReactNode }) {
+  if (!name) return <div className="folder">{children}</div>;
+  return (
+    <details className="folder foldable">
+      <summary>
+        <span className="fname">{name}</span>
+        <span className="n">{count}</span>
+        {unread !== undefined && unread > 0 && unread < count && <span className="n unread">{unread} непрочитано</span>}
+      </summary>
+      {children}
+    </details>
   );
 }
 

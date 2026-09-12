@@ -51,10 +51,16 @@ export default function ClaudePage() {
             <option value="">Ingest: выбрать источник ({uningested.length} не разобрано)</option>
             {uningested.map((r) => <option key={r.rel} value={r.rel}>{r.rel.replace(/^raw\//, "")}</option>)}
           </select>
-          <button className="btn primary" disabled={!rawPick || !!running} onClick={() => { void go("ingest", rawPick); setRawPick(""); }}>Ingest</button>
+          <button className="btn primary" disabled={!rawPick || !!running} onClick={() => { void go("ingest", rawPick); setRawPick(""); }}>Разобрать</button>
           <span className="grow" />
           <button className="btn" disabled={!!running} onClick={() => void go("digest")}>Дайджест недели</button>
-          <button className="btn" disabled={!!running} onClick={() => void go("lint")}>Lint</button>
+          <button className="btn" disabled={!!running} onClick={() => void go("lint")}>Проверка vault</button>
+        </div>
+        <div className="ops">
+          <div><b>Разобрать источник</b> — берёт файл из папки сырых источников и делает из него страницу знаний в нужной теме: суть, ключевые концепции, что применить. Может предложить привычку или квест.</div>
+          <div><b>Дайджест недели</b> — читает последние семь дней, обновляет профиль и обзоры тем, предлагает привычки и квесты по тому, что видно за неделю.</div>
+          <div><b>Проверка vault</b> — ищет нарушения схемы, битые ссылки, сироты и устаревшие утверждения. Только отчёт, ничего не меняет.</div>
+          <div><b>Вопрос</b> — Claude читает vault и отвечает со ссылками на страницы. Ничего не пишет, пока не попросишь.</div>
         </div>
         <form className="row" style={{ marginTop: 12, gap: 8, alignItems: "flex-start" }} onSubmit={(e) => { e.preventDefault(); if (question.trim()) { void go("ask", question.trim()); setQuestion(""); } }}>
           <textarea className="text" rows={2} placeholder="Вопрос к vault: что я знаю о…, что источники говорят про…, что делать с…" value={question} onChange={(e) => setQuestion(e.target.value)} style={{ flex: 1, resize: "vertical" }} disabled={!!running}
