@@ -8,6 +8,7 @@
  */
 import type { MdFile } from "./types";
 import { EVENT_DIR, parseEvent, type LifeEvent } from "./events";
+import { SKILL_DIR, parseSkill, type Skill } from "./skills";
 import { parseFrontmatter } from "./vault";
 import { WEEKDAYS_EN, WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
 
@@ -102,6 +103,7 @@ export interface Debt {
 
 export interface Life {
   events: LifeEvent[];
+  skills: Skill[];
   habits: Habit[];
   quests: Quest[];
   days: Map<string, Day>;
@@ -611,6 +613,7 @@ export function bestStreak(habit: string, days: Map<string, Day>): number {
 
 export function buildLife(files: MdFile[], media: string[] = []): Life {
   const events: LifeEvent[] = [];
+  const skills: Skill[] = [];
   const habits: Habit[] = [];
   const quests: Quest[] = [];
   const days = new Map<string, Day>();
@@ -622,6 +625,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel.startsWith(QUEST_DIR + "/")) quests.push(parseQuest(f));
     else if (f.rel.startsWith(DAY_DIR + "/")) { const d = parseDay(f); days.set(d.date, d); }
     else if (f.rel.startsWith(EVENT_DIR + "/")) events.push(parseEvent(f, media));
+    else if (f.rel.startsWith(SKILL_DIR + "/")) skills.push(parseSkill(f));
     else if (f.rel === ACCOUNTS_REL) accounts = parseAccounts(f.content);
     else if (f.rel === SUBS_REL) subscriptions = parseSubscriptions(f.content);
     else if (f.rel === DEBTS_REL) debts = parseDebts(f.content);
@@ -629,5 +633,6 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
   quests.sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.title.localeCompare(b.title, "ru"));
   events.sort((a, b) => b.date.localeCompare(a.date));
-  return { events, habits, quests, days, accounts, subscriptions, debts };
+  skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts };
 }

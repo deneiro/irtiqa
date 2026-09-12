@@ -16,7 +16,7 @@ const META: Record<string, { label: string; icon: string; live?: { to: string; l
   "Family": { label: "Семья", icon: "🏠", live: { to: "/theme/Family%20%26%20relationship", label: "Семья и отношения" } },
   "Friends and circle": { label: "Друзья и круг", icon: "🤝", live: { to: "/people", label: "Люди" } },
   "Career": { label: "Карьера", icon: "💼", live: { to: "/theme/Business%20%26%20career", label: "Бизнес и карьера" } },
-  "Skills": { label: "Навыки", icon: "🛠", live: { to: "/theme/Personal%20growth", label: "Инструменты" } },
+  "Skills": { label: "Навыки", icon: "🛠", live: { to: "/theme/Personal%20growth", label: "Навыки в приложении" } },
   "Finances": { label: "Финансы", icon: "💰", live: { to: "/finance", label: "Финансы" } },
   "Health": { label: "Здоровье", icon: "🫀", live: { to: "/theme/Health%20%26%20sport", label: "Здоровье и спорт" } },
   "Faith": { label: "Вера", icon: "🕌", live: { to: "/theme/Spirituality%20%26%20Religion", label: "Духовность" } },

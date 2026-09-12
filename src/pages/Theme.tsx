@@ -14,6 +14,7 @@ import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
 import EventForm from "../components/EventForm";
+import SkillsSection from "../components/SkillsSection";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
 import { themeXps } from "../lib/levels";
@@ -142,6 +143,8 @@ export default function ThemePage() {
           </section>
         );
       }
+      case "skills":
+        return <SkillsSection key={key} />;
       case "habits":
         return (
           <section key={key} className="tblock">
