@@ -51,6 +51,23 @@ export interface Tx {
   note: string;
 }
 
+/**
+ * One meal. Eldar's pancreatitis makes *when* he ate as medical as *what*:
+ * nothing after 21:00 is a hard boundary from his own health overview.
+ */
+export interface Meal {
+  time: string; // HH:MM, may be empty
+  what: string;
+  note: string;
+}
+
+export const LATE_MEAL_HOUR = 21;
+
+export function isLateMeal(m: Meal): boolean {
+  const h = Number(m.time.slice(0, 2));
+  return Number.isFinite(h) && /^\d{2}:\d{2}$/.test(m.time) && h >= LATE_MEAL_HOUR;
+}
+
 export interface Session {
   quest: string;
   minutes: number;
@@ -68,6 +85,7 @@ export interface Day {
   closed: boolean;
   done: string[]; // ## Сделано bullets
   txs: Tx[]; // ## Деньги rows
+  meals: Meal[]; // ## Еда rows
   journal: string; // ## Журнал text
 }
 
@@ -255,16 +273,19 @@ export function questXp(minutes: number): number {
 const H_DONE = /^## Сделано\s*$/;
 const H_MONEY = /^## Деньги\s*$/;
 const H_JOURNAL = /^## Журнал\s*$/;
+const H_FOOD = /^##\s*(Еда|Food)\s*$/i;
 
-function sections(body: string): { done: string[]; txs: Tx[]; journal: string } {
+function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; journal: string } {
   const lines = body.split(/\r?\n/);
-  let cur: "done" | "money" | "journal" | null = null;
+  let cur: "done" | "money" | "food" | "journal" | null = null;
   const done: string[] = [];
   const txs: Tx[] = [];
+  const meals: Meal[] = [];
   const journal: string[] = [];
   for (const line of lines) {
     if (H_DONE.test(line)) { cur = "done"; continue; }
     if (H_MONEY.test(line)) { cur = "money"; continue; }
+    if (H_FOOD.test(line)) { cur = "food"; continue; }
     if (H_JOURNAL.test(line)) { cur = "journal"; continue; }
     if (/^## /.test(line)) { cur = null; continue; }
     if (cur === "done") {
@@ -279,11 +300,19 @@ function sections(body: string): { done: string[]; txs: Tx[]; journal: string } 
       const amount = num(cells[0]);
       if (amount === undefined) continue;
       txs.push({ amount, category: cells[1] ?? "", account: cells[2] ?? "", note: cells[3] ?? "" });
+    } else if (cur === "food") {
+      const t = line.trim();
+      if (!t.startsWith("|")) continue;
+      const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
+      if (cells.length < 2) continue;
+      if (/^:?-+:?$/.test(cells[0]) || cells[0] === "Время") continue;
+      if (!cells[1]) continue;
+      meals.push({ time: cells[0], what: cells[1], note: cells[2] ?? "" });
     } else if (cur === "journal") {
       journal.push(line);
     }
   }
-  return { done, txs, journal: journal.join("\n").trim() };
+  return { done, txs, meals, journal: journal.join("\n").trim() };
 }
 
 export function parseDay(f: MdFile): Day {
@@ -306,6 +335,7 @@ export function parseDay(f: MdFile): Day {
     closed: fm.closed === true || String(fm.closed).toLowerCase() === "true",
     done: s.done,
     txs: s.txs,
+    meals: s.meals,
     journal: s.journal,
   };
 }
@@ -313,7 +343,7 @@ export function parseDay(f: MdFile): Day {
 export function emptyDay(date: string): Day {
   return {
     date, habitsDone: [], habitsFailed: [], habitsSkipped: [], questsClosed: [], sessions: [],
-    mood: undefined, stress: undefined, closed: false, done: [], txs: [], journal: "",
+    mood: undefined, stress: undefined, closed: false, done: [], txs: [], meals: [], journal: "",
   };
 }
 
@@ -355,6 +385,11 @@ export function serializeDay(d: Day): string {
   if (d.txs.length) {
     body.push("| Сумма | Категория | Счёт | Заметка |", "|---|---|---|---|");
     for (const t of d.txs) body.push(`| ${fmtAmount(t.amount)} | ${t.category} | ${t.account} | ${t.note} |`);
+  }
+  body.push("", "## Еда");
+  if (d.meals.length) {
+    body.push("| Время | Что | Заметка |", "|---|---|---|");
+    for (const m of d.meals) body.push(`| ${m.time} | ${m.what} | ${m.note} |`);
   }
   body.push("", "## Журнал");
   if (d.journal.trim()) body.push(d.journal.trim());

@@ -10,7 +10,8 @@ export interface OverviewSection { heading: string; md: string }
 
 export type SectionKey =
   | "state" | "resource" | "wiki" | "people" | "authors" | "projects" | "profile"
-  | "tools" | "template" | "summary" | "reverend" | "habits" | "finance" | "events" | "skills";
+  | "tools" | "template" | "summary" | "reverend" | "habits" | "finance" | "events" | "skills"
+  | "nutrition" | "sport";
 
 const DEFAULT_SECTIONS: SectionKey[] = ["state", "resource", "wiki", "people"];
 

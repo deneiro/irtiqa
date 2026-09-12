@@ -5,7 +5,7 @@ import { useT } from "../lib/i18n";
 import { confirmAction, inTauri } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import {
-  ACCOUNTS_REL, HABIT_DIR, applyDayToAccounts, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue,
+  ACCOUNTS_REL, HABIT_DIR, LATE_MEAL_HOUR, applyDayToAccounts, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal,
   markOf, safeFilename, serializeAccounts, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
   type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
 } from "../lib/life";
@@ -39,6 +39,7 @@ export default function DayPage() {
   const dirty = useRef(false);
   const timer = useRef<number | undefined>(undefined);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [meal, setMeal] = useState({ time: "", what: "", note: "" });
 
   // External change (Claude, Obsidian, or our own echo): adopt it unless we have unsaved edits.
   useEffect(() => {
@@ -248,6 +249,14 @@ export default function DayPage() {
     return [...s];
   }, [life]);
 
+  const addMeal = () => {
+    const what = meal.what.trim();
+    if (!what) return;
+    const time = meal.time || new Date().toTimeString().slice(0, 5);
+    update((d) => ({ ...d, meals: [...d.meals, { time, what, note: meal.note.trim() }].sort((a, b) => a.time.localeCompare(b.time)) }));
+    setMeal({ time: "", what: "", note: "" });
+  };
+
   const addTx = () => {
     const amount = Number(tx.amount.replace(/\s/g, "").replace(",", "."));
     if (!Number.isFinite(amount) || amount === 0) return;
@@ -404,6 +413,33 @@ export default function DayPage() {
               <span>получено <b>{fmtMoney(earnedOf(draft))}</b></span>
               <span className="faint">минус = трата, плюс = доход</span>
             </div>
+          </div>
+
+          <div className="card">
+            <h3>Еда <span className="n">{draft.meals.length}</span></h3>
+            <div className="small faint" style={{ margin: "-4px 0 8px" }}>Что и когда ел. После {LATE_MEAL_HOUR}:00 помечается: поздняя еда бьёт по поджелудочной.</div>
+            {draft.meals.length > 0 && (
+              <table className="tbl">
+                <tbody>
+                  {draft.meals.map((m, i) => (
+                    <tr className={`mealrow ${isLateMeal(m) ? "late" : ""}`} key={i}>
+                      <td className="mono" style={{ width: 58 }}>{m.time || "—"}</td>
+                      <td>{m.what}{isLateMeal(m) && <span className="badge warn" style={{ marginLeft: 8 }}>поздно</span>}</td>
+                      <td className="muted">{m.note}</td>
+                      <td>{!locked && <button className="x" title="убрать" onClick={() => update((d) => ({ ...d, meals: d.meals.filter((_, j) => j !== i) }))}>×</button>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {!locked && (
+              <form className="addrow meal" onSubmit={(e) => { e.preventDefault(); addMeal(); }}>
+                <input className="text" type="time" value={meal.time} onChange={(e) => setMeal({ ...meal, time: e.target.value })} />
+                <input className="text" placeholder="что ел" value={meal.what} onChange={(e) => setMeal({ ...meal, what: e.target.value })} />
+                <input className="text" placeholder="заметка (жирное, изжога…)" value={meal.note} onChange={(e) => setMeal({ ...meal, note: e.target.value })} />
+                <button className="btn" type="submit">+</button>
+              </form>
+            )}
           </div>
 
           <div className="card">

@@ -570,3 +570,12 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .lvl-label { width: 78px; flex: none; }
 .skill.drift .skname { color: var(--gold); }
 .skdetail { padding: 4px 0 14px 13px; }
+.addrow.meal { grid-template-columns: 110px 1fr 1fr auto; }
+.mealrow.late td { color: var(--gold); }
+.foodday { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--hair); }
+.foodday:last-child { border-bottom: 0; }
+.fdate { width: 64px; flex: none; font-size: 11px; color: var(--muted); font-family: var(--font-mono); padding-top: 3px; }
+.fmeals { display: flex; flex-wrap: wrap; gap: 6px; }
+.fmeal { font-size: 12.5px; background: var(--raised); border-radius: var(--r); padding: 3px 9px; color: var(--ink-2); }
+.fmeal .mono { color: var(--faint); font-size: 11px; margin-right: 4px; }
+.fmeal.late { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }

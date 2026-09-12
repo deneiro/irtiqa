@@ -8,8 +8,8 @@ import QuestRows from "../components/QuestRows";
 import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
-import { todayStr, monthOfToday } from "../lib/dates";
-import { habitDue, markOf, streak } from "../lib/life";
+import { addDays, plural, todayStr, monthOfToday } from "../lib/dates";
+import { LATE_MEAL_HOUR, habitDue, isLateMeal, markOf, questMinutes, streak } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
@@ -145,6 +145,85 @@ export default function ThemePage() {
       }
       case "skills":
         return <SkillsSection key={key} />;
+      case "nutrition": {
+        const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
+        const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();
+        const total = rows.reduce((n, r) => n + r.meals.length, 0);
+        const late = rows.reduce((n, r) => n + r.meals.filter(isLateMeal).length, 0);
+        let clean = 0;
+        for (const d of [...days].reverse()) {
+          const meals = life?.days.get(d)?.meals ?? [];
+          if (meals.some(isLateMeal)) break;
+          if (meals.length) clean++;
+          else if (d !== today) break;
+        }
+        return (
+          <section key={key} className="tblock">
+            <h2 className="section">Питание <span className="n">{total} {plural(total, "запись", "записи", "записей")} за 14 дней</span> <Link to="/" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>записать сегодняшнюю еду</Link></h2>
+            <p className="small muted" style={{ marginTop: -4 }}>
+              {late > 0 ? <span className="hl">{late} раз ел после {LATE_MEAL_HOUR}:00.</span> : `Поздней еды за две недели нет.`}
+              {clean > 0 && ` Дней подряд без поздней еды: ${clean}.`}
+              {" "}Правило из обзора темы: после {LATE_MEAL_HOUR}:00 не есть, это медицинская граница по поджелудочной.
+            </p>
+            <div className="card" style={{ marginTop: 12 }}>
+              {rows.every((r) => r.meals.length === 0) ? (
+                <div className="empty">Записей о еде пока нет. Добавляй их на экране «День», карточка «Еда».</div>
+              ) : (
+                rows.filter((r) => r.meals.length > 0).map((r) => (
+                  <div className="foodday" key={r.date}>
+                    <div className="fdate">{r.date === today ? "сегодня" : r.date.slice(5)}</div>
+                    <div className="fmeals">
+                      {r.meals.map((m, i) => (
+                        <span key={i} className={`fmeal ${isLateMeal(m) ? "late" : ""}`} title={m.note}>
+                          <span className="mono">{m.time}</span> {m.what}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        );
+      }
+      case "sport": {
+        const minutes = quests.reduce((n, q) => n + questMinutes(q.title, life?.days.values() ?? []), 0);
+        return (
+          <section key={key} className="tblock">
+            <h2 className="section">Спорт и тело <span className="n">{habits.length} {plural(habits.length, "привычка", "привычки", "привычек")} · {quests.length} {plural(quests.length, "квест", "квеста", "квестов")}</span></h2>
+            {habits.length === 0 && quests.length === 0 ? (
+              <div className="empty">Ни привычек, ни квестов в этой теме. Заведи первую привычку на экране «Привычки» с темой «Здоровье и спорт».</div>
+            ) : (
+              <div className="card">
+                {habits.length > 0 && (
+                  <table className="tbl">
+                    <thead><tr><th>привычка</th><th>вид</th><th>сегодня</th><th style={{ textAlign: "right" }}>стрик</th></tr></thead>
+                    <tbody>
+                      {habits.map((h) => {
+                        const mark = todayDay ? markOf(todayDay, h.title) : undefined;
+                        return (
+                          <tr key={h.rel}>
+                            <td><Link to="/habits">{h.title}</Link></td>
+                            <td className="muted">{h.kind === "bad" ? "плохая" : "хорошая"}</td>
+                            <td>{mark === "done" ? "✓" : mark === "failed" ? "✗" : mark === "skipped" ? "—" : habitDue(h, today) ? <span className="faint">не отмечена</span> : <span className="faint">не сегодня</span>}</td>
+                            <td className="mono" style={{ textAlign: "right" }}>{streak(h.title, life!.days, today)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
+                {quests.length > 0 && (
+                  <div style={{ marginTop: habits.length ? 14 : 0 }}>
+                    <QuestRows quests={quests} compact />
+                    {minutes > 0 && <div className="small faint" style={{ marginTop: 6 }}>Всего на этих квестах {Math.round(minutes / 60)} ч {minutes % 60} мин.</div>}
+                  </div>
+                )}
+              </div>
+            )}
+          </section>
+        );
+      }
       case "habits":
         return (
           <section key={key} className="tblock">
@@ -205,7 +284,7 @@ export default function ThemePage() {
                         <span className="rmark">{p.fm.read ? "✓" : "○"}</span>
                         <span className="grow" style={{ minWidth: 0 }}>
                           <span className="ptitle">{p.title}</span>
-                          <span className="pmeta">{n > 0 ? `${n} практик · ` : ""}{p.words} слов · {relDate(p.updated)}</span>
+                          <span className="pmeta">{n > 0 ? `${n} ${plural(n, "практика", "практики", "практик")} · ` : ""}{p.words} слов · {relDate(p.updated)}</span>
                         </span>
                       </Link>
                     );
