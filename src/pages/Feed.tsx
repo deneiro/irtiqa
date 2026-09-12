@@ -94,7 +94,7 @@ export default function FeedPage() {
               const isOpen = open.has(e.id);
               const inner = (
                 <>
-                  <span className={`fi ${e.kind}`}>{e.icon}</span>
+                  <span className={`fi k-${e.kind}`}>{e.icon}</span>
                   <span className="ft">
                     <span>{e.text}</span>
                     {e.sub && <span className="small muted"> · {e.sub}</span>}
@@ -102,7 +102,7 @@ export default function FeedPage() {
                 </>
               );
               return (
-                <div key={e.id} className={`fev ${e.kind}`}>
+                <div key={e.id} className={`fev k-${e.kind}`}>
                   {e.page ? <Link to={pageUrl(e.page)} className="frow">{inner}</Link>
                     : e.to && !e.body ? <Link to={e.to} className="frow">{inner}</Link>
                     : <div className="frow" onClick={() => e.body && setOpen((s) => { const n = new Set(s); if (n.has(e.id)) n.delete(e.id); else n.add(e.id); return n; })} style={{ cursor: e.body ? "pointer" : "default" }}>{inner}{e.body && <span className="small faint">{isOpen ? "▴" : "▾"}</span>}</div>}

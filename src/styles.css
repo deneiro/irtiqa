@@ -464,12 +464,12 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .feed { display: flex; flex-direction: column; gap: 18px; margin-top: 8px; }
 .feed-date { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--hair); }
 .fev { border-left: 2px solid var(--hair); }
-.fev.vault { border-left-color: var(--accent); }
-.fev.app { border-left-color: var(--success); }
+.fev.k-vault { border-left-color: var(--accent); }
+.fev.k-app { border-left-color: var(--success); }
 .frow { display: flex; align-items: baseline; gap: 10px; padding: 5px 10px; font-size: 13.5px; color: var(--ink-2); text-decoration: none; border-radius: 0 var(--r) var(--r) 0; }
 a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .fi { width: 22px; flex: none; text-align: center; font-family: var(--font-mono); }
-.fi.app { color: var(--success); }
+.fi.k-app { color: var(--success); }
 .ft { flex: 1; min-width: 0; }
 .fbody { padding: 4px 10px 10px 42px; font-size: 13px; }
 .pitem .ptitle { display: block; }

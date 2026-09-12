@@ -23,7 +23,7 @@ export default function PeoplePage() {
   const people = useMemo(
     () =>
       v.pages
-        .filter((p) => p.zone === "person" && p.file !== "_Overview" && (showAuthors || !isAuthor(p)))
+        .filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && (showAuthors || !isAuthor(p)))
         .map((p) => {
           const c = contactsOf(p);
           const open = debtsFor(p, life?.debts ?? []).filter((d) => !d.closed);

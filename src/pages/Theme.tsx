@@ -49,7 +49,7 @@ export default function ThemePage() {
     return [...m.entries()].sort((a, b) => (a[0] === "" ? -1 : b[0] === "" ? 1 : a[0].localeCompare(b[0])));
   };
   const wikiPages = useMemo(() => pages.filter((p) => p.zone === "wiki" && !p.project && p.file !== "_Overview"), [pages]);
-  const persons = useMemo(() => pages.filter((p) => p.zone === "person" && p.file !== "_Overview"), [pages]);
+  const persons = useMemo(() => pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_")), [pages]);
   const circle = persons.filter((p) => !isAuthor(p));
   const authors = persons.filter(isAuthor);
   const projects = useMemo(() => {
