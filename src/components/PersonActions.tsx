@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import type { Page } from "../lib/types";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
-import { setFrontmatterKeys } from "../lib/frontmatter";
+import { setBody, setFrontmatterKeys } from "../lib/frontmatter";
+import { planRename, planSummary } from "../lib/renamePerson";
+import { renameFile } from "../lib/fs";
 import { rawPageText } from "../lib/rawpage";
 import { CONTACT_KEYS, CONTACT_LABELS, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, type Contacts } from "../lib/people";
 import { eventUrl, eventsFor } from "../lib/events";
@@ -17,15 +19,76 @@ function fmt(n: number): string {
 /** The contact bar on a People page: deep links, editable contact fields, debts. */
 export default function PersonActions({ page }: { page: Page }) {
   const { root, vault, life, saveText, reload } = useStore();
+  const nav = useNavigate();
   const today = todayStr();
   const saved = contactsOf(page);
   const [edit, setEdit] = useState(false);
+  const [card, setCard] = useState(false);
+  const [fields, setFields] = useState({
+    title: page.title,
+    connection: typeof page.fm.connection === "string" ? page.fm.connection : "",
+    how: typeof page.fm.how_we_met === "string" ? page.fm.how_we_met : "",
+    aliases: page.aliases.join(", "),
+    tags: page.tags.join(", "),
+    body: page.body.replace(/^\s*# [^\n]*\n/, "").trim(),
+  });
+  useEffect(() => {
+    setFields({
+      title: page.title,
+      connection: typeof page.fm.connection === "string" ? page.fm.connection : "",
+      how: typeof page.fm.how_we_met === "string" ? page.fm.how_we_met : "",
+      aliases: page.aliases.join(", "),
+      tags: page.tags.join(", "),
+      body: page.body.replace(/^\s*# [^\n]*\n/, "").trim(),
+    });
+  }, [page]);
+
+  const rename = useMemo(
+    () => (vault && fields.title.trim() !== page.title ? planRename(vault, page, fields.title, vault.life) : undefined),
+    [vault, page, fields.title],
+  );
   const [form, setForm] = useState<Contacts>(saved);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   useEffect(() => { setForm(contactsOf(page)); }, [page]);
 
   const links = deepLinks(saved);
+  const list = (v: string) => v.split(",").map((x) => x.trim()).filter(Boolean);
+
+  /** Save the fields, then move the page if the name changed. */
+  const saveCard = async () => {
+    if (!vault) return;
+    setBusy(true);
+    try {
+      const raw = rawPageText(vault, page.rel);
+      if (raw === null) throw new Error("не нашёл исходный текст страницы");
+      const withFm = setFrontmatterKeys(raw, {
+        connection: fields.connection.trim() || null,
+        how_we_met: fields.how.trim() || null,
+        aliases: list(fields.aliases),
+        tags: list(fields.tags),
+        updated: today,
+      });
+      const heading = page.body.match(/^\s*# ([^\n]*)\n/);
+      const body = (heading ? `# ${fields.title.trim() || page.title}\n\n` : "") + fields.body.trim() + "\n";
+      await saveText(page.rel, setBody(withFm, body));
+
+      if (rename && !rename.error) {
+        const plan = planRename({ ...vault, rawByRel: new Map(vault.rawByRel).set(page.rel, setBody(withFm, body)) }, page, fields.title, vault.life);
+        if (plan.error) throw new Error(plan.error);
+        await renameFile(root, plan.oldRel, plan.newRel);
+        for (const e of plan.edits) await saveText(e.rel === plan.oldRel ? plan.newRel : e.rel, e.content);
+        setErr(null);
+        setCard(false);
+        await reload();
+        nav(`/page/${encodeURIComponent(plan.newRel)}`, { replace: true });
+        return;
+      }
+      setErr(null);
+      setCard(false);
+      await reload();
+    } catch (e) { setErr(String(e)); } finally { setBusy(false); }
+  };
   const debts = debtsFor(page, life?.debts ?? []);
   const open = debts.filter((d) => !d.closed);
   const events = eventsFor([page.title, page.file, ...page.aliases], life?.events ?? []);
@@ -70,6 +133,7 @@ export default function PersonActions({ page }: { page: Page }) {
           {since === undefined ? "Связались сегодня" : since === 0 ? "✓ общались сегодня" : `Связались сегодня · ${since} дн. назад`}
         </button>
         <button className="btn ghost" onClick={() => setEdit(!edit)}>{edit ? "скрыть" : "контакты"}</button>
+        <button className="btn ghost" onClick={() => setCard(!card)}>{card ? "скрыть" : "карточка"}</button>
       </div>
 
       {(bday !== undefined || open.length > 0) && (
@@ -96,6 +160,33 @@ export default function PersonActions({ page }: { page: Page }) {
           </div>
         </form>
       )}
+      {card && (
+        <form className="pcard" onSubmit={(e) => { e.preventDefault(); void saveCard(); }}>
+          <label className="cfield" style={{ gridColumn: "1 / -1" }}>
+            <span>имя · переименует файл и ссылки во всём vault</span>
+            <input className="text" value={fields.title} onChange={(e) => setFields({ ...fields, title: e.target.value })} />
+          </label>
+          {rename && (
+            <div className={`small ${rename.error ? "err-text" : "muted"}`} style={{ gridColumn: "1 / -1", marginTop: -4 }}>
+              {rename.error ?? planSummary(rename)}
+            </div>
+          )}
+          <label className="cfield"><span>связь</span><input className="text" value={fields.connection} onChange={(e) => setFields({ ...fields, connection: e.target.value })} /></label>
+          <label className="cfield"><span>как познакомились</span><input className="text" value={fields.how} onChange={(e) => setFields({ ...fields, how: e.target.value })} /></label>
+          <label className="cfield"><span>другие имена, через запятую</span><input className="text" value={fields.aliases} onChange={(e) => setFields({ ...fields, aliases: e.target.value })} /></label>
+          <label className="cfield"><span>теги, через запятую</span><input className="text" value={fields.tags} onChange={(e) => setFields({ ...fields, tags: e.target.value })} /></label>
+          <label className="cfield" style={{ gridColumn: "1 / -1" }}>
+            <span>текст страницы</span>
+            <textarea className="text" rows={8} value={fields.body} onChange={(e) => setFields({ ...fields, body: e.target.value })} style={{ resize: "vertical", fontFamily: "var(--font-read)", fontSize: 14 }} />
+          </label>
+          <div className="row" style={{ gridColumn: "1 / -1" }}>
+            <button className="btn primary" type="submit" disabled={busy || !!rename?.error}>сохранить</button>
+            <button className="btn ghost" type="button" onClick={() => setCard(false)}>отмена</button>
+            <span className="small faint">Пишется прямо в {page.rel}.</span>
+          </div>
+        </form>
+      )}
+
       {events.length > 0 && (
         <div className="pevents">
           <div className="small muted">вместе: {events.length}</div>

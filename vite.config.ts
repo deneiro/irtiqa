@@ -1,6 +1,6 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
-import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { spawn } from "node:child_process";
 // @ts-expect-error type error without @types/node package
@@ -71,6 +71,25 @@ function vaultDevServer(): Plugin {
           try {
             const { root, rel } = JSON.parse(body) as { root: string; rel: string };
             rmSync(guard(root, rel), { recursive: true, force: true });
+            res.end("ok");
+          } catch (e) { res.statusCode = 400; res.end(String(e)); }
+        });
+      });
+      server.middlewares.use("/__vault/rename", (req, res) => {
+        let body = "";
+        req.on("data", (c) => (body += c));
+        req.on("end", () => {
+          try {
+            const { root, from, to } = JSON.parse(body) as { root: string; from: string; to: string };
+            for (const rel of [from, to]) {
+              const t = resolve(root, rel);
+              if (!t.startsWith(resolve(root) + sep) || rel.startsWith("raw/") || rel === "CLAUDE.md" || !rel.endsWith(".md")) throw new Error(`Refusing ${rel}`);
+            }
+            const src = resolve(root, from);
+            const dst = resolve(root, to);
+            if (existsSync(dst) && dst !== src) throw new Error(`${to} already exists`);
+            mkdirSync(dirname(dst), { recursive: true });
+            renameSync(src, dst);
             res.end("ok");
           } catch (e) { res.statusCode = 400; res.end(String(e)); }
         });

@@ -45,6 +45,19 @@ export async function writeBinary(root: string, rel: string, bytes: ArrayBuffer)
   if (!r.ok) throw new Error(await r.text());
 }
 
+/** Move a page, e.g. when a person is renamed. */
+export async function renameFile(root: string, from: string, to: string): Promise<void> {
+  assertWritable(from);
+  assertWritable(to);
+  if (inTauri) return invoke("rename_file", { root, from, to });
+  const r = await fetch("/__vault/rename", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ root, from, to }),
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
 /** Remove a file or folder the app owns (a photo, or a whole event). */
 export async function deleteFile(root: string, rel: string): Promise<void> {
   if (!/^life\//.test(rel)) throw new Error(`Not app-owned: ${rel}`);

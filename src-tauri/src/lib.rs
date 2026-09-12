@@ -232,6 +232,31 @@ fn write_binary(root: String, rel: String, base64_data: String) -> Result<(), St
     fs::write(&target, bytes).map_err(|e| e.to_string())
 }
 
+/// Rename a page inside the vault. Used when a person is renamed: the file
+/// moves and the app rewrites every wikilink that pointed at it.
+#[tauri::command]
+fn rename_file(root: String, from: String, to: String) -> Result<(), String> {
+    for rel in [&from, &to] {
+        if rel.starts_with("raw/") || rel.as_str() == "CLAUDE.md" || !rel.ends_with(".md") {
+            return Err(format!("Refusing to rename {rel}"));
+        }
+    }
+    let src = safe_join(&root, &from)?;
+    let dst = safe_join(&root, &to)?;
+    if !src.is_file() {
+        return Err(format!("{from} is not a file"));
+    }
+    // A case-only rename (Ivan -> ivan) is the same file on a case-insensitive
+    // volume, so only refuse a target that is a *different* existing file.
+    if dst.exists() && dst.canonicalize().ok() != src.canonicalize().ok() {
+        return Err(format!("{to} already exists"));
+    }
+    if let Some(parent) = dst.parent() {
+        fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    fs::rename(&src, &dst).map_err(|e| e.to_string())
+}
+
 /// Delete a file the app owns (an event photo, or an event folder's markdown).
 #[tauri::command]
 fn delete_file(root: String, rel: String) -> Result<(), String> {
@@ -412,7 +437,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(WatchState::default())
         .manage(Runs::default())
-        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, write_binary, delete_file, run_cmd, run_stream, kill_stream, watch_vault])
+        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, write_binary, delete_file, rename_file, run_cmd, run_stream, kill_stream, watch_vault])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -579,3 +579,8 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .fmeal { font-size: 12.5px; background: var(--raised); border-radius: var(--r); padding: 3px 9px; color: var(--ink-2); }
 .fmeal .mono { color: var(--faint); font-size: 11px; margin-right: 4px; }
 .fmeal.late { background: color-mix(in srgb, var(--gold) 18%, transparent); color: var(--gold); }
+.pcard { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); }
+@media (max-width: 900px) { .pcard { grid-template-columns: 1fr; } }
+.err-text { color: var(--danger); }
+.addrow.person { grid-template-columns: 1fr 170px 1fr 1fr auto auto; }
+@media (max-width: 1100px) { .addrow.person { grid-template-columns: 1fr 1fr; } }

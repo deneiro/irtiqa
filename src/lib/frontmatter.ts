@@ -49,3 +49,10 @@ export function setFrontmatterKeys(content: string, patch: Record<string, FmValu
   for (const [k, v] of Object.entries(patch)) if (!done.has(k) && v !== null) out.push(render(k, v));
   return `---${nl}${out.join(nl)}${nl}---${m[2] || nl}` + content.slice(m[0].length);
 }
+
+/** Replace the body while keeping the frontmatter block byte-for-byte. */
+export function setBody(content: string, body: string): string {
+  const m = content.match(/^---\r?\n[\s\S]*?\r?\n---(\r?\n|$)/);
+  const text = body.replace(/\s+$/, "") + "\n";
+  return m ? m[0] + (m[0].endsWith("\n") ? "" : "\n") + text : text;
+}
