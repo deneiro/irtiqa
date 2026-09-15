@@ -9,13 +9,14 @@ import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
 import { addDays, plural, todayStr, monthOfToday } from "../lib/dates";
-import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, questMinutes, streak, withMark, type DayMark } from "../lib/life";
+import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, streak, withMark, type DayMark } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
 import EventForm from "../components/EventForm";
 import SkillsSection from "../components/SkillsSection";
 import { HalalSection, NamesSection, QuranSection } from "../components/QuranSections";
+import { BodySection, MedicalSection } from "../components/BodySections";
 import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
@@ -188,6 +189,10 @@ export default function ThemePage() {
         return <NamesSection key={key} />;
       case "halal":
         return <HalalSection key={key} />;
+      case "body":
+        return <BodySection key={key} />;
+      case "medical":
+        return <MedicalSection key={key} />;
       case "nutrition": {
         const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
         const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();
@@ -226,44 +231,6 @@ export default function ThemePage() {
                 ))
               )}
             </div>
-          </section>
-        );
-      }
-      case "sport": {
-        const minutes = quests.reduce((n, q) => n + questMinutes(q.title, life?.days.values() ?? []), 0);
-        return (
-          <section key={key} className="tblock">
-            <h2 className="section">Спорт и тело <span className="n">{habits.length} {plural(habits.length, "привычка", "привычки", "привычек")} · {quests.length} {plural(quests.length, "квест", "квеста", "квестов")}</span></h2>
-            {habits.length === 0 && quests.length === 0 ? (
-              <div className="empty">Ни привычек, ни квестов в этой теме. Заведи первую привычку на экране «Привычки» с темой «Здоровье и спорт».</div>
-            ) : (
-              <div className="card">
-                {habits.length > 0 && (
-                  <table className="tbl">
-                    <thead><tr><th>привычка</th><th>вид</th><th>сегодня</th><th style={{ textAlign: "right" }}>стрик</th></tr></thead>
-                    <tbody>
-                      {habits.map((h) => {
-                        const mark = todayDay ? markOf(todayDay, h.title) : undefined;
-                        return (
-                          <tr key={h.rel}>
-                            <td><Link to="/habits">{h.title}</Link></td>
-                            <td className="muted">{h.kind === "bad" ? "плохая" : "хорошая"}</td>
-                            <td>{mark === "done" ? "✓" : mark === "failed" ? "✗" : mark === "skipped" ? "—" : habitDue(h, today) ? <span className="faint">не отмечена</span> : <span className="faint">не сегодня</span>}</td>
-                            <td className="mono" style={{ textAlign: "right" }}>{streak(h.title, life!.days, today)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                )}
-                {quests.length > 0 && (
-                  <div style={{ marginTop: habits.length ? 14 : 0 }}>
-                    <QuestRows quests={quests} compact />
-                    {minutes > 0 && <div className="small faint" style={{ marginTop: 6 }}>Всего на этих квестах {Math.round(minutes / 60)} ч {minutes % 60} мин.</div>}
-                  </div>
-                )}
-              </div>
-            )}
           </section>
         );
       }

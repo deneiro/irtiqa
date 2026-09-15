@@ -93,6 +93,10 @@ export interface Day {
   sessions: Session[];
   mood: number | undefined;
   stress: number | undefined;
+  /** Body measurements, written on the days they are taken — not every day. */
+  weight: number | undefined;
+  pushups: number | undefined;
+  pullups: number | undefined;
   closed: boolean;
   done: string[]; // ## Сделано bullets
   txs: Tx[]; // ## Деньги rows
@@ -196,6 +200,8 @@ export interface Life {
   accounts: AccountRow[] | null; // null = no accounts.md yet
   subscriptions: Subscription[];
   debts: Debt[];
+  /** Raw text of `life/health.md`; parsed by lib/health.ts. */
+  health: string | null;
 }
 
 export const DAY_DIR = "life/days";
@@ -204,6 +210,7 @@ export const QUEST_DIR = "life/quests";
 export const ACCOUNTS_REL = "life/finance/accounts.md";
 export const SUBS_REL = "life/finance/subscriptions.md";
 export const DEBTS_REL = "life/finance/debts.md";
+export const HEALTH_REL = "life/health.md";
 
 // ---------- small helpers ----------
 
@@ -440,6 +447,9 @@ export function parseDay(f: MdFile): Day {
     sessions,
     mood: num(fm.mood),
     stress: num(fm.stress),
+    weight: num(fm.weight),
+    pushups: num(fm.pushups),
+    pullups: num(fm.pullups),
     closed: fm.closed === true || String(fm.closed).toLowerCase() === "true",
     done: s.done,
     txs: s.txs,
@@ -451,7 +461,8 @@ export function parseDay(f: MdFile): Day {
 export function emptyDay(date: string): Day {
   return {
     date, habitsDone: [], habitsFailed: [], habitsSkipped: [], questsClosed: [], sessions: [],
-    mood: undefined, stress: undefined, closed: false, done: [], txs: [], meals: [], journal: "",
+    mood: undefined, stress: undefined, weight: undefined, pushups: undefined, pullups: undefined,
+    closed: false, done: [], txs: [], meals: [], journal: "",
   };
 }
 
@@ -485,6 +496,9 @@ export function serializeDay(d: Day): string {
   ];
   if (d.mood !== undefined) fm.push(`mood: ${d.mood}`);
   if (d.stress !== undefined) fm.push(`stress: ${d.stress}`);
+  if (d.weight !== undefined) fm.push(`weight: ${d.weight}`);
+  if (d.pushups !== undefined) fm.push(`pushups: ${d.pushups}`);
+  if (d.pullups !== undefined) fm.push(`pullups: ${d.pullups}`);
   fm.push(`closed: ${d.closed}`, "---");
 
   const body: string[] = ["## Сделано"];
@@ -786,6 +800,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   let accounts: AccountRow[] | null = null;
   let subscriptions: Subscription[] = [];
   let debts: Debt[] = [];
+  let health: string | null = null;
   for (const f of files) {
     if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
     else if (f.rel.startsWith(QUEST_DIR + "/")) quests.push(parseQuest(f));
@@ -795,10 +810,11 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel === ACCOUNTS_REL) accounts = parseAccounts(f.content);
     else if (f.rel === SUBS_REL) subscriptions = parseSubscriptions(f.content);
     else if (f.rel === DEBTS_REL) debts = parseDebts(f.content);
+    else if (f.rel === HEALTH_REL) health = f.content;
   }
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
   quests.sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.title.localeCompare(b.title, "ru"));
   events.sort((a, b) => b.date.localeCompare(a.date));
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
-  return { events, skills, habits, quests, days, accounts, subscriptions, debts };
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health };
 }

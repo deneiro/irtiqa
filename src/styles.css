@@ -661,3 +661,20 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .md .ar, .ar { unicode-bidi: isolate; }
 .md .ar { font-size: 1.45em; line-height: 2; color: var(--ink); }
 .ar.big { font-size: 22px; }
+
+/* ---------- Тело и медицина ---------- */
+.bodynums { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.bnum { display: flex; flex-direction: column; gap: 3px; }
+.bnum b { font-family: var(--font-mono); font-size: 22px; color: var(--c, var(--accent)); line-height: 1; }
+.bnum b.ok { color: var(--success); }
+.bnum span { font-size: 11px; color: var(--muted); }
+.measure-form { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.measure-form .text { flex: 1 1 110px; min-width: 0; }
+.measure-form .text.wide { flex: 2 1 180px; }
+.chronic { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.chip.danger { border-color: color-mix(in srgb, var(--danger) 55%, transparent); color: var(--danger); }
+.mrow-head { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--faint); margin: 14px 0 6px; }
+.mrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 7px 0; border-top: 1px solid var(--hair); }
+.mrow:first-of-type { border-top: 0; }
+.mrow.late b { color: var(--danger); }
+.mrow.late .small { color: var(--danger); }
