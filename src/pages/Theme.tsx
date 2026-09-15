@@ -9,7 +9,7 @@ import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
 import { addDays, plural, todayStr, monthOfToday } from "../lib/dates";
-import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, questMinutes, streak } from "../lib/life";
+import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, questMinutes, streak, withMark, type DayMark } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
@@ -23,14 +23,18 @@ import { themeXps } from "../lib/levels";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 
+const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined };
+const MARK_WORD: Record<string, string> = { done: "сделано", failed: "сорвано", skipped: "пропуск", due: "сегодня", off: "не сегодня" };
+
 export default function ThemePage() {
   const { name = "" } = useParams();
   const theme = decodeURIComponent(name);
   const meta = THEME_BY_NAME.get(theme);
   const v = useVault();
-  const { root, life } = useStore();
+  const { root, life, updateToday, reload } = useStore();
   const nav = useNavigate();
   const [adding, setAdding] = useState(false);
+  const [marking, setMarking] = useState<string | null>(null);
   const { t, themeLabel, themeBlurb, relDate } = useT();
   const today = todayStr();
 
@@ -89,6 +93,17 @@ export default function ThemePage() {
   const reverend = pages.filter((p) => p.segments[1] === "Reverend Insanity");
   const reverendIndex = reverend.find((p) => /Index$/.test(p.file)) ?? reverend.find((p) => p.file === "_Overview");
 
+  const locked = !!todayDay?.closed;
+  /** Mark a habit for today without leaving the theme. Same cycle as the Day screen. */
+  const cycle = async (title: string, cur: DayMark | undefined) => {
+    if (locked || marking) return;
+    setMarking(title);
+    try {
+      await updateToday((d) => (d.closed ? d : withMark(d, title, NEXT_MARK[cur ?? "none"])));
+      await reload();
+    } finally { setMarking(null); }
+  };
+
   if (!meta) return <div className="empty">{t("unknown_theme", { t: theme })}</div>;
 
   const block = (key: SectionKey) => {
@@ -101,21 +116,34 @@ export default function ThemePage() {
                 <div className="nowhead">Сейчас <Link to="/habits" className="small muted">привычки</Link> <Link to="/quests" className="small muted">квесты</Link></div>
                 {quests.length > 0 && <QuestRows quests={quests} />}
                 {habits.length > 0 && (
-                  <div className="habit-strip">
-                    {habits.map((h) => {
-                      const mark = todayDay ? markOf(todayDay, h.title) : undefined;
-                      const due = habitDue(h, today);
-                      const st = mark ?? (due ? "due" : "off");
-                      return (
-                        <Link key={h.rel} to="/habits" className={`hchip ${st}`}>
-                          <i />
-                          <span className="hname">{h.title}</span>
-                          <span className="hsub">{mark === "done" ? "сделано" : mark === "failed" ? "сорвано" : mark === "skipped" ? "пропущено" : due ? "сегодня" : "не сегодня"}</span>
-                          <span className="mono faint">{streak(h.title, life!.days, today)}🔥</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
+                  <>
+                    <div className="habit-strip">
+                      {habits.map((h) => {
+                        const mark = todayDay ? markOf(todayDay, h.title) : undefined;
+                        const due = habitDue(h, today);
+                        const st = mark ?? (due ? "due" : "off");
+                        return (
+                          <button
+                            key={h.rel}
+                            className={`hchip ${st}`}
+                            disabled={locked || marking === h.title}
+                            title={locked ? "день закрыт — открой его на экране дня" : "сделано → сорвано → пропуск → снять"}
+                            onClick={() => void cycle(h.title, mark)}
+                          >
+                            <i />
+                            <span className="hname">{h.title}</span>
+                            <span className="hsub">{MARK_WORD[mark ?? (due ? "due" : "off")]}</span>
+                            <span className="mono faint">{streak(h.title, life!.days, today)}🔥</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="small faint" style={{ marginTop: 6 }}>
+                      {locked
+                        ? "День закрыт — отметки правятся на экране дня."
+                        : "Нажми на привычку, чтобы отметить: сделано → сорвано → пропуск → снять."}
+                    </div>
+                  </>
                 )}
               </div>
             )}

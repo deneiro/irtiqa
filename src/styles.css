@@ -444,8 +444,9 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .nowhead { display: flex; align-items: center; gap: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 8px; }
 .nowhead a { text-transform: none; letter-spacing: 0; text-decoration: none; }
 .habit-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; margin-top: 8px; }
-.hchip { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 4px 9px; padding: 8px 12px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--hair); color: var(--ink-2); text-decoration: none; }
-.hchip:hover { border-color: var(--hair-2); }
+.hchip { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 4px 9px; padding: 8px 12px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--hair); color: var(--ink-2); text-decoration: none; text-align: left; font: inherit; cursor: pointer; }
+.hchip:hover:not(:disabled) { border-color: var(--hair-2); background: var(--raised); }
+.hchip:disabled { cursor: default; opacity: 0.5; }
 .hchip i { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
 .hchip .hname { font-size: 13px; color: var(--ink); }
 .hchip .hsub { grid-column: 2; font-size: 11px; color: var(--faint); }
