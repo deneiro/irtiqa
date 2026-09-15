@@ -96,40 +96,35 @@ export default function ThemePage() {
       case "state":
         return (
           <section key={key} className="tblock">
-            <div className="state-grid">
-              <StateCard title="Где стою" items={state.stand} />
-              <StateCard title="В движении" items={state.motion}>
-                {(quests.length > 0 || habits.length > 0) && (
-                  <div className="life-in-motion">
-                    {quests.length > 0 && <QuestRows quests={quests} compact />}
-                    {habits.length > 0 && (
-                      <div className="mini-habits">
-                        {habits.map((h) => {
-                          const mark = todayDay ? markOf(todayDay, h.title) : undefined;
-                          const due = habitDue(h, today);
-                          return (
-                            <Link key={h.rel} to="/habits" className={`mini-habit ${mark ?? (due ? "due" : "off")}`} title={mark ? `сегодня: ${mark}` : due ? "сегодня ещё не отмечена" : "сегодня не по расписанию"}>
-                              <i /> {h.title} <span className="mono faint">{streak(h.title, life!.days, today)}🔥</span>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
+            {(quests.length > 0 || habits.length > 0) && (
+              <div className="now">
+                <div className="nowhead">Сейчас <Link to="/habits" className="small muted">привычки</Link> <Link to="/quests" className="small muted">квесты</Link></div>
+                {quests.length > 0 && <QuestRows quests={quests} />}
+                {habits.length > 0 && (
+                  <div className="habit-strip">
+                    {habits.map((h) => {
+                      const mark = todayDay ? markOf(todayDay, h.title) : undefined;
+                      const due = habitDue(h, today);
+                      const st = mark ?? (due ? "due" : "off");
+                      return (
+                        <Link key={h.rel} to="/habits" className={`hchip ${st}`}>
+                          <i />
+                          <span className="hname">{h.title}</span>
+                          <span className="hsub">{mark === "done" ? "сделано" : mark === "failed" ? "сорвано" : mark === "skipped" ? "пропущено" : due ? "сегодня" : "не сегодня"}</span>
+                          <span className="mono faint">{streak(h.title, life!.days, today)}🔥</span>
+                        </Link>
+                      );
+                    })}
                   </div>
                 )}
-              </StateCard>
-              <StateCard title="На радаре" items={state.radar} />
-            </div>
-            {state.extra.length > 0 && (
-              <div className="extra-grid">
-                {state.extra.map((s) => (
-                  <details key={s.heading} className="card extra">
-                    <summary>{s.heading}</summary>
-                    <Markdown source={s.md} compact />
-                  </details>
-                ))}
               </div>
             )}
+            <div className="state-stack">
+              <StateBlock title="Где стою" items={state.stand} open />
+              <StateBlock title="В движении" items={state.motion} open />
+              <StateBlock title="На радаре" items={state.radar} />
+              {state.extra.map((x) => <StateBlock key={x.heading} title={x.heading} items={[{ heading: x.heading, md: x.md }]} />)}
+            </div>
             {state.notes && <div className="small muted notes"><Markdown source={state.notes} compact /></div>}
           </section>
         );
@@ -442,18 +437,25 @@ function Folder({ name, count, unread, children }: { name: string; count: number
   );
 }
 
-function StateCard({ title, items, children }: { title: string; items: { heading: string; md: string }[]; children?: ReactNode }) {
+/**
+ * One part of the overview, full width and foldable. Three narrow columns of
+ * long Russian bullets were unreadable; a stack the width of the page is not.
+ */
+function StateBlock({ title, items, open }: { title: string; items: { heading: string; md: string }[]; open?: boolean }) {
+  if (items.length === 0) return null;
+  const n = items.reduce((a, s) => a + (s.md.match(/^\s*[-*] /gm)?.length ?? 0), 0);
   return (
-    <div className="card state-card">
-      <h3>{title}</h3>
-      {items.length === 0 && !children && <div className="small faint">Пусто.</div>}
+    <details className="card state-block" open={open}>
+      <summary>
+        <span className="stitle">{title}</span>
+        {n > 0 && <span className="n">{n}</span>}
+      </summary>
       {items.map((s) => (
         <div key={s.heading} className="state-part">
           {sectionSuffix(s.heading) && <div className="eyebrow">{sectionSuffix(s.heading)}</div>}
           <Markdown source={s.md} compact />
         </div>
       ))}
-      {children}
-    </div>
+    </details>
   );
 }
