@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
 import { questMinutes, questXp, type Quest } from "../lib/life";
@@ -40,12 +41,12 @@ export default function QuestRows({ quests, onClose, compact }: { quests: Quest[
               className={`tbtn ${running ? "on" : ""}`}
               title={running ? "остановить и записать время" : "запустить таймер"}
               disabled={!!timer && !running}
-              onClick={() => (running ? void stopTimer() : startTimer(q.title))}
+              onClick={() => (running ? stopTimer() : startTimer(q.title))}
             >
               {running ? "■" : "▶"}
             </button>
             <div style={{ minWidth: 0 }}>
-              <div className="name">{q.title}</div>
+              <div className="name"><Link to={`/quest/${encodeURIComponent(q.rel)}`}>{q.title}</Link></div>
               <div className="sub">
                 {q.theme ? themeLabel(q.theme) : "без темы"}
                 {q.project ? ` · ${q.project}` : ""}

@@ -269,6 +269,46 @@ export function serializeQuest(q: Omit<Quest, "rel">): string {
 }
 
 /** Minutes logged for a quest across all days. Sessions under the minimum do not count. */
+/** One line of a quest's own journal: what was done, and how long it took. */
+export interface QuestEntry {
+  date: string;
+  minutes: number;
+  note: string;
+}
+
+const QUEST_LOG_HEAD = "## Журнал";
+
+/** The journal lives in the quest file, under `## Журнал`, newest last. */
+export function questJournal(body: string): QuestEntry[] {
+  const at = body.indexOf(QUEST_LOG_HEAD);
+  if (at < 0) return [];
+  const out: QuestEntry[] = [];
+  for (const line of body.slice(at + QUEST_LOG_HEAD.length).split(/\r?\n/)) {
+    const m = line.match(/^\s*-\s*(\d{4}-\d{2}-\d{2})\s*·\s*(\d+)\s*мин\s*—\s*(.*)$/);
+    if (m) out.push({ date: m[1], minutes: Number(m[2]), note: m[3].trim() });
+  }
+  return out;
+}
+
+/** Everything above the journal: the quest's own description. */
+export function questDescription(body: string): string {
+  const at = body.indexOf(QUEST_LOG_HEAD);
+  return (at < 0 ? body : body.slice(0, at)).trim();
+}
+
+export function withQuestEntry(body: string, e: QuestEntry): string {
+  const line = `- ${e.date} · ${e.minutes} мин — ${e.note.replace(/\s+/g, " ").trim()}`;
+  const at = body.indexOf(QUEST_LOG_HEAD);
+  if (at < 0) return `${body.trim()}\n\n${QUEST_LOG_HEAD}\n${line}\n`;
+  return `${body.replace(/\s+$/, "")}\n${line}\n`;
+}
+
+export function withQuestDescription(body: string, description: string): string {
+  const at = body.indexOf(QUEST_LOG_HEAD);
+  const tail = at < 0 ? "" : "\n\n" + body.slice(at).trim() + "\n";
+  return description.trim() + tail;
+}
+
 export function questMinutes(title: string, days: Iterable<Day>): number {
   let n = 0;
   for (const d of days) for (const s of d.sessions) if (s.quest === title && s.minutes >= XP.questMinMinutes) n += s.minutes;

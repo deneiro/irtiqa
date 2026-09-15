@@ -6,13 +6,14 @@ import type { Scan, Vault } from "./lib/types";
 import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
 import { buildIndex, type SearchDoc } from "./lib/search";
-import { buildLife, dayRel, emptyDay, serializeDay, type Day, type Life } from "./lib/life";
+import { buildLife, dayRel, emptyDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
 import { todayStr } from "./lib/dates";
 import { runCmd, writeText, type CmdResult } from "./lib/fs";
 
 const KEY = "irtiqa.vaultRoot";
 const LANG_KEY = "irtiqa.lang";
 const TIMER_KEY = "irtiqa.timer";
+const PENDING_KEY = "irtiqa.pendingSession";
 export type Lang = "en" | "ru";
 export const DEFAULT_ROOT =
   "/Users/eldar/Library/Mobile Documents/com~apple~CloudDocs/Documents/personal-obsidian";
@@ -33,8 +34,14 @@ interface Store {
   /** One running quest timer, kept in localStorage so a reload does not lose it. */
   timer: { quest: string; startedAt: number } | null;
   startTimer: (quest: string) => void;
-  /** Stop the timer and log the session into today's day file. Returns minutes. */
-  stopTimer: () => Promise<number>;
+  /** Stop the clock. The session is not written yet: it waits for its note. */
+  stopTimer: () => void;
+  /** A finished session waiting to be described. Nothing is logged until it is. */
+  pending: { quest: string; minutes: number } | null;
+  /** Write the waiting session into today's day file and the quest's journal. */
+  commitSession: (note: string) => Promise<void>;
+  /** Throw the waiting session away — a timer started by accident. */
+  discardSession: () => void;
   loading: boolean;
   error: string | null;
   reload: () => Promise<void>;
@@ -135,14 +142,38 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(TIMER_KEY, JSON.stringify(t));
     setTimer(t);
   }, []);
-  const stopTimer = useCallback(async () => {
-    if (!timer) return 0;
-    const minutes = Math.round((Date.now() - timer.startedAt) / 60000);
+  const [pending, setPending] = useState<{ quest: string; minutes: number } | null>(() => {
+    try { const raw = localStorage.getItem(PENDING_KEY); return raw ? (JSON.parse(raw) as { quest: string; minutes: number }) : null; } catch { return null; }
+  });
+
+  const stopTimer = useCallback(() => {
+    if (!timer) return;
+    const minutes = Math.max(1, Math.round((Date.now() - timer.startedAt) / 60000));
     localStorage.removeItem(TIMER_KEY);
     setTimer(null);
-    if (minutes > 0) await updateToday((d) => ({ ...d, sessions: [...d.sessions, { quest: timer.quest, minutes }] }));
-    return minutes;
-  }, [timer, updateToday]);
+    const p = { quest: timer.quest, minutes };
+    localStorage.setItem(PENDING_KEY, JSON.stringify(p));
+    setPending(p);
+  }, [timer]);
+
+  const discardSession = useCallback(() => {
+    localStorage.removeItem(PENDING_KEY);
+    setPending(null);
+  }, []);
+
+  const commitSession = useCallback(async (note: string) => {
+    if (!pending) return;
+    const { quest, minutes } = pending;
+    await updateToday((d) => ({ ...d, sessions: [...d.sessions, { quest, minutes }] }));
+    const q = life?.quests.find((x) => x.title === quest);
+    if (q) {
+      const body = withQuestEntry(q.body, { date: todayStr(), minutes, note });
+      await saveText(q.rel, serializeQuest({ ...q, body }));
+    }
+    localStorage.removeItem(PENDING_KEY);
+    setPending(null);
+    await reload();
+  }, [pending, updateToday, life, saveText, reload]);
   const commitVault = useCallback(
     async (paths: string[], message: string): Promise<CmdResult | null> => {
       if (!inTauri) return null;
@@ -153,7 +184,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [root],
   );
 
-  const value: Store = { root, setRoot, vault, index, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
+  const value: Store = { root, setRoot, vault, index, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
