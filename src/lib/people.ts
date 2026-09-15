@@ -75,3 +75,43 @@ export function isAuthor(page: Page): boolean {
   const c = typeof page.fm.connection === "string" ? page.fm.connection : "";
   return AUTHOR_RE.test(c.trim());
 }
+
+/**
+ * Two things Eldar sorts people by in his head but the vault never stored:
+ * what kind of tie it is, and how close it is on his own 1–10 scale. Both are
+ * his to set; nothing here guesses them once they are written down.
+ */
+export const CATEGORIES = ["семья", "родня", "лучший друг", "друг", "знакомый", "коллега", "наставник", "экс", "автор"] as const;
+export type Category = (typeof CATEGORIES)[number];
+
+export function categoryOf(page: Page): Category | undefined {
+  const raw = typeof page.fm.category === "string" ? page.fm.category.trim().toLowerCase() : "";
+  const known = CATEGORIES.find((c) => c === raw);
+  if (known) return known;
+  return undefined;
+}
+
+export function closenessOf(page: Page): number | undefined {
+  const v = Number(page.fm.closeness);
+  return Number.isFinite(v) && v > 0 && v <= 10 ? Math.round(v) : undefined;
+}
+
+/** Best guess for a page that has never been sorted, used only to seed the field. */
+export function guessCategory(page: Page): Category {
+  const c = (typeof page.fm.connection === "string" ? page.fm.connection : "").toLowerCase();
+  const close = closenessOf(page) ?? 0;
+  if (isAuthor(page)) return "автор";
+  if (/бывш/.test(c)) return "экс";
+  if (page.theme === "Family & relationship") {
+    // "дядя (брат отца)" names a brother but is not one: the relative wins.
+    if (/(дяд|тёт|тет|куда|племян|двоюродн|родственник)/.test(c)) return "родня";
+    if (/(мать|отец|брат|сестр|сын|дочь|мама|папа|жена|муж)/.test(c)) return "семья";
+    return "родня";
+  }
+  if (/наставник/.test(c)) return "наставник";
+  if (/(коллег|партнёр|партнер|студент|ученик|ученица|преподавател|инвестор|админист)/.test(c)) return "коллега";
+  if (close >= 9 || /лучший друг/.test(c)) return "лучший друг";
+  // "познакомил" is not "знакомый" — match the noun, not the verb.
+  if (/знаком(ый|ая)/.test(c)) return "знакомый";
+  return "друг";
+}

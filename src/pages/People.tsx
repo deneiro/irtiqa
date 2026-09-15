@@ -7,7 +7,7 @@ import { pageUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
-import { contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor } from "../lib/people";
+import { CATEGORIES, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, type Category } from "../lib/people";
 import { themeSections } from "../lib/overview";
 import { safeFilename } from "../lib/life";
 
@@ -21,7 +21,8 @@ export default function PeoplePage() {
   const [q, setQ] = useState("");
   const [theme, setTheme] = useState("");
   const [sort, setSort] = useState<Sort>("name");
-  const [showAuthors, setShowAuthors] = useState(false);
+  const [cats, setCats] = useState<Set<Category>>(new Set());
+  const [near, setNear] = useState<string>("");
   const nav = useNavigate();
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -67,10 +68,12 @@ export default function PeoplePage() {
   const people = useMemo(
     () =>
       v.pages
-        .filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && (showAuthors || !isAuthor(p)))
+        .filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_"))
         .map((p) => {
           const c = contactsOf(p);
           const open = debtsFor(p, life?.debts ?? []).filter((d) => !d.closed);
+          const cat = categoryOf(p) ?? (isAuthor(p) ? ("автор" as Category) : undefined);
+          const close = closenessOf(p);
           return {
             p,
             c,
@@ -79,7 +82,16 @@ export default function PeoplePage() {
             bday: daysToBirthday(c.birthday, today),
             debt: open.reduce((s, d) => s + (d.direction === "я должен" ? -d.amount : d.amount), 0),
             connection: typeof p.fm.connection === "string" ? p.fm.connection : "",
+            cat,
+            close,
           };
+        })
+        .filter(({ cat }) => (cats.size ? (cat ? cats.has(cat) : false) : cat !== "автор"))
+        .filter(({ close }) => {
+          if (!near) return true;
+          if (near === "—") return close === undefined;
+          const min = Number(near);
+          return close !== undefined && close >= min;
         })
         .filter(({ p }) => !theme || p.theme === theme)
         .filter(({ p, connection }) => !q || p.title.toLowerCase().includes(q.toLowerCase()) || p.aliases.some((a) => a.toLowerCase().includes(q.toLowerCase())) || connection.toLowerCase().includes(q.toLowerCase()))
@@ -88,7 +100,7 @@ export default function PeoplePage() {
           if (sort === "birthday") return (a.bday ?? 1e9) - (b.bday ?? 1e9);
           return a.p.title.localeCompare(b.p.title);
         }),
-    [v, life, q, theme, sort, today, showAuthors],
+    [v, life, q, theme, sort, today, cats, near],
   );
 
   const soon = people.filter((x) => x.bday !== undefined && x.bday <= 30).sort((a, b) => a.bday! - b.bday!);
@@ -134,17 +146,31 @@ export default function PeoplePage() {
           <option value="contact">давно не общались</option>
           <option value="birthday">ближайшие дни рождения</option>
         </select>
-        <label className="small muted row" style={{ gap: 6, marginLeft: "auto" }}><input type="checkbox" checked={showAuthors} onChange={(e) => setShowAuthors(e.target.checked)} /> показать авторов источников</label>
-        <span className="small faint">{people.length}</span>
+        <span className="small faint" style={{ marginLeft: "auto" }}>{people.length}</span>
+      </div>
+
+      <div className="row wrap filters">
+        <span className="small muted">кто:</span>
+        {CATEGORIES.map((c) => (
+          <button key={c} className={`chip link ${cats.has(c) ? "on" : ""}`} onClick={() => setCats((s) => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; })}>{c}</button>
+        ))}
+        {cats.size > 0 && <button className="chip link" onClick={() => setCats(new Set())}>сбросить</button>}
+      </div>
+      <div className="row wrap filters">
+        <span className="small muted">близость:</span>
+        {["10", "9", "8", "7", "5", "—"].map((n) => (
+          <button key={n} className={`chip link ${near === n ? "on" : ""}`} onClick={() => setNear(near === n ? "" : n)}>{n === "—" ? "не указана" : n === "10" ? "10" : `${n}+`}</button>
+        ))}
       </div>
       <table className="tbl">
-        <thead><tr><th>{t("col_name")}</th><th>{t("col_connection")}</th><th>{t("col_theme")}</th><th>контакт</th><th>общались</th><th style={{ textAlign: "right" }}>долг</th></tr></thead>
+        <thead><tr><th>{t("col_name")}</th><th>кто</th><th style={{ textAlign: "right" }}>близость</th><th>{t("col_connection")}</th><th>контакт</th><th>общались</th><th style={{ textAlign: "right" }}>долг</th></tr></thead>
         <tbody>
-          {people.map(({ p, links, since, debt, connection }) => (
+          {people.map(({ p, links, since, debt, connection, cat, close }) => (
             <tr key={p.rel}>
               <td><Link to={pageUrl(p)} style={{ fontWeight: 500 }}>{p.title}</Link></td>
+              <td><span className="chip c" style={{ ["--c" as string]: themeColor(p.theme) }} title={p.theme ? themeLabel(p.theme) : ""}>{cat ?? "—"}</span></td>
+              <td className="mono" style={{ textAlign: "right" }}>{close ?? ""}</td>
               <td className="muted">{connection || "—"}</td>
-              <td><span className="chip c" style={{ ["--c" as string]: themeColor(p.theme) }}>{p.theme ? themeLabel(p.theme) : "—"}</span></td>
               <td>
                 <span className="row" style={{ gap: 4 }}>
                   {links.map((l) => <button key={l.key} className="btn small ghost" title={l.url} onClick={() => void openExternal(l.url)}>{l.label}</button>)}

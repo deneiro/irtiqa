@@ -599,3 +599,5 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .addrow.paydebt { grid-template-columns: auto 120px 160px auto auto; margin-top: 10px; }
 .pdebts { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--hair); }
 .pdebts summary { cursor: pointer; }
+.filters { gap: 6px; margin-bottom: 8px; align-items: center; }
+.filters .small.muted { width: 74px; flex: none; }

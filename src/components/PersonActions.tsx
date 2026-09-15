@@ -8,7 +8,7 @@ import { setBody, setFrontmatterKeys } from "../lib/frontmatter";
 import { planRename, planSummary } from "../lib/renamePerson";
 import { renameFile } from "../lib/fs";
 import { rawPageText } from "../lib/rawpage";
-import { CONTACT_KEYS, CONTACT_LABELS, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, type Contacts } from "../lib/people";
+import { CATEGORIES, CONTACT_KEYS, CONTACT_LABELS, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, type Contacts } from "../lib/people";
 import { eventUrl, eventsFor } from "../lib/events";
 import { debtLeft } from "../lib/life";
 import { mediaUrl } from "../lib/native";
@@ -31,6 +31,8 @@ export default function PersonActions({ page }: { page: Page }) {
     how: typeof page.fm.how_we_met === "string" ? page.fm.how_we_met : "",
     aliases: page.aliases.join(", "),
     tags: page.tags.join(", "),
+    category: categoryOf(page) ?? "",
+    closeness: String(closenessOf(page) ?? ""),
     body: page.body.replace(/^\s*# [^\n]*\n/, "").trim(),
   });
   useEffect(() => {
@@ -40,6 +42,8 @@ export default function PersonActions({ page }: { page: Page }) {
       how: typeof page.fm.how_we_met === "string" ? page.fm.how_we_met : "",
       aliases: page.aliases.join(", "),
       tags: page.tags.join(", "),
+      category: categoryOf(page) ?? "",
+      closeness: String(closenessOf(page) ?? ""),
       body: page.body.replace(/^\s*# [^\n]*\n/, "").trim(),
     });
   }, [page]);
@@ -63,11 +67,14 @@ export default function PersonActions({ page }: { page: Page }) {
     try {
       const raw = rawPageText(vault, page.rel);
       if (raw === null) throw new Error("не нашёл исходный текст страницы");
+      const closeness = Number(fields.closeness);
       const withFm = setFrontmatterKeys(raw, {
         connection: fields.connection.trim() || null,
         how_we_met: fields.how.trim() || null,
         aliases: list(fields.aliases),
         tags: list(fields.tags),
+        category: fields.category || null,
+        closeness: Number.isFinite(closeness) && closeness > 0 && closeness <= 10 ? String(Math.round(closeness)) : null,
         updated: today,
       });
       const heading = page.body.match(/^\s*# ([^\n]*)\n/);
@@ -172,6 +179,15 @@ export default function PersonActions({ page }: { page: Page }) {
               {rename.error ?? planSummary(rename)}
             </div>
           )}
+          <label className="cfield"><span>кто он тебе</span>
+            <select className="text" value={fields.category} onChange={(e) => setFields({ ...fields, category: e.target.value })}>
+              <option value="">не указано</option>
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </label>
+          <label className="cfield"><span>близость 1–10</span>
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} inputMode="numeric" value={fields.closeness} onChange={(e) => setFields({ ...fields, closeness: e.target.value })} />
+          </label>
           <label className="cfield"><span>связь</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.connection} onChange={(e) => setFields({ ...fields, connection: e.target.value })} /></label>
           <label className="cfield"><span>как познакомились</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.how} onChange={(e) => setFields({ ...fields, how: e.target.value })} /></label>
           <label className="cfield"><span>другие имена, через запятую</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.aliases} onChange={(e) => setFields({ ...fields, aliases: e.target.value })} /></label>
