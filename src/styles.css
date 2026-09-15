@@ -697,3 +697,13 @@ a.chip { text-decoration: none; }
 .auditprev { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
 textarea.text { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r); padding: 7px 10px; color: var(--ink); font: inherit; resize: vertical; }
 textarea.text:focus { border-color: var(--hair-2); outline: none; }
+.hbar { display: grid; grid-template-columns: 130px 1fr 90px; align-items: center; gap: 10px; padding: 5px 0; }
+.hbar .hname { font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hbar .htrack { height: 8px; background: var(--raised); border-radius: 4px; overflow: hidden; }
+.hbar .htrack i { display: block; height: 100%; background: var(--c, var(--accent)); }
+.hbar .mono { text-align: right; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.scen { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.scencell { background: var(--raised); border-radius: var(--r); padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; }
+.scencell b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
+.scencell span { font-size: 11px; color: var(--faint); }
+.bnum b.ok { color: var(--success); }

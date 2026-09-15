@@ -19,6 +19,7 @@ import { HalalSection, NamesSection, QuranSection } from "../components/QuranSec
 import { BodySection, MedicalSection } from "../components/BodySections";
 import { CircleSection, InfluenceSection } from "../components/CircleSections";
 import SelfSection from "../components/SelfSection";
+import HorizonSection from "../components/HorizonSection";
 import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
@@ -201,6 +202,8 @@ export default function ThemePage() {
         return <InfluenceSection key={key} theme={theme} />;
       case "self":
         return <SelfSection key={key} />;
+      case "horizon":
+        return <HorizonSection key={key} />;
       case "nutrition": {
         const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
         const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();
