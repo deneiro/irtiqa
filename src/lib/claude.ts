@@ -41,8 +41,9 @@ export function buildPrompt(op: OpKind, arg: string, today: string): { title: st
   }
 }
 
-export function claudeArgs(prompt: string, resume: string | undefined): string[] {
+export function claudeArgs(prompt: string, resume: string | undefined, agent?: string): string[] {
   const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits", "--allowedTools", ...ALLOWED_TOOLS];
+  if (agent) args.push("--agent", agent);
   if (resume) args.push("--resume", resume);
   return args;
 }
@@ -86,12 +87,12 @@ export function parseLine(line: string): { blocks: Block[]; sessionId?: string }
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 /** Start a run; the run object is added to the runs store and updated as lines arrive. */
-export async function startRun(root: string, op: OpKind, arg: string, today: string, resume: string | undefined): Promise<string> {
+export async function startRun(root: string, op: OpKind, arg: string, today: string, resume: string | undefined, agent?: string): Promise<string> {
   const { title, prompt } = buildPrompt(op, arg, today);
   const id = uid();
-  const run: Run = { id, op, title, prompt, status: "running", startedAt: Date.now(), endedAt: undefined, blocks: [], sessionId: undefined, exitCode: undefined };
+  const run: Run = { id, op, title, prompt, status: "running", startedAt: Date.now(), endedAt: undefined, blocks: [], sessionId: undefined, exitCode: undefined, agent };
   addRun(run);
-  const args = claudeArgs(prompt, resume);
+  const args = claudeArgs(prompt, resume, agent);
   const onLine = (stream: string, line: string) => {
     if (stream === "err") { if (line.trim()) patchRun(id, (r) => ({ ...r, blocks: [...r.blocks, { kind: "note", text: line.trim().slice(0, 300) }] })); return; }
     const { blocks, sessionId } = parseLine(line);

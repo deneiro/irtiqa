@@ -7,6 +7,7 @@ import { inTauri } from "../lib/native";
 import { sourceTarget } from "../lib/vault";
 import { cancelRun, startRun } from "../lib/claude";
 import { useRuns, type OpKind, type Run } from "../lib/claudeRuns";
+import { AGENTS, agentLabel } from "../lib/agents";
 
 function dur(r: Run): string {
   const ms = (r.endedAt ?? Date.now()) - r.startedAt;
@@ -20,6 +21,7 @@ export default function ClaudePage() {
   const today = todayStr();
   const [question, setQuestion] = useState("");
   const [rawPick, setRawPick] = useState("");
+  const [agent, setAgent] = useState(() => localStorage.getItem("irtiqa.agent") || "shturman");
   const [follow, setFollow] = useState(true);
   const running = runs.find((r) => r.status === "running");
   const lastAsk = runs.find((r) => r.op === "ask" && r.sessionId && r.status === "done");
@@ -34,7 +36,7 @@ export default function ClaudePage() {
   const go = async (op: OpKind, arg = "") => {
     if (running) return;
     const resume = op === "ask" && follow && lastAsk ? lastAsk.sessionId : undefined;
-    await startRun(root, op, arg, today, resume);
+    await startRun(root, op, arg, today, resume, op === "ask" ? agent : undefined);
   };
   const finished = (r: Run) => r.status !== "running";
 
@@ -62,9 +64,16 @@ export default function ClaudePage() {
           <div><b>Привычка месяца</b> — читает профиль, темы, навыки и последние 30 дней и предлагает одну-три привычки. Они появляются во входящих на экране «Привычки», принять или отклонить решаешь ты.</div>
           <div><b>Дайджест недели</b> — читает последние семь дней, обновляет профиль и обзоры тем, предлагает привычки и квесты по тому, что видно за неделю.</div>
           <div><b>Проверка vault</b> — ищет нарушения схемы, битые ссылки, сироты и устаревшие утверждения. Только отчёт, ничего не меняет.</div>
-          <div><b>Вопрос</b> — Claude читает vault и отвечает со ссылками на страницы. Ничего не пишет, пока не попросишь.</div>
+          <div><b>Вопрос</b> — отвечает выбранный эксперт: восемь по темам и «Штурман», который видит весь vault. Каждый читает свою тему и отвечает со ссылками на страницы. Их описания лежат в самом vault, в <code>.claude/agents/</code>, и работают так же из терминала: <code>claude --agent zdorovie</code>.</div>
         </div>
-        <form className="row" style={{ marginTop: 12, gap: 8, alignItems: "flex-start" }} onSubmit={(e) => { e.preventDefault(); if (question.trim()) { void go("ask", question.trim()); setQuestion(""); } }}>
+        <div className="row wrap agents">
+          <span className="small muted">кого спрашиваешь:</span>
+          {AGENTS.map((a) => (
+            <button key={a.slug} className={`chip link ${agent === a.slug ? "on" : ""}`} title={a.theme ?? "видит весь vault и маршрутизирует"}
+              onClick={() => { setAgent(a.slug); localStorage.setItem("irtiqa.agent", a.slug); }}>{a.label}</button>
+          ))}
+        </div>
+        <form className="row" style={{ marginTop: 8, gap: 8, alignItems: "flex-start" }} onSubmit={(e) => { e.preventDefault(); if (question.trim()) { void go("ask", question.trim()); setQuestion(""); } }}>
           <textarea className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} rows={2} placeholder="Вопрос к vault: что я знаю о…, что источники говорят про…, что делать с…" value={question} onChange={(e) => setQuestion(e.target.value)} style={{ flex: 1, resize: "vertical" }} disabled={!!running}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} />
           <div className="stack" style={{ gap: 6 }}>
@@ -81,7 +90,7 @@ export default function ClaudePage() {
           <div className="row" style={{ gap: 10 }}>
             <span className={`rdot ${r.status}`} />
             <b>{r.title}</b>
-            <span className="small muted">{r.op} · {dur(r)}{r.blocks.map((b) => (b.kind === "result" && b.costUsd !== undefined ? ` · $${b.costUsd.toFixed(2)}` : "")).join("")}</span>
+            <span className="small muted">{r.agent ? agentLabel(r.agent) : r.op} · {dur(r)}{r.blocks.map((b) => (b.kind === "result" && b.costUsd !== undefined ? ` · $${b.costUsd.toFixed(2)}` : "")).join("")}</span>
             <span className="grow" />
             {r.status === "running" ? <button className="btn small ghost" onClick={() => void cancelRun(r.id)}>остановить</button>
               : <button className="btn small ghost" onClick={() => void reload()} title="перечитать vault">↻</button>}

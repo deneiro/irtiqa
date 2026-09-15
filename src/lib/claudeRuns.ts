@@ -24,6 +24,8 @@ export interface Run {
   blocks: Block[];
   sessionId: string | undefined;
   exitCode: number | undefined;
+  /** Which expert answered, when one was named. */
+  agent: string | undefined;
 }
 
 let runs: Run[] = [];
