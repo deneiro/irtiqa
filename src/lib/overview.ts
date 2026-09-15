@@ -9,7 +9,7 @@ import { asList } from "./vault";
 export interface OverviewSection { heading: string; md: string }
 
 export type SectionKey =
-  | "state" | "resource" | "wiki" | "people" | "authors" | "projects" | "profile"
+  | "state" | "resource" | "wiki" | "people" | "projects" | "profile"
   | "tools" | "template" | "summary" | "reverend" | "habits" | "finance" | "events" | "skills"
   | "nutrition" | "sport";
 

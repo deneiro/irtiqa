@@ -57,7 +57,6 @@ export default function ThemePage() {
   const wikiPages = useMemo(() => pages.filter((p) => p.zone === "wiki" && !p.project && p.file !== "_Overview"), [pages]);
   const persons = useMemo(() => pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_")), [pages]);
   const circle = persons.filter((p) => !isAuthor(p));
-  const authors = persons.filter(isAuthor);
   const projects = useMemo(() => {
     const m = new Map<string, Page[]>();
     for (const p of pages) if (p.project) m.set(p.project, [...(m.get(p.project) ?? []), p]);
@@ -327,17 +326,6 @@ export default function ThemePage() {
             {circle.length === 0 && <div className="empty">Людей в этой теме нет.</div>}
           </section>
         );
-      case "authors":
-        return authors.length ? (
-          <section key={key} className="tblock">
-            <h2 className="section">Голоса <span className="n">{authors.length}</span></h2>
-            <div className="row wrap" style={{ gap: 6 }}>
-              {authors.sort((a, b) => a.title.localeCompare(b.title)).map((p) => (
-                <Link key={p.rel} to={pageUrl(p)} className="chip" title={typeof p.fm.connection === "string" ? p.fm.connection : ""}>{p.title}</Link>
-              ))}
-            </div>
-          </section>
-        ) : null;
       case "projects":
         return (
           <section key={key} className="tblock">
