@@ -17,6 +17,7 @@ import EventForm from "../components/EventForm";
 import SkillsSection from "../components/SkillsSection";
 import { HalalSection, NamesSection, QuranSection } from "../components/QuranSections";
 import { BodySection, MedicalSection } from "../components/BodySections";
+import { CircleSection, InfluenceSection } from "../components/CircleSections";
 import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
@@ -193,6 +194,10 @@ export default function ThemePage() {
         return <BodySection key={key} />;
       case "medical":
         return <MedicalSection key={key} />;
+      case "circle":
+        return <CircleSection key={key} theme={theme} />;
+      case "influence":
+        return <InfluenceSection key={key} theme={theme} />;
       case "nutrition": {
         const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
         const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();
