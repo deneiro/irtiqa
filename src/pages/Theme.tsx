@@ -9,7 +9,7 @@ import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
 import { addDays, plural, todayStr, monthOfToday } from "../lib/dates";
-import { LATE_MEAL_HOUR, habitDue, isLateMeal, markOf, questMinutes, streak } from "../lib/life";
+import { LATE_MEAL_HOUR, habitDue, isLateMeal, liveBalance, markOf, questMinutes, streak } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
@@ -252,7 +252,7 @@ export default function ThemePage() {
         );
       case "finance": {
         const accounts = life?.accounts ?? [];
-        const total = accounts.reduce((s, a) => s + a.balance, 0);
+        const total = accounts.reduce((s, a) => s + liveBalance(a, life?.days ?? new Map()), 0);
         const subs = (life?.subscriptions ?? []).reduce((s, x) => s + x.amount, 0);
         const open = (life?.debts ?? []).filter((d) => !d.closed);
         const ym = monthOfToday(today);

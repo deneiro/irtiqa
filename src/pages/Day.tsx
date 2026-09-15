@@ -5,8 +5,8 @@ import { useT } from "../lib/i18n";
 import { confirmAction, inTauri } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import {
-  ACCOUNTS_REL, HABIT_DIR, LATE_MEAL_HOUR, applyDayToAccounts, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal,
-  markOf, safeFilename, serializeAccounts, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
+  HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal,
+  markOf, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
   type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
 } from "../lib/life";
 import type { CmdResult } from "../lib/fs";
@@ -100,7 +100,6 @@ export default function DayPage() {
       if (!vault || !life) return null;
       const paths: string[] = [];
       let logText = vault.logText;
-      let accounts = life.accounts;
       let last: Day | null = null;
       for (const d of days) {
         const closed = closeDay(d, life.habits);
@@ -108,14 +107,6 @@ export default function DayPage() {
         if (closed.date === today) lastWritten.current = ser;
         await saveText(dayRel(closed.date), ser);
         paths.push(dayRel(closed.date));
-        if (closed.txs.some((t) => t.account.trim())) {
-          const r = applyDayToAccounts(accounts ?? [], closed);
-          if (r.changed) {
-            accounts = r.rows;
-            await saveText(ACCOUNTS_REL, serializeAccounts(r.rows, closed.date));
-            if (!paths.includes(ACCOUNTS_REL)) paths.push(ACCOUNTS_REL);
-          }
-        }
         // The app owns its own `day` lines: refresh one in place, append a new one.
         const line = dayLogLine(closed, life.habits);
         const head = line.split(" | ")[0];
@@ -146,17 +137,12 @@ export default function DayPage() {
    */
   const reopen = async () => {
     if (!life || closing) return;
-    if (!(await confirmAction(`Открыть день ${draft.date} заново? Баланс счетов вернётся к состоянию до закрытия, строка в логе обновится при следующем закрытии.`))) return;
+    if (!(await confirmAction(`Открыть день ${draft.date} заново? Строка в логе обновится при следующем закрытии.`))) return;
     setClosing(true);
     try {
       const open = { ...draft, closed: false };
       await persist(open);
       setDraft(open);
-      if (draft.txs.some((t) => t.account.trim())) {
-        const inverse = { ...draft, txs: draft.txs.map((t) => ({ ...t, amount: -t.amount })) };
-        const r = applyDayToAccounts(life.accounts ?? [], inverse);
-        if (r.changed) await saveText(ACCOUNTS_REL, serializeAccounts(r.rows, draft.date));
-      }
       setReport(null);
       setSaveError(null);
       await reload();

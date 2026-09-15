@@ -465,6 +465,22 @@ export function serializeAccounts(rows: AccountRow[], date: string): string {
 }
 
 /** Apply a day's transactions to account balances. Unknown accounts get a row. */
+/**
+ * The stored balance is an anchor — what the account held at the START of
+ * `asOf`. The live balance adds every transaction from that day onward, so a
+ * expense shows up the moment it is written instead of waiting for the day to
+ * close. Nothing is ever applied twice, because nothing is applied at all.
+ */
+export function liveBalance(a: AccountRow, days: Map<string, Day>): number {
+  let sum = a.balance;
+  for (const [date, d] of days) {
+    if (a.asOf && date < a.asOf) continue;
+    for (const t of d.txs) if (t.account.trim() === a.name) sum += t.amount;
+  }
+  return sum;
+}
+
+/** @deprecated balances are computed by liveBalance; kept for older day files. */
 export function applyDayToAccounts(rows: AccountRow[], d: Day): { rows: AccountRow[]; changed: boolean } {
   const next = rows.map((r) => ({ ...r }));
   let changed = false;

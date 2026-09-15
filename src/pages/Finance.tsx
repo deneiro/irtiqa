@@ -6,7 +6,7 @@ import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
 import { addDays, todayStr } from "../lib/dates";
 import {
-  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, monthOf, serializeAccounts, serializeDebts, serializeSubscriptions,
+  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, liveBalance, monthOf, serializeAccounts, serializeDebts, serializeSubscriptions,
   txsInMonth, type AccountRow, type Day, type Debt, type Subscription,
 } from "../lib/life";
 
@@ -66,16 +66,22 @@ export default function FinancePage() {
   const addAccount = () => {
     const name = acc.name.trim();
     if (!name || accounts.some((a) => a.name === name)) return;
-    void saveAccounts([...accounts, { name, kind: acc.kind.trim(), balance: Number(acc.balance.replace(/\s/g, "")) || 0, asOf: today }]);
+    void saveAccounts([...accounts, { name, kind: acc.kind.trim(), balance: (Number(acc.balance.replace(/\s/g, "")) || 0) - movedToday(name), asOf: today }]);
     setAcc({ name: "", kind: "", balance: "" });
   };
+  /** Today's movement on one account — what separates "now" from "start of day". */
+  const movedToday = (name: string) =>
+    (days.get(today)?.txs ?? []).filter((t) => t.account.trim() === name).reduce((s, t) => s + t.amount, 0);
+
+  /** The user types what is on the card right now; the file stores the start of the day. */
   const setBalance = (a: AccountRow) => {
     const v = Number((editBal[a.name] ?? "").replace(/\s/g, ""));
     if (!Number.isFinite(v)) return;
-    void saveAccounts(accounts.map((x) => (x.name === a.name ? { ...x, balance: v, asOf: today } : x)));
+    void saveAccounts(accounts.map((x) => (x.name === a.name ? { ...x, balance: v - movedToday(a.name), asOf: today } : x)));
     setEditBal({ ...editBal, [a.name]: "" });
   };
-  const total = accounts.reduce((s, a) => s + a.balance, 0);
+  const live = (a: AccountRow) => liveBalance(a, days);
+  const total = accounts.reduce((s, a) => s + live(a), 0);
   const removeAccount = async (a: AccountRow) => {
     if (await confirmAction(`Убрать счёт «${a.name}»? Операции в файлах дней останутся.`)) await saveAccounts(accounts.filter((x) => x !== a));
   };
@@ -188,11 +194,11 @@ export default function FinancePage() {
                 {accounts.map((a) => (
                   <tr key={a.name}>
                     <td>{a.name}</td><td className="muted">{a.kind}</td>
-                    <td className="amt mono" style={{ textAlign: "right" }}>{fmt(a.balance)}</td>
-                    <td className="mono muted">{a.asOf}</td>
+                    <td className="amt mono" style={{ textAlign: "right" }}>{fmt(live(a))}</td>
+                    <td className="mono muted" title={`сверено ${a.asOf}: ${fmt(a.balance)}`}>{a.asOf}{live(a) !== a.balance ? ` · было ${fmt(a.balance)}` : ""}</td>
                     <td>
                       <form className="row" onSubmit={(e) => { e.preventDefault(); setBalance(a); }} style={{ gap: 4 }}>
-                        <input className="text" style={{ width: 90 }} placeholder="уточнить" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} />
+                        <input className="text" style={{ width: 90 }} placeholder="сверить" title="Сколько на счёте прямо сейчас" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} />
                         <button className="btn small" type="submit">ок</button>
                         <button className="btn small ghost" type="button" title="убрать счёт" onClick={() => void removeAccount(a)}>×</button>
                       </form>
@@ -208,7 +214,7 @@ export default function FinancePage() {
             <input className="text" placeholder="баланс" value={acc.balance} onChange={(e) => setAcc({ ...acc, balance: e.target.value })} />
             <button className="btn" type="submit">+</button>
           </form>
-          <div className="small faint" style={{ marginTop: 6 }}>Баланс двигают операции дня при его закрытии. «Уточнить» ставит точное число на сегодня.</div>
+          <div className="small faint" style={{ marginTop: 6 }}>Баланс считается сам: сверенное число плюс все операции с этого дня. «Сверить» ставит то, что на счёте прямо сейчас: сегодняшние операции приложение учтёт само.</div>
         </div>
 
         <div className="card">
