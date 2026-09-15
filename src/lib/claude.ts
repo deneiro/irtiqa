@@ -13,6 +13,11 @@ const ALLOWED_TOOLS = ["Bash(git add:*)", "Bash(git commit:*)", "Bash(git status
 
 export function buildPrompt(op: OpKind, arg: string, today: string): { title: string; prompt: string } {
   switch (op) {
+    case "habit":
+      return {
+        title: "Привычка месяца",
+        prompt: `Run the Habit recommendation operation from CLAUDE.md. Today is ${today}. Read the profile, the theme overviews, life/skills, the last 30 files in life/days and every existing file in life/habits. Propose one to three habits as new files in life/habits with status: proposed, each with a theme, a freq, a source pointing at the vault page that argues for it, and a body of two or three sentences saying why this habit and why now, citing the page by name. Never duplicate an existing habit by title or by meaning, including archived ones. Report in Russian: what you proposed and what argued for it.`,
+      };
     case "ingest":
       return {
         title: `Ingest: ${arg.split("/").pop()}`,

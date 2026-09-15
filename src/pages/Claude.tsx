@@ -53,11 +53,13 @@ export default function ClaudePage() {
           </select>
           <button className="btn primary" disabled={!rawPick || !!running} onClick={() => { void go("ingest", rawPick); setRawPick(""); }}>Разобрать</button>
           <span className="grow" />
+          <button className="btn" disabled={!!running} onClick={() => void go("habit")}>Привычка месяца</button>
           <button className="btn" disabled={!!running} onClick={() => void go("digest")}>Дайджест недели</button>
           <button className="btn" disabled={!!running} onClick={() => void go("lint")}>Проверка vault</button>
         </div>
         <div className="ops">
           <div><b>Разобрать источник</b> — берёт файл из папки сырых источников и делает из него страницу знаний в нужной теме: суть, ключевые концепции, что применить. Может предложить привычку или квест.</div>
+          <div><b>Привычка месяца</b> — читает профиль, темы, навыки и последние 30 дней и предлагает одну-три привычки. Они появляются во входящих на экране «Привычки», принять или отклонить решаешь ты.</div>
           <div><b>Дайджест недели</b> — читает последние семь дней, обновляет профиль и обзоры тем, предлагает привычки и квесты по тому, что видно за неделю.</div>
           <div><b>Проверка vault</b> — ищет нарушения схемы, битые ссылки, сироты и устаревшие утверждения. Только отчёт, ничего не меняет.</div>
           <div><b>Вопрос</b> — Claude читает vault и отвечает со ссылками на страницы. Ничего не пишет, пока не попросишь.</div>

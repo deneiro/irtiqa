@@ -4,6 +4,7 @@ import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { WEEKDAYS_RU, addDays, todayStr } from "../lib/dates";
 import { HABIT_DIR, bestStreak, habitDue, habitRate, markOf, safeFilename, serializeHabit, streak, type Habit, type HabitKind, type HabitStatus } from "../lib/life";
+import { Link } from "react-router-dom";
 import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
 import { deleteFile } from "../lib/fs";
@@ -166,7 +167,15 @@ export default function HabitsPage() {
       {groups.proposed.length > 0 && (
         <>
           <h2 className="section">Предложено из vault <span className="n">{groups.proposed.length}</span></h2>
-          <div className="card inbox">{groups.proposed.map((h) => <Row key={h.rel} h={h} />)}</div>
+          <p className="small muted" style={{ marginTop: -4 }}>Claude читает профиль, темы и последние дни и предлагает привычку. Запросить новую — на панели <Link to="/claude">Claude</Link>, кнопка «Привычка месяца».</p>
+          <div className="card inbox">
+            {groups.proposed.map((h) => (
+              <div key={h.rel} className="proposal">
+                <Row h={h} />
+                {h.body.trim() && <div className="why">{h.body.trim()}</div>}
+              </div>
+            ))}
+          </div>
         </>
       )}
 
