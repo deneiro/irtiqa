@@ -6,7 +6,7 @@ import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
 import { addDays, todayStr } from "../lib/dates";
 import {
-  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, liveBalance, monthOf, serializeAccounts, serializeDebts, serializeSubscriptions,
+  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions,
   txsInMonth, type AccountRow, type Day, type Debt, type Subscription,
 } from "../lib/life";
 
@@ -26,7 +26,7 @@ function shiftMonth(ym: string, n: number): string {
 }
 
 export default function FinancePage() {
-  const { vault, life, saveText, reload } = useStore();
+  const { vault, life, saveText, reload, updateToday } = useStore();
   const today = todayStr();
   const [ym, setYm] = useState(monthOf(today));
   const [err, setErr] = useState<string | null>(null);
@@ -111,16 +111,36 @@ export default function FinancePage() {
     const amount = Math.abs(Number(debt.amount.replace(/\s/g, "")));
     if (!whoRaw || !amount) return;
     const who = people.includes(whoRaw) ? `[[${whoRaw}]]` : whoRaw;
-    void saveDebts([...debts, { who, direction: debt.direction, amount, currency: debt.currency, since: today, note: debt.note.trim(), closed: undefined }]);
+    void saveDebts([...debts, { who, direction: debt.direction, amount, paid: 0, currency: debt.currency, since: today, note: debt.note.trim(), closed: undefined }]);
     setDebt({ ...debt, who: "", amount: "", note: "" });
   };
-  const closeDebt = (d: Debt) => void saveDebts(debts.map((x) => (x === d ? { ...x, closed: today } : x)));
-  const askCloseDebt = async (d: Debt) => {
-    if (await confirmAction(`Закрыть долг: ${d.who}, ${fmt(d.amount)} ${d.currency}?`)) closeDebt(d);
+  const openDebts = debts.filter((d) => !d.closed && debtLeft(d) > 0);
+  const owedToMe = openDebts.filter((d) => d.direction === DEBT_THEY_OWE).reduce((s, d) => s + debtLeft(d), 0);
+  const iOwe = openDebts.filter((d) => d.direction === DEBT_I_OWE).reduce((s, d) => s + debtLeft(d), 0);
+  const people_ = debtsByPerson(debts);
+
+  /** Paying a person: oldest debts first, and the money leaves an account today. */
+  const [pay, setPay] = useState<{ who: string; direction: string; amount: string; account: string } | null>(null);
+  const doPay = async () => {
+    if (!pay) return;
+    const amount = Math.abs(Number(pay.amount.replace(/\s/g, "")));
+    if (!amount) return;
+    const r = payPersonDebts(debts, pay.who, pay.direction, amount, today);
+    await saveDebts(r.rows);
+    if (pay.account.trim()) {
+      const sign = pay.direction === DEBT_I_OWE ? -1 : 1;
+      await updateToday((d) => ({
+        ...d,
+        txs: [...d.txs, { amount: sign * r.applied, category: "долг", account: pay.account.trim(), note: `${pay.direction === DEBT_I_OWE ? "отдал" : "вернули"}: ${pay.who}` }],
+      }));
+    }
+    setPay(null);
   };
-  const openDebts = debts.filter((d) => !d.closed);
-  const owedToMe = openDebts.filter((d) => d.direction === DEBT_THEY_OWE).reduce((s, d) => s + d.amount, 0);
-  const iOwe = openDebts.filter((d) => d.direction === DEBT_I_OWE).reduce((s, d) => s + d.amount, 0);
+  const closePerson = async (who: string, direction: string, left: number) => {
+    if (!(await confirmAction(`Закрыть все долги: ${who}, остаток ${fmt(left)} ₸?`))) return;
+    const r = payPersonDebts(debts, who, direction, left, today);
+    await saveDebts(r.rows);
+  };
 
   const accountNames = useMemo(() => [...new Set([...accounts.map((a) => a.name), ...subs.map((s) => s.account)].filter(Boolean))], [accounts, subs]);
 
@@ -247,21 +267,38 @@ export default function FinancePage() {
 
       <div className="card" style={{ marginTop: 16 }}>
         <h3>Долги <span className="n">мне {fmt(owedToMe)} · я {fmt(iOwe)}</span></h3>
-        {openDebts.length > 0 && (
+        {people_.length > 0 && (
           <table className="tbl">
-            <thead><tr><th>кто</th><th>направление</th><th style={{ textAlign: "right" }}>сумма</th><th>с даты</th><th>заметка</th><th /></tr></thead>
+            <thead><tr><th>кто</th><th>направление</th><th style={{ textAlign: "right" }}>остаток</th><th>долгов</th><th>с</th><th /></tr></thead>
             <tbody>
-              {openDebts.map((d, i) => (
-                <tr key={i}>
-                  <td><SourceLink source={d.who} /></td>
-                  <td className={d.direction === DEBT_I_OWE ? "muted" : ""}>{d.direction}</td>
-                  <td className="amt mono" style={{ textAlign: "right" }}>{fmt(d.amount)} {d.currency}</td>
-                  <td className="mono muted">{d.since}</td><td className="muted">{d.note}</td>
-                  <td><button className="btn small ghost" onClick={() => void askCloseDebt(d)}>закрыт</button></td>
+              {people_.map((p) => (
+                <tr key={p.who + p.direction}>
+                  <td><SourceLink source={`[[${p.who}]]`} /></td>
+                  <td className={p.direction === DEBT_I_OWE ? "muted" : ""}>{p.direction}</td>
+                  <td className="amt mono neg" style={{ textAlign: "right" }}>{fmt(p.left)} ₸</td>
+                  <td className="mono muted">{p.count}</td>
+                  <td className="mono muted">{p.oldest}</td>
+                  <td className="row" style={{ gap: 4 }}>
+                    <button className="btn small" onClick={() => setPay({ who: p.who, direction: p.direction, amount: "", account: accountNames[0] ?? "" })}>внести</button>
+                    <button className="btn small ghost" onClick={() => void closePerson(p.who, p.direction, p.left)}>закрыть всё</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        )}
+        {pay && (
+          <form className="addrow paydebt" onSubmit={(e) => { e.preventDefault(); void doPay(); }}>
+            <span className="small muted" style={{ alignSelf: "center" }}>{pay.direction === DEBT_I_OWE ? "отдаю" : "возвращают"}: <b>{pay.who}</b></span>
+            <input className="text" autoFocus autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="сколько" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} />
+            <select className="text" value={pay.account} onChange={(e) => setPay({ ...pay, account: e.target.value })}>
+              <option value="">без операции</option>
+              {accountNames.map((a) => <option key={a} value={a}>{a}</option>)}
+            </select>
+            <button className="btn primary" type="submit">записать</button>
+            <button className="btn ghost" type="button" onClick={() => setPay(null)}>отмена</button>
+            <div className="small faint" style={{ gridColumn: "1 / -1" }}>Сумма пойдёт на самые старые долги этого человека; закрытые уйдут в «Закрытые». Со счётом операция ляжет в сегодняшний день категорией «долг».</div>
+          </form>
         )}
         <form className="addrow debt" onSubmit={(e) => { e.preventDefault(); addDebt(); }}>
           <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="кто (из People или текст)" list="fin-people" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
@@ -278,11 +315,11 @@ export default function FinancePage() {
           <details style={{ marginTop: 10 }}>
             <summary className="small muted" style={{ cursor: "pointer" }}>Закрытые ({debts.filter((d) => d.closed).length})</summary>
             {debts.filter((d) => d.closed).map((d, i) => (
-              <div className="bul small" key={i}><SourceLink source={d.who} /><span className="muted"> · {d.direction} · {fmt(d.amount)} {d.currency} · закрыт {d.closed}</span></div>
+              <div className="bul small" key={i}><SourceLink source={d.who} /><span className="muted"> · {d.direction} · {fmt(d.amount)} {d.currency}{d.note ? ` · ${d.note}` : ""} · закрыт {d.closed}</span></div>
             ))}
           </details>
         )}
-        <div className="small faint" style={{ marginTop: 6 }}>Claude может дописывать строки в этот файл, когда узнаёт о долге из разговора.</div>
+        <div className="small faint" style={{ marginTop: 6 }}>За что именно и когда — на странице человека. Claude может дописывать строки в этот файл, когда узнаёт о долге из разговора.</div>
       </div>
 
       <datalist id="fin-accts">{accountNames.map((a) => <option key={a} value={a} />)}</datalist>

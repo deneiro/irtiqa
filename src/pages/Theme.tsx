@@ -9,7 +9,7 @@ import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
 import { addDays, plural, todayStr, monthOfToday } from "../lib/dates";
-import { LATE_MEAL_HOUR, habitDue, isLateMeal, liveBalance, markOf, questMinutes, streak } from "../lib/life";
+import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, questMinutes, streak } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
@@ -254,7 +254,7 @@ export default function ThemePage() {
         const accounts = life?.accounts ?? [];
         const total = accounts.reduce((s, a) => s + liveBalance(a, life?.days ?? new Map()), 0);
         const subs = (life?.subscriptions ?? []).reduce((s, x) => s + x.amount, 0);
-        const open = (life?.debts ?? []).filter((d) => !d.closed);
+        const open = (life?.debts ?? []).filter((d) => !d.closed && debtLeft(d) > 0);
         const ym = monthOfToday(today);
         let spent = 0, earned = 0;
         for (const [date, d] of life?.days ?? []) if (date.startsWith(ym)) for (const tx of d.txs) { if (tx.amount < 0) spent -= tx.amount; else earned += tx.amount; }

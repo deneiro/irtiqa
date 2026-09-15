@@ -123,11 +123,68 @@ export const DEBT_I_OWE = "я должен";
 export interface Debt {
   who: string; // "[[Person]]" or plain text
   direction: string; // DEBT_THEY_OWE | DEBT_I_OWE
-  amount: number;
+  amount: number; // what was borrowed
+  paid: number; // how much of it has come back
   currency: string;
   since: string;
   note: string;
   closed: string | undefined; // date when settled
+}
+
+export function debtLeft(d: Debt): number {
+  return Math.max(0, d.amount - d.paid);
+}
+
+/** The name a debt row points at, without the wikilink brackets. */
+export function debtWho(d: Debt): string {
+  const m = d.who.match(/^\[\[([^\]|#]+)/);
+  return (m ? m[1] : d.who).trim();
+}
+
+export interface PersonDebt {
+  who: string;
+  direction: string;
+  left: number;
+  count: number;
+  oldest: string;
+}
+
+/** One line per person, which is how a debt is actually carried in the head. */
+export function debtsByPerson(debts: Debt[]): PersonDebt[] {
+  const m = new Map<string, PersonDebt>();
+  for (const d of debts) {
+    if (d.closed || debtLeft(d) === 0) continue;
+    const key = `${debtWho(d)}|${d.direction}`;
+    const cur = m.get(key) ?? { who: debtWho(d), direction: d.direction, left: 0, count: 0, oldest: d.since };
+    cur.left += debtLeft(d);
+    cur.count++;
+    if (d.since && (!cur.oldest || d.since < cur.oldest)) cur.oldest = d.since;
+    m.set(key, cur);
+  }
+  return [...m.values()].sort((a, b) => b.left - a.left);
+}
+
+/**
+ * Pay part of what is owed to one person. Money goes against the oldest debts
+ * first, the way a real settlement works, and anything fully covered closes.
+ */
+export function payPersonDebts(debts: Debt[], who: string, direction: string, amount: number, today: string): { rows: Debt[]; applied: number } {
+  let rest = Math.max(0, Math.round(amount));
+  const applied = rest;
+  const rows = debts
+    .map((d) => ({ d, key: debtWho(d) === who && d.direction === direction && !d.closed && debtLeft(d) > 0 }))
+    .sort((a, b) => (a.key === b.key ? (a.d.since || "").localeCompare(b.d.since || "") : a.key ? -1 : 1))
+    .map(({ d, key }) => {
+      if (!key || rest <= 0) return d;
+      const take = Math.min(rest, debtLeft(d));
+      rest -= take;
+      const paid = d.paid + take;
+      return { ...d, paid, closed: paid >= d.amount ? today : d.closed };
+    });
+  // keep the original order of rows, not the sorted one
+  const byRef = new Map(rows.map((r, i) => [i, r]));
+  void byRef;
+  return { rows, applied: applied - rest };
 }
 
 export interface Life {
@@ -605,9 +662,16 @@ export function parseDebts(content: string): Debt[] {
     const amount = num(cells[2]);
     if (!cells[0] || amount === undefined) continue;
     const closedSection = /закрыт/i.test(section);
+    // Column 6 used to be the note; it is the paid-so-far figure now. Old files
+    // have text there, so a number decides which layout this row is in.
+    const sixth = num(cells[5]);
+    const hasPaid = sixth !== undefined && (cells[5] ?? "").trim() !== "";
+    const paid = hasPaid ? sixth : 0;
+    const note = hasPaid ? cells[6] ?? "" : cells[5] ?? "";
+    const closedCell = hasPaid ? cells[7] : cells[6];
     debts.push({
-      who: cells[0], direction: cells[1] ?? "", amount, currency: cells[3] ?? "", since: cells[4] ?? "", note: cells[5] ?? "",
-      closed: closedSection ? (cells[6] || "—") : undefined,
+      who: cells[0], direction: cells[1] ?? "", amount, paid, currency: cells[3] ?? "", since: cells[4] ?? "", note,
+      closed: closedSection ? (closedCell || "—") : undefined,
     });
   }
   return debts;
@@ -616,10 +680,10 @@ export function parseDebts(content: string): Debt[] {
 export function serializeDebts(debts: Debt[], date: string): string {
   const open = debts.filter((d) => !d.closed);
   const closed = debts.filter((d) => d.closed);
-  const out = [...ledgerHead("Долги", date), "## Открытые", "", "| Кто | Направление | Сумма | Валюта | С даты | Заметка |", "|---|---|---|---|---|---|"];
-  for (const d of open) out.push(`| ${d.who} | ${d.direction} | ${fmtAmount(d.amount)} | ${d.currency} | ${d.since} | ${d.note} |`);
-  out.push("", "## Закрытые", "", "| Кто | Направление | Сумма | Валюта | С даты | Заметка | Закрыт |", "|---|---|---|---|---|---|---|");
-  for (const d of closed) out.push(`| ${d.who} | ${d.direction} | ${fmtAmount(d.amount)} | ${d.currency} | ${d.since} | ${d.note} | ${d.closed} |`);
+  const out = [...ledgerHead("Долги", date), "## Открытые", "", "| Кто | Направление | Сумма | Валюта | С даты | Внесено | Заметка |", "|---|---|---|---|---|---|---|"];
+  for (const d of open) out.push(`| ${d.who} | ${d.direction} | ${fmtAmount(d.amount)} | ${d.currency} | ${d.since} | ${fmtAmount(d.paid)} | ${d.note} |`);
+  out.push("", "## Закрытые", "", "| Кто | Направление | Сумма | Валюта | С даты | Внесено | Заметка | Закрыт |", "|---|---|---|---|---|---|---|---|");
+  for (const d of closed) out.push(`| ${d.who} | ${d.direction} | ${fmtAmount(d.amount)} | ${d.currency} | ${d.since} | ${fmtAmount(d.paid)} | ${d.note} | ${d.closed} |`);
   return out.join("\n") + "\n";
 }
 
