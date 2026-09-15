@@ -694,3 +694,6 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 a.chip { text-decoration: none; }
 .node { border-left: 3px solid var(--danger); padding: 8px 12px; background: color-mix(in srgb, var(--danger) 10%, transparent); border-radius: var(--r); margin-bottom: 12px; }
 .trow { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 10px 0; border-top: 1px solid var(--hair); }
+.auditprev { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
+textarea.text { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r); padding: 7px 10px; color: var(--ink); font: inherit; resize: vertical; }
+textarea.text:focus { border-color: var(--hair-2); outline: none; }

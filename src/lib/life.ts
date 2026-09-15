@@ -8,6 +8,7 @@
  */
 import type { MdFile } from "./types";
 import { EVENT_DIR, parseEvent, type LifeEvent } from "./events";
+import { AUDIT_DIR, parseAudit, type Audit } from "./audit";
 import { SKILL_DIR, parseSkill, type Skill } from "./skills";
 import { parseFrontmatter } from "./vault";
 import { WEEKDAYS_EN, WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
@@ -202,6 +203,7 @@ export interface Life {
   debts: Debt[];
   /** Raw text of `life/health.md`; parsed by lib/health.ts. */
   health: string | null;
+  audits: Audit[];
 }
 
 export const DAY_DIR = "life/days";
@@ -801,6 +803,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   let subscriptions: Subscription[] = [];
   let debts: Debt[] = [];
   let health: string | null = null;
+  const audits: Audit[] = [];
   for (const f of files) {
     if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
     else if (f.rel.startsWith(QUEST_DIR + "/")) quests.push(parseQuest(f));
@@ -811,10 +814,12 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel === SUBS_REL) subscriptions = parseSubscriptions(f.content);
     else if (f.rel === DEBTS_REL) debts = parseDebts(f.content);
     else if (f.rel === HEALTH_REL) health = f.content;
+    else if (f.rel.startsWith(AUDIT_DIR + "/")) audits.push(parseAudit(f));
   }
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
   quests.sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.title.localeCompare(b.title, "ru"));
   events.sort((a, b) => b.date.localeCompare(a.date));
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
-  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health };
+  audits.sort((a, b) => b.date.localeCompare(a.date));
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, audits };
 }
