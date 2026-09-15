@@ -83,17 +83,17 @@ export default function QuestsPage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3>Новый квест</h3>
         <form className="qform" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-          <input className="text" placeholder="Название" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Название" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
             {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
           </select>
-          <input className="text" type="date" value={form.due} onChange={(e) => setForm({ ...form, due: e.target.value })} title="срок" />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} type="date" value={form.due} onChange={(e) => setForm({ ...form, due: e.target.value })} title="срок" />
           <select className="text" value={form.project} onChange={(e) => setForm({ ...form, project: e.target.value })}>
             <option value="">без проекта</option>
             {projects.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-          <input className="text" placeholder="Откуда взялось: страница vault, [[IrtiQa StartUp/_Overview]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
-          <input className="text" placeholder="Что считается сделанным — критерий закрытия (необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Откуда взялось: страница vault, [[IrtiQa StartUp/_Overview]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Что считается сделанным — критерий закрытия (необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
           <div className="row"><button className="btn primary" type="submit">+ добавить</button></div>
         </form>
         {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
@@ -131,7 +131,7 @@ export default function QuestsPage() {
               <option value="">добавить время вручную…</option>
               {groups.active.map((q) => <option key={q.rel} value={q.title}>{q.title}</option>)}
             </select>
-            <input className="text" placeholder="минут" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="минут" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: e.target.value })} />
             <button className="btn" type="submit">+</button>
           </form>
         )}

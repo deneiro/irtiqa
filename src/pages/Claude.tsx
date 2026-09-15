@@ -63,7 +63,7 @@ export default function ClaudePage() {
           <div><b>Вопрос</b> — Claude читает vault и отвечает со ссылками на страницы. Ничего не пишет, пока не попросишь.</div>
         </div>
         <form className="row" style={{ marginTop: 12, gap: 8, alignItems: "flex-start" }} onSubmit={(e) => { e.preventDefault(); if (question.trim()) { void go("ask", question.trim()); setQuestion(""); } }}>
-          <textarea className="text" rows={2} placeholder="Вопрос к vault: что я знаю о…, что источники говорят про…, что делать с…" value={question} onChange={(e) => setQuestion(e.target.value)} style={{ flex: 1, resize: "vertical" }} disabled={!!running}
+          <textarea className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} rows={2} placeholder="Вопрос к vault: что я знаю о…, что источники говорят про…, что делать с…" value={question} onChange={(e) => setQuestion(e.target.value)} style={{ flex: 1, resize: "vertical" }} disabled={!!running}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} />
           <div className="stack" style={{ gap: 6 }}>
             <button className="btn primary" type="submit" disabled={!question.trim() || !!running}>Спросить</button>

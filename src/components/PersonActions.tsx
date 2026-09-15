@@ -150,7 +150,7 @@ export default function PersonActions({ page }: { page: Page }) {
           {CONTACT_KEYS.map((k) => (
             <label key={k} className="cfield">
               <span>{CONTACT_LABELS[k]}</span>
-              <input className="text" type={k === "last_contact" ? "date" : "text"} value={form[k] ?? ""} placeholder={k === "birthday" ? "ГГГГ-ММ-ДД или ММ-ДД" : ""} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
+              <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} type={k === "last_contact" ? "date" : "text"} value={form[k] ?? ""} placeholder={k === "birthday" ? "ГГГГ-ММ-ДД или ММ-ДД" : ""} onChange={(e) => setForm({ ...form, [k]: e.target.value })} />
             </label>
           ))}
           <div className="row" style={{ gridColumn: "1 / -1" }}>
@@ -164,20 +164,20 @@ export default function PersonActions({ page }: { page: Page }) {
         <form className="pcard" onSubmit={(e) => { e.preventDefault(); void saveCard(); }}>
           <label className="cfield" style={{ gridColumn: "1 / -1" }}>
             <span>имя · переименует файл и ссылки во всём vault</span>
-            <input className="text" value={fields.title} onChange={(e) => setFields({ ...fields, title: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.title} onChange={(e) => setFields({ ...fields, title: e.target.value })} />
           </label>
           {rename && (
             <div className={`small ${rename.error ? "err-text" : "muted"}`} style={{ gridColumn: "1 / -1", marginTop: -4 }}>
               {rename.error ?? planSummary(rename)}
             </div>
           )}
-          <label className="cfield"><span>связь</span><input className="text" value={fields.connection} onChange={(e) => setFields({ ...fields, connection: e.target.value })} /></label>
-          <label className="cfield"><span>как познакомились</span><input className="text" value={fields.how} onChange={(e) => setFields({ ...fields, how: e.target.value })} /></label>
-          <label className="cfield"><span>другие имена, через запятую</span><input className="text" value={fields.aliases} onChange={(e) => setFields({ ...fields, aliases: e.target.value })} /></label>
-          <label className="cfield"><span>теги, через запятую</span><input className="text" value={fields.tags} onChange={(e) => setFields({ ...fields, tags: e.target.value })} /></label>
+          <label className="cfield"><span>связь</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.connection} onChange={(e) => setFields({ ...fields, connection: e.target.value })} /></label>
+          <label className="cfield"><span>как познакомились</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.how} onChange={(e) => setFields({ ...fields, how: e.target.value })} /></label>
+          <label className="cfield"><span>другие имена, через запятую</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.aliases} onChange={(e) => setFields({ ...fields, aliases: e.target.value })} /></label>
+          <label className="cfield"><span>теги, через запятую</span><input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} value={fields.tags} onChange={(e) => setFields({ ...fields, tags: e.target.value })} /></label>
           <label className="cfield" style={{ gridColumn: "1 / -1" }}>
             <span>текст страницы</span>
-            <textarea className="text" rows={8} value={fields.body} onChange={(e) => setFields({ ...fields, body: e.target.value })} style={{ resize: "vertical", fontFamily: "var(--font-read)", fontSize: 14 }} />
+            <textarea className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} rows={8} value={fields.body} onChange={(e) => setFields({ ...fields, body: e.target.value })} style={{ resize: "vertical", fontFamily: "var(--font-read)", fontSize: 14 }} />
           </label>
           <div className="row" style={{ gridColumn: "1 / -1" }}>
             <button className="btn primary" type="submit" disabled={busy || !!rename?.error}>сохранить</button>

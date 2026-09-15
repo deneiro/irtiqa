@@ -102,7 +102,7 @@ export default function ResourceActions({ page }: { page: Page }) {
 
       {mode && (
         <form className="addrow rform" onSubmit={(e) => { e.preventDefault(); void create(); }}>
-          <input className="text" autoFocus placeholder={mode.kind === "habit" ? "Название привычки" : "Название квеста"} value={mode.title} onChange={(e) => setMode({ ...mode, title: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder={mode.kind === "habit" ? "Название привычки" : "Название квеста"} value={mode.title} onChange={(e) => setMode({ ...mode, title: e.target.value })} />
           <select className="text" value={theme} onChange={(e) => setTheme(e.target.value)}>
             {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
           </select>
@@ -112,7 +112,7 @@ export default function ResourceActions({ page }: { page: Page }) {
               <option value="bad">плохая</option>
             </select>
           ) : (
-            <input className="text" type="date" value={due} onChange={(e) => setDue(e.target.value)} title="срок" />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} type="date" value={due} onChange={(e) => setDue(e.target.value)} title="срок" />
           )}
           <button className="btn primary" type="submit" disabled={busy}>{mode.kind === "habit" ? "создать привычку" : "создать квест"}</button>
           <button className="btn ghost" type="button" onClick={() => setMode(null)}>отмена</button>

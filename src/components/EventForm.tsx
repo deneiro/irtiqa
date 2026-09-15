@@ -44,9 +44,9 @@ export default function EventForm({ theme, onDone }: { theme: string; onDone: (r
   return (
     <form className="evform" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
       <div className="addrow ev">
-        <input className="text" type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
-        <input className="text" autoFocus placeholder="Что это было: ночёвка в горах, день рождения…" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
-        <input className="text" placeholder="где" value={f.place} onChange={(e) => setF({ ...f, place: e.target.value })} />
+        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} type="date" value={f.date} onChange={(e) => setF({ ...f, date: e.target.value })} />
+        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder="Что это было: ночёвка в горах, день рождения…" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
+        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="где" value={f.place} onChange={(e) => setF({ ...f, place: e.target.value })} />
         <select className="text" value={f.theme} onChange={(e) => setF({ ...f, theme: e.target.value })}>
           {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
         </select>

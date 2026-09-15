@@ -139,7 +139,7 @@ export default function FinancePage() {
           <button className="btn small ghost" onClick={() => setYm(shiftMonth(ym, -1))}>‹</button>
           <span style={{ textTransform: "none", letterSpacing: 0, fontSize: 15, color: "var(--ink)" }}>{monthLabel(ym)}</span>
           <button className="btn small ghost" onClick={() => setYm(shiftMonth(ym, 1))} disabled={ym >= monthOf(today)}>›</button>
-          <span className="n">потрачено {fmt(month.spent)} · получено {fmt(month.earned)}</span>
+          <span className="n"><span className="amt neg">−{fmt(month.spent)}</span> · <span className="amt pos">+{fmt(month.earned)}</span></span>
         </h3>
         <div className="fin-grid">
           <div className="chart" style={{ height: 200 }}>
@@ -198,7 +198,7 @@ export default function FinancePage() {
                     <td className="mono muted" title={`сверено ${a.asOf}: ${fmt(a.balance)}`}>{a.asOf}{live(a) !== a.balance ? ` · было ${fmt(a.balance)}` : ""}</td>
                     <td>
                       <form className="row" onSubmit={(e) => { e.preventDefault(); setBalance(a); }} style={{ gap: 4 }}>
-                        <input className="text" style={{ width: 90 }} placeholder="сверить" title="Сколько на счёте прямо сейчас" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} />
+                        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} style={{ width: 90 }} placeholder="сверить" title="Сколько на счёте прямо сейчас" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} />
                         <button className="btn small" type="submit">ок</button>
                         <button className="btn small ghost" type="button" title="убрать счёт" onClick={() => void removeAccount(a)}>×</button>
                       </form>
@@ -209,9 +209,9 @@ export default function FinancePage() {
             </table>
           )}
           <form className="addrow acc" onSubmit={(e) => { e.preventDefault(); addAccount(); }}>
-            <input className="text" placeholder="счёт (Kaspi, наличные…)" value={acc.name} onChange={(e) => setAcc({ ...acc, name: e.target.value })} />
-            <input className="text" placeholder="тип" value={acc.kind} onChange={(e) => setAcc({ ...acc, kind: e.target.value })} />
-            <input className="text" placeholder="баланс" value={acc.balance} onChange={(e) => setAcc({ ...acc, balance: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="счёт (Kaspi, наличные…)" value={acc.name} onChange={(e) => setAcc({ ...acc, name: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="тип" value={acc.kind} onChange={(e) => setAcc({ ...acc, kind: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="баланс" value={acc.balance} onChange={(e) => setAcc({ ...acc, balance: e.target.value })} />
             <button className="btn" type="submit">+</button>
           </form>
           <div className="small faint" style={{ marginTop: 6 }}>Баланс считается сам: сверенное число плюс все операции с этого дня. «Сверить» ставит то, что на счёте прямо сейчас: сегодняшние операции приложение учтёт само.</div>
@@ -234,11 +234,11 @@ export default function FinancePage() {
             </table>
           )}
           <form className="addrow subs" onSubmit={(e) => { e.preventDefault(); addSub(); }}>
-            <input className="text" placeholder="название" value={sub.name} onChange={(e) => setSub({ ...sub, name: e.target.value })} />
-            <input className="text" placeholder="сумма" value={sub.amount} onChange={(e) => setSub({ ...sub, amount: e.target.value })} />
-            <input className="text" placeholder="счёт" list="fin-accts" value={sub.account} onChange={(e) => setSub({ ...sub, account: e.target.value })} />
-            <input className="text" placeholder="день" value={sub.day} onChange={(e) => setSub({ ...sub, day: e.target.value })} />
-            <input className="text" placeholder="категория" value={sub.category} onChange={(e) => setSub({ ...sub, category: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="название" value={sub.name} onChange={(e) => setSub({ ...sub, name: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="сумма" value={sub.amount} onChange={(e) => setSub({ ...sub, amount: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="счёт" list="fin-accts" value={sub.account} onChange={(e) => setSub({ ...sub, account: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="день" value={sub.day} onChange={(e) => setSub({ ...sub, day: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="категория" value={sub.category} onChange={(e) => setSub({ ...sub, category: e.target.value })} />
             <button className="btn" type="submit">+</button>
           </form>
           <div className="small faint" style={{ marginTop: 6 }}>В день списания приложение само добавит операцию в файл дня с заметкой «подписка: …».</div>
@@ -264,14 +264,14 @@ export default function FinancePage() {
           </table>
         )}
         <form className="addrow debt" onSubmit={(e) => { e.preventDefault(); addDebt(); }}>
-          <input className="text" placeholder="кто (из People или текст)" list="fin-people" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="кто (из People или текст)" list="fin-people" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
           <select className="text" value={debt.direction} onChange={(e) => setDebt({ ...debt, direction: e.target.value })}>
             <option value={DEBT_THEY_OWE}>{DEBT_THEY_OWE}</option>
             <option value={DEBT_I_OWE}>{DEBT_I_OWE}</option>
           </select>
-          <input className="text" placeholder="сумма" value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
-          <input className="text" placeholder="валюта" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })} style={{ width: 70 }} />
-          <input className="text" placeholder="заметка" value={debt.note} onChange={(e) => setDebt({ ...debt, note: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="сумма" value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="валюта" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })} style={{ width: 70 }} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="заметка" value={debt.note} onChange={(e) => setDebt({ ...debt, note: e.target.value })} />
           <button className="btn" type="submit">+</button>
         </form>
         {debts.some((d) => d.closed) && (

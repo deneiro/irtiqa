@@ -5,7 +5,7 @@ import { useT } from "../lib/i18n";
 import { confirmAction, inTauri } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import {
-  HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal,
+  HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
   markOf, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
   type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
 } from "../lib/life";
@@ -238,7 +238,7 @@ export default function DayPage() {
   const addMeal = () => {
     const what = meal.what.trim();
     if (!what) return;
-    const time = meal.time || new Date().toTimeString().slice(0, 5);
+    const time = normalizeTime(meal.time) || new Date().toTimeString().slice(0, 5);
     update((d) => ({ ...d, meals: [...d.meals, { time, what, note: meal.note.trim() }].sort((a, b) => a.time.localeCompare(b.time)) }));
     setMeal({ time: "", what: "", note: "" });
   };
@@ -335,7 +335,7 @@ export default function DayPage() {
             {notDue.length > 0 && <div className="small faint" style={{ marginTop: 8 }}>Не сегодня: {notDue.map((h) => h.title).join(", ")}</div>}
             {!locked && (
               <form className="addrow habit" onSubmit={(e) => { e.preventDefault(); void addHabit(); }}>
-                <input className="text" placeholder="Новая привычка" value={newHabit.title} onChange={(e) => setNewHabit({ ...newHabit, title: e.target.value })} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Новая привычка" value={newHabit.title} onChange={(e) => setNewHabit({ ...newHabit, title: e.target.value })} />
                 <select className="text" value={newHabit.theme} onChange={(e) => setNewHabit({ ...newHabit, theme: e.target.value })}>
                   {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
                 </select>
@@ -360,7 +360,7 @@ export default function DayPage() {
             ))}
             {!locked && (
               <form className="addrow done" onSubmit={(e) => { e.preventDefault(); if (doneText.trim()) { update((d) => ({ ...d, done: [...d.done, doneText.trim()] })); setDoneText(""); } }}>
-                <input className="text" placeholder="Что сделано" value={doneText} onChange={(e) => setDoneText(e.target.value)} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Что сделано" value={doneText} onChange={(e) => setDoneText(e.target.value)} />
                 <button className="btn" type="submit">+</button>
               </form>
             )}
@@ -385,18 +385,18 @@ export default function DayPage() {
             )}
             {!locked && (
               <form className="addrow tx" onSubmit={(e) => { e.preventDefault(); addTx(); }}>
-                <input className="text" placeholder="−сумма" value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} />
-                <input className="text" placeholder="категория" list="cats" value={tx.category} onChange={(e) => setTx({ ...tx, category: e.target.value })} />
-                <input className="text" placeholder="счёт" list="accts" value={tx.account} onChange={(e) => setTx({ ...tx, account: e.target.value })} />
-                <input className="text" placeholder="заметка" value={tx.note} onChange={(e) => setTx({ ...tx, note: e.target.value })} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="−сумма" value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="категория" list="cats" value={tx.category} onChange={(e) => setTx({ ...tx, category: e.target.value })} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="счёт" list="accts" value={tx.account} onChange={(e) => setTx({ ...tx, account: e.target.value })} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="заметка" value={tx.note} onChange={(e) => setTx({ ...tx, note: e.target.value })} />
                 <button className="btn" type="submit">+</button>
                 <datalist id="cats">{categoryNames.map((c) => <option key={c} value={c} />)}</datalist>
                 <datalist id="accts">{accountNames.map((c) => <option key={c} value={c} />)}</datalist>
               </form>
             )}
             <div className="totals">
-              <span>потрачено <b>{fmtMoney(spentOf(draft))}</b></span>
-              <span>получено <b>{fmtMoney(earnedOf(draft))}</b></span>
+              <span>потрачено <b className="amt neg">{fmtMoney(spentOf(draft))}</b></span>
+              <span>получено <b className="amt pos">{fmtMoney(earnedOf(draft))}</b></span>
               <span className="faint">минус = трата, плюс = доход</span>
             </div>
           </div>
@@ -420,9 +420,12 @@ export default function DayPage() {
             )}
             {!locked && (
               <form className="addrow meal" onSubmit={(e) => { e.preventDefault(); addMeal(); }}>
-                <input className="text" type="time" value={meal.time} onChange={(e) => setMeal({ ...meal, time: e.target.value })} />
-                <input className="text" placeholder="что ел" value={meal.what} onChange={(e) => setMeal({ ...meal, what: e.target.value })} />
-                <input className="text" placeholder="заметка (жирное, изжога…)" value={meal.note} onChange={(e) => setMeal({ ...meal, note: e.target.value })} />
+                <span className="row" style={{ gap: 4 }}>
+                  <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="8:30" value={meal.time} onChange={(e) => setMeal({ ...meal, time: e.target.value })} style={{ width: 62 }} />
+                  <button className="btn small ghost" type="button" title="поставить текущее время" onClick={() => setMeal({ ...meal, time: new Date().toTimeString().slice(0, 5) })}>сейчас</button>
+                </span>
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="что ел" value={meal.what} onChange={(e) => setMeal({ ...meal, what: e.target.value })} />
+                <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="заметка (жирное, изжога…)" value={meal.note} onChange={(e) => setMeal({ ...meal, note: e.target.value })} />
                 <button className="btn" type="submit">+</button>
               </form>
             )}
@@ -430,7 +433,7 @@ export default function DayPage() {
 
           <div className="card">
             <h3>Журнал</h3>
-            <textarea className="text" placeholder="Как прошёл день. Свободный текст, он останется в файле дня." value={draft.journal} disabled={locked}
+            <textarea className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Как прошёл день. Свободный текст, он останется в файле дня." value={draft.journal} disabled={locked}
               onChange={(e) => update((d) => ({ ...d, journal: e.target.value }))} />
           </div>
         </div>

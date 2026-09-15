@@ -71,7 +71,7 @@ export default function SkillsSection() {
       <div className="row" style={{ margin: "10px 0" }}>
         {adding ? (
           <form className="addrow skill" onSubmit={(e) => { e.preventDefault(); void add(); }}>
-            <input className="text" autoFocus placeholder="Навык: арабский, слепая печать, деловое письмо…" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder="Навык: арабский, слепая печать, деловое письмо…" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
               {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
             </select>

@@ -63,6 +63,17 @@ export interface Meal {
 
 export const LATE_MEAL_HOUR = 21;
 
+/** "8:30", "830", "8.30", "8" → "08:30" / "08:00". Empty when it makes no sense. */
+export function normalizeTime(raw: string): string {
+  const t = raw.trim().replace(/[.,\s]/g, ":");
+  const m = t.match(/^(\d{1,2}):?(\d{2})$/) ?? t.match(/^(\d{1,2})$/);
+  if (!m) return "";
+  const h = Number(m[1]);
+  const min = m[2] ? Number(m[2]) : 0;
+  if (h > 23 || min > 59) return "";
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
 export function isLateMeal(m: Meal): boolean {
   const h = Number(m.time.slice(0, 2));
   return Number.isFinite(h) && /^\d{2}:\d{2}$/.test(m.time) && h >= LATE_MEAL_HOUR;

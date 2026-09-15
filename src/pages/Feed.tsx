@@ -89,7 +89,7 @@ export default function FeedPage() {
           <button key={k} className={`chip link ${kind === k ? "on" : ""}`} onClick={() => setKind(k)}>{label} <span className="faint">{n}</span></button>
         ))}
         <span className="grow" />
-        <input className="text" placeholder="Поиск по ленте…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 220 }} />
+        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Поиск по ленте…" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 220 }} />
       </div>
       <div className="feed">
         {byDay.map(([date, es]) => (

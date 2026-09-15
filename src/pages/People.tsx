@@ -108,12 +108,12 @@ export default function PeoplePage() {
       <div className="row wrap" style={{ margin: "16px 0 0", gap: 8 }}>
         {adding ? (
           <form className="addrow person" onSubmit={(e) => { e.preventDefault(); void addPerson(); }} style={{ width: "100%" }}>
-            <input className="text" autoFocus placeholder="Имя, как в vault" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder="Имя, как в vault" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <select className="text" value={formTheme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
               {peopleThemes.map((t) => <option key={t} value={t}>{themeLabel(t)}</option>)}
             </select>
-            <input className="text" placeholder="связь: друг, брат, коллега" value={form.connection} onChange={(e) => setForm({ ...form, connection: e.target.value })} />
-            <input className="text" placeholder="как познакомились" value={form.how} onChange={(e) => setForm({ ...form, how: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="связь: друг, брат, коллега" value={form.connection} onChange={(e) => setForm({ ...form, connection: e.target.value })} />
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="как познакомились" value={form.how} onChange={(e) => setForm({ ...form, how: e.target.value })} />
             <button className="btn primary" type="submit" disabled={!form.name.trim() || busy}>создать</button>
             <button className="btn ghost" type="button" onClick={() => setAdding(false)}>отмена</button>
           </form>
@@ -124,7 +124,7 @@ export default function PeoplePage() {
       {err && <div className="small err-text" style={{ marginTop: 6 }}>{err}</div>}
 
       <div className="row wrap" style={{ margin: "12px 0", gap: 8 }}>
-        <input className="text" placeholder={t("filter")} value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 240 }} />
+        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder={t("filter")} value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 240 }} />
         <select className="text" value={theme} onChange={(e) => setTheme(e.target.value)}>
           <option value="">{t("all_themes")}</option>
           {THEMES.map((th) => <option key={th.name} value={th.name}>{themeLabel(th.name)}</option>)}

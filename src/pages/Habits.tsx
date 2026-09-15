@@ -5,6 +5,8 @@ import { useT } from "../lib/i18n";
 import { WEEKDAYS_RU, addDays, todayStr } from "../lib/dates";
 import { HABIT_DIR, bestStreak, habitDue, habitRate, markOf, safeFilename, serializeHabit, streak, type Habit, type HabitKind, type HabitStatus } from "../lib/life";
 import SourceLink from "../components/SourceLink";
+import { confirmAction } from "../lib/native";
+import { deleteFile } from "../lib/fs";
 
 const ORDER: (typeof WEEKDAYS_RU)[number][] = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 
@@ -24,7 +26,7 @@ function freqDays(f: string | string[]): string[] {
 }
 
 export default function HabitsPage() {
-  const { life, saveText, reload } = useStore();
+  const { root, life, saveText, reload } = useStore();
   const { themeLabel } = useT();
   const today = todayStr();
   const [form, setForm] = useState<Form>(EMPTY);
@@ -71,6 +73,15 @@ export default function HabitsPage() {
     } catch (e) { setErr(String(e)); }
   };
 
+  /** A habit written by mistake should leave, not sit in the archive forever. */
+  const remove = async (h: Habit) => {
+    const marks = [...(life?.days.values() ?? [])].filter((d) =>
+      [...d.habitsDone, ...d.habitsFailed, ...d.habitsSkipped].includes(h.title)).length;
+    const tail = marks ? ` Отметки за ${marks} дн. останутся в файлах дней как история.` : "";
+    if (!(await confirmAction(`Удалить привычку «${h.title}» насовсем?${tail}`))) return;
+    try { await deleteFile(root, h.rel); await reload(); } catch (e) { setErr(String(e)); }
+  };
+
   const startEdit = (h: Habit) => {
     setEditing(h.rel);
     setForm({ title: h.title, theme: h.theme ?? THEMES[2].name, kind: h.kind, days: freqDays(h.freq), body: h.body, source: h.source ?? "" });
@@ -107,6 +118,7 @@ export default function HabitsPage() {
         <div className="hactions">
           {h.status === "proposed" && <><button className="btn small primary" onClick={() => setStatus(h, "active")}>принять</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>отклонить</button></>}
           {h.status === "active" && <><button className="btn small ghost" onClick={() => startEdit(h)}>править</button><button className="btn small ghost" onClick={() => setStatus(h, "paused")}>пауза</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>в архив</button></>}
+          <button className="btn small ghost" title="удалить насовсем" onClick={() => void remove(h)}>×</button>
           {h.status === "paused" && <><button className="btn small" onClick={() => setStatus(h, "active")}>вернуть</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>в архив</button></>}
           {h.status === "archived" && <button className="btn small ghost" onClick={() => setStatus(h, "active")}>вернуть</button>}
         </div>
@@ -124,7 +136,7 @@ export default function HabitsPage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3>{editing ? `Правка: ${form.title}` : "Новая привычка"}</h3>
         <form className="hform" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-          <input className="text" placeholder="Название" value={form.title} disabled={!!editing} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Название" value={form.title} disabled={!!editing} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
             {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
           </select>
@@ -141,8 +153,8 @@ export default function HabitsPage() {
             ))}
             <button type="button" className="btn small ghost" onClick={() => setForm({ ...form, days: form.days.length === 7 ? [] : [...ORDER] })}>{form.days.length === 7 ? "снять" : "все"}</button>
           </div>
-          <input className="text" placeholder="Источник, например [[Atomic Habits]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
-          <input className="text" placeholder="Зачем (одна строка, необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Источник, например [[Atomic Habits]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
+          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Зачем (одна строка, необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
           <div className="row">
             <button className="btn primary" type="submit">{editing ? "сохранить" : "+ добавить"}</button>
             {editing && <button className="btn ghost" type="button" onClick={() => { setEditing(null); setForm(EMPTY); }}>отмена</button>}
