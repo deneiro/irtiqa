@@ -605,3 +605,21 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .proposal:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
 .proposal .why { font-size: 12.5px; color: var(--muted); padding: 0 0 6px 30px; line-height: 1.5; }
 .agents { gap: 6px; margin-top: 12px; align-items: center; }
+
+/* ---------- Коран и имена ---------- */
+.progress { height: 8px; background: var(--raised); border-radius: 4px; overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--c, var(--accent)); border-radius: 4px; }
+.suragrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 4px; margin-top: 12px; }
+.sura { display: flex; align-items: center; background: var(--raised); border-radius: var(--r); overflow: hidden; }
+.sura .num { flex: 1; text-align: center; font-family: var(--font-mono); font-size: 12px; padding: 5px 0; color: var(--ink-2); text-decoration: none; }
+.sura .num:hover { color: var(--accent-2); }
+.sura .tick { width: 20px; border: 0; background: none; color: var(--faint); cursor: pointer; font-size: 11px; padding: 0; }
+.sura.done { background: color-mix(in srgb, var(--success) 22%, transparent); }
+.sura.done .num, .sura.done .tick { color: var(--success); }
+.namegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 4px; margin-top: 12px; }
+.nameitem { display: grid; grid-template-columns: 22px 1fr; gap: 2px 6px; text-align: left; background: var(--raised); border: 0; border-radius: var(--r); padding: 5px 8px; cursor: pointer; color: var(--ink-2); }
+.nameitem .tr { font-size: 12.5px; }
+.nameitem .mean { grid-column: 2; font-size: 11px; color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nameitem.done { background: color-mix(in srgb, var(--success) 22%, transparent); color: var(--success); }
+.nameitem.done .mean { color: color-mix(in srgb, var(--success) 75%, var(--ink)); }
+.md .ar { font-size: 1.45em; line-height: 2; color: var(--ink); unicode-bidi: isolate; }

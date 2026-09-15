@@ -15,6 +15,8 @@ import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
 import EventForm from "../components/EventForm";
 import SkillsSection from "../components/SkillsSection";
+import { HalalSection, NamesSection, QuranSection } from "../components/QuranSections";
+import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
 import { themeXps } from "../lib/levels";
@@ -54,7 +56,20 @@ export default function ThemePage() {
     for (const p of list) { const k = p.segments[depth] ?? ""; m.set(k, [...(m.get(k) ?? []), p]); }
     return [...m.entries()].sort((a, b) => (a[0] === "" ? -1 : b[0] === "" ? 1 : a[0].localeCompare(b[0])));
   };
-  const wikiPages = useMemo(() => pages.filter((p) => p.zone === "wiki" && !p.project && p.file !== "_Overview"), [pages]);
+  // Pages a dedicated section already shows (suras, the 99 names, halal) are not repeated in the Wiki list.
+  const promoted = useMemo(() => {
+    const rels = new Set<string>();
+    if (sections.includes("quran")) for (const s of suras(v)) rels.add(s.page.rel);
+    for (const p of pages) {
+      if (sections.includes("names") && p.file === NAMES_PAGE) rels.add(p.rel);
+      if (sections.includes("halal") && p.file === "Халяль и харам") rels.add(p.rel);
+    }
+    return rels;
+  }, [sections, v, pages]);
+  const wikiPages = useMemo(
+    () => pages.filter((p) => p.zone === "wiki" && !p.project && p.file !== "_Overview" && !promoted.has(p.rel)),
+    [pages, promoted],
+  );
   const persons = useMemo(() => pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_")), [pages]);
   const circle = persons.filter((p) => !isAuthor(p));
   const projects = useMemo(() => {
@@ -144,6 +159,12 @@ export default function ThemePage() {
       }
       case "skills":
         return <SkillsSection key={key} />;
+      case "quran":
+        return <QuranSection key={key} />;
+      case "names":
+        return <NamesSection key={key} />;
+      case "halal":
+        return <HalalSection key={key} />;
       case "nutrition": {
         const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
         const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();
