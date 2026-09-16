@@ -22,6 +22,7 @@ import SelfSection from "../components/SelfSection";
 import HorizonSection from "../components/HorizonSection";
 import TalksSection from "../components/TalksSection";
 import CareerSection from "../components/CareerSection";
+import WishesSection from "../components/WishesSection";
 import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
@@ -186,6 +187,44 @@ export default function ThemePage() {
           </section>
         );
       }
+      case "year": {
+        // The catch-all theme keeps the whole record, not just its own events:
+        // a meeting logged in the circle is part of the year too.
+        const all = [...(life?.events ?? [])].sort((a, b) => b.date.localeCompare(a.date));
+        const byMonth = new Map<string, typeof all>();
+        for (const e of all) {
+          const m = e.date.slice(0, 7);
+          byMonth.set(m, [...(byMonth.get(m) ?? []), e]);
+        }
+        const MONTHS = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+        const monthName = (m: string) => `${MONTHS[Number(m.slice(5, 7)) - 1] ?? m} ${m.slice(0, 4)}`;
+        return (
+          <section key={key} className="tblock">
+            <h2 className="section">Год в событиях <span className="n">{all.length}</span></h2>
+            {adding ? <EventForm theme={theme} onDone={(r) => { setAdding(false); nav(`/event/${encodeURIComponent(r)}`); }} />
+              : <button className="btn primary" onClick={() => setAdding(true)}>+ записать событие</button>}
+            {[...byMonth.entries()].map(([m, list]) => (
+              <div key={m} className="ymonth">
+                <div className="mrow-head">{monthName(m)} <span className="faint">· {list.length}</span></div>
+                <div className="evgrid">
+                  {list.map((e) => (
+                    <Link key={e.rel} to={eventUrl(e)} className="card evcard">
+                      {e.photos[0] ? <img className="evcover" src={mediaUrl(root, e.photos[0])} alt="" loading="lazy" /> : <div className="evcover none">нет фото</div>}
+                      <div className="evbody">
+                        <b>{e.title}</b>
+                        <span className="small muted">{e.date}{e.place ? ` · ${e.place}` : ""}</span>
+                        {e.people.length > 0 && <span className="small faint">{e.people.map(personName).join(", ")}</span>}
+                        {e.photos.length > 1 && <span className="small faint">{e.photos.length} фото</span>}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {all.length === 0 && !adding && <div className="empty">Событий пока нет. Запиши первое: дата, название, кто был, фотографии.</div>}
+          </section>
+        );
+      }
       case "skills":
         return <SkillsSection key={key} />;
       case "quran":
@@ -210,6 +249,8 @@ export default function ThemePage() {
         return <TalksSection key={key} theme={theme} />;
       case "career":
         return <CareerSection key={key} />;
+      case "wishes":
+        return <WishesSection key={key} />;
       case "nutrition": {
         const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
         const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();
