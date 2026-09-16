@@ -707,3 +707,6 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .scencell b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); }
 .scencell span { font-size: 11px; color: var(--faint); }
 .bnum b.ok { color: var(--success); }
+.hbar.job { grid-template-columns: 150px 1fr 62px auto auto; }
+.hbar.job.now .htrack i { background: var(--success); }
+.hbar .jdate { white-space: nowrap; }

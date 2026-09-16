@@ -205,6 +205,8 @@ export interface Life {
   health: string | null;
   /** Raw text of `life/talks.md`; parsed by lib/talks.ts. */
   talks: string | null;
+  /** Raw text of `life/jobs.md`; parsed by lib/jobs.ts. */
+  jobs: string | null;
   audits: Audit[];
 }
 
@@ -216,6 +218,7 @@ export const SUBS_REL = "life/finance/subscriptions.md";
 export const DEBTS_REL = "life/finance/debts.md";
 export const HEALTH_REL = "life/health.md";
 export const TALKS_REL = "life/talks.md";
+export const JOBS_REL = "life/jobs.md";
 
 // ---------- small helpers ----------
 
@@ -807,6 +810,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   let debts: Debt[] = [];
   let health: string | null = null;
   let talks: string | null = null;
+  let jobs: string | null = null;
   const audits: Audit[] = [];
   for (const f of files) {
     if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
@@ -819,6 +823,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel === DEBTS_REL) debts = parseDebts(f.content);
     else if (f.rel === HEALTH_REL) health = f.content;
     else if (f.rel === TALKS_REL) talks = f.content;
+    else if (f.rel === JOBS_REL) jobs = f.content;
     else if (f.rel.startsWith(AUDIT_DIR + "/")) audits.push(parseAudit(f));
   }
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
@@ -826,5 +831,5 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   events.sort((a, b) => b.date.localeCompare(a.date));
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
   audits.sort((a, b) => b.date.localeCompare(a.date));
-  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, audits };
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, audits };
 }
