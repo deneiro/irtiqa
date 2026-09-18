@@ -59,7 +59,7 @@ export default function CalendarPage() {
   const blocks = useMemo(() => parseCalendar(life?.calendar ?? ""), [life]);
   const dates = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(week, i)), [week]);
   const cols = useMemo(
-    () => dates.map((d) => ({ date: d, items: layLanes(itemsOn(d, blocks, life?.days.get(d), life?.quests ?? [])) })),
+    () => dates.map((d) => ({ date: d, items: layLanes(itemsOn(d, blocks, life?.days.get(d), life?.quests ?? [], life?.events ?? [])) })),
     [dates, blocks, life],
   );
   const earliest = Math.min(...cols.flatMap((c) => c.items.map((x) => x.item.from)), 6 * 60);
@@ -177,6 +177,7 @@ export default function CalendarPage() {
         <span className="grow" />
         <span><span className="cal-legend plan" />план</span>
         <span><span className="cal-legend fact" />было на самом деле, по таймеру квеста</span>
+        <span><span className="cal-legend event" />событие: спорт, встреча</span>
       </div>
 
       <div className="cal">
@@ -221,16 +222,18 @@ export default function CalendarPage() {
                   const top = y(item.from), h = Math.max(18, y(item.to) - top - 2);
                   const w = 100 / lanes;
                   const canStart = item.kind === "plan" && item.quest && date === today && !timer && item.to > nowMin;
+                  // An event is a plan until its time has passed, then it is what happened.
+                  const passed = date < today || (date === today && item.to <= nowMin);
                   return (
                     <div
                       key={i}
-                      className={`cal-item ${item.kind} ${h < 34 ? "short" : ""}`}
+                      className={`cal-item ${item.kind} ${item.kind === "event" && passed ? "passed" : ""} ${h < 34 ? "short" : ""}`}
                       style={{ top, height: h, left: `calc(${lane * w}% + 2px)`, width: `calc(${w}% - 4px)`, ["--c" as string]: themeColor(item.theme) }}
                       onMouseDown={(e) => e.stopPropagation()}
-                      onClick={() => (item.block ? openBlock(item.block, date) : setFact(item))}
+                      onClick={() => (item.block ? openBlock(item.block, date) : item.eventRel ? nav(`/event/${encodeURIComponent(item.eventRel)}`) : setFact(item))}
                       title={`${fromMin(item.from)}–${fromMin(item.to)} ${item.title}`}
                     >
-                      <div className="t">{fromMin(item.from)}{item.kind === "plan" ? `–${fromMin(item.to)}` : ` · ${item.minutes} мин`}</div>
+                      <div className="t">{fromMin(item.from)}{item.kind === "fact" ? ` · ${item.minutes} мин` : `–${fromMin(item.to)}`}</div>
                       <div className="w">{item.title}</div>
                       {canStart && (
                         <button className="cal-go" title="запустить таймер квеста" onClick={(e) => { e.stopPropagation(); start(item.quest); }}>▶</button>

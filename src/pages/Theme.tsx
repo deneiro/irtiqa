@@ -14,6 +14,7 @@ import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
 import EventForm from "../components/EventForm";
+import SportSection from "../components/SportSection";
 import SkillsSection from "../components/SkillsSection";
 import { HalalSection, NamesSection, QuranSection } from "../components/QuranSections";
 import { BodySection, MedicalSection } from "../components/BodySections";
@@ -251,6 +252,8 @@ export default function ThemePage() {
         return <CareerSection key={key} />;
       case "wishes":
         return <WishesSection key={key} />;
+      case "sport":
+        return <SportSection key={key} />;
       case "nutrition": {
         const days = Array.from({ length: 14 }, (_, i) => addDays(today, i - 13));
         const rows = days.map((date) => ({ date, meals: life?.days.get(date)?.meals ?? [] })).reverse();

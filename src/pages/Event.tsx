@@ -8,6 +8,7 @@ import { confirmAction, mediaUrl, revealInFinder } from "../lib/native";
 import { deleteFile, writeBinary } from "../lib/fs";
 import { IMAGE_RE, personName, serializeEvent, type LifeEvent } from "../lib/events";
 import { isAuthor } from "../lib/people";
+import { normEnd, normalizeTime } from "../lib/calendar";
 
 function fmtDate(d: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
@@ -35,6 +36,9 @@ export default function EventPage() {
 
   useEffect(() => { if (!dirty.current && ev) setText(ev.body); }, [ev]);
 
+  const [time, setTime] = useState({ from: ev?.from ?? "", to: ev?.to ?? "" });
+  useEffect(() => { setTime({ from: ev?.from ?? "", to: ev?.to ?? "" }); }, [ev?.from, ev?.to]);
+
   const people = useMemo(
     () => v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)).map((p) => p.title).sort(),
     [v],
@@ -44,7 +48,7 @@ export default function EventPage() {
     const cur = evRef.current;
     if (!cur) return;
     const merged = { ...cur, ...next, body: body ?? (dirty.current ? text : cur.body) };
-    await saveText(cur.rel, serializeEvent({ title: merged.title, date: merged.date, theme: merged.theme, place: merged.place, people: merged.people, tags: merged.tags, body: merged.body }));
+    await saveText(cur.rel, serializeEvent({ title: merged.title, date: merged.date, theme: merged.theme, place: merged.place, from: merged.from, to: merged.to, people: merged.people, tags: merged.tags, body: merged.body }));
     dirty.current = false;
   };
 
@@ -80,6 +84,17 @@ export default function EventPage() {
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }
   };
 
+  /** Empty «с» clears the time; the event then leaves the calendar. */
+  const saveTime = async () => {
+    if (!ev) return;
+    const from = time.from.trim() ? normalizeTime(time.from) : "";
+    const to = from && time.to.trim() ? normEnd(time.to) : "";
+    if (time.from.trim() && !from) { setErr("Время — в виде 19:00."); return; }
+    if (from === ev.from && to === ev.to) return;
+    setBusy(true);
+    try { await write({ from, to }); await reload(); setErr(null); } catch (e) { setErr(String(e)); } finally { setBusy(false); }
+  };
+
   const removePhoto = async (photo: string) => {
     if (!(await confirmAction("Удалить эту фотографию?"))) return;
     setBusy(true);
@@ -99,9 +114,19 @@ export default function EventPage() {
   return (
     <div style={{ ["--c" as string]: color }}>
       <div className="eyebrow">
-        {ev.theme ? <Link to={`/theme/${encodeURIComponent(ev.theme)}`} style={{ color }}>{themeLabel(ev.theme)}</Link> : "событие"} · {fmtDate(ev.date)}{ev.place ? ` · ${ev.place}` : ""}
+        {ev.theme ? <Link to={`/theme/${encodeURIComponent(ev.theme)}`} style={{ color }}>{themeLabel(ev.theme)}</Link> : "событие"} · {fmtDate(ev.date)}{ev.from ? ` · ${ev.from}${ev.to ? `–${ev.to}` : ""}` : ""}{ev.place ? ` · ${ev.place}` : ""}
       </div>
       <h1 className="title">{ev.title}</h1>
+
+      <div className="row small muted" style={{ gap: 6, marginTop: 6 }}>
+        <span>время</span>
+        <input className="text mono" style={{ width: 66 }} placeholder="с" value={time.from} disabled={busy}
+          onChange={(e) => setTime({ ...time, from: e.target.value })} onBlur={() => void saveTime()} onKeyDown={(e) => e.key === "Enter" && void saveTime()} />
+        <span>—</span>
+        <input className="text mono" style={{ width: 66 }} placeholder="до" value={time.to} disabled={busy}
+          onChange={(e) => setTime({ ...time, to: e.target.value })} onBlur={() => void saveTime()} onKeyDown={(e) => e.key === "Enter" && void saveTime()} />
+        <span className="faint">{ev.from ? "стоит в календаре" : "со временем событие встанет в календарь"}</span>
+      </div>
 
       <div className="row wrap" style={{ gap: 6, marginTop: 10 }}>
         {people.map((name) => {

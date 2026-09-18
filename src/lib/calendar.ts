@@ -9,6 +9,7 @@
  */
 import { WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
 import { normalizeTime, type Day, type Quest } from "./life";
+import type { LifeEvent } from "./events";
 
 export { CALENDAR_FILE as CALENDAR_REL } from "./life";
 
@@ -28,7 +29,7 @@ export const isWeekly = (b: PlanBlock) => b.days.length > 0;
 
 /** One thing drawn on the grid: a planned block or a timer session. */
 export interface CalItem {
-  kind: "plan" | "fact";
+  kind: "plan" | "fact" | "event";
   date: string;
   from: number; // minutes since 00:00
   to: number;
@@ -39,6 +40,8 @@ export interface CalItem {
   block?: PlanBlock;
   /** Timer minutes of a fact; the drawn height has a floor so short ones stay clickable. */
   minutes?: number;
+  /** The event page, for kind "event". */
+  eventRel?: string;
 }
 
 export { normalizeTime };
@@ -160,7 +163,7 @@ export function weekStart(date: string): string {
   return addDays(date, -((weekdayIndex(date) + 6) % 7));
 }
 
-export function itemsOn(date: string, blocks: PlanBlock[], day: Day | undefined, quests: Quest[]): CalItem[] {
+export function itemsOn(date: string, blocks: PlanBlock[], day: Day | undefined, quests: Quest[], events: LifeEvent[] = []): CalItem[] {
   const themeOf = (quest: string, fallback: string) => quests.find((q) => q.title === quest)?.theme ?? (fallback || undefined);
   const out: CalItem[] = [];
   for (const b of blocks) {
@@ -174,6 +177,13 @@ export function itemsOn(date: string, blocks: PlanBlock[], day: Day | undefined,
     if (!s.at) continue;
     const from = toMin(s.at);
     out.push({ kind: "fact", date, from, to: Math.min(24 * 60, from + Math.max(s.minutes, 10)), title: s.quest, quest: s.quest, theme: themeOf(s.quest, ""), minutes: s.minutes });
+  }
+  for (const e of events) {
+    if (e.date !== date || !e.from) continue;
+    const from = toMin(e.from);
+    let to = e.to ? toMin(e.to) : from + 60;
+    if (to <= from) to = 24 * 60;
+    out.push({ kind: "event", date, from, to, title: e.title, quest: "", theme: e.theme, eventRel: e.rel });
   }
   return out.sort((a, b) => a.from - b.from || b.to - a.to);
 }

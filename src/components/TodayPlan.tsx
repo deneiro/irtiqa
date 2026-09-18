@@ -10,7 +10,7 @@ export default function TodayPlan() {
   const { life, timer, startTimer } = useStore();
   const today = todayStr();
   const plan = useMemo(
-    () => (life ? itemsOn(today, parseCalendar(life.calendar ?? ""), undefined, life.quests) : []),
+    () => (life ? itemsOn(today, parseCalendar(life.calendar ?? ""), undefined, life.quests, life.events) : []),
     [life, today],
   );
   const now = new Date();
@@ -25,7 +25,7 @@ export default function TodayPlan() {
         return (
           <div key={i} className={`plan-row ${past ? "past" : ""} ${live ? "live" : ""}`} style={{ ["--c" as string]: themeColor(p.theme) }}>
             <span className="mono small">{fromMin(p.from)}–{fromMin(p.to)}</span>
-            <span className="w">{p.title}</span>
+            <span className="w">{p.eventRel ? <Link to={`/event/${encodeURIComponent(p.eventRel)}`}>{p.title}</Link> : p.title}</span>
             {p.quest && !past && (
               <button
                 className="tbtn" disabled={!!timer}
