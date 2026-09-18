@@ -370,10 +370,79 @@ export function questJournal(body: string): QuestEntry[] {
   return out;
 }
 
-/** Everything above the journal: the quest's own description. */
+const QUEST_STEPS_HEAD = "## Шаги";
+
+/** Where the description ends: at the steps, or at the journal, whichever comes first. */
+function descriptionEnd(body: string): number {
+  const heads = [body.indexOf(QUEST_STEPS_HEAD), body.indexOf(QUEST_LOG_HEAD)].filter((i) => i >= 0);
+  return heads.length ? Math.min(...heads) : -1;
+}
+
+/** Everything above the steps and the journal: the quest's own description. */
 export function questDescription(body: string): string {
-  const at = body.indexOf(QUEST_LOG_HEAD);
+  const at = descriptionEnd(body);
   return (at < 0 ? body : body.slice(0, at)).trim();
+}
+
+/**
+ * A step inside a quest: one project, small quests inside it. Stored as a markdown checklist under
+ * `## Шаги`, so it reads the same in Obsidian: `- [ ] text`, indented lines under it are its detail.
+ * The quest keeps one status, one timer and one journal; steps only track what is left.
+ */
+export interface QuestStep {
+  done: boolean;
+  text: string;
+  detail: string;
+}
+
+function stepsBounds(body: string): { from: number; to: number } | null {
+  const at = body.indexOf(QUEST_STEPS_HEAD);
+  if (at < 0) return null;
+  const from = at + QUEST_STEPS_HEAD.length;
+  const next = body.slice(from).search(/\n## /);
+  return { from, to: next < 0 ? body.length : from + next };
+}
+
+export function questSteps(body: string): QuestStep[] {
+  const b = stepsBounds(body);
+  if (!b) return [];
+  const out: QuestStep[] = [];
+  for (const line of body.slice(b.from, b.to).split(/\r?\n/)) {
+    const m = line.match(/^-\s*\[( |x|X)\]\s*(.*)$/);
+    if (m) { out.push({ done: m[1] !== " ", text: m[2].trim(), detail: "" }); continue; }
+    const last = out[out.length - 1];
+    if (last && /^\s{2,}\S/.test(line)) last.detail = (last.detail ? last.detail + "\n" : "") + line.trim();
+  }
+  return out;
+}
+
+function renderSteps(steps: QuestStep[]): string {
+  return steps.map((s) => {
+    const head = `- [${s.done ? "x" : " "}] ${s.text.replace(/\s+/g, " ").trim()}`;
+    const detail = s.detail.trim() ? "\n" + s.detail.trim().split(/\r?\n/).map((l) => "  " + l.trim()).join("\n") : "";
+    return head + detail;
+  }).join("\n");
+}
+
+/** Rewrite the steps section in place; create it above the journal when the quest had none. */
+export function withQuestSteps(body: string, steps: QuestStep[]): string {
+  const section = steps.length ? `${QUEST_STEPS_HEAD}\n${renderSteps(steps)}\n` : "";
+  const b = stepsBounds(body);
+  if (b) {
+    const start = body.indexOf(QUEST_STEPS_HEAD);
+    const before = body.slice(0, start).replace(/\s+$/, "");
+    const after = body.slice(b.to).replace(/^\s+/, "");
+    return [before, section.trim(), after].filter(Boolean).join("\n\n") + "\n";
+  }
+  if (!section) return body;
+  const log = body.indexOf(QUEST_LOG_HEAD);
+  if (log < 0) return `${body.trim()}\n\n${section}`;
+  return `${body.slice(0, log).trim()}\n\n${section}\n${body.slice(log).trim()}\n`;
+}
+
+/** The first step not yet done — what the quest is waiting on. */
+export function nextStep(steps: QuestStep[]): QuestStep | undefined {
+  return steps.find((s) => !s.done);
 }
 
 export function withQuestEntry(body: string, e: QuestEntry): string {
@@ -384,7 +453,7 @@ export function withQuestEntry(body: string, e: QuestEntry): string {
 }
 
 export function withQuestDescription(body: string, description: string): string {
-  const at = body.indexOf(QUEST_LOG_HEAD);
+  const at = descriptionEnd(body);
   const tail = at < 0 ? "" : "\n\n" + body.slice(at).trim() + "\n";
   return description.trim() + tail;
 }

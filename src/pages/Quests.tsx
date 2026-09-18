@@ -4,7 +4,7 @@ import { confirmAction } from "../lib/native";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { todayStr } from "../lib/dates";
-import { QUEST_DIR, questMinutes, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
+import { QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
 import QuestRows from "../components/QuestRows";
 import SourceLink from "../components/SourceLink";
 
@@ -108,7 +108,8 @@ export default function QuestsPage() {
                 <div style={{ minWidth: 0 }}>
                   <div className="name">{q.title}</div>
                   <div className="sub">{q.theme ? themeLabel(q.theme) : "без темы"}{q.project ? ` · ${q.project}` : ""}{q.source ? <> · <SourceLink source={q.source} /></> : null}</div>
-                  {q.body && <div className="small muted" style={{ marginTop: 4 }}>{q.body}</div>}
+                  {questDescription(q.body) && <div className="small muted" style={{ marginTop: 4 }}>{questDescription(q.body)}</div>}
+                  {questSteps(q.body).length > 0 && <div className="small faint" style={{ marginTop: 4 }}>шагов внутри: {questSteps(q.body).length}</div>}
                 </div>
                 <span />
                 <span />

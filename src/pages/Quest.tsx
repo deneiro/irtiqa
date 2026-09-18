@@ -10,8 +10,8 @@ import { todayStr } from "../lib/dates";
 import SourceLink from "../components/SourceLink";
 import { fmtElapsed } from "../components/QuestRows";
 import {
-  questDescription, questJournal, questMinutes, questXp, serializeQuest, withQuestDescription,
-  type Quest, type QuestStatus,
+  questDescription, questJournal, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
+  type Quest, type QuestStatus, type QuestStep,
 } from "../lib/life";
 
 const STATUS: { key: QuestStatus; label: string }[] = [
@@ -32,6 +32,8 @@ export default function QuestPage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [desc, setDesc] = useState<string | null>(null);
+  const [newStep, setNewStep] = useState("");
+  const [open, setOpen] = useState<number | null>(null);
   const [, force] = useState(0);
   useEffect(() => { const id = window.setInterval(() => force((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
 
@@ -60,6 +62,20 @@ export default function QuestPage() {
     if (!(await confirmAction(`Закрыть квест «${q.title}»? Он попадёт в файл сегодняшнего дня.`))) return;
     await write({ status: "done" });
     await updateToday((d) => (d.questsClosed.includes(q.title) ? d : { ...d, questsClosed: [...d.questsClosed, q.title] }));
+  };
+
+  const steps = questSteps(q.body);
+  const doneSteps = steps.filter((x) => x.done).length;
+  const setSteps = (next: QuestStep[]) => write({ body: withQuestSteps(q.body, next) });
+  const toggleStep = (i: number) => void setSteps(steps.map((x, j) => (j === i ? { ...x, done: !x.done } : x)));
+  const addStep = () => {
+    const text = newStep.trim();
+    if (!text) return;
+    void setSteps([...steps, { done: false, text, detail: "" }]).then(() => setNewStep(""));
+  };
+  const removeStep = async (i: number) => {
+    if (!(await confirmAction(`Убрать шаг «${steps[i].text}»?`))) return;
+    await setSteps(steps.filter((_, j) => j !== i));
   };
 
   const remove = async () => {
@@ -143,6 +159,33 @@ export default function QuestPage() {
             <button className="btn ghost" disabled={busy} style={{ color: "var(--danger)" }} onClick={() => void remove()}>удалить</button>
           </div>
         </div>
+      </div>
+
+      <h2 className="section">Шаги <span className="n">{steps.length ? `${doneSteps} из ${steps.length}` : 0}</span></h2>
+      <div className="card">
+        {steps.length > 0 && (
+          <div className="qprogress" title={`${doneSteps} из ${steps.length}`}><i style={{ width: `${Math.round((doneSteps / steps.length) * 100)}%` }} /></div>
+        )}
+        {steps.length === 0 && <div className="small muted">Шагов нет. Большой квест удобно разбить на мелкие: каждый шаг — одно действие, которое понятно, как сделать.</div>}
+        {steps.map((st, i) => {
+          const isNext = !st.done && steps.findIndex((x) => !x.done) === i;
+          return (
+            <div className={`qstep ${st.done ? "done" : ""} ${isNext ? "next" : ""}`} key={i}>
+              <button className="qcheck" disabled={busy} onClick={() => toggleStep(i)} title={st.done ? "вернуть в работу" : "отметить сделанным"}>{st.done ? "✓" : ""}</button>
+              <div style={{ minWidth: 0 }}>
+                <div className="qstext" onClick={() => st.detail && setOpen(open === i ? null : i)} style={{ cursor: st.detail ? "pointer" : "default" }}>
+                  {st.text}{isNext && <span className="qnext">дальше</span>}{st.detail && <span className="faint small"> {open === i ? "▾" : "▸"}</span>}
+                </div>
+                {st.detail && open === i && <div className="small muted qsdetail">{st.detail}</div>}
+              </div>
+              <button className="btn small ghost" disabled={busy} onClick={() => void removeStep(i)} title="убрать шаг">×</button>
+            </div>
+          );
+        })}
+        <form className="row" style={{ marginTop: 10, gap: 8 }} onSubmit={(e) => { e.preventDefault(); addStep(); }}>
+          <input className="text" style={{ flex: 1 }} placeholder="новый шаг: одно действие" value={newStep} onChange={(e) => setNewStep(e.target.value)} disabled={busy} />
+          <button className="btn" type="submit" disabled={busy || !newStep.trim()}>добавить</button>
+        </form>
       </div>
 
       <h2 className="section">Журнал <span className="n">{journal.length}</span></h2>

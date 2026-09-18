@@ -605,6 +605,20 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 
 /* ---------- quest page & session note ---------- */
 .qhead { display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+/* Steps inside a quest: one project, small quests inside. */
+.qprogress { height: 4px; border-radius: 2px; background: var(--hair); overflow: hidden; margin-bottom: 10px; }
+.qprogress i { display: block; height: 100%; background: var(--c, var(--accent)); }
+.qstep { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 6px 0; border-bottom: 1px solid var(--hair); }
+.qstep:last-of-type { border-bottom: none; }
+.qcheck { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid var(--hair-2); background: transparent; color: var(--bg); font-size: 12px; line-height: 1; cursor: pointer; padding: 0; margin-top: 1px; }
+.qcheck:hover:not(:disabled) { border-color: var(--c, var(--accent)); }
+.qstep.done .qcheck { background: var(--c, var(--accent)); border-color: var(--c, var(--accent)); }
+.qstep.done .qstext { color: var(--faint); text-decoration: line-through; }
+.qstext { color: var(--ink); }
+.qstep.next .qstext { font-weight: 500; }
+.qnext { margin-left: 8px; font-size: 11px; padding: 1px 6px; border-radius: 8px; background: color-mix(in srgb, var(--c, var(--accent)) 18%, transparent); color: var(--c, var(--accent)); }
+.qsdetail { white-space: pre-wrap; margin-top: 4px; }
+.qnextline { font-size: 12px; color: var(--ink-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn.big { font-size: 14px; padding: 10px 18px; }
 .qfields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 @media (max-width: 900px) { .qfields { grid-template-columns: 1fr; } }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
-import { questMinutes, questXp, type Quest } from "../lib/life";
+import { nextStep, questMinutes, questSteps, questXp, type Quest } from "../lib/life";
 import SourceLink from "./SourceLink";
 
 function useTick(active: boolean): number {
@@ -35,6 +35,8 @@ export default function QuestRows({ quests, onClose, compact }: { quests: Quest[
         const running = timer?.quest === q.title;
         const minutes = questMinutes(q.title, days);
         const overdue = q.due && q.due < new Date().toISOString().slice(0, 10);
+        const steps = questSteps(q.body);
+        const next = nextStep(steps);
         return (
           <div className={`quest ${running ? "running" : ""}`} key={q.rel}>
             <button
@@ -51,8 +53,10 @@ export default function QuestRows({ quests, onClose, compact }: { quests: Quest[
                 {q.theme ? themeLabel(q.theme) : "без темы"}
                 {q.project ? ` · ${q.project}` : ""}
                 {q.due ? <span className={overdue ? "overdue" : ""}> · до {q.due}</span> : ""}
+                {steps.length > 0 && <> · шаги {steps.filter((x) => x.done).length}/{steps.length}</>}
                 {!compact && q.source ? <> · <SourceLink source={q.source} /></> : null}
               </div>
+              {next && <div className="qnextline">дальше: {next.text}</div>}
             </div>
             <div className="qmeta">
               {running ? <b className="live">{fmtElapsed(now - timer!.startedAt)}</b> : <span>{minutes} мин</span>}
