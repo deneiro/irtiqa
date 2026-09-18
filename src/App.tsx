@@ -9,6 +9,7 @@ import QuestsPage from "./pages/Quests";
 import FinancePage from "./pages/Finance";
 import ClaudePage from "./pages/Claude";
 import ToolsPage from "./pages/Tools";
+import CalendarPage from "./pages/Calendar";
 import Back from "./components/Back";
 import WheelPage from "./pages/Wheel";
 import EventPage from "./pages/Event";
@@ -71,6 +72,7 @@ function Shell() {
         <Routes>
           <Route path="/" element={<DayPage />} />
           <Route path="/vault" element={<Home />} />
+          <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/habits" element={<HabitsPage />} />
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/finance" element={<FinancePage />} />

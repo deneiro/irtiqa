@@ -40,7 +40,7 @@ interface Store {
   /** Stop the clock. The session is not written yet: it waits for its note. */
   stopTimer: () => void;
   /** A finished session waiting to be described. Nothing is logged until it is. */
-  pending: { quest: string; minutes: number } | null;
+  pending: { quest: string; minutes: number; at?: string } | null;
   /** Write the waiting session into today's day file and the quest's journal. */
   commitSession: (note: string) => Promise<void>;
   /** Throw the waiting session away — a timer started by accident. */
@@ -202,8 +202,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(TIMER_KEY, JSON.stringify(t));
     setTimer(t);
   }, []);
-  const [pending, setPending] = useState<{ quest: string; minutes: number } | null>(() => {
-    try { const raw = localStorage.getItem(PENDING_KEY); return raw ? (JSON.parse(raw) as { quest: string; minutes: number }) : null; } catch { return null; }
+  const [pending, setPending] = useState<{ quest: string; minutes: number; at?: string } | null>(() => {
+    try { const raw = localStorage.getItem(PENDING_KEY); return raw ? (JSON.parse(raw) as { quest: string; minutes: number; at?: string }) : null; } catch { return null; }
   });
 
   const stopTimer = useCallback(() => {
@@ -211,7 +211,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const minutes = Math.max(1, Math.round((Date.now() - timer.startedAt) / 60000));
     localStorage.removeItem(TIMER_KEY);
     setTimer(null);
-    const p = { quest: timer.quest, minutes };
+    const start = new Date(timer.startedAt);
+    // A session that began yesterday lands in today's file; its start time would lie there.
+    const at = todayStr(start) === todayStr() ? `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}` : undefined;
+    const p = { quest: timer.quest, minutes, at };
     localStorage.setItem(PENDING_KEY, JSON.stringify(p));
     setPending(p);
   }, [timer]);
@@ -223,8 +226,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const commitSession = useCallback(async (note: string) => {
     if (!pending) return;
-    const { quest, minutes } = pending;
-    await updateToday((d) => ({ ...d, sessions: [...d.sessions, { quest, minutes }] }));
+    const { quest, minutes, at } = pending;
+    await updateToday((d) => ({ ...d, sessions: [...d.sessions, at ? { quest, minutes, at } : { quest, minutes }] }));
     const q = life?.quests.find((x) => x.title === quest);
     if (q) {
       const body = withQuestEntry(q.body, { date: todayStr(), minutes, note });

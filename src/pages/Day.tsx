@@ -11,6 +11,8 @@ import {
 } from "../lib/life";
 import type { CmdResult } from "../lib/fs";
 import QuestRows from "../components/QuestRows";
+import TodayPlan from "../components/TodayPlan";
+import { CALENDAR_REL } from "../lib/calendar";
 
 const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined };
 const MARK_GLYPH: Record<string, string> = { none: "", done: "✓", failed: "✗", skipped: "→" };
@@ -123,6 +125,8 @@ export default function DayPage() {
         last = closed;
       }
       if (!last) return null;
+      // The plan is edited all day long; the day's commit carries it along.
+      if (life.calendar !== null) paths.push(CALENDAR_REL);
       const msg = days.length === 1 ? `day ${last.date}` : `days ${days[0].date}..${last.date}`;
       const git = await commitVault(paths, msg);
       return { day: last, git, auto };
@@ -462,12 +466,14 @@ export default function DayPage() {
             ))}
           </div>
 
+          <TodayPlan />
+
           <div className="card">
             <h3>Квесты <span className="n">{draft.sessions.reduce((s, x) => s + x.minutes, 0)} мин</span></h3>
             <QuestRows quests={activeQuests} compact />
             {draft.sessions.length > 0 && (
               <div style={{ marginTop: 10 }}>
-                {draft.sessions.map((s, i) => <div className="bul small" key={i}><span>{s.quest}</span><span className="mono" style={{ marginLeft: "auto" }}>{s.minutes} мин</span></div>)}
+                {draft.sessions.map((s, i) => <div className="bul small" key={i}>{s.at && <span className="mono faint" style={{ marginRight: 8 }}>{s.at}</span>}<span>{s.quest}</span><span className="mono" style={{ marginLeft: "auto" }}>{s.minutes} мин</span></div>)}
               </div>
             )}
             {draft.questsClosed.length > 0 && <div className="small muted" style={{ marginTop: 8 }}>Закрыто сегодня: {draft.questsClosed.join(", ")}</div>}

@@ -28,6 +28,7 @@ export default function Sidebar() {
       </button>
 
       <NavLink to="/" end className={cls}>{t("nav_day")}</NavLink>
+      <NavLink to="/calendar" className={cls}>{t("nav_calendar")}</NavLink>
       <NavLink to="/habits" className={cls}>
         {t("nav_habits")} <span className="count">{life?.habits.filter((h) => h.status === "active").length ?? ""}</span>
       </NavLink>
