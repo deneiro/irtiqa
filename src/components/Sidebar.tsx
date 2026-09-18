@@ -5,6 +5,7 @@ import { themeUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { isAuthor } from "../lib/people";
 import { anyRunning, useRuns } from "../lib/claudeRuns";
+import { isToolPage } from "../lib/tools";
 
 export default function Sidebar() {
   const { vault, life, timer, setPaletteOpen, reload, loading, lang, setLang } = useStore();
@@ -41,6 +42,9 @@ export default function Sidebar() {
       <NavLink to="/log" className={cls}>{t("nav_log")}</NavLink>
       <NavLink to="/wheel" className={cls}>{t("nav_wheel")}</NavLink>
       <NavLink to="/charts" className={cls}>{t("nav_charts")}</NavLink>
+      <NavLink to="/tools" className={cls}>
+        {t("nav_tools")} <span className="count">{vault?.pages.filter((p) => isToolPage(p) && p.fm.folder).length ?? ""}</span>
+      </NavLink>
       <NavLink to="/claude" className={cls}>Claude {claudeBusy && <span className="livedot" title="claude работает" />}</NavLink>
 
       <div className="section">{t("sec_themes")}</div>
@@ -60,7 +64,7 @@ export default function Sidebar() {
       <div className="foot">
         <div className="row spread">
           <span>{vault ? t("n_pages", { n: vault.pages.length }) : t("no_vault")}</span>
-          <button onClick={() => void reload()} title={t("rescan_title")}>{loading ? "…" : t("rescan")}</button>
+          <button onClick={() => void reload(true)} title={t("rescan_title")}>{loading ? "…" : t("rescan")}</button>
         </div>
         <div className="row spread" style={{ marginTop: 4 }}>
           <span>{vault ? t("readonly_live") : ""}</span>

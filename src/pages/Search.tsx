@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
@@ -11,7 +11,8 @@ const ZONES: Zone[] = ["resource", "wiki", "overview", "person", "tool", "person
 
 export default function SearchPage() {
   const v = useVault();
-  const { index } = useStore();
+  const { index, needIndex } = useStore();
+  useEffect(needIndex, [needIndex]);
   const { t, zone, themeLabel } = useT();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";

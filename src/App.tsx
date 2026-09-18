@@ -8,6 +8,7 @@ import HabitsPage from "./pages/Habits";
 import QuestsPage from "./pages/Quests";
 import FinancePage from "./pages/Finance";
 import ClaudePage from "./pages/Claude";
+import ToolsPage from "./pages/Tools";
 import Back from "./components/Back";
 import WheelPage from "./pages/Wheel";
 import EventPage from "./pages/Event";
@@ -74,6 +75,7 @@ function Shell() {
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/finance" element={<FinancePage />} />
           <Route path="/claude" element={<ClaudePage />} />
+          <Route path="/tools" element={<ToolsPage />} />
           <Route path="/wheel" element={<WheelPage />} />
           <Route path="/event/:rel" element={<EventPage />} />
           <Route path="/quest/:rel" element={<QuestPage />} />

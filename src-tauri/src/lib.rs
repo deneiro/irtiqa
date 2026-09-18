@@ -5,9 +5,9 @@ use std::path::{Component, Path, PathBuf};
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader};
 use std::process::{Child, Command, Stdio};
-use std::sync::mpsc::channel;
+use std::sync::mpsc::{channel, RecvTimeoutError};
 use std::sync::Mutex;
-use std::time::{Duration, Instant, UNIX_EPOCH};
+use std::time::{Duration, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter, Manager, State};
 use walkdir::WalkDir;
 
@@ -407,23 +407,33 @@ fn watch_vault(app: AppHandle, state: State<WatchState>, root: String) -> Result
     *state.0.lock().unwrap() = Some(watcher);
 
     std::thread::spawn(move || {
-        let mut last = Instant::now() - Duration::from_secs(10);
-        for ev in rx {
-            if let Ok(ev) = ev {
-                let relevant = ev.paths.iter().any(|p| {
-                    let is_md = p.extension().and_then(|e| e.to_str()) == Some("md");
-                    let rel = rel_of(&root_path, p);
-                    is_md && (rel.starts_with("wiki/") || rel.starts_with("life/"))
-                });
-                if !relevant {
-                    continue;
+        // Trailing debounce: collect changed paths until 400ms of quiet, then
+        // emit them once, so the frontend can skip its own writes.
+        let mut pending: Vec<String> = Vec::new();
+        loop {
+            let ev = if pending.is_empty() {
+                match rx.recv() { Ok(ev) => Some(ev), Err(_) => break }
+            } else {
+                match rx.recv_timeout(Duration::from_millis(400)) {
+                    Ok(ev) => Some(ev),
+                    Err(RecvTimeoutError::Timeout) => None,
+                    Err(RecvTimeoutError::Disconnected) => break,
                 }
-                // Debounce: coalesce bursts within 1.5s.
-                if last.elapsed() < Duration::from_millis(1500) {
-                    continue;
+            };
+            match ev {
+                Some(Ok(ev)) => {
+                    for p in &ev.paths {
+                        let is_md = p.extension().and_then(|e| e.to_str()) == Some("md");
+                        let rel = rel_of(&root_path, p);
+                        if is_md && (rel.starts_with("wiki/") || rel.starts_with("life/")) && !pending.contains(&rel) {
+                            pending.push(rel);
+                        }
+                    }
                 }
-                last = Instant::now();
-                let _ = app.emit("vault-changed", ());
+                Some(Err(_)) => {}
+                None => {
+                    let _ = app.emit("vault-changed", std::mem::take(&mut pending));
+                }
             }
         }
     });

@@ -9,6 +9,8 @@ import Markdown from "../components/Markdown";
 import { TagChips } from "../components/Bits";
 import ResourceActions from "../components/ResourceActions";
 import PersonActions from "../components/PersonActions";
+import ToolActions from "../components/ToolActions";
+import { isToolPage, toTool } from "../lib/tools";
 
 export default function PageView() {
   const { rel = "" } = useParams();
@@ -71,6 +73,9 @@ export default function PageView() {
 
       {page.zone === "resource" && <ResourceActions page={page} />}
       {page.zone === "person" && <PersonActions page={page} />}
+      {isToolPage(page) && page.fm.folder ? (
+        <div className="card" style={{ margin: "16px 0" }}><ToolActions tool={toTool(page)} /></div>
+      ) : null}
 
       <div className="pagecols">
         <Markdown source={body} />

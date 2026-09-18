@@ -132,7 +132,7 @@ h2.section::after { content: ""; flex: 1; height: 1px; background: var(--hair); 
 }
 .chip.tag::before { content: "#"; color: var(--faint); }
 .chip.link:hover { border-color: var(--hair-2); color: var(--ink); }
-.chip.on { background: var(--ink); color: var(--bg); }
+.chip.on, .chip.link.on:hover { background: var(--ink); color: var(--bg); }
 .chip.c { background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
 .chip button { background: none; border: none; padding: 0; cursor: pointer; color: inherit; }
 
@@ -622,6 +622,9 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .proposal:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
 .proposal .why { font-size: 12.5px; color: var(--muted); padding: 0 0 6px 30px; line-height: 1.5; }
 .agents { gap: 6px; margin-top: 12px; align-items: center; }
+.agents + .agents { margin-top: 6px; }
+.chip.role { border-style: dashed; }
+.chip.role.on { border-style: solid; }
 
 /* ---------- Коран и имена ---------- */
 .progress { display: flex; height: 8px; background: var(--raised); border-radius: 4px; overflow: hidden; }

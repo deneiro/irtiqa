@@ -7,7 +7,7 @@ import { inTauri } from "../lib/native";
 import { sourceTarget } from "../lib/vault";
 import { cancelRun, startRun } from "../lib/claude";
 import { useRuns, type OpKind, type Run } from "../lib/claudeRuns";
-import { AGENTS, agentLabel } from "../lib/agents";
+import { EXPERTS, ROLES, agentLabel } from "../lib/agents";
 
 function dur(r: Run): string {
   const ms = (r.endedAt ?? Date.now()) - r.startedAt;
@@ -33,6 +33,7 @@ export default function ClaudePage() {
     return v.raw.filter((r) => /\.(md|txt|pdf|html?)$/i.test(r.rel) && !cited.has(r.rel.normalize("NFC"))).sort((a, b) => b.mtime - a.mtime);
   }, [v]);
 
+  const pickAgent = (slug: string) => { setAgent(slug); localStorage.setItem("irtiqa.agent", slug); };
   const go = async (op: OpKind, arg = "") => {
     if (running) return;
     const resume = op === "ask" && follow && lastAsk ? lastAsk.sessionId : undefined;
@@ -65,19 +66,27 @@ export default function ClaudePage() {
           <div><b>Дайджест недели</b> — читает последние семь дней, обновляет профиль и обзоры тем, предлагает привычки и квесты по тому, что видно за неделю.</div>
           <div><b>Проверка vault</b> — ищет нарушения схемы, битые ссылки, сироты и устаревшие утверждения. Только отчёт, ничего не меняет.</div>
           <div><b>Вопрос</b> — отвечает выбранный эксперт: восемь по темам и «Штурман», который видит весь vault. Каждый читает свою тему и отвечает со ссылками на страницы. Их описания лежат в самом vault, в <code>.claude/agents/</code>, и работают так же из терминала: <code>claude --agent zdorovie</code>.</div>
+          <div><b>Роли</b> — не отвечают о работе, а ведут её. <b>ET1</b> — преподавание английского: урок, уровень и минуты первой строкой, материалы по-английски. <b>JH1</b> — поиск работы: ответ начинается с цифр, вакансия без ссылки не существует. Оба готовят черновики и <b>ничего не отправляют сами</b>: письма, ответы на запросы и посты отправляешь ты.</div>
         </div>
         <div className="row wrap agents">
           <span className="small muted">кого спрашиваешь:</span>
-          {AGENTS.map((a) => (
-            <button key={a.slug} className={`chip link ${agent === a.slug ? "on" : ""}`} title={a.theme ?? "видит весь vault и маршрутизирует"}
-              onClick={() => { setAgent(a.slug); localStorage.setItem("irtiqa.agent", a.slug); }}>{a.label}</button>
+          {EXPERTS.map((a) => (
+            <button key={a.slug} className={`chip link ${agent === a.slug ? "on" : ""}`} title={a.hint ?? a.theme ?? ""}
+              onClick={() => pickAgent(a.slug)}>{a.label}</button>
+          ))}
+        </div>
+        <div className="row wrap agents">
+          <span className="small muted">кому поручаешь:</span>
+          {ROLES.map((a) => (
+            <button key={a.slug} className={`chip link role ${agent === a.slug ? "on" : ""}`} title={a.hint ?? ""}
+              onClick={() => pickAgent(a.slug)}>{a.label}</button>
           ))}
         </div>
         <form className="row" style={{ marginTop: 8, gap: 8, alignItems: "flex-start" }} onSubmit={(e) => { e.preventDefault(); if (question.trim()) { void go("ask", question.trim()); setQuestion(""); } }}>
-          <textarea className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} rows={2} placeholder="Вопрос к vault: что я знаю о…, что источники говорят про…, что делать с…" value={question} onChange={(e) => setQuestion(e.target.value)} style={{ flex: 1, resize: "vertical" }} disabled={!!running}
+          <textarea className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} rows={2} placeholder={agent.startsWith("eldar-") ? "Задача роли: собери урок на завтра…, проверь ответы по рассылке…, напиши письмо в отель…" : "Вопрос к vault: что я знаю о…, что источники говорят про…, что делать с…"} value={question} onChange={(e) => setQuestion(e.target.value)} style={{ flex: 1, resize: "vertical" }} disabled={!!running}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); } }} />
           <div className="stack" style={{ gap: 6 }}>
-            <button className="btn primary" type="submit" disabled={!question.trim() || !!running}>Спросить</button>
+            <button className="btn primary" type="submit" disabled={!question.trim() || !!running}>{agent.startsWith("eldar-") ? "Поручить" : "Спросить"}</button>
             {lastAsk && <label className="small muted row" style={{ gap: 4 }}><input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} /> в продолжение</label>}
           </div>
         </form>
@@ -93,7 +102,7 @@ export default function ClaudePage() {
             <span className="small muted">{r.agent ? agentLabel(r.agent) : r.op} · {dur(r)}{r.blocks.map((b) => (b.kind === "result" && b.costUsd !== undefined ? ` · $${b.costUsd.toFixed(2)}` : "")).join("")}</span>
             <span className="grow" />
             {r.status === "running" ? <button className="btn small ghost" onClick={() => void cancelRun(r.id)}>остановить</button>
-              : <button className="btn small ghost" onClick={() => void reload()} title="перечитать vault">↻</button>}
+              : <button className="btn small ghost" onClick={() => void reload(true)} title="перечитать vault">↻</button>}
           </div>
           <details className="small muted" style={{ marginTop: 6 }}><summary style={{ cursor: "pointer" }}>промпт</summary><pre className="prompt">{r.prompt}</pre></details>
           <div className="rblocks">

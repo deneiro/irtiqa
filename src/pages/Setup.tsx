@@ -30,7 +30,7 @@ export default function SetupPage() {
         {vault && <div className="small muted" style={{ marginTop: 10 }}>{t("setup_stats", { p: vault.pages.length, l: vault.log.length, r: vault.raw.length })} · life/: {vault.life.length}</div>}
         <div className="row" style={{ marginTop: 14 }}>
           <button className="btn primary" onClick={() => void pick()}>{t("choose_folder")}</button>
-          <button className="btn" onClick={() => void reload()}>{t("rescan_plain")}</button>
+          <button className="btn" onClick={() => void reload(true)}>{t("rescan_plain")}</button>
           {root !== DEFAULT_ROOT && <button className="btn ghost" onClick={() => setRoot(DEFAULT_ROOT)}>{t("reset_icloud")}</button>}
         </div>
       </div>

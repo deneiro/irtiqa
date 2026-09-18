@@ -10,8 +10,11 @@ import { inTauri } from "./native";
 import { addRun, patchRun, type Block, type OpKind, type Run } from "./claudeRuns";
 
 const ALLOWED_TOOLS = ["Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(ls:*)", "Bash(find:*)", "Bash(wc:*)"];
+/** Roles need the open web: JH1 checks vacancies, ET1 checks materials. Reading only — they still send nothing. */
+const ROLE_TOOLS = ["WebSearch", "WebFetch"];
+const isRole = (agent?: string) => !!agent && agent.startsWith("eldar-");
 
-export function buildPrompt(op: OpKind, arg: string, today: string): { title: string; prompt: string } {
+export function buildPrompt(op: OpKind, arg: string, today: string, agent?: string): { title: string; prompt: string } {
   switch (op) {
     case "habit":
       return {
@@ -36,13 +39,17 @@ export function buildPrompt(op: OpKind, arg: string, today: string): { title: st
     default:
       return {
         title: arg.length > 60 ? arg.slice(0, 57) + "…" : arg,
-        prompt: `${arg}\n\nThis is a Query operation from CLAUDE.md: read the profile if needed, follow wikilinks, cite vault pages by name. Answer in Russian.`,
+        prompt: isRole(agent)
+          // A role is given work, not a question. Its own definition holds the style, the desk and the boundary.
+          ? `${arg}\n\nToday is ${today}. This is a task for you as a role agent, not a Query: do the work, write it where your definition says it belongs, and file a quest with status: proposed for anything started. Draft only — send and publish nothing yourself. Report in Russian.`
+          : `${arg}\n\nThis is a Query operation from CLAUDE.md: read the profile if needed, follow wikilinks, cite vault pages by name. Answer in Russian.`,
       };
   }
 }
 
 export function claudeArgs(prompt: string, resume: string | undefined, agent?: string): string[] {
-  const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits", "--allowedTools", ...ALLOWED_TOOLS];
+  const tools = isRole(agent) ? [...ALLOWED_TOOLS, ...ROLE_TOOLS] : ALLOWED_TOOLS;
+  const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits", "--allowedTools", ...tools];
   if (agent) args.push("--agent", agent);
   if (resume) args.push("--resume", resume);
   return args;
@@ -88,7 +95,7 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 
 /** Start a run; the run object is added to the runs store and updated as lines arrive. */
 export async function startRun(root: string, op: OpKind, arg: string, today: string, resume: string | undefined, agent?: string): Promise<string> {
-  const { title, prompt } = buildPrompt(op, arg, today);
+  const { title, prompt } = buildPrompt(op, arg, today, agent);
   const id = uid();
   const run: Run = { id, op, title, prompt, status: "running", startedAt: Date.now(), endedAt: undefined, blocks: [], sessionId: undefined, exitCode: undefined, agent };
   addRun(run);

@@ -7,7 +7,8 @@ import { useT } from "../lib/i18n";
 import type { Page } from "../lib/types";
 
 export default function CommandPalette() {
-  const { paletteOpen, setPaletteOpen, vault, index } = useStore();
+  const { paletteOpen, setPaletteOpen, vault, index, needIndex } = useStore();
+  useEffect(() => { if (paletteOpen) needIndex(); }, [paletteOpen, needIndex]);
   const { t, zone, themeLabel } = useT();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);

@@ -2,13 +2,14 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import MiniSearch from "minisearch";
-import type { Scan, Vault } from "./lib/types";
+import type { MdFile, Scan, Vault } from "./lib/types";
 import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
 import { buildIndex, type SearchDoc } from "./lib/search";
 import { buildLife, dayRel, emptyDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
 import { todayStr } from "./lib/dates";
-import { runCmd, writeText, type CmdResult } from "./lib/fs";
+import { runCmd, treeChanged, writeText, type CmdResult } from "./lib/fs";
+import { parseLog } from "./lib/log";
 
 const KEY = "irtiqa.vaultRoot";
 const LANG_KEY = "irtiqa.lang";
@@ -23,6 +24,8 @@ interface Store {
   setRoot: (r: string) => void;
   vault: Vault | null;
   index: MiniSearch<SearchDoc> | null;
+  /** Ask for the search index; `index` fills in on the next render. */
+  needIndex: () => void;
   /** Parsed life/ zone, rebuilt on every scan. */
   life: Life | null;
   /** Write one file inside the vault (app-owned paths only). */
@@ -44,7 +47,12 @@ interface Store {
   discardSession: () => void;
   loading: boolean;
   error: string | null;
-  reload: () => Promise<void>;
+  /**
+   * Bring the vault up to date after a write. Text writes are already patched
+   * in memory, so this only rescans the disk after a photo/move/delete, or
+   * always when `force` is set (the rescan buttons).
+   */
+  reload: (force?: boolean) => Promise<void>;
   paletteOpen: boolean;
   setPaletteOpen: (v: boolean) => void;
   lang: Lang;
@@ -72,7 +80,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setRootState(r);
   };
 
-  const reload = useCallback(async () => {
+  // The last scan, kept so our own writes can be patched in without rereading
+  // the whole vault (hundreds of pages over iCloud, then parse and reindex).
+  const scanRef = useRef<Scan | null>(null);
+  // rel -> time of our own recent writes, so the watcher's echo is ignored.
+  const ownWrites = useRef(new Map<string, number>());
+
+  const rescan = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -82,12 +96,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             if (!r.ok) throw new Error(await r.text());
             return (await r.json()) as Scan;
           });
+      treeChanged.value = false;
+      scanRef.current = scan;
       setVault(buildVault(scan));
       if (inTauri && watching.current !== root) {
         await invoke("watch_vault", { root }).catch(() => undefined);
         watching.current = root;
       }
     } catch (e) {
+      scanRef.current = null;
       setVault(null);
       setError(String(e));
     } finally {
@@ -95,43 +112,86 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
   }, [root]);
 
+  const reload = useCallback(
+    async (force = false) => {
+      if (force || !scanRef.current || treeChanged.value) await rescan();
+    },
+    [rescan],
+  );
+
   useEffect(() => {
-    void reload();
-  }, [reload]);
+    scanRef.current = null;
+    void rescan();
+  }, [rescan]);
 
   useEffect(() => {
     if (!inTauri) return;
-    const un = listen("vault-changed", () => void reload());
+    const un = listen<string[]>("vault-changed", (e) => {
+      const now = Date.now();
+      const foreign = (e.payload ?? []).some((rel) => {
+        const t = ownWrites.current.get(rel.normalize("NFC"));
+        return t === undefined || now - t > 5000;
+      });
+      if (foreign) void rescan();
+    });
     return () => {
       void un.then((f) => f());
     };
-  }, [reload]);
+  }, [rescan]);
 
-  const index = useMemo(() => (vault ? buildIndex(vault.pages) : null), [vault]);
-  const life = useMemo(() => (vault ? buildLife(vault.life, vault.media) : null), [vault]);
+  const pages = vault?.pages;
+  // The search index costs seconds on a large vault; build it only once search is used.
+  const [wantIndex, setWantIndex] = useState(false);
+  const index = useMemo(() => (pages && wantIndex ? buildIndex(pages) : null), [pages, wantIndex]);
+  const needIndex = useCallback(() => setWantIndex(true), []);
+  const lifeFiles = vault?.life;
+  const media = vault?.media;
+  const life = useMemo(() => (lifeFiles ? buildLife(lifeFiles, media) : null), [lifeFiles, media]);
 
-  // In the desktop app the watcher rescans after every write; in browser dev
-  // mode nothing watches, so rescan ourselves (debounced) to keep `life` fresh.
-  const rescan = useRef<number | undefined>(undefined);
+  /** Put one written file into the kept scan and derive the vault from it, no disk read. */
+  const patch = useCallback((rel: string, content: string) => {
+    const scan = scanRef.current;
+    if (!scan) return;
+    const file: MdFile = { rel, content, mtime: Math.floor(Date.now() / 1000) };
+    const upsert = (list: MdFile[]) => {
+      const i = list.findIndex((f) => f.rel.normalize("NFC") === rel);
+      if (i < 0) return [...list, file];
+      const next = list.slice();
+      next[i] = { ...file, rel: list[i].rel };
+      return next;
+    };
+    if (rel.startsWith("life/")) {
+      const next = { ...scan, life: upsert(scan.life ?? []) };
+      scanRef.current = next;
+      setVault((v) => (v ? { ...v, life: next.life ?? [] } : v));
+    } else if (rel === "wiki/log.md") {
+      scanRef.current = { ...scan, log: content };
+      setVault((v) => (v ? { ...v, logText: content, log: parseLog(content) } : v));
+    } else {
+      const next = { ...scan, pages: upsert(scan.pages) };
+      scanRef.current = next;
+      setVault(buildVault(next));
+    }
+  }, []);
+
   const saveText = useCallback(
     async (rel: string, content: string) => {
       await writeText(root, rel, content);
-      if (!inTauri) {
-        window.clearTimeout(rescan.current);
-        rescan.current = window.setTimeout(() => void reload(), 300);
-      }
+      const key = rel.normalize("NFC");
+      ownWrites.current.set(key, Date.now());
+      patch(key, content);
     },
-    [root, reload],
+    [root, patch],
   );
 
   const updateToday = useCallback(
     async (fn: (d: Day) => Day) => {
       const today = todayStr();
-      const cur = vault ? buildLife(vault.life, vault.media).days.get(today) : undefined;
+      const cur = life?.days.get(today);
       const next = fn(cur ?? emptyDay(today));
       await saveText(dayRel(today), serializeDay(next));
     },
-    [vault, saveText],
+    [life, saveText],
   );
 
   const [timer, setTimer] = useState<{ quest: string; startedAt: number } | null>(() => {
@@ -172,8 +232,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }
     localStorage.removeItem(PENDING_KEY);
     setPending(null);
-    await reload();
-  }, [pending, updateToday, life, saveText, reload]);
+  }, [pending, updateToday, life, saveText]);
   const commitVault = useCallback(
     async (paths: string[], message: string): Promise<CmdResult | null> => {
       if (!inTauri) return null;
@@ -184,7 +243,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [root],
   );
 
-  const value: Store = { root, setRoot, vault, index, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang };
+  const value = useMemo<Store>(
+    () => ({ root, setRoot, vault, index, needIndex, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
+    [root, vault, index, needIndex, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
+  );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

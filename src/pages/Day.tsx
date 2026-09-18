@@ -217,8 +217,7 @@ export default function DayPage() {
   };
 
   const cycle = (h: Habit) => {
-    const cur = markOf(draft, h.title) ?? "none";
-    update((d) => withMark(d, h.title, NEXT_MARK[cur]));
+    update((d) => withMark(d, h.title, NEXT_MARK[markOf(d, h.title) ?? "none"]));
   };
 
   // ----- done list, money, journal -----

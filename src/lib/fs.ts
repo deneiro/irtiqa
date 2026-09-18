@@ -9,6 +9,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { inTauri } from "./native";
 
+/**
+ * Set when the app changed the file tree in a way the store cannot patch in
+ * memory (photo added, file moved or deleted). The next `reload()` rescans.
+ */
+export const treeChanged = { value: false };
+
 const APP_OWNED = [/^life\//, /^wiki\/log\.md$/, /^wiki\/.+\.md$/];
 
 export function assertWritable(rel: string): void {
@@ -36,6 +42,7 @@ export async function writeBinary(root: string, rel: string, bytes: ArrayBuffer)
   let bin = "";
   for (let i = 0; i < b.length; i += 0x8000) bin += String.fromCharCode(...b.subarray(i, i + 0x8000));
   const base64Data = btoa(bin);
+  treeChanged.value = true;
   if (inTauri) return invoke("write_binary", { root, rel, base64Data });
   const r = await fetch("/__vault/write-binary", {
     method: "POST",
@@ -49,6 +56,7 @@ export async function writeBinary(root: string, rel: string, bytes: ArrayBuffer)
 export async function renameFile(root: string, from: string, to: string): Promise<void> {
   assertWritable(from);
   assertWritable(to);
+  treeChanged.value = true;
   if (inTauri) return invoke("rename_file", { root, from, to });
   const r = await fetch("/__vault/rename", {
     method: "POST",
@@ -61,6 +69,7 @@ export async function renameFile(root: string, from: string, to: string): Promis
 /** Remove a file or folder the app owns (a photo, or a whole event). */
 export async function deleteFile(root: string, rel: string): Promise<void> {
   if (!/^life\//.test(rel)) throw new Error(`Not app-owned: ${rel}`);
+  treeChanged.value = true;
   if (inTauri) return invoke("delete_file", { root, rel });
   const r = await fetch("/__vault/delete", {
     method: "POST",
