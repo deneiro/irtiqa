@@ -24,6 +24,7 @@ import HorizonSection from "../components/HorizonSection";
 import TalksSection from "../components/TalksSection";
 import CareerSection from "../components/CareerSection";
 import WishesSection from "../components/WishesSection";
+import LibrarySection from "../components/LibrarySection";
 import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
@@ -252,6 +253,8 @@ export default function ThemePage() {
         return <CareerSection key={key} />;
       case "wishes":
         return <WishesSection key={key} />;
+      case "library":
+        return <LibrarySection key={key} />;
       case "sport":
         return <SportSection key={key} />;
       case "nutrition": {

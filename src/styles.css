@@ -793,3 +793,6 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .pfoot { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; padding: 10px 0; background: var(--bg); border-top: 1px solid var(--hair); z-index: 2; }
 .btn.danger { color: var(--danger); }
 .btn.danger:hover { border-color: color-mix(in srgb, var(--danger) 55%, transparent); color: var(--danger); }
+
+table.tbl.lib td:first-child { min-width: 160px; }
+table.tbl.lib .num { text-align: right; white-space: nowrap; width: 1%; }

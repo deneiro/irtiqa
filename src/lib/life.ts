@@ -211,6 +211,8 @@ export interface Life {
   jobs: string | null;
   /** Raw text of `life/wishes.md`; parsed by lib/wishes.ts. */
   wishes: string | null;
+  /** Raw text of `life/library.md`; parsed by lib/library.ts. */
+  library: string | null;
   /** Raw text of `life/calendar.md`; parsed by lib/calendar.ts. */
   calendar: string | null;
   audits: Audit[];
@@ -226,6 +228,7 @@ export const HEALTH_REL = "life/health.md";
 export const TALKS_REL = "life/talks.md";
 export const JOBS_REL = "life/jobs.md";
 export const WISHES_REL = "life/wishes.md";
+export const LIBRARY_REL = "life/library.md";
 export const CALENDAR_FILE = "life/calendar.md";
 
 // ---------- small helpers ----------
@@ -891,6 +894,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   let talks: string | null = null;
   let jobs: string | null = null;
   let wishes: string | null = null;
+  let library: string | null = null;
   let calendar: string | null = null;
   const audits: Audit[] = [];
   for (const f of files) {
@@ -906,6 +910,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel === TALKS_REL) talks = f.content;
     else if (f.rel === JOBS_REL) jobs = f.content;
     else if (f.rel === WISHES_REL) wishes = f.content;
+    else if (f.rel === LIBRARY_REL) library = f.content;
     else if (f.rel === CALENDAR_FILE) calendar = f.content;
     else if (f.rel.startsWith(AUDIT_DIR + "/")) audits.push(parseAudit(f));
   }
@@ -914,5 +919,5 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   events.sort((a, b) => b.date.localeCompare(a.date));
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
   audits.sort((a, b) => b.date.localeCompare(a.date));
-  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, calendar, audits };
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, audits };
 }
