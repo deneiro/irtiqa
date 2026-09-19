@@ -28,16 +28,18 @@ export default function PeoplePage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  /** Only themes whose overview declares a `people` section keep a People folder. */
+  /** Themes that keep a People folder: `people`, or Social's `circle`, which is the same folder sorted by silence. */
   const peopleThemes = useMemo(
     () => THEMES.filter((t) => {
       const ov = v.pages.find((p) => p.file === "_Overview" && p.theme === t.name && p.segments.length === 1);
-      return themeSections(ov).includes("people");
+      const s = themeSections(ov);
+      return s.includes("people") || s.includes("circle");
     }).map((t) => t.name),
     [v],
   );
   const [form, setForm] = useState({ name: "", theme: "", connection: "", how: "" });
-  const formTheme = form.theme || peopleThemes[0] || THEMES[1].name;
+  // Most new people are friends; the form starts there.
+  const formTheme = form.theme || (peopleThemes.includes("Social & friends") ? "Social & friends" : peopleThemes[0]) || THEMES[1].name;
 
   const addPerson = async () => {
     const name = form.name.trim();
