@@ -115,3 +115,54 @@ export function guessCategory(page: Page): Category {
   if (/знаком(ый|ая)/.test(c)) return "знакомый";
   return "друг";
 }
+
+/**
+ * The rest of Eldar's own picture of a person: where they live, what they do,
+ * and who belongs to them — wife, children, a brother. His to fill, like
+ * category and closeness; nothing guesses these.
+ *
+ * `related:` is a list of "роль: [[Имя]]" (a person with a page) or
+ * "роль: Имя" (someone who has none yet).
+ */
+export const ROLES = ["жена", "муж", "сын", "дочь", "мать", "отец", "брат", "сестра", "дедушка", "бабушка", "дядя", "тётя", "племянник", "племянница", "невеста", "девушка", "партнёр", "друг", "коллега"] as const;
+
+export interface Relation { role: string; name: string }
+
+export function textOf(page: Page, key: string): string {
+  return str(page.fm[key]) ?? "";
+}
+
+function listOf(v: unknown): string[] {
+  if (Array.isArray(v)) return v.map((x) => String(x).trim()).filter(Boolean);
+  const s = str(v);
+  return s ? [s] : [];
+}
+
+const linkName = (s: string) => {
+  const m = s.trim().match(/^\[\[([^\]|#]+)(?:\|[^\]]*)?\]\]$/);
+  return (m ? m[1] : s).trim();
+};
+
+export function relationsOf(page: Page): Relation[] {
+  return listOf(page.fm.related).map((item) => {
+    const i = item.indexOf(":");
+    return i > 0 ? { role: item.slice(0, i).trim(), name: linkName(item.slice(i + 1)) } : { role: "", name: linkName(item) };
+  }).filter((r) => r.name);
+}
+
+/** "[[Имя]]" when the vault has that person, the plain name otherwise. */
+export function formatRelation(r: Relation, known: (name: string) => boolean): string {
+  const who = known(r.name) ? `[[${r.name}]]` : r.name;
+  return r.role ? `${r.role}: ${who}` : who;
+}
+
+/** Who names this page in their own `related:` — the other side of a tie. */
+export function relatedFrom(page: Page, pages: Page[]): { page: Page; role: string }[] {
+  const names = new Set([page.title, page.file, ...page.aliases].map((s) => s.toLowerCase()));
+  const out: { page: Page; role: string }[] = [];
+  for (const p of pages) {
+    if (p === page || p.zone !== "person") continue;
+    for (const r of relationsOf(p)) if (names.has(r.name.toLowerCase())) out.push({ page: p, role: r.role });
+  }
+  return out;
+}

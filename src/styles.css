@@ -774,3 +774,16 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .cal-item.event.passed { border-style: solid; background: color-mix(in srgb, var(--c) 78%, #000); color: #fff; }
 .cal-legend.event { border: 1.5px dashed var(--accent-2); background: color-mix(in srgb, var(--accent-2) 20%, transparent); }
 .addrow.sport { grid-template-columns: 1fr 150px 90px 90px auto; }
+
+/* ---------- person form ---------- */
+.pfacts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 13px; color: var(--ink-2); }
+.pfacts .pf .k { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; margin-right: 2px; }
+.pform { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 14px; }
+.pform fieldset { border: 1px solid var(--hair); border-radius: var(--r-lg); padding: 10px 14px 14px; margin: 0; }
+.pform legend { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); padding: 0 6px; }
+.pgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.pgrid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .pgrid, .pgrid.three { grid-template-columns: 1fr; } }
+.prel { display: grid; grid-template-columns: 170px 1fr 110px auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+.pmore summary { cursor: pointer; }
+.pfoot { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; padding: 10px 0; background: var(--bg); border-top: 1px solid var(--hair); z-index: 2; }

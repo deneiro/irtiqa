@@ -54,5 +54,8 @@ export function setFrontmatterKeys(content: string, patch: Record<string, FmValu
 export function setBody(content: string, body: string): string {
   const m = content.match(/^---\r?\n[\s\S]*?\r?\n---(\r?\n|$)/);
   const text = body.replace(/\s+$/, "") + "\n";
-  return m ? m[0] + (m[0].endsWith("\n") ? "" : "\n") + text : text;
+  if (!m) return text;
+  // Keep the blank line between the block and the text when the page had one.
+  const gap = /^\r?\n/.test(content.slice(m[0].length)) ? "\n" : "";
+  return m[0] + (m[0].endsWith("\n") ? "" : "\n") + gap + text.replace(/^\s*\n/, "");
 }
