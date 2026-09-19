@@ -271,6 +271,23 @@ fn delete_file(root: String, rel: String) -> Result<(), String> {
     }
 }
 
+/// A person page Eldar no longer wants goes to the macOS Trash, never straight
+/// to oblivion: `/usr/bin/trash` keeps it recoverable from Finder.
+#[tauri::command]
+fn trash_person(root: String, rel: String) -> Result<(), String> {
+    let parts: Vec<&str> = rel.split('/').collect();
+    let is_person = rel.ends_with(".md") && parts.len() == 4 && parts[0] == "wiki" && parts[2] == "People" && !parts[3].starts_with('_');
+    if !is_person {
+        return Err(format!("Refusing to trash {rel}: not a person page"));
+    }
+    let target = safe_join(&root, &rel)?;
+    if !target.is_file() {
+        return Err(format!("{rel} is not a file"));
+    }
+    let out = Command::new("/usr/bin/trash").arg(&target).output().map_err(|e| e.to_string())?;
+    if out.status.success() { Ok(()) } else { Err(String::from_utf8_lossy(&out.stderr).trim().to_string()) }
+}
+
 fn base64_decode(data: &str) -> Result<Vec<u8>, String> {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut lookup = [255u8; 256];
@@ -447,7 +464,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(WatchState::default())
         .manage(Runs::default())
-        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, write_binary, delete_file, rename_file, run_cmd, run_stream, kill_stream, watch_vault])
+        .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, write_binary, delete_file, rename_file, trash_person, run_cmd, run_stream, kill_stream, watch_vault])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

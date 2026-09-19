@@ -5,8 +5,8 @@ import type { Page } from "../lib/types";
 import { confirmAction, openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
 import { setBody, setFrontmatterKeys } from "../lib/frontmatter";
-import { planRename, planSummary } from "../lib/renamePerson";
-import { renameFile } from "../lib/fs";
+import { deleteSummary, planDelete, planRename, planSummary } from "../lib/renamePerson";
+import { renameFile, trashPerson } from "../lib/fs";
 import { rawPageText } from "../lib/rawpage";
 import {
   CATEGORIES, CONTACT_KEYS, CONTACT_LABELS, ROLES, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks,
@@ -144,6 +144,22 @@ export default function PersonActions({ page }: { page: Page }) {
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }
   };
 
+  /** The page to the Trash, its list lines gone, every link left as the plain name. */
+  const remove = async () => {
+    if (!vault) return;
+    const plan = planDelete(vault, page, vault.life);
+    if (!(await confirmAction(`Удалить «${page.title}»?\n\n${deleteSummary(plan)}.`, "Удалить человека"))) return;
+    setBusy(true);
+    try {
+      await trashPerson(root, page.rel);
+      for (const e of plan.edits) await saveText(e.rel, e.content);
+      setErr(null);
+      setOpen(false);
+      await reload(true);
+      nav("/people", { replace: true });
+    } catch (e) { setErr(String(e)); setBusy(false); }
+  };
+
   const cancel = async () => {
     if (dirty && !(await confirmAction("Закрыть без сохранения? Введённое пропадёт."))) return;
     setOpen(false);
@@ -273,6 +289,8 @@ export default function PersonActions({ page }: { page: Page }) {
             <button className="btn primary" type="submit" disabled={busy || !dirty || !!rename?.error}>{busy ? "сохраняю…" : "сохранить"}</button>
             <button className="btn ghost" type="button" onClick={() => void cancel()}>отмена</button>
             <span className="small faint">{dirty ? "есть несохранённые изменения — в файл ничего не ушло" : "изменений нет"}</span>
+            <span className="grow" />
+            <button className="btn ghost danger" type="button" disabled={busy} onClick={() => void remove()} title="страница уйдёт в Корзину, ссылки на неё станут просто именем">удалить человека</button>
           </div>
         </form>
       )}

@@ -2,7 +2,7 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 // @ts-expect-error type error without @types/node package
 import process from "node:process";
 
@@ -71,6 +71,19 @@ function vaultDevServer(): Plugin {
           try {
             const { root, rel } = JSON.parse(body) as { root: string; rel: string };
             rmSync(guard(root, rel), { recursive: true, force: true });
+            res.end("ok");
+          } catch (e) { res.statusCode = 400; res.end(String(e)); }
+        });
+      });
+      server.middlewares.use("/__vault/trash", (req, res) => {
+        let body = "";
+        req.on("data", (c) => (body += c));
+        req.on("end", () => {
+          try {
+            const { root, rel } = JSON.parse(body) as { root: string; rel: string };
+            const target = resolve(root, rel);
+            if (!target.startsWith(resolve(root) + sep) || !/^wiki\/[^/]+\/People\/[^_/][^/]*\.md$/.test(rel)) throw new Error(`Refusing ${rel}`);
+            execFileSync("/usr/bin/trash", [target]);
             res.end("ok");
           } catch (e) { res.statusCode = 400; res.end(String(e)); }
         });

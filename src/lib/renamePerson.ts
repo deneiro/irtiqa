@@ -102,3 +102,66 @@ export function planSummary(plan: RenamePlan): string {
   }
   return parts.join(" · ");
 }
+
+// ---------- deleting ----------
+
+export interface DeletePlan {
+  rel: string;
+  /** Files rewritten: links turned into plain names, directory lines dropped. */
+  edits: { rel: string; content: string; links: number; lines: number }[];
+}
+
+/** A list line in a people directory that exists only to point at this person. */
+const DIRECTORY = /(^|\/)(People\/_Overview\.md|index\.md)$/;
+
+/**
+ * Removing a person the circle no longer holds. The page goes to the Trash;
+ * directory lines that listed them go away; every other link becomes the plain
+ * name, so no page is left pointing at nothing and no record loses its words.
+ */
+export function planDelete(vault: Vault, page: Page, lifeFiles: { rel: string; content: string }[]): DeletePlan {
+  const title = page.title;
+  const oldRelNoExt = page.rel.replace(/\.md$/, "");
+  const plan: DeletePlan = { rel: page.rel, edits: [] };
+  const sources: { rel: string; content: string }[] = [
+    ...[...vault.rawByRel.entries()].map(([rel, content]) => ({ rel, content })),
+    { rel: "wiki/log.md", content: vault.logText },
+    ...lifeFiles,
+  ];
+  const linkRe = /\[\[([^\]]+)\]\]/g;
+  const hits = (inner: string) => {
+    const target = inner.split("|")[0].split("#")[0];
+    return matchesTarget(target, title, oldRelNoExt);
+  };
+  for (const f of sources) {
+    if (!f.content || f.rel === page.rel) continue;
+    let lines = 0;
+    let text = f.content;
+    if (DIRECTORY.test(f.rel)) {
+      const kept = text.split("\n").filter((l) => {
+        const drop = /^\s*[-*]\s+\[\[/.test(l) && [...l.matchAll(linkRe)].some((m, i) => i === 0 && hits(m[1]));
+        if (drop) lines++;
+        return !drop;
+      });
+      text = kept.join("\n");
+    }
+    let links = 0;
+    text = text.replace(linkRe, (whole, inner: string) => {
+      if (!hits(inner)) return whole;
+      links++;
+      const [targetPart, ...alias] = inner.split("|");
+      return alias.length ? alias.join("|") : targetPart.split("#")[0].split("/").pop()!.trim();
+    });
+    if (links || lines) plan.edits.push({ rel: f.rel, content: text, links, lines });
+  }
+  return plan;
+}
+
+export function deleteSummary(plan: DeletePlan): string {
+  const lines = plan.edits.reduce((n, e) => n + e.lines, 0);
+  const links = plan.edits.reduce((n, e) => n + e.links, 0);
+  const parts = ["страница уйдёт в Корзину macOS, её можно вернуть оттуда"];
+  if (lines) parts.push(`${lines} строк в списках людей уберутся`);
+  if (links) parts.push(`${links} ссылок станут просто именем`);
+  return parts.join(" · ");
+}

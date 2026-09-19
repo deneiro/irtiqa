@@ -787,3 +787,5 @@ textarea.text:focus { border-color: var(--hair-2); outline: none; }
 .prel { display: grid; grid-template-columns: 170px 1fr 110px auto; gap: 8px; align-items: center; margin-bottom: 8px; }
 .pmore summary { cursor: pointer; }
 .pfoot { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; padding: 10px 0; background: var(--bg); border-top: 1px solid var(--hair); z-index: 2; }
+.btn.danger { color: var(--danger); }
+.btn.danger:hover { border-color: color-mix(in srgb, var(--danger) 55%, transparent); color: var(--danger); }
