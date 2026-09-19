@@ -24,7 +24,12 @@ export function buildPrompt(op: OpKind, arg: string, today: string, agent?: stri
     case "ingest":
       return {
         title: `Ingest: ${arg.split("/").pop()}`,
-        prompt: `Run the Ingest operation from CLAUDE.md on the source file "${arg}". Follow every step, including proposals under life/habits or life/quests with status: proposed when the source carries concrete practices, the overview update, and the log.md entry. Do not add «Resources — added» sections to overviews (schema 3.1). Report in Russian: what was created, what was updated, what was proposed, any contradictions.`,
+        prompt: `Run the Ingest operation from CLAUDE.md on the source file "${arg}". Follow every step, including the «## Применить» section on the new Resource page when the source carries concrete practices (Apply plan: one quest with steps, habits apart), the overview update, and the log.md entry. Do not create files in life/ from an ingest: the page itself is the offer. Do not add «Resources — added» sections to overviews (schema 3.1). Report in Russian: what was created, what was updated, what the page offers to do, any contradictions.`,
+      };
+    case "apply":
+      return {
+        title: `Применить: ${arg.split("/").pop()?.replace(/\.md$/, "")}`,
+        prompt: `Run the Apply plan operation from CLAUDE.md on the Resource page "${arg}". Today is ${today}. Read the page in full, the profile, and every file in life/habits and life/quests so nothing is duplicated. Write or rewrite only the «## Применить» section of that page, in the exact format CLAUDE.md gives: one quest with concrete steps, then habits and things to give up, if the source really carries them. Touch nothing else: no files in life/, no other section of the page. Append the log.md entry. Report in Russian: the quest and its steps, the habits, and why.`,
       };
     case "digest":
       return {
