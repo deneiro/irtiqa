@@ -1,0 +1,7 @@
+.needs { margin-top: 16px; border-color: color-mix(in srgb, var(--accent) 35%, var(--hair)); }
+.needs .need { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; color: inherit; text-decoration: none; border-top: 1px solid var(--hair); font-size: 14px; line-height: 1.4; }
+.needs .need:first-of-type { border-top: 0; }
+.needs .need:hover .t { text-decoration: underline; }
+.needs .need .ic { width: 18px; flex: none; text-align: center; color: var(--muted); }
+.needs .need.hot .ic, .needs .need.hot .t { color: var(--danger); }
+.needs .linkbtn { background: none; border: 0; padding: 6px 0 0; cursor: pointer; }

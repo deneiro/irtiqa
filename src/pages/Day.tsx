@@ -14,6 +14,7 @@ import {
 import type { CmdResult } from "../lib/fs";
 import QuestRows from "../components/QuestRows";
 import TodayPlan from "../components/TodayPlan";
+import NeedsYou from "../components/NeedsYou";
 
 const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined };
 const MARK_GLYPH: Record<string, string> = { none: "", done: "✓", failed: "✗", skipped: "→" };
@@ -309,6 +310,8 @@ function DayView({ today }: { today: string }) {
         {" · "}потрачено <b>{fmtMoney(spentOf(draft))}</b>
         {" · "}XP <b>{xpTotal}</b>
       </p>
+
+      {!locked && <NeedsYou today={today} />}
 
       {saveError && <div className="notice err">Не удалось записать: {saveError}</div>}
       {autoClosed.length > 0 && (

@@ -30,6 +30,9 @@ import {
   type Day, type DayMark, type Habit, type Meal, type Tx,
 } from "../src/lib/life";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
+import { buildLife } from "../src/lib/life";
+import { buildPage } from "../src/lib/vault";
+import { attention } from "../src/lib/attention";
 import { MAGHRIB_DAYS_FROM, SHYMKENT, maghribOn } from "../src/lib/maghrib";
 
 // ---------- config & state ----------
@@ -155,6 +158,40 @@ function writeDay(d: Day) {
 /** Callback data is capped at 64 bytes; Cyrillic titles are not. */
 function key(title: string): string {
   return createHash("sha1").update(title).digest("hex").slice(0, 8);
+}
+
+// ---------- «требует тебя» ----------
+
+function walkMd(dir: string, out: string[] = []): string[] {
+  if (!existsSync(dir)) return out;
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.name.startsWith(".")) continue;
+    const p = join(dir, e.name);
+    if (e.isDirectory()) walkMd(p, out);
+    else if (e.name.endsWith(".md")) out.push(p);
+  }
+  return out;
+}
+
+/** The same list the Day screen shows at the top, read fresh from the vault. */
+function needsYouText(date: string, limit = 8): string | null {
+  const rel = (p: string) => p.slice(cfg.vault.length + 1);
+  const life = buildLife(walkMd(join(cfg.vault, "life")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 })));
+  const people = walkMd(join(cfg.vault, "wiki"))
+    .filter((p) => /\/People\/[^_/][^/]*\.md$/.test(p))
+    .map((p) => buildPage(rel(p), readFileSync(p, "utf8"), 0))
+    .filter((p) => p.zone === "person");
+  const items = attention(life, people, date);
+  if (!items.length) return null;
+  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на экране Дня.` : "";
+  return ["📌 Требует тебя", ...items.slice(0, limit).map((a) => `• ${a.text}`)].join("\n") + more;
+}
+
+async function sendNeeds(date: string, quietIfEmpty: boolean) {
+  if (!cfg.chatId) return;
+  const text = needsYouText(date);
+  if (text) await say(text);
+  else if (!quietIfEmpty) await say("📌 Ничего не горит: просроченного нет.");
 }
 
 // ---------- food ----------
@@ -444,9 +481,15 @@ async function onMessage(m: Message) {
         "",
         "День считается от магриба до магриба: после магриба всё идёт в завтрашний файл.",
         `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${HABITS_BUTTON} или /today — сводка сейчас.`,
+        "/need — что требует тебя: врачи, люди, дни рождения, списания, застрявшие квесты. Утром приходит само.",
       ].join("\n"),
       { reply_markup: REPLY_KEYBOARD },
     );
+    return;
+  }
+  if (text.startsWith("/need")) {
+    awaiting = null;
+    await sendNeeds(toDateStr(new Date()), false);
     return;
   }
   if (text.startsWith("/today") || text === HABITS_BUTTON) {
@@ -558,6 +601,7 @@ async function tick() {
         await sendDigest(cal, `🌇 Итог дня ${cal}: не отмечено`, true);
       }
       await sendDigest(logicalDate(new Date(s.at.getTime() + 1000)), s.title);
+      if (s.id.endsWith(":morning")) await sendNeeds(cal, true);
     }
   }
   const due = state.snoozes.filter((z) => z.at <= now.getTime());

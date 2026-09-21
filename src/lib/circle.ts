@@ -90,8 +90,10 @@ export function buildCircle(people: Page[], events: LifeEvent[], today: string):
       triggers: triggersOf(page), support: isSupport(page),
     };
   });
+  // No contact recorded at all is not "fine": it sorts above everyone still in time.
+  const key = (i: CircleItem) => i.overdue ?? (i.cadence !== undefined && !i.lastContact && !i.lastMeet ? 0 : -1e9);
   return items.sort((a, b) =>
-    (b.overdue ?? -1e9) - (a.overdue ?? -1e9) ||
+    key(b) - key(a) ||
     (b.closeness ?? 0) - (a.closeness ?? 0) ||
     a.name.localeCompare(b.name, "ru"));
 }

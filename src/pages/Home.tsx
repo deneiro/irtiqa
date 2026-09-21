@@ -46,7 +46,7 @@ export default function Home() {
 
   const inMotion = THEMES.map((th) => {
     const ov = v.pages.find((p) => p.theme === th.name && p.file === "_Overview" && p.segments.length === 1);
-    const text = ov ? section(ov.body, /in motion|в работе|now|current/i) : null;
+    const text = ov ? section(ov.body, /в движении|in motion|в работе|now|current/i) : null;
     return { th, ov, text };
   }).filter((x) => x.text);
 
