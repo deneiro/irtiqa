@@ -6,7 +6,7 @@ import { asList } from "../lib/vault";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { plural, todayStr } from "../lib/dates";
-import { HABIT_DIR, QUEST_DIR, XP, safeFilename, serializeHabit, serializeQuest, withQuestSteps, type HabitKind } from "../lib/life";
+import { activationBlocked, HABIT_DIR, QUEST_DIR, XP, safeFilename, serializeHabit, serializeQuest, withQuestSteps, type HabitKind } from "../lib/life";
 import { setFrontmatterKeys } from "../lib/frontmatter";
 import { freqLabel, parseApplyPlan, type PlanHabit } from "../lib/practices";
 import { rawPageText } from "../lib/rawpage";
@@ -62,7 +62,10 @@ export default function ResourceActions({ page }: { page: Page }) {
 
   const addQuest = async (title: string, body: string) => {
     if (questExists(title)) throw new Error("такой квест уже есть");
-    await saveText(`${QUEST_DIR}/${safeFilename(title)}.md`, serializeQuest({ title, theme, status: "active", created: today, due: due || undefined, project: page.project, source, body }));
+    // Past the limit the quest is still kept, as «предложен», and the reason is said.
+    const blocked = activationBlocked(life?.quests ?? [], title);
+    await saveText(`${QUEST_DIR}/${safeFilename(title)}.md`, serializeQuest({ title, theme, status: blocked ? "proposed" : "active", created: today, due: due || undefined, project: page.project, source, body }));
+    if (blocked) throw new Error(`Квест записан как предложенный. ${blocked}`);
   };
 
   const takeQuest = () => act(async () => {

@@ -7,7 +7,8 @@
  */
 import type { Page } from "./types";
 import type { Life } from "./life";
-import { questJournal, questSteps, nextStep, subscriptionsDue } from "./life";
+import { ACTIVE_QUEST_LIMIT, questJournal, questSteps, nextStep, subscriptionsDue } from "./life";
+import { blockOn, parseCalendar } from "./calendar";
 import { parseHealth, daysUntil } from "./health";
 import { buildCircle } from "./circle";
 import { daysToBirthday } from "./people";
@@ -122,6 +123,23 @@ export function attention(life: Life, people: Page[], today: string): Attention[
     } else if (dueLeft !== undefined && dueLeft <= 3) {
       out.push({ kind: "quest", text: `Срок квеста ${dueLeft === 0 ? "сегодня" : `через ${days(dueLeft)}`}: ${q.title}${stepInfo}`, to, urgency: 65 - dueLeft });
     }
+  }
+
+  // Too many at once, and quests with no time set aside: both mean nothing gets done.
+  const active = life.quests.filter((x) => x.status === "active");
+  if (active.length > ACTIVE_QUEST_LIMIT) {
+    out.push({ kind: "quest", text: `В работе ${active.length} квестов, а можно ${ACTIVE_QUEST_LIMIT}: оставь главные, остальные — в «предложен»`, to: "/quests", urgency: 90 });
+  }
+  const blocks = parseCalendar(life.calendar ?? "");
+  const week = Array.from({ length: 7 }, (_, i) => addDays(today, i));
+  const noSlot = active.filter((q) => !blocks.some((b) => b.quest === q.title && week.some((d) => blockOn(b, d))));
+  if (noSlot.length) {
+    out.push({
+      kind: "quest",
+      text: `Нет времени в календаре на неделю: ${noSlot.slice(0, 3).map((q) => q.title).join("; ")}${noSlot.length > 3 ? ` и ещё ${noSlot.length - 3}` : ""}`,
+      to: noSlot.length === 1 ? `/quest/${encodeURIComponent(noSlot[0].rel)}` : "/quests",
+      urgency: 58,
+    });
   }
 
   return out.sort((a, b) => b.urgency - a.urgency);

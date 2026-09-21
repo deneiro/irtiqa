@@ -4,7 +4,7 @@ import { confirmAction } from "../lib/native";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { todayStr } from "../lib/dates";
-import { QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
+import { activationBlocked, QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
 import QuestRows from "../components/QuestRows";
 import SourceLink from "../components/SourceLink";
 
@@ -33,7 +33,11 @@ export default function QuestsPage() {
   const write = async (q: Quest, patch: Partial<Quest>) => {
     try { await saveText(q.rel, serializeQuest({ ...q, ...patch })); setErr(null); await reload(); } catch (e) { setErr(String(e)); }
   };
-  const setStatus = (q: Quest, status: QuestStatus) => void write(q, { status });
+  const setStatus = (q: Quest, status: QuestStatus) => {
+    const blocked = status === "active" ? activationBlocked(quests, q.title) : null;
+    if (blocked) { setErr(blocked); return; }
+    void write(q, { status });
+  };
 
   const closeQuest = async (q: Quest) => {
     if (!(await confirmAction(`Закрыть квест «${q.title}»? Он попадёт в файл сегодняшнего дня.`))) return;
@@ -50,12 +54,13 @@ export default function QuestsPage() {
     if (!title || !safeFilename(title)) return;
     if (quests.some((q) => q.title === title)) { setErr("Такой квест уже есть."); return; }
     try {
+      const blocked = activationBlocked(quests, title);
       await saveText(`${QUEST_DIR}/${safeFilename(title)}.md`, serializeQuest({
-        title, theme: form.theme, status: "active", created: today, due: form.due || undefined,
+        title, theme: form.theme, status: blocked ? "proposed" : "active", created: today, due: form.due || undefined,
         project: form.project || undefined, source: form.source.trim() || undefined, body: form.body,
       }));
       setForm(EMPTY);
-      setErr(null);
+      setErr(blocked ? `Квест записан во «Входящие» как предложенный. ${blocked}` : null);
       await reload();
     } catch (e) { setErr(String(e)); }
   };

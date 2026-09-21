@@ -8,9 +8,10 @@ import { confirmAction } from "../lib/native";
 import { deleteFile } from "../lib/fs";
 import { todayStr } from "../lib/dates";
 import SourceLink from "../components/SourceLink";
+import QuestTime from "../components/QuestTime";
 import { fmtElapsed } from "../components/QuestRows";
 import {
-  questDescription, questJournal, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
+  activationBlocked, questDescription, questJournal, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
   type Quest, type QuestStatus, type QuestStep,
 } from "../lib/life";
 
@@ -133,7 +134,12 @@ export default function QuestPage() {
           <h3>Параметры</h3>
           <div className="qfields">
             <label className="cfield"><span>состояние</span>
-              <select className="text" value={q.status} disabled={busy} onChange={(e) => void write({ status: e.target.value as QuestStatus })}>
+              <select className="text" value={q.status} disabled={busy} onChange={(e) => {
+                const status = e.target.value as QuestStatus;
+                const blocked = status === "active" ? activationBlocked(life.quests, q.title) : null;
+                if (blocked) { setErr(blocked); return; }
+                void write({ status });
+              }}>
                 {STATUS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
               </select>
             </label>
@@ -160,6 +166,8 @@ export default function QuestPage() {
           </div>
         </div>
       </div>
+
+      {q.status === "active" && <div style={{ marginTop: 16 }}><QuestTime quest={q} /></div>}
 
       <h2 className="section">Шаги <span className="n">{steps.length ? `${doneSteps} из ${steps.length}` : 0}</span></h2>
       <div className="card">

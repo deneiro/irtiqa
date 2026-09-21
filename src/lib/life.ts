@@ -423,6 +423,22 @@ export function serializeQuest(q: Omit<Quest, "rel">): string {
   return lines.join("\n") + "\n" + (body ? body + "\n" : "");
 }
 
+/**
+ * At most this many quests in work at once (Eldar, 2026-09-21). On that day ten
+ * were active and had one minute of work between them: a list that long is a
+ * wish list, not a plan. Everything else waits as «предложен».
+ */
+export const ACTIVE_QUEST_LIMIT = 3;
+
+/** Why `title` cannot become active now, or null when it can. */
+export function activationBlocked(quests: Quest[], title: string): string | null {
+  const others = quests.filter((q) => q.status === "active" && q.title !== title);
+  if (others.length < ACTIVE_QUEST_LIMIT) return null;
+  const n = others.length;
+  const word = n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "квеста" : "квестов";
+  return `В работе уже ${n} ${word}: ${others.map((q) => `«${q.title}»`).join(", ")}. Больше ${ACTIVE_QUEST_LIMIT} нельзя — закрой или отложи один, тогда этот можно взять.`;
+}
+
 /** Minutes logged for a quest across all days. Sessions under the minimum do not count. */
 /** One line of a quest's own journal: what was done, and how long it took. */
 export interface QuestEntry {
