@@ -50,7 +50,7 @@ interface State {
 const DEFAULTS: Omit<Config, "token" | "vault"> = {
   ...SHYMKENT,
   maghribOffsetMin: 0,
-  morning: "08:00", lunch: "13:00", night: "23:30",
+  morning: "08:00", lunch: "13:00", night: "22:00",
   snoozeMin: 30,
 };
 

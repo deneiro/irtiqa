@@ -24,7 +24,7 @@ if [[ ! -f "$HOME_DIR/config.json" ]]; then
   "maghribOffsetMin": 0,
   "morning": "08:00",
   "lunch": "13:00",
-  "night": "23:30",
+  "night": "22:00",
   "snoozeMin": 30
 }
 EOF
