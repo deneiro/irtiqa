@@ -72,12 +72,16 @@ export function buildCircle(people: Page[], events: LifeEvent[], today: string):
       if (!met.has(k) || (met.get(k) ?? "") < e.date) met.set(k, e.date);
     }
   }
+  // An alias that is another person's own name («Али» on Мухаммед's page, while Али has a page
+  // of his own) would credit one man with the other's meetings: such an alias is not used.
+  const own = new Set(people.flatMap((p) => [p.title, p.file].map((x) => x.toLowerCase())));
   const items = people.map((page) => {
     const closeness = closenessOf(page);
     const cadence = cadenceFor(closeness);
     const last = typeof page.fm.last_contact === "string" ? page.fm.last_contact : undefined;
     const since = daysSinceContact(last, today);
-    const names = [page.title, page.file, ...page.aliases].map((s) => s.toLowerCase());
+    const self = [page.title, page.file].map((s) => s.toLowerCase());
+    const names = [...self, ...page.aliases.map((s) => s.toLowerCase()).filter((a) => self.includes(a) || !own.has(a))];
     let lastMeet: string | undefined;
     for (const n of names) { const d = met.get(n); if (d && (!lastMeet || d > lastMeet)) lastMeet = d; }
     const touch = [last, lastMeet].filter(Boolean).sort().pop();

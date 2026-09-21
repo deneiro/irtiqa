@@ -16,7 +16,7 @@ export default function RawPage() {
     for (const p of v.pages) {
       for (const s of p.sources) {
         const x = sourceTarget(s);
-        if (x.isRaw) m.set(x.target.toLowerCase(), p.rel);
+        if (x.isRaw) m.set(x.target.normalize("NFC").toLowerCase(), p.rel); // disk names can be NFD
       }
       const r = p.fm.raw;
       if (typeof r === "string") m.set(r.replace(/^\[\[|\]\]$/g, "").toLowerCase(), p.rel);
@@ -33,7 +33,7 @@ export default function RawPage() {
     return [...m.entries()].sort();
   }, [v.raw]);
 
-  const citedCount = v.raw.filter((r) => cited.has(r.rel.toLowerCase())).length;
+  const citedCount = v.raw.filter((r) => cited.has(r.rel.normalize("NFC").toLowerCase())).length;
   const lede = t("raw_lede", { dir: "§DIR§" }).split("§DIR§");
 
   return (
@@ -52,7 +52,7 @@ export default function RawPage() {
           <table className="tbl">
             <tbody>
               {[...files].sort((a, b) => b.mtime - a.mtime).map((r) => {
-                const page = cited.get(r.rel.toLowerCase());
+                const page = cited.get(r.rel.normalize("NFC").toLowerCase());
                 const p = page ? v.byRel.get(page) : undefined;
                 return (
                   <tr key={r.rel}>
