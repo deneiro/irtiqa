@@ -16,7 +16,7 @@ function months(n: number): string {
 /** Ten roles in three years: the pattern is the length, so the length is drawn. */
 export default function CareerSection() {
   const v = useVault();
-  const { life, saveText, reload } = useStore();
+  const { life, saveLedger, reload } = useStore();
   const today = todayStr();
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -35,7 +35,7 @@ export default function CareerSection() {
   const write = async (next: Job[]) => {
     setBusy(true);
     try {
-      await saveText(JOBS_REL, serializeJobs(next, today, jobsHeader(raw)));
+      await saveLedger(JOBS_REL, serializeJobs(next, today, jobsHeader(raw)), (c) => parseJobs(c, today));
       setErr(null);
       await reload();
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }

@@ -26,7 +26,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import {
   DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
-  ACCOUNTS_REL, liveBalance, parseAccounts, serializeDay, withMark,
+  ACCOUNTS_REL, liveBalance, parseAccounts, parseAmount, serializeDay, withMark,
   type Day, type DayMark, type Habit, type Meal, type Tx,
 } from "../src/lib/life";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
@@ -190,15 +190,16 @@ function mealDate(time: string, now: Date): string {
 /** Categories only the app may write: they move other ledgers too. */
 const APP_ONLY_CATEGORIES = ["долг", "подписки"];
 
-interface PendingTx { amount: number; note: string; cats: string[]; category?: string; accounts: string[] }
+interface PendingTx { amount: number; note: string; cats: string[]; category?: string; accounts: string[]; at: Date }
 let pendingTx: PendingTx | null = null;
 
 /** «2500 такси», «+50000 зарплата», «1 200,50 кофе» → signed amount and note. */
 function parseMoney(text: string): { amount: number; note: string } | null {
-  const m = text.replace(/\|/g, "/").trim().match(/^([+-]?)\s*(\d[\d\s]*(?:[.,]\d+)?)\s*(.*)$/);
+  const m = text.replace(/\|/g, "/").trim().match(/^([+\-−]?)\s*(\d[\d\s]*(?:[.,]\d+)*)\s*(.*)$/);
   if (!m) return null;
-  const n = Number(m[2].replace(/\s/g, "").replace(",", "."));
-  if (!Number.isFinite(n) || n <= 0) return null;
+  // Same reading as the app: «12,400» is twelve thousand, «12,5» twelve and a half.
+  const n = parseAmount(m[2]);
+  if (n === undefined || n <= 0) return null;
   return { amount: m[1] === "+" ? n : -n, note: m[3].trim() };
 }
 
@@ -410,7 +411,7 @@ async function onCallback(q: CallbackQuery) {
   await edit("d");
 }
 
-interface Message { chat: { id: number }; from?: { id: number }; text?: string }
+interface Message { chat: { id: number }; from?: { id: number }; text?: string; date?: number }
 
 const REPLY_KEYBOARD = {
   keyboard: [[{ text: FOOD_BUTTON }, { text: MONEY_BUTTON }], [{ text: HABITS_BUTTON }]],
@@ -472,8 +473,11 @@ async function onMessage(m: Message) {
   }
   const kind = awaiting.kind;
   awaiting = null;
-  if (kind === "food") await onFood(text);
-  else if (kind === "money") await onMoney(text);
+  // When it was sent, not when this Mac woke up and read it: a meal typed at
+  // 13:00 and read after maghrib still belongs to 13:00 of its own day.
+  const sent = m.date ? new Date(m.date * 1000) : new Date();
+  if (kind === "food") await onFood(text, sent);
+  else if (kind === "money") await onMoney(text, sent);
   else if (kind === "category" && pendingTx) {
     pendingTx.category = canonicalCategory(text.replace(/\|/g, "/").trim(), readAllDays());
     if (APP_ONLY_CATEGORIES.includes(pendingTx.category.toLowerCase())) {
@@ -486,8 +490,7 @@ async function onMessage(m: Message) {
   }
 }
 
-async function onFood(text: string) {
-  const now = new Date();
+async function onFood(text: string, now: Date) {
   const meal = parseMeal(text, now);
   if (!meal) return;
   const date = mealDate(meal.time, now);
@@ -499,7 +502,7 @@ async function onFood(text: string) {
   });
 }
 
-async function onMoney(text: string) {
+async function onMoney(text: string, sent: Date) {
   const parsed = parseMoney(text);
   if (!parsed) {
     ask("money");
@@ -508,7 +511,7 @@ async function onMoney(text: string) {
   }
   const days = readAllDays();
   const cats = categoriesFor(parsed.amount > 0, days);
-  pendingTx = { ...parsed, cats, accounts: accountsByUse(days) };
+  pendingTx = { ...parsed, cats, accounts: accountsByUse(days), at: sent };
   const buttons = cats.map((c, i) => ({ text: c, callback_data: `c:0:${i}` }));
   await say(`${parsed.amount > 0 ? "➕ Доход" : "➖ Расход"} ${fmtSum(parsed.amount)}${parsed.note ? ` — ${parsed.note}` : ""}\nКатегория?`, {
     reply_markup: { inline_keyboard: [...pairs(buttons), [{ text: "✏️ другая", callback_data: "c:0:new" }, { text: "без категории", callback_data: "c:0:none" }]] },
@@ -524,7 +527,7 @@ async function askAccount() {
 async function writeTx(account: string) {
   const p = pendingTx!;
   pendingTx = null;
-  const date = logicalDate(new Date());
+  const date = logicalDate(p.at);
   const tx: Tx = { amount: p.amount, category: p.category ?? "", account, note: p.note };
   const day = readDay(date);
   writeDay({ ...day, txs: [...day.txs, tx] });

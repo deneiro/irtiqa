@@ -69,20 +69,34 @@ export function fromMin(n: number): string {
 
 const ALL = [1, 2, 3, 4, 5, 6, 0];
 
-/** "вт, чт", "пн–пт", "каждый день" → weekday indexes, Monday first. */
+/**
+ * "вт, чт", "вт/чт", "пн–пт", "каждый день" → weekday indexes, Monday first.
+ * Strict: one word it cannot read makes the whole cell unreadable (empty), so
+ * the write guard reports the row instead of a rewrite quietly dropping a day.
+ */
 export function parseDays(raw: string): number[] {
   const s = raw.toLowerCase().trim();
   if (!s) return [];
-  if (/кажд|ежеднев|daily/.test(s)) return ALL;
-  const idx = (w: string) => WEEKDAYS_RU.indexOf(w.slice(0, 2) as (typeof WEEKDAYS_RU)[number]);
+  if (/^(кажд\S*\s+день|ежедневно|daily|every\s*day)$/.test(s)) return ALL;
+  // A day is its two-letter form or a full name: вт, вторник, во вторник, среду.
+  const FULL: [RegExp, string][] = [[/^понедельник$/, "пн"], [/^вторник$/, "вт"], [/^сред[аеуы]$/, "ср"], [/^четверг$/, "чт"], [/^пятниц[аеуы]$/, "пт"], [/^суббот[аеуы]$/, "сб"], [/^воскресень[еяю]$/, "вс"]];
+  const day = (w: string): number => {
+    const short = w.length === 2 ? w : FULL.find(([re]) => re.test(w))?.[1];
+    return short ? WEEKDAYS_RU.indexOf(short as (typeof WEEKDAYS_RU)[number]) : -1;
+  };
   const out = new Set<number>();
-  for (const part of s.split(/[,\s]+/).filter(Boolean)) {
+  for (const part of s.split(/[,;/\s]+|\s+и\s+/).filter((p) => p && p !== "и" && p !== "во" && p !== "в")) {
     const r = part.split(/[–—-]/);
     if (r.length === 2) {
-      const a = ALL.indexOf(idx(r[0]));
-      const b = ALL.indexOf(idx(r[1]));
-      if (a >= 0 && b >= a) for (let i = a; i <= b; i++) out.add(ALL[i]);
-    } else if (idx(part) >= 0) out.add(idx(part));
+      const a = ALL.indexOf(day(r[0]));
+      const b = ALL.indexOf(day(r[1]));
+      if (a < 0 || b < a) return [];
+      for (let i = a; i <= b; i++) out.add(ALL[i]);
+    } else {
+      const d = day(part);
+      if (d < 0) return [];
+      out.add(d);
+    }
   }
   return ALL.filter((d) => out.has(d));
 }

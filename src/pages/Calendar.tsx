@@ -43,7 +43,7 @@ function monthRange(a: string, b: string): string {
 
 /** Неделя по часам: план — рамкой, факт (сессии таймера) — заливкой. */
 export default function CalendarPage() {
-  const { life, saveText, timer, startTimer } = useStore();
+  const { life, saveLedger, timer, startTimer } = useStore();
   const { themeLabel } = useT();
   const nav = useNavigate();
   const today = todayStr();
@@ -123,10 +123,10 @@ export default function CalendarPage() {
   const write = async (next: PlanBlock[]) => {
     setBusy(true);
     try {
-      await saveText(CALENDAR_REL, serializeCalendar(next, today));
+      await saveLedger(CALENDAR_REL, serializeCalendar(next, today), parseCalendar);
       setErr(null);
       return true;
-    } catch (e) { setErr(String(e)); return false; } finally { setBusy(false); }
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); return false; } finally { setBusy(false); }
   };
 
   const save = async () => {

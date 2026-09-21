@@ -6,7 +6,7 @@ import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
 import { addDays } from "../lib/dates";
 import {
-  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions,
+  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions, parseAccounts, parseAmount, parseDebts, parseSubscriptions,
   txsInMonth, type AccountRow, type Day, type Debt, type Subscription,
 } from "../lib/life";
 import { useDayToday } from "../lib/useDayToday";
@@ -27,7 +27,7 @@ function shiftMonth(ym: string, n: number): string {
 }
 
 export default function FinancePage() {
-  const { vault, life, saveText, reload, updateToday } = useStore();
+  const { vault, life, saveLedger, reload, updateToday } = useStore();
   const today = useDayToday();
   const [ym, setYm] = useState(monthOf(today));
   const [err, setErr] = useState<string | null>(null);
@@ -56,18 +56,19 @@ export default function FinancePage() {
     return { rows, spent, earned, cats, perDay };
   }, [days, ym]);
 
-  const persist = async (rel: string, content: string) => {
-    try { await saveText(rel, content); setErr(null); await reload(); } catch (e) { setErr(String(e)); }
+  /** Rewrite a ledger through the guard. False when refused; the reason is shown and nothing else should follow. */
+  const persist = async (rel: string, content: string, parse: (c: string) => unknown[]): Promise<boolean> => {
+    try { await saveLedger(rel, content, parse); setErr(null); await reload(); return true; } catch (e) { setErr(e instanceof Error ? e.message : String(e)); return false; }
   };
 
   // ----- accounts -----
   const [acc, setAcc] = useState({ name: "", kind: "", balance: "" });
   const [editBal, setEditBal] = useState<Record<string, string>>({});
-  const saveAccounts = (rows: AccountRow[]) => persist(ACCOUNTS_REL, serializeAccounts(rows, today));
+  const saveAccounts = (rows: AccountRow[]) => persist(ACCOUNTS_REL, serializeAccounts(rows, today), parseAccounts);
   const addAccount = () => {
     const name = acc.name.trim();
     if (!name || accounts.some((a) => a.name === name)) return;
-    void saveAccounts([...accounts, { name, kind: acc.kind.trim(), balance: (Number(acc.balance.replace(/\s/g, "")) || 0) - movedToday(name), asOf: today }]);
+    void saveAccounts([...accounts, { name, kind: acc.kind.trim(), balance: (parseAmount(acc.balance) ?? 0) - movedToday(name), asOf: today }]);
     setAcc({ name: "", kind: "", balance: "" });
   };
   /** Today's movement on one account — what separates "now" from "start of day". */
@@ -76,8 +77,9 @@ export default function FinancePage() {
 
   /** The user types what is on the card right now; the file stores the start of the day. */
   const setBalance = (a: AccountRow) => {
-    const v = Number((editBal[a.name] ?? "").replace(/\s/g, ""));
-    if (!Number.isFinite(v)) return;
+    // An empty box is not zero: Number("") is 0 and used to wipe the balance.
+    const v = parseAmount(editBal[a.name] ?? "");
+    if (v === undefined) return;
     void saveAccounts(accounts.map((x) => (x.name === a.name ? { ...x, balance: v - movedToday(a.name), asOf: today } : x)));
     setEditBal({ ...editBal, [a.name]: "" });
   };
@@ -89,10 +91,10 @@ export default function FinancePage() {
 
   // ----- subscriptions -----
   const [sub, setSub] = useState({ name: "", amount: "", account: "", day: "1", category: "подписки" });
-  const saveSubs = (rows: Subscription[]) => persist(SUBS_REL, serializeSubscriptions(rows, today));
+  const saveSubs = (rows: Subscription[]) => persist(SUBS_REL, serializeSubscriptions(rows, today), parseSubscriptions);
   const addSub = () => {
     const name = sub.name.trim();
-    const amount = Math.abs(Number(sub.amount.replace(/\s/g, "")));
+    const amount = Math.abs(parseAmount(sub.amount) ?? 0);
     const day = Number(sub.day);
     if (!name || !amount || !day || subs.some((s) => s.name === name)) return;
     void saveSubs([...subs, { name, amount, account: sub.account.trim(), day, category: sub.category.trim() }]);
@@ -106,10 +108,10 @@ export default function FinancePage() {
   // ----- debts -----
   const people = useMemo(() => (vault?.pages ?? []).filter((p) => p.zone === "person").map((p) => p.title).sort(), [vault]);
   const [debt, setDebt] = useState({ who: "", direction: DEBT_THEY_OWE, amount: "", currency: "₸", note: "" });
-  const saveDebts = (rows: Debt[]) => persist(DEBTS_REL, serializeDebts(rows, today));
+  const saveDebts = (rows: Debt[]) => persist(DEBTS_REL, serializeDebts(rows, today), parseDebts);
   const addDebt = () => {
     const whoRaw = debt.who.trim();
-    const amount = Math.abs(Number(debt.amount.replace(/\s/g, "")));
+    const amount = Math.abs(parseAmount(debt.amount) ?? 0);
     if (!whoRaw || !amount) return;
     const who = people.includes(whoRaw) ? `[[${whoRaw}]]` : whoRaw;
     void saveDebts([...debts, { who, direction: debt.direction, amount, paid: 0, currency: debt.currency, since: today, note: debt.note.trim(), closed: undefined }]);
@@ -124,10 +126,11 @@ export default function FinancePage() {
   const [pay, setPay] = useState<{ who: string; direction: string; amount: string; account: string } | null>(null);
   const doPay = async () => {
     if (!pay) return;
-    const amount = Math.abs(Number(pay.amount.replace(/\s/g, "")));
+    const amount = Math.abs(parseAmount(pay.amount) ?? 0);
     if (!amount) return;
     const r = payPersonDebts(debts, pay.who, pay.direction, amount, today);
-    await saveDebts(r.rows);
+    // A refused debts write must not leave a «долг» transaction behind it.
+    if (!(await saveDebts(r.rows))) return;
     if (pay.account.trim()) {
       const sign = pay.direction === DEBT_I_OWE ? -1 : 1;
       await updateToday((d) => ({

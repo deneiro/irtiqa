@@ -5,7 +5,7 @@ import { WISHES_REL, WISH_STATES, parseWishes, serializeWishes, type Wish, type 
 
 /** Хочу → делаю → сделал. The same three states as memorisation, on a life. */
 export default function WishesSection() {
-  const { life, saveText, reload } = useStore();
+  const { life, saveLedger, reload } = useStore();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
@@ -17,7 +17,7 @@ export default function WishesSection() {
   const write = async (next: Wish[]) => {
     setBusy(true);
     try {
-      await saveText(WISHES_REL, serializeWishes(next, today));
+      await saveLedger(WISHES_REL, serializeWishes(next, today), parseWishes);
       setErr(null);
       await reload();
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }

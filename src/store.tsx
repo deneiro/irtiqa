@@ -6,7 +6,8 @@ import type { MdFile, Scan, Vault } from "./lib/types";
 import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
 import { buildIndex, type SearchDoc } from "./lib/search";
-import { buildLife, dayRel, emptyDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
+import { buildLife, dayRel, emptyDay, mergeDay, parseDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
+import { LedgerConflict, ledgerLosses } from "./lib/guard";
 import { dayOf, dayToday } from "./lib/maghrib";
 import { runCmd, treeChanged, writeText, type CmdResult } from "./lib/fs";
 
@@ -38,8 +39,21 @@ interface Store {
   saveText: (rel: string, content: string) => Promise<void>;
   /** Commit every change in the vault and push it. Returns null outside the desktop app. */
   commitVault: (message: string) => Promise<SyncResult | null>;
-  /** Read-modify-write today's day file from the latest scan (used by pages other than Day). */
+  /** Read-modify-write today's day file, read fresh from disk (used by pages other than Day). */
   updateToday: (fn: (d: Day) => Day) => Promise<void>;
+  /** The file as it is on disk right now; null when missing (or in browser mode, the last scan). */
+  readFresh: (rel: string) => Promise<string | null>;
+  /**
+   * Write a day edited from `base`, merged with whatever the disk holds now
+   * (the bot, Obsidian, Claude). Returns the day as written.
+   */
+  saveDayMerged: (base: Day, ours: Day) => Promise<Day>;
+  /**
+   * Rewrite a whole ledger (debts, accounts, subscriptions, calendar). Refused
+   * when the file changed since the last scan, or when the new text would drop
+   * a line the parser cannot read — the error names the lines.
+   */
+  saveLedger: (rel: string, content: string, parse: (content: string) => unknown[]) => Promise<void>;
   /** One running quest timer, kept in localStorage so a reload does not lose it. */
   timer: { quest: string; startedAt: number } | null;
   startTimer: (quest: string) => void;
@@ -89,19 +103,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   // The last scan, kept so our own writes can be patched in without rereading
   // the whole vault (hundreds of pages over iCloud, then parse and reindex).
   const scanRef = useRef<Scan | null>(null);
-  // rel -> time of our own recent writes, so the watcher's echo is ignored.
-  const ownWrites = useRef(new Map<string, number>());
+  // rel -> our own writes (time and text): the watcher's echo is recognised by
+  // content, and a scan that read the disk before a write gets the write back.
+  const ownWrites = useRef(new Map<string, { at: number; content: string }>());
+  const scanSeq = useRef(0);
 
   const rescan = useCallback(async () => {
+    const seq = ++scanSeq.current;
+    const startedAt = Date.now();
     setLoading(true);
     setError(null);
     try {
-      const scan = inTauri
+      let scan = inTauri
         ? await invoke<Scan>("scan_vault", { root })
         : await fetch(`/__vault?root=${encodeURIComponent(root)}`).then(async (r) => {
             if (!r.ok) throw new Error(await r.text());
             return (await r.json()) as Scan;
           });
+      // A newer scan was started while this one read the disk: its result wins.
+      if (seq !== scanSeq.current) return;
+      // Our writes that landed after this scan began are newer than what it read.
+      for (const [rel, w] of ownWrites.current) {
+        if (w.at < startedAt) continue;
+        const put = (list: MdFile[]) => list.map((f) => (f.rel.normalize("NFC") === rel ? { ...f, content: w.content } : f));
+        if (rel.startsWith("life/")) scan = { ...scan, life: put(scan.life ?? []) };
+        else if (rel === "wiki/log.md") scan = { ...scan, log: w.content };
+        else scan = { ...scan, pages: put(scan.pages) };
+      }
       treeChanged.value = false;
       scanRef.current = scan;
       setVault(buildVault(scan));
@@ -110,11 +138,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         watching.current = root;
       }
     } catch (e) {
+      if (seq !== scanSeq.current) return;
       scanRef.current = null;
       setVault(null);
       setError(String(e));
     } finally {
-      setLoading(false);
+      if (seq === scanSeq.current) setLoading(false);
     }
   }, [root]);
 
@@ -132,18 +161,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!inTauri) return;
-    const un = listen<string[]>("vault-changed", (e) => {
+    const un = listen<string[]>("vault-changed", async (e) => {
       const now = Date.now();
-      const foreign = (e.payload ?? []).some((rel) => {
-        const t = ownWrites.current.get(rel.normalize("NFC"));
-        return t === undefined || now - t > 5000;
-      });
-      if (foreign) void rescan();
+      for (const raw of e.payload ?? []) {
+        const rel = raw.normalize("NFC");
+        const w = ownWrites.current.get(rel);
+        // Not ours, or ours long ago: someone else wrote it.
+        if (!w || now - w.at > 5000) { void rescan(); return; }
+        // Ours a moment ago — but the bot may have written in the same breath. Compare the text.
+        const disk = await invoke<string>("read_text", { root, rel }).catch(() => null);
+        if (disk !== w.content) { void rescan(); return; }
+      }
     });
     return () => {
       void un.then((f) => f());
     };
-  }, [rescan]);
+  }, [rescan, root]);
 
   const pages = vault?.pages;
   // The search index costs seconds on a large vault; build it only once search is used.
@@ -184,20 +217,66 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     async (rel: string, content: string) => {
       await writeText(root, rel, content);
       const key = rel.normalize("NFC");
-      ownWrites.current.set(key, Date.now());
+      ownWrites.current.set(key, { at: Date.now(), content });
       patch(key, content);
     },
     [root, patch],
   );
 
+  const readFresh = useCallback(
+    async (rel: string): Promise<string | null> => {
+      if (inTauri) return invoke<string>("read_text", { root, rel }).catch(() => null);
+      const scan = scanRef.current;
+      if (rel === "wiki/log.md") return scan?.log ?? null;
+      return [...(scan?.life ?? []), ...(scan?.pages ?? [])].find((f) => f.rel.normalize("NFC") === rel.normalize("NFC"))?.content ?? null;
+    },
+    [root],
+  );
+
+  const readDayFresh = useCallback(
+    async (date: string): Promise<Day> => {
+      const text = await readFresh(dayRel(date));
+      return text === null ? emptyDay(date) : parseDay({ rel: dayRel(date), content: text, mtime: 0 });
+    },
+    [readFresh],
+  );
+
+  // The disk, not the last scan: the bot or Obsidian may have written since.
   const updateToday = useCallback(
     async (fn: (d: Day) => Day) => {
       const today = dayToday();
-      const cur = life?.days.get(today);
-      const next = fn(cur ?? emptyDay(today));
+      const next = fn(await readDayFresh(today));
       await saveText(dayRel(today), serializeDay(next));
     },
-    [life, saveText],
+    [readDayFresh, saveText],
+  );
+
+  const saveDayMerged = useCallback(
+    async (base: Day, ours: Day): Promise<Day> => {
+      const merged = mergeDay(base, ours, await readDayFresh(ours.date));
+      await saveText(dayRel(ours.date), serializeDay(merged));
+      return merged;
+    },
+    [readDayFresh, saveText],
+  );
+
+  const saveLedger = useCallback(
+    async (rel: string, content: string, parse: (content: string) => unknown[]) => {
+      const disk = await readFresh(rel);
+      if (disk !== null) {
+        const seen = scanRef.current?.life?.find((f) => f.rel.normalize("NFC") === rel.normalize("NFC"))?.content;
+        if (seen !== undefined && seen !== disk) {
+          void rescan();
+          throw new LedgerConflict(`${rel} изменился снаружи (Claude, Obsidian или бот). Экран обновлён — повтори действие.`);
+        }
+        const lost = ledgerLosses(disk, content, parse);
+        if (lost.length) {
+          throw new LedgerConflict(`Не записал ${rel}: приложение не понимает ${lost.length === 1 ? "строку" : "строки"} и потеряло бы ${lost.length === 1 ? "её" : "их"}. Поправь в Obsidian:\n${lost.slice(0, 8).join("\n")}`);
+        }
+      }
+      await saveText(rel, content);
+    },
+    [readFresh, rescan, saveText],
   );
 
   const [timer, setTimer] = useState<{ quest: string; startedAt: number } | null>(() => {
@@ -261,8 +340,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo<Store>(
-    () => ({ root, setRoot, vault, index, needIndex, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
-    [root, vault, index, needIndex, life, saveText, commitVault, updateToday, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
+    () => ({ root, setRoot, vault, index, needIndex, life, saveText, commitVault, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
+    [root, vault, index, needIndex, life, saveText, commitVault, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

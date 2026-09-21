@@ -19,7 +19,7 @@ const CADENCE: Record<string, number> = { семья: 7, родня: 30 };
 
 export default function TalksSection({ theme }: { theme: string }) {
   const v = useVault();
-  const { life, saveText, reload } = useStore();
+  const { life, saveLedger, reload } = useStore();
   const [open, setOpen] = useState<string | null>(null);
   const [about, setAbout] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -58,7 +58,7 @@ export default function TalksSection({ theme }: { theme: string }) {
     setBusy(p.rel);
     try {
       const next = [{ date: today, who: `[[${p.file}]]`, about: about.trim() }, ...talks];
-      await saveText(TALKS_REL, serializeTalks(next, today));
+      await saveLedger(TALKS_REL, serializeTalks(next, today), parseTalks);
       setAbout("");
       setOpen(null);
       setErr(null);

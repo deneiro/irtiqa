@@ -29,6 +29,8 @@ export interface Habit {
   created: string | undefined;
   source: string | undefined;
   body: string;
+  /** Frontmatter keys the app does not model, carried through a rewrite untouched. */
+  extraFm?: string[];
 }
 
 export type QuestStatus = "proposed" | "active" | "done" | "dropped";
@@ -43,6 +45,8 @@ export interface Quest {
   project: string | undefined;
   source: string | undefined;
   body: string;
+  /** Frontmatter keys the app does not model, carried through a rewrite untouched. */
+  extraFm?: string[];
 }
 
 export interface Tx {
@@ -105,6 +109,26 @@ export interface Day {
   txs: Tx[]; // ## Деньги rows
   meals: Meal[]; // ## Еда rows
   journal: string; // ## Журнал text
+  /** What the file holds that the app does not model; written back untouched. */
+  extra?: DayExtra;
+}
+
+/**
+ * The parts of a day file the app does not understand. A day file is written
+ * by the app, the bot, Claude and by hand in Obsidian, so a rewrite must never
+ * drop a line just because no field holds it.
+ */
+export interface DayExtra {
+  /** Frontmatter keys the app does not own, verbatim with their continuation lines. */
+  fm: string[];
+  /** Text between the frontmatter and the first `##` heading. */
+  lead: string[];
+  /** Lines inside the known sections that did not parse, kept in their section. */
+  done: string[];
+  money: string[];
+  food: string[];
+  /** Sections the app does not know, verbatim with their headings. */
+  tail: string[];
 }
 
 export type DayMark = "done" | "failed" | "skipped";
@@ -252,6 +276,23 @@ function num(v: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+/**
+ * A money amount as people actually type it: `-12 400`, `−500` (typographic
+ * minus), `2000 ₸`, `12,400` (comma thousands) or `12,5` (comma decimal).
+ * Undefined when it is not a number, so a caller can keep the text instead of
+ * inventing a zero.
+ */
+export function parseAmount(v: unknown): number | undefined {
+  if (v === undefined || v === null) return undefined;
+  let s = String(v).replace(/[\s\u00a0\u202f]/g, "").replace(/[−–—]/g, "-").replace(/₸|тг\.?|kzt/gi, "");
+  if (!s) return undefined;
+  if (/^[+-]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, "");
+  else if (/^[+-]?\d+,\d{1,2}$/.test(s)) s = s.replace(",", ".");
+  if (!/^[+-]?\d+(\.\d+)?$/.test(s)) return undefined;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 /** YAML flow scalar: bare when safe, double-quoted otherwise. */
 function yamlScalar(s: string): string {
   if (s === "" || /[,:\[\]{}#"'\n]|^\s|\s$|^[-?&*!|>%@`]/.test(s) || /^(true|false|null|~|\d+(\.\d+)?)$/i.test(s)) {
@@ -288,8 +329,12 @@ export function parseHabit(f: MdFile): Habit {
     created: str(fm.created),
     source: str(fm.source),
     body: body.trim(),
+    extraFm: foreignFrontmatter(f.content, HABIT_KEYS),
   };
 }
+
+const HABIT_KEYS = new Set(["title", "type", "theme", "kind", "freq", "status", "created", "source"]);
+const QUEST_KEYS = new Set(["title", "type", "theme", "status", "created", "due", "project", "source"]);
 
 export function serializeHabit(h: Omit<Habit, "rel" | "body"> & { body?: string }): string {
   const lines = ["---", `title: ${yamlScalar(h.title)}`, "type: habit"];
@@ -299,7 +344,7 @@ export function serializeHabit(h: Omit<Habit, "rel" | "body"> & { body?: string 
   lines.push(`status: ${h.status}`);
   if (h.created) lines.push(`created: ${h.created}`);
   if (h.source) lines.push(`source: ${JSON.stringify(h.source)}`);
-  lines.push("---");
+  lines.push(...(h.extraFm ?? []), "---");
   const body = (h.body ?? "").trim();
   return lines.join("\n") + "\n" + (body ? body + "\n" : "");
 }
@@ -335,6 +380,7 @@ export function parseQuest(f: MdFile): Quest {
     project: str(fm.project),
     source: str(fm.source),
     body: body.trim(),
+    extraFm: foreignFrontmatter(f.content, QUEST_KEYS),
   };
 }
 
@@ -346,7 +392,7 @@ export function serializeQuest(q: Omit<Quest, "rel">): string {
   if (q.due) lines.push(`due: ${q.due}`);
   if (q.project) lines.push(`project: ${yamlScalar(q.project)}`);
   if (q.source) lines.push(`source: ${JSON.stringify(q.source)}`);
-  lines.push("---");
+  lines.push(...(q.extraFm ?? []), "---");
   const body = q.body.trim();
   return lines.join("\n") + "\n" + (body ? body + "\n" : "");
 }
@@ -478,44 +524,73 @@ const H_MONEY = /^## Деньги\s*$/;
 const H_JOURNAL = /^## Журнал\s*$/;
 const H_FOOD = /^##\s*(Еда|Food)\s*$/i;
 
-function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; journal: string } {
+const cellsOf = (t: string) => t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
+const isSeparator = (cells: string[]) => cells.every((c) => /^:?-+:?$/.test(c) || c === "");
+
+function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; journal: string; extra: Omit<DayExtra, "fm"> } {
   const lines = body.split(/\r?\n/);
-  let cur: "done" | "money" | "food" | "journal" | null = null;
+  let cur: "lead" | "done" | "money" | "food" | "journal" | "tail" = "lead";
   const done: string[] = [];
   const txs: Tx[] = [];
   const meals: Meal[] = [];
   const journal: string[] = [];
+  const extra: Omit<DayExtra, "fm"> = { lead: [], done: [], money: [], food: [], tail: [] };
   for (const line of lines) {
     if (H_DONE.test(line)) { cur = "done"; continue; }
     if (H_MONEY.test(line)) { cur = "money"; continue; }
     if (H_FOOD.test(line)) { cur = "food"; continue; }
     if (H_JOURNAL.test(line)) { cur = "journal"; continue; }
-    if (/^## /.test(line)) { cur = null; continue; }
-    if (cur === "done") {
-      const m = line.match(/^\s*[-*]\s+(.*)$/);
-      if (m && m[1].trim()) done.push(m[1].trim());
-    } else if (cur === "money") {
-      const t = line.trim();
-      if (!t.startsWith("|")) continue;
-      const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
-      if (cells.length < 2) continue;
-      if (/^-+$/.test(cells[0]) || cells[0] === "Сумма") continue; // separator / header
-      const amount = num(cells[0]);
-      if (amount === undefined) continue;
-      txs.push({ amount, category: cells[1] ?? "", account: cells[2] ?? "", note: cells[3] ?? "" });
-    } else if (cur === "food") {
-      const t = line.trim();
-      if (!t.startsWith("|")) continue;
-      const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
-      if (cells.length < 2) continue;
-      if (/^:?-+:?$/.test(cells[0]) || cells[0] === "Время") continue;
-      if (!cells[1]) continue;
-      meals.push({ time: cells[0], what: cells[1], note: cells[2] ?? "" });
+    if (/^## /.test(line)) { cur = "tail"; extra.tail.push(line); continue; }
+    const t = line.trim();
+    if (cur === "lead") {
+      extra.lead.push(line);
+    } else if (cur === "tail") {
+      extra.tail.push(line);
     } else if (cur === "journal") {
       journal.push(line);
+    } else if (cur === "done") {
+      const m = line.match(/^\s*[-*]\s+(.*)$/);
+      if (m && m[1].trim()) done.push(m[1].trim());
+      else if (t) extra.done.push(line);
+    } else if (cur === "money") {
+      if (!t) continue;
+      if (!t.startsWith("|")) { extra.money.push(line); continue; }
+      const cells = cellsOf(t);
+      if (isSeparator(cells) || cells[0] === "Сумма") continue; // separator / header
+      const amount = parseAmount(cells[0]);
+      // A row the app cannot read stays in the file as it was, never dropped.
+      if (amount === undefined || cells.length > 4) { extra.money.push(t); continue; }
+      txs.push({ amount, category: cells[1] ?? "", account: cells[2] ?? "", note: cells[3] ?? "" });
+    } else if (cur === "food") {
+      if (!t) continue;
+      if (!t.startsWith("|")) { extra.food.push(line); continue; }
+      const cells = cellsOf(t);
+      if (isSeparator(cells) || cells[0] === "Время") continue;
+      if (!cells[1] || cells.length > 3) { extra.food.push(t); continue; }
+      meals.push({ time: cells[0], what: cells[1], note: cells[2] ?? "" });
     }
   }
-  return { done, txs, meals, journal: journal.join("\n").trim() };
+  const trimEnds = (a: string[]) => { while (a.length && !a[0].trim()) a.shift(); while (a.length && !a[a.length - 1].trim()) a.pop(); return a; };
+  trimEnds(extra.lead);
+  trimEnds(extra.tail);
+  return { done, txs, meals, journal: journal.join("\n").trim(), extra };
+}
+
+/** Frontmatter keys the app writes itself; anything else in a day file is carried through. */
+const DAY_KEYS = new Set(["date", "type", "habits_done", "habits_failed", "habits_skipped", "quests_closed", "sessions", "work_minutes", "spent", "earned", "mood", "stress", "weight", "pushups", "pullups", "closed"]);
+
+function foreignFrontmatter(content: string, known: Set<string> = DAY_KEYS): string[] {
+  const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/);
+  if (!m) return [];
+  const out: string[] = [];
+  let keep = false;
+  for (const line of m[1].split(/\r?\n/)) {
+    const k = line.match(/^([A-Za-z_][\w-]*):/);
+    if (k) keep = !known.has(k[1]);
+    else if (!/^\s|^-/.test(line) && line.trim()) keep = true; // a stray line: keep it rather than lose it
+    if (keep) out.push(line);
+  }
+  return out;
 }
 
 export function parseDay(f: MdFile): Day {
@@ -545,6 +620,7 @@ export function parseDay(f: MdFile): Day {
     txs: s.txs,
     meals: s.meals,
     journal: s.journal,
+    extra: { fm: foreignFrontmatter(f.content), ...s.extra },
   };
 }
 
@@ -589,22 +665,38 @@ export function serializeDay(d: Day): string {
   if (d.weight !== undefined) fm.push(`weight: ${d.weight}`);
   if (d.pushups !== undefined) fm.push(`pushups: ${d.pushups}`);
   if (d.pullups !== undefined) fm.push(`pullups: ${d.pullups}`);
-  fm.push(`closed: ${d.closed}`, "---");
+  fm.push(`closed: ${d.closed}`);
+  const x = d.extra;
+  if (x) fm.push(...x.fm);
+  fm.push("---");
 
-  const body: string[] = ["## Сделано"];
-  for (const x of d.done) body.push(`- ${x}`);
+  // Rows the app could not read go back into their table, loose text after it.
+  const rows = (a: string[]) => a.filter((l) => l.trim().startsWith("|"));
+  const loose = (a: string[]) => a.filter((l) => !l.trim().startsWith("|"));
+  const body: string[] = [];
+  if (x?.lead.length) body.push(...x.lead, "");
+  body.push("## Сделано");
+  for (const it of d.done) body.push(`- ${it}`);
+  if (x?.done.length) body.push(...x.done);
   body.push("", "## Деньги");
-  if (d.txs.length) {
+  const moneyRows = rows(x?.money ?? []);
+  if (d.txs.length || moneyRows.length) {
     body.push("| Сумма | Категория | Счёт | Заметка |", "|---|---|---|---|");
     for (const t of d.txs) body.push(`| ${fmtAmount(t.amount)} | ${t.category} | ${t.account} | ${t.note} |`);
+    body.push(...moneyRows);
   }
+  if (loose(x?.money ?? []).length) body.push("", ...loose(x!.money));
   body.push("", "## Еда");
-  if (d.meals.length) {
+  const foodRows = rows(x?.food ?? []);
+  if (d.meals.length || foodRows.length) {
     body.push("| Время | Что | Заметка |", "|---|---|---|");
     for (const m of d.meals) body.push(`| ${m.time} | ${m.what} | ${m.note} |`);
+    body.push(...foodRows);
   }
+  if (loose(x?.food ?? []).length) body.push("", ...loose(x!.food));
   body.push("", "## Журнал");
   if (d.journal.trim()) body.push(d.journal.trim());
+  if (x?.tail.length) body.push("", ...x.tail);
   return fm.join("\n") + "\n" + body.join("\n") + "\n";
 }
 
@@ -625,6 +717,58 @@ export function withMark(d: Day, habit: string, mark: DayMark | undefined): Day 
   if (mark === "done") next.habitsDone = [...next.habitsDone, habit];
   if (mark === "failed") next.habitsFailed = [...next.habitsFailed, habit];
   if (mark === "skipped") next.habitsSkipped = [...next.habitsSkipped, habit];
+  return next;
+}
+
+/**
+ * Three-way merge of a day: `base` is what `ours` started from, `theirs` is the
+ * file as it is on disk now (the bot, Obsidian or Claude may have written it
+ * meanwhile). A field or row changed here wins; everything else comes from
+ * disk, so neither side's work is lost. Lists merge as multisets: rows added
+ * here are added, rows removed here are removed, the rest is theirs.
+ */
+export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
+  const pick = <T,>(b: T, o: T, t: T): T => (JSON.stringify(o) !== JSON.stringify(b) ? o : t);
+  function rows<T>(b: T[], o: T[], t: T[]): T[] {
+    const key = (x: T) => JSON.stringify(x);
+    const count = (a: T[]) => { const m = new Map<string, number>(); for (const x of a) m.set(key(x), (m.get(key(x)) ?? 0) + 1); return m; };
+    const cb = count(b), co = count(o);
+    const out = t.slice();
+    for (const [k, n] of cb) {
+      for (let i = (co.get(k) ?? 0); i < n; i++) { const at = out.findIndex((x) => key(x) === k); if (at >= 0) out.splice(at, 1); }
+    }
+    const added = new Map<string, number>();
+    for (const x of o) {
+      const k = key(x);
+      const seen = (added.get(k) ?? 0) + 1;
+      added.set(k, seen);
+      if (seen > (cb.get(k) ?? 0)) out.push(x);
+    }
+    return out;
+  }
+  let next: Day = {
+    ...theirs,
+    date: theirs.date,
+    questsClosed: rows(base.questsClosed, ours.questsClosed, theirs.questsClosed),
+    sessions: rows(base.sessions, ours.sessions, theirs.sessions),
+    mood: pick(base.mood, ours.mood, theirs.mood),
+    stress: pick(base.stress, ours.stress, theirs.stress),
+    weight: pick(base.weight, ours.weight, theirs.weight),
+    pushups: pick(base.pushups, ours.pushups, theirs.pushups),
+    pullups: pick(base.pullups, ours.pullups, theirs.pullups),
+    closed: pick(base.closed, ours.closed, theirs.closed),
+    done: rows(base.done, ours.done, theirs.done),
+    txs: rows(base.txs, ours.txs, theirs.txs),
+    meals: rows(base.meals, ours.meals, theirs.meals).sort((a, b) => a.time.localeCompare(b.time)),
+    journal: pick(base.journal, ours.journal, theirs.journal),
+    extra: theirs.extra,
+  };
+  // Habit marks: a habit whose mark changed here takes ours, the rest keep the disk's.
+  const titles = new Set([...base.habitsDone, ...base.habitsFailed, ...base.habitsSkipped, ...ours.habitsDone, ...ours.habitsFailed, ...ours.habitsSkipped]);
+  for (const h of titles) {
+    const o = markOf(ours, h);
+    if (o !== markOf(base, h)) next = withMark(next, h, o);
+  }
   return next;
 }
 
@@ -665,7 +809,9 @@ export function parseAccounts(content: string): AccountRow[] {
     if (!t.startsWith("|")) continue;
     const cells = t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
     if (cells.length < 3 || cells[0] === "Счёт" || /^-+$/.test(cells[0])) continue;
-    rows.push({ name: cells[0], kind: cells[1] ?? "", balance: num(cells[2]) ?? 0, asOf: cells[3] ?? "" });
+    const balance = cells[2] ? parseAmount(cells[2]) : 0;
+    if (balance === undefined) continue; // unreadable: left for the write guard to report, never saved as 0
+    rows.push({ name: cells[0], kind: cells[1] ?? "", balance, asOf: cells[3] ?? "" });
   }
   return rows;
 }
@@ -734,7 +880,7 @@ export function parseSubscriptions(content: string): Subscription[] {
   const subs: Subscription[] = [];
   for (const { cells } of tableRows(content)) {
     if (cells[0] === "Название") continue;
-    const amount = num(cells[1]);
+    const amount = parseAmount(cells[1]);
     const day = num(cells[3]);
     if (!cells[0] || amount === undefined || day === undefined) continue;
     subs.push({ name: cells[0], amount: Math.abs(amount), account: cells[2] ?? "", day: Math.max(1, Math.min(31, Math.round(day))), category: cells[4] ?? "" });
@@ -763,12 +909,12 @@ export function parseDebts(content: string): Debt[] {
   const debts: Debt[] = [];
   for (const { section, cells } of tableRows(content)) {
     if (cells[0] === "Кто") continue;
-    const amount = num(cells[2]);
+    const amount = parseAmount(cells[2]);
     if (!cells[0] || amount === undefined) continue;
     const closedSection = /закрыт/i.test(section);
     // Column 6 used to be the note; it is the paid-so-far figure now. Old files
     // have text there, so a number decides which layout this row is in.
-    const sixth = num(cells[5]);
+    const sixth = parseAmount(cells[5]);
     const hasPaid = sixth !== undefined && (cells[5] ?? "").trim() !== "";
     const paid = hasPaid ? sixth : 0;
     const note = hasPaid ? cells[6] ?? "" : cells[5] ?? "";

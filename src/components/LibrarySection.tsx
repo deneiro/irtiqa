@@ -9,7 +9,7 @@ const EMPTY = { title: "", kind: "film" as LibraryKind, score: "", comment: "" }
 
 /** Фильмы, сериалы, книги: название, оценка, комментарий. One table, edited in place. */
 export default function LibrarySection() {
-  const { life, saveText, reload } = useStore();
+  const { life, saveLedger, reload } = useStore();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -22,7 +22,7 @@ export default function LibrarySection() {
   const write = async (next: LibraryItem[]) => {
     setBusy(true);
     try {
-      await saveText(LIBRARY_REL, serializeLibrary(next, today));
+      await saveLedger(LIBRARY_REL, serializeLibrary(next, today), parseLibrary);
       setErr(null);
       await reload();
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }

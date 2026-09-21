@@ -8,7 +8,7 @@ import { maghribOn } from "../lib/maghrib";
 import { useDayToday } from "../lib/useDayToday";
 import {
   HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
-  markOf, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
+  markOf, mergeDay, parseAmount, parseDay, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
   type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
 } from "../lib/life";
 import type { CmdResult } from "../lib/fs";
@@ -45,7 +45,7 @@ export default function DayPage() {
 }
 
 function DayView({ today }: { today: string }) {
-  const { vault, life, saveText, commitVault, reload } = useStore();
+  const { vault, life, saveText, saveDayMerged, readFresh, commitVault, reload } = useStore();
   const { themeLabel } = useT();
   const habits = life?.habits ?? [];
   const fromDisk = life?.days.get(today);
@@ -53,34 +53,41 @@ function DayView({ today }: { today: string }) {
   // ----- draft: the day as edited here; written to disk 600ms after every change -----
   const [draft, setDraft] = useState<Day>(() => fromDisk ?? emptyDay(today));
   const lastWritten = useRef<string | null>(fromDisk ? serializeDay(fromDisk) : null);
+  // The day as last seen on disk — what the draft's edits are measured against when merging.
+  const base = useRef<Day>(fromDisk ?? emptyDay(today));
   const dirty = useRef(false);
   const timer = useRef<number | undefined>(undefined);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [meal, setMeal] = useState({ time: "", what: "", note: "" });
 
-  // External change (Claude, Obsidian, or our own echo): adopt it unless we have unsaved edits.
+  // External change (the bot, Claude, Obsidian): fold it into the draft. Unsaved
+  // edits here stay; what changed on disk comes in. Our own echo changes nothing.
   useEffect(() => {
     if (!fromDisk) return;
     const ser = serializeDay(fromDisk);
-    if (ser !== lastWritten.current && !dirty.current) {
-      setDraft(fromDisk);
-      lastWritten.current = ser;
-    }
+    if (ser === lastWritten.current) return;
+    const was = base.current;
+    base.current = fromDisk;
+    lastWritten.current = ser;
+    setDraft((prev) => (dirty.current ? mergeDay(was, prev, fromDisk) : fromDisk));
   }, [fromDisk]);
 
   const persist = useCallback(
     async (d: Day) => {
-      const ser = serializeDay(d);
-      lastWritten.current = ser;
       try {
-        await saveText(dayRel(d.date), ser);
+        // Merged with the disk at the moment of writing, so a bot mark made a second ago survives.
+        const written = await saveDayMerged(base.current, d);
+        base.current = written;
+        lastWritten.current = serializeDay(written);
         dirty.current = false;
         setSaveError(null);
+        // Edits typed while the write was in flight stay; the disk's additions join them.
+        setDraft((prev) => mergeDay(d, prev, written));
       } catch (e) {
         setSaveError(String(e));
       }
     },
-    [saveText],
+    [saveDayMerged],
   );
 
   const update = useCallback(
@@ -115,12 +122,17 @@ function DayView({ today }: { today: string }) {
   const closeDays = useCallback(
     async (days: Day[], auto: boolean): Promise<CloseReport | null> => {
       if (!vault || !life) return null;
-      let logText = vault.logText;
+      // The log on disk, not the scanned copy: Claude may have appended since.
+      let logText = (await readFresh("wiki/log.md")) ?? vault.logText;
       let last: Day | null = null;
       for (const d of days) {
-        const closed = closeDay(d, life.habits);
+        // Close what the file holds now, with this screen's edits on top.
+        const onDisk = await readFresh(dayRel(d.date));
+        const fresh = onDisk === null ? d : parseDay({ rel: dayRel(d.date), content: onDisk, mtime: 0 });
+        const from = d.date === today ? base.current : life.days.get(d.date) ?? d;
+        const closed = closeDay(mergeDay(from, d, fresh), life.habits);
         const ser = serializeDay(closed);
-        if (closed.date === today) lastWritten.current = ser;
+        if (closed.date === today) { lastWritten.current = ser; base.current = closed; }
         await saveText(dayRel(closed.date), ser);
         // The app owns its own `day` lines: refresh one in place, append a new one.
         const line = dayLogLine(closed, life.habits);
@@ -141,7 +153,7 @@ function DayView({ today }: { today: string }) {
       const git = await commitVault(msg);
       return { day: last, git, auto };
     },
-    [vault, life, saveText, commitVault, today],
+    [vault, life, saveText, readFresh, commitVault, today],
   );
 
   /**
@@ -155,8 +167,7 @@ function DayView({ today }: { today: string }) {
     setClosing(true);
     try {
       const open = { ...draft, closed: false };
-      await persist(open);
-      setDraft(open);
+      await persist(open); // sets the draft to the merged result; setting `open` here would undo the disk's additions
       setReport(null);
       setSaveError(null);
       await reload();
@@ -258,8 +269,8 @@ function DayView({ today }: { today: string }) {
   };
 
   const addTx = () => {
-    const amount = Number(tx.amount.replace(/\s/g, "").replace(",", "."));
-    if (!Number.isFinite(amount) || amount === 0) return;
+    const amount = parseAmount(tx.amount);
+    if (amount === undefined || amount === 0) return;
     const row: Tx = { amount, category: tx.category.trim(), account: tx.account.trim(), note: tx.note.trim() };
     update((d) => ({ ...d, txs: [...d.txs, row] }));
     setTx({ amount: "", category: "", account: tx.account, note: "" });
