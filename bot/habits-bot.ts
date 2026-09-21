@@ -7,6 +7,10 @@
  * lunch. Each shows the due habits not marked yet, with ✓ / ✗ / пропуск per
  * habit and «позже» for the whole digest.
  *
+ * Food: the «🍽 Еда» button under the chat asks what was eaten; the next
+ * message becomes a row of `## Еда` in the day file, «ЧЧ:ММ» in front for a
+ * different time, « — » before a note. Same rows the Day screen writes.
+ *
  * Config and delivery state live outside the vault, in
  * ~/Library/Application Support/irtiqa-bot/: the token is a secret and the
  * state is a throwaway cache. Everything that matters is in the day files.
@@ -16,8 +20,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync,
 import { homedir } from "node:os";
 import { join } from "node:path";
 import {
-  DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, markOf, parseDay, parseHabit, serializeDay, withMark,
-  type Day, type DayMark, type Habit,
+  DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
+  serializeDay, withMark, type Day, type DayMark, type Habit, type Meal,
 } from "../src/lib/life";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { MAGHRIB_DAYS_FROM, SHYMKENT, maghribOn } from "../src/lib/maghrib";
@@ -147,6 +151,31 @@ function key(title: string): string {
   return createHash("sha1").update(title).digest("hex").slice(0, 8);
 }
 
+// ---------- food ----------
+
+const FOOD_BUTTON = "🍽 Еда";
+const HABITS_BUTTON = "📋 Привычки";
+const FOOD_WAIT_MS = 15 * 60000;
+let foodAskedAt = 0;
+
+/** «13:30 плов — тяжело» → time, what, note. No time means now. */
+function parseMeal(text: string, now: Date): Meal | null {
+  let rest = text.replace(/\|/g, "/").trim();
+  let time = hm(now);
+  const t = rest.match(/^(\d{1,2}[:.]\d{2}|\d{1,2}:\d{2})\s+(.+)$/);
+  if (t && normalizeTime(t[1])) { time = normalizeTime(t[1]); rest = t[2].trim(); }
+  const [what, ...note] = rest.split(/\s+[—–-]\s+/);
+  if (!what.trim()) return null;
+  return { time, what: what.trim(), note: note.join(" — ").trim() };
+}
+
+/** The day file a meal at «ЧЧ:ММ» today belongs to; a time still ahead means last night. */
+function mealDate(time: string, now: Date): string {
+  let t = new Date(`${toDateStr(now)}T${time}:00`);
+  if (t.getTime() > now.getTime() + 5 * 60000) t = new Date(t.getTime() - 86400000);
+  return logicalDate(t);
+}
+
 // ---------- Telegram ----------
 
 type Button = { text: string; callback_data: string };
@@ -234,6 +263,15 @@ async function onCallback(q: CallbackQuery) {
     }).catch(() => {}); // "message is not modified" when tapped twice
   };
 
+  if (kind === "u") {
+    const day = readDay(date);
+    const i = day.meals.findIndex((x) => key(x.time + x.what + x.note) === code);
+    if (i >= 0) writeDay({ ...day, meals: day.meals.filter((_, j) => j !== i) });
+    await tg("answerCallbackQuery", { callback_query_id: q.id, text: i >= 0 ? "Убрал" : "Уже нет" });
+    await tg("editMessageText", { chat_id: q.message.chat.id, message_id: q.message.message_id, text: `${q.message.text ?? ""}\n↩︎ отменено` }).catch(() => {});
+    return;
+  }
+
   if (kind === "v") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     await edit(code as Mode);
@@ -260,6 +298,16 @@ async function onCallback(q: CallbackQuery) {
 
 interface Message { chat: { id: number }; from?: { id: number }; text?: string }
 
+const REPLY_KEYBOARD = {
+  keyboard: [[{ text: FOOD_BUTTON }, { text: HABITS_BUTTON }]],
+  resize_keyboard: true,
+  is_persistent: true,
+};
+
+async function say(text: string, extra: Record<string, unknown> = {}) {
+  await tg("sendMessage", { chat_id: cfg.chatId, text, ...extra });
+}
+
 async function onMessage(m: Message) {
   const text = (m.text ?? "").trim();
   if (!cfg.chatId && text.startsWith("/start")) {
@@ -268,20 +316,46 @@ async function onMessage(m: Message) {
   }
   if (m.chat.id !== cfg.chatId) return;
   if (text.startsWith("/start") || text.startsWith("/help")) {
+    foodAskedAt = 0;
     const s = slotsOf(toDateStr(new Date()));
-    await tg("sendMessage", {
-      chat_id: cfg.chatId,
-      text: [
+    await say(
+      [
         "Сводки привычек, 4 раза в день:",
         ...s.map((x) => `${hm(x.at)} — ${x.title}`),
         "",
         "День считается от магриба до магриба: после магриба отметки идут в завтрашний файл.",
-        "/today — сводка прямо сейчас",
+        `${FOOD_BUTTON} — записать, что съел. ${HABITS_BUTTON} или /today — сводка прямо сейчас.`,
       ].join("\n"),
-    });
+      { reply_markup: REPLY_KEYBOARD },
+    );
     return;
   }
-  if (text.startsWith("/today")) await sendDigest(logicalDate(new Date()), "📋 Сейчас");
+  if (text.startsWith("/today") || text === HABITS_BUTTON) {
+    foodAskedAt = 0;
+    await sendDigest(logicalDate(new Date()), "📋 Сейчас");
+    return;
+  }
+  if (text.startsWith("/food") || text === FOOD_BUTTON) {
+    foodAskedAt = Date.now();
+    await say("Что съел? Например: «плов», «13:30 плов» или «плов — тяжело после».", { reply_markup: { force_reply: true, input_field_placeholder: "что съел" } });
+    return;
+  }
+  if (text.startsWith("/")) return;
+  if (!foodAskedAt || Date.now() - foodAskedAt > FOOD_WAIT_MS) {
+    await say(`Чтобы записать еду, нажми «${FOOD_BUTTON}».`, { reply_markup: REPLY_KEYBOARD });
+    return;
+  }
+  foodAskedAt = 0;
+  const now = new Date();
+  const meal = parseMeal(text, now);
+  if (!meal) return;
+  const date = mealDate(meal.time, now);
+  const day = readDay(date);
+  writeDay({ ...day, meals: [...day.meals, meal].sort((a, b) => a.time.localeCompare(b.time)) });
+  const late = isLateMeal(meal) ? "\n⚠️ После 21:00 — это за границей по панкреатиту." : "";
+  await say(`🍽 Записал (${formatDayTitle(date).toLowerCase()}): ${meal.time} ${meal.what}${meal.note ? ` — ${meal.note}` : ""}${late}`, {
+    reply_markup: { inline_keyboard: [[{ text: "↩︎ Отменить", callback_data: `u:${date.replaceAll("-", "")}:${key(meal.time + meal.what + meal.note)}` }]] },
+  });
 }
 
 // ---------- loops ----------
