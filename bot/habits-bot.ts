@@ -11,6 +11,11 @@
  * message becomes a row of `## Еда` in the day file, «ЧЧ:ММ» in front for a
  * different time, « — » before a note. Same rows the Day screen writes.
  *
+ * Money: «💸 Деньги» asks for the amount and a note («+» for income), then a
+ * category, then an account; the row goes into `## Деньги`. «долг» and
+ * «подписки» are not offered: a repayment must also move `debts.md`, and the
+ * app posts subscriptions itself.
+ *
  * Config and delivery state live outside the vault, in
  * ~/Library/Application Support/irtiqa-bot/: the token is a secret and the
  * state is a throwaway cache. Everything that matters is in the day files.
@@ -21,7 +26,8 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import {
   DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
-  serializeDay, withMark, type Day, type DayMark, type Habit, type Meal,
+  ACCOUNTS_REL, liveBalance, parseAccounts, serializeDay, withMark,
+  type Day, type DayMark, type Habit, type Meal, type Tx,
 } from "../src/lib/life";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { MAGHRIB_DAYS_FROM, SHYMKENT, maghribOn } from "../src/lib/maghrib";
@@ -155,8 +161,11 @@ function key(title: string): string {
 
 const FOOD_BUTTON = "🍽 Еда";
 const HABITS_BUTTON = "📋 Привычки";
-const FOOD_WAIT_MS = 15 * 60000;
-let foodAskedAt = 0;
+const MONEY_BUTTON = "💸 Деньги";
+const WAIT_MS = 15 * 60000;
+
+/** What the next plain message answers. Kept in memory: a restart just forgets the question. */
+let awaiting: { kind: "food" | "money" | "category"; at: number } | null = null;
 
 /** «13:30 плов — тяжело» → time, what, note. No time means now. */
 function parseMeal(text: string, now: Date): Meal | null {
@@ -174,6 +183,68 @@ function mealDate(time: string, now: Date): string {
   let t = new Date(`${toDateStr(now)}T${time}:00`);
   if (t.getTime() > now.getTime() + 5 * 60000) t = new Date(t.getTime() - 86400000);
   return logicalDate(t);
+}
+
+// ---------- money ----------
+
+/** Categories only the app may write: they move other ledgers too. */
+const APP_ONLY_CATEGORIES = ["долг", "подписки"];
+
+interface PendingTx { amount: number; note: string; cats: string[]; category?: string; accounts: string[] }
+let pendingTx: PendingTx | null = null;
+
+/** «2500 такси», «+50000 зарплата», «1 200,50 кофе» → signed amount and note. */
+function parseMoney(text: string): { amount: number; note: string } | null {
+  const m = text.replace(/\|/g, "/").trim().match(/^([+-]?)\s*(\d[\d\s]*(?:[.,]\d+)?)\s*(.*)$/);
+  if (!m) return null;
+  const n = Number(m[2].replace(/\s/g, "").replace(",", "."));
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return { amount: m[1] === "+" ? n : -n, note: m[3].trim() };
+}
+
+function readAllDays(): Map<string, Day> {
+  const dir = join(cfg.vault, DAY_DIR);
+  const days = new Map<string, Day>();
+  for (const f of readdirSync(dir)) {
+    if (!/^\d{4}-\d{2}-\d{2}\.md$/.test(f)) continue;
+    const date = f.slice(0, 10);
+    days.set(date, parseDay({ rel: dayRel(date), content: readFileSync(join(dir, f), "utf8"), mtime: 0 }));
+  }
+  return days;
+}
+
+/** The categories already used for this sign, most frequent first. */
+function categoriesFor(income: boolean, days: Map<string, Day>): string[] {
+  const n = new Map<string, number>();
+  for (const d of days.values()) {
+    for (const t of d.txs) {
+      const c = t.category.trim();
+      if (!c || (t.amount > 0) !== income || APP_ONLY_CATEGORIES.includes(c.toLowerCase())) continue;
+      n.set(c, (n.get(c) ?? 0) + 1);
+    }
+  }
+  return [...n.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c).slice(0, 8);
+}
+
+/** Accounts, the one used last first. */
+function accountsByUse(days: Map<string, Day>): string[] {
+  const names = parseAccounts(readFileSync(join(cfg.vault, ACCOUNTS_REL), "utf8")).map((a) => a.name);
+  const last = [...days.values()].sort((a, b) => b.date.localeCompare(a.date)).flatMap((d) => [...d.txs].reverse()).find((t) => names.includes(t.account.trim()));
+  return last ? [last.account.trim(), ...names.filter((x) => x !== last.account.trim())] : names;
+}
+
+function fmtSum(n: number): string {
+  return Math.abs(n).toLocaleString("ru-RU").replace(/\u00a0/g, " ");
+}
+
+function txKey(t: Tx): string {
+  return key(`${t.amount}|${t.category}|${t.account}|${t.note}`);
+}
+
+function pairs(buttons: Button[]): Button[][] {
+  const rows: Button[][] = [];
+  for (let i = 0; i < buttons.length; i += 2) rows.push(buttons.slice(i, i + 2));
+  return rows;
 }
 
 // ---------- Telegram ----------
@@ -263,6 +334,36 @@ async function onCallback(q: CallbackQuery) {
     }).catch(() => {}); // "message is not modified" when tapped twice
   };
 
+  if (kind === "c" || kind === "a") {
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    await tg("editMessageReplyMarkup", { chat_id: q.message.chat.id, message_id: q.message.message_id, reply_markup: { inline_keyboard: [] } }).catch(() => {});
+    if (!pendingTx) {
+      await say(`Запись устарела. Нажми «${MONEY_BUTTON}» ещё раз.`);
+      return;
+    }
+    if (kind === "c") {
+      if (code === "new") {
+        ask("category");
+        await say("Как назвать категорию?", { reply_markup: { force_reply: true, input_field_placeholder: "категория" } });
+        return;
+      }
+      pendingTx.category = code === "none" ? "" : pendingTx.cats[Number(code)] ?? "";
+      await askAccount();
+      return;
+    }
+    await writeTx(code === "none" ? "" : pendingTx.accounts[Number(code)] ?? "");
+    return;
+  }
+
+  if (kind === "x") {
+    const day = readDay(date);
+    const i = day.txs.findIndex((t) => txKey(t) === code);
+    if (i >= 0) writeDay({ ...day, txs: day.txs.filter((_, j) => j !== i) });
+    await tg("answerCallbackQuery", { callback_query_id: q.id, text: i >= 0 ? "Убрал" : "Уже нет" });
+    await tg("editMessageText", { chat_id: q.message.chat.id, message_id: q.message.message_id, text: `${q.message.text ?? ""}\n↩︎ отменено` }).catch(() => {});
+    return;
+  }
+
   if (kind === "u") {
     const day = readDay(date);
     const i = day.meals.findIndex((x) => key(x.time + x.what + x.note) === code);
@@ -299,13 +400,17 @@ async function onCallback(q: CallbackQuery) {
 interface Message { chat: { id: number }; from?: { id: number }; text?: string }
 
 const REPLY_KEYBOARD = {
-  keyboard: [[{ text: FOOD_BUTTON }, { text: HABITS_BUTTON }]],
+  keyboard: [[{ text: FOOD_BUTTON }, { text: MONEY_BUTTON }], [{ text: HABITS_BUTTON }]],
   resize_keyboard: true,
   is_persistent: true,
 };
 
 async function say(text: string, extra: Record<string, unknown> = {}) {
   await tg("sendMessage", { chat_id: cfg.chatId, text, ...extra });
+}
+
+function ask(kind: "food" | "money" | "category") {
+  awaiting = { kind, at: Date.now() };
 }
 
 async function onMessage(m: Message) {
@@ -316,36 +421,59 @@ async function onMessage(m: Message) {
   }
   if (m.chat.id !== cfg.chatId) return;
   if (text.startsWith("/start") || text.startsWith("/help")) {
-    foodAskedAt = 0;
+    awaiting = null;
     const s = slotsOf(toDateStr(new Date()));
     await say(
       [
         "Сводки привычек, 4 раза в день:",
         ...s.map((x) => `${hm(x.at)} — ${x.title}`),
         "",
-        "День считается от магриба до магриба: после магриба отметки идут в завтрашний файл.",
-        `${FOOD_BUTTON} — записать, что съел. ${HABITS_BUTTON} или /today — сводка прямо сейчас.`,
+        "День считается от магриба до магриба: после магриба всё идёт в завтрашний файл.",
+        `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${HABITS_BUTTON} или /today — сводка сейчас.`,
       ].join("\n"),
       { reply_markup: REPLY_KEYBOARD },
     );
     return;
   }
   if (text.startsWith("/today") || text === HABITS_BUTTON) {
-    foodAskedAt = 0;
+    awaiting = null;
     await sendDigest(logicalDate(new Date()), "📋 Сейчас");
     return;
   }
   if (text.startsWith("/food") || text === FOOD_BUTTON) {
-    foodAskedAt = Date.now();
+    ask("food");
     await say("Что съел? Например: «плов», «13:30 плов» или «плов — тяжело после».", { reply_markup: { force_reply: true, input_field_placeholder: "что съел" } });
     return;
   }
-  if (text.startsWith("/")) return;
-  if (!foodAskedAt || Date.now() - foodAskedAt > FOOD_WAIT_MS) {
-    await say(`Чтобы записать еду, нажми «${FOOD_BUTTON}».`, { reply_markup: REPLY_KEYBOARD });
+  if (text.startsWith("/money") || text === MONEY_BUTTON) {
+    ask("money");
+    pendingTx = null;
+    await say("Сумма и за что. Расход: «2500 такси». Доход: «+50000 зарплата».", { reply_markup: { force_reply: true, input_field_placeholder: "2500 такси" } });
     return;
   }
-  foodAskedAt = 0;
+  if (text.startsWith("/")) return;
+  if (!awaiting || Date.now() - awaiting.at > WAIT_MS) {
+    awaiting = null;
+    await say(`Нажми кнопку внизу: «${FOOD_BUTTON}» или «${MONEY_BUTTON}».`, { reply_markup: REPLY_KEYBOARD });
+    return;
+  }
+  const kind = awaiting.kind;
+  awaiting = null;
+  if (kind === "food") await onFood(text);
+  else if (kind === "money") await onMoney(text);
+  else if (kind === "category" && pendingTx) {
+    pendingTx.category = text.replace(/\|/g, "/").trim();
+    if (APP_ONLY_CATEGORIES.includes(pendingTx.category.toLowerCase())) {
+      pendingTx.category = undefined;
+      await say("«Долг» и «подписки» записываются только в приложении: там они двигают ещё debts.md и подписки. Напиши другую категорию.");
+      ask("category");
+      return;
+    }
+    await askAccount();
+  }
+}
+
+async function onFood(text: string) {
   const now = new Date();
   const meal = parseMeal(text, now);
   if (!meal) return;
@@ -356,6 +484,44 @@ async function onMessage(m: Message) {
   await say(`🍽 Записал (${formatDayTitle(date).toLowerCase()}): ${meal.time} ${meal.what}${meal.note ? ` — ${meal.note}` : ""}${late}`, {
     reply_markup: { inline_keyboard: [[{ text: "↩︎ Отменить", callback_data: `u:${date.replaceAll("-", "")}:${key(meal.time + meal.what + meal.note)}` }]] },
   });
+}
+
+async function onMoney(text: string) {
+  const parsed = parseMoney(text);
+  if (!parsed) {
+    ask("money");
+    await say("Не понял сумму. Напиши так: «2500 такси» или «+50000 зарплата».");
+    return;
+  }
+  const days = readAllDays();
+  const cats = categoriesFor(parsed.amount > 0, days);
+  pendingTx = { ...parsed, cats, accounts: accountsByUse(days) };
+  const buttons = cats.map((c, i) => ({ text: c, callback_data: `c:0:${i}` }));
+  await say(`${parsed.amount > 0 ? "➕ Доход" : "➖ Расход"} ${fmtSum(parsed.amount)}${parsed.note ? ` — ${parsed.note}` : ""}\nКатегория?`, {
+    reply_markup: { inline_keyboard: [...pairs(buttons), [{ text: "✏️ другая", callback_data: "c:0:new" }, { text: "без категории", callback_data: "c:0:none" }]] },
+  });
+}
+
+async function askAccount() {
+  if (!pendingTx) return;
+  const buttons = pendingTx.accounts.map((a, i) => ({ text: a, callback_data: `a:0:${i}` }));
+  await say(`Категория: ${pendingTx.category || "—"}. Счёт?`, { reply_markup: { inline_keyboard: [...pairs(buttons), [{ text: "без счёта", callback_data: "a:0:none" }]] } });
+}
+
+async function writeTx(account: string) {
+  const p = pendingTx!;
+  pendingTx = null;
+  const date = logicalDate(new Date());
+  const tx: Tx = { amount: p.amount, category: p.category ?? "", account, note: p.note };
+  const day = readDay(date);
+  writeDay({ ...day, txs: [...day.txs, tx] });
+  let balance = "";
+  const acc = parseAccounts(readFileSync(join(cfg.vault, ACCOUNTS_REL), "utf8")).find((a) => a.name === account);
+  if (acc) balance = `\n${account}: ${fmtSum(liveBalance(acc, readAllDays()))}`;
+  await say(
+    `💸 Записал (${formatDayTitle(date).toLowerCase()}): ${tx.amount > 0 ? "+" : "−"}${fmtSum(tx.amount)} · ${tx.category || "без категории"} · ${account || "без счёта"}${tx.note ? ` · ${tx.note}` : ""}${balance}`,
+    { reply_markup: { inline_keyboard: [[{ text: "↩︎ Отменить", callback_data: `x:${date.replaceAll("-", "")}:${txKey(tx)}` }]] } },
+  );
 }
 
 // ---------- loops ----------
