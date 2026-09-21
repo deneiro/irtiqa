@@ -164,8 +164,15 @@ async function tg<T = unknown>(method: string, body: Record<string, unknown>): P
 
 const MARK_LABEL: Record<DayMark, string> = { done: "✓", failed: "✗", skipped: "–" };
 
-/** Text + keyboard for one logical date. Only unmarked habits get buttons. */
-function digest(date: string, title: string): { text: string; keyboard: Button[][] } {
+type Mode = "d" | "f" | "s";
+const MODE_GLYPH: Record<Mode, string> = { d: "✓", f: "✗", s: "–" };
+
+/**
+ * Text + keyboard for one logical date. One full-width button per unmarked
+ * habit, so long titles fit: in mode «d» a tap is ✓, the switches at the
+ * bottom turn the same buttons into ✗ or пропуск.
+ */
+function digest(date: string, title: string, mode: Mode = "d"): { text: string; keyboard: Button[][] } {
   const habits = readHabits().filter((h) => habitDue(h, date));
   const day = readDay(date);
   const open = habits.filter((h) => !markOf(day, h.title));
@@ -175,17 +182,23 @@ function digest(date: string, title: string): { text: string; keyboard: Button[]
   const lines = [title, `${formatDayTitle(date)} · отмечено ${marked.length} из ${habits.length}`];
   if (marked.length) lines.push("", marked.map((h) => `${MARK_LABEL[markOf(day, h.title)!]} ${h.title}`).join("\n"));
   if (open.length) {
-    if (open.some((h) => h.kind === "bad")) lines.push("", "У плохих привычек ✓ значит «удержался».");
+    lines.push("", mode === "d" ? "Нажми привычку — будет ✓." : mode === "f" ? "Режим ✗: нажми, что не сделал." : "Режим пропуска: нажми, что пропускаешь по плану.");
+    if (mode === "d" && open.some((h) => h.kind === "bad")) lines.push("У плохих привычек ✓ значит «удержался».");
   } else {
     lines.push("", "Всё отмечено.");
   }
 
   const keyboard: Button[][] = open.map((h) => [
-    { text: `✓ ${h.title}`, callback_data: `m:${compact}:d:${key(h.title)}` },
-    { text: "✗", callback_data: `m:${compact}:f:${key(h.title)}` },
-    { text: "пропуск", callback_data: `m:${compact}:s:${key(h.title)}` },
+    { text: `${MODE_GLYPH[mode]} ${h.title}`, callback_data: `m:${compact}:${mode}:${key(h.title)}` },
   ]);
-  if (open.length) keyboard.push([{ text: `⏰ Позже, через ${cfg.snoozeMin} мин`, callback_data: `z:${compact}` }]);
+  if (open.length) {
+    keyboard.push(
+      mode === "d"
+        ? [{ text: "✗ не сделал…", callback_data: `v:${compact}:f` }, { text: "– пропуск…", callback_data: `v:${compact}:s` }]
+        : [{ text: "← назад к ✓", callback_data: `v:${compact}:d` }],
+    );
+    keyboard.push([{ text: `⏰ Позже, через ${cfg.snoozeMin} мин`, callback_data: `z:${compact}` }]);
+  }
   return { text: lines.join("\n"), keyboard };
 }
 
@@ -214,6 +227,19 @@ async function onCallback(q: CallbackQuery) {
   const date = `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`;
   const title = (q.message.text ?? "").split("\n")[0];
 
+  const edit = async (mode: Mode) => {
+    const { text, keyboard } = digest(date, title, mode);
+    await tg("editMessageText", {
+      chat_id: q.message!.chat.id, message_id: q.message!.message_id, text, reply_markup: { inline_keyboard: keyboard },
+    }).catch(() => {}); // "message is not modified" when tapped twice
+  };
+
+  if (kind === "v") {
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    await edit(code as Mode);
+    return;
+  }
+
   if (kind === "z") {
     state.snoozes.push({ at: Date.now() + cfg.snoozeMin * 60000, date });
     saveState(state);
@@ -229,10 +255,7 @@ async function onCallback(q: CallbackQuery) {
     toast = `${MARK_LABEL[mark]} ${habit.title} → ${date}`;
   }
   await tg("answerCallbackQuery", { callback_query_id: q.id, text: toast });
-  const { text, keyboard } = digest(date, title);
-  await tg("editMessageText", {
-    chat_id: q.message.chat.id, message_id: q.message.message_id, text, reply_markup: { inline_keyboard: keyboard },
-  }).catch(() => {}); // "message is not modified" when tapped twice
+  await edit("d");
 }
 
 interface Message { chat: { id: number }; from?: { id: number }; text?: string }

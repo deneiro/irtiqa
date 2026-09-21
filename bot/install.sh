@@ -55,6 +55,8 @@ cat > "$PLIST" <<EOF
 EOF
 
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
+# bootout returns before the job is gone; bootstrap too early fails with error 5
+for i in {1..20}; do launchctl print "gui/$(id -u)/$LABEL" >/dev/null 2>&1 || break; sleep 0.5; done
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 echo "Бот запущен. Лог: $HOME_DIR/bot.log"
 echo "Открой бота в Telegram и отправь /start — первый /start становится владельцем."
