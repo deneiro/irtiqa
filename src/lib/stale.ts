@@ -29,11 +29,21 @@ export function staleMentions(md: string, quests: Quest[], days: Iterable<Day>):
   for (const d of days) for (const t of d.questsClosed) if (!closedDay.has(t) || closedDay.get(t)! < d.date) closedDay.set(t, d.date);
   const out: StaleMention[] = [];
   const seen = new Set<string>();
-  for (const raw of md.split(/\r?\n/)) {
+  // A bullet and its indented continuation lines are one item: «закрыт» may sit on its first line and the link on its third.
+  const items: string[] = [];
+  for (const l of md.split(/\r?\n/)) {
+    if (/^\s+\S/.test(l) && !/^\s*([-*]|\d+\.)\s/.test(l) && items.length) items[items.length - 1] += " " + l.trim();
+    else items.push(l);
+  }
+  for (const raw of items) {
     const line = norm(raw);
     if (!line) continue;
     for (const q of closed) {
-      if (seen.has(q.title) || !line.includes(norm(q.title))) continue;
+      const t = norm(q.title);
+      if (seen.has(q.title) || !line.includes(t)) continue;
+      // A line that already says the quest ended is history, not drift. The title is cut out
+      // first: «Закрыть разговор с …» would otherwise read as «закрыт».
+      if (/закрыт(?![ьи])|сделан|брошен|выполнен|отмен[её]н|~~/.test(line.split(t).join(" "))) continue;
       seen.add(q.title);
       const outcome = questOutcome(q.body);
       out.push({ quest: q, outcome, closedOn: outcome?.date ?? closedDay.get(q.title), line: raw.replace(/^\s*[-*]\s+/, "").replace(/\*\*|__/g, "").trim() });
