@@ -4,6 +4,7 @@ import { useStore } from "../store";
 import { useT } from "../lib/i18n";
 import { nextStep, questMinutes, questSteps, questXp, serializeQuest, withQuestSteps, type Quest } from "../lib/life";
 import SourceLink from "./SourceLink";
+import { todayStr } from "../lib/dates";
 
 function useTick(active: boolean): number {
   const [, setN] = useState(0);
@@ -34,7 +35,7 @@ function NextSteps({ quests }: { quests: Quest[] }) {
   const now = useTick(!!timer);
   const [busy, setBusy] = useState<string | null>(null);
   const days = life ? [...life.days.values()] : [];
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayStr();
 
   const rows = quests
     .map((q) => { const steps = questSteps(q.body); return { q, steps, next: nextStep(steps) }; })
@@ -108,7 +109,7 @@ function FullRows({ quests, onClose }: { quests: Quest[]; onClose?: (q: Quest) =
       {quests.map((q) => {
         const running = timer?.quest === q.title;
         const minutes = questMinutes(q.title, days);
-        const overdue = q.due && q.due < new Date().toISOString().slice(0, 10);
+        const overdue = q.due && q.due < todayStr();
         const steps = questSteps(q.body);
         const next = nextStep(steps);
         return (
