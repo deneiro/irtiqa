@@ -9,7 +9,15 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { inTauri } from "./native";
 import { addRun, patchRun, type Block, type OpKind, type Run } from "./claudeRuns";
 
-const ALLOWED_TOOLS = ["Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(ls:*)", "Bash(find:*)", "Bash(wc:*)"];
+// No `find`: `-exec` and `-delete` make it a shell. Glob and Grep cover the reading.
+const ALLOWED_TOOLS = ["Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(ls:*)", "Bash(wc:*)"];
+/**
+ * A run reads untrusted text (raw/ sources, web pages), so it gets only the
+ * tools above: `.claude/settings.local.json` in the vault collects every
+ * "always allow" from interactive sessions and is not loaded, and neither are
+ * MCP servers (Gmail). User settings stay for the model choice.
+ */
+const ISOLATION = ["--setting-sources", "user,project", "--strict-mcp-config"];
 /** Roles need the open web: JH1 checks vacancies, ET1 checks materials. Reading only — they still send nothing. */
 const ROLE_TOOLS = ["WebSearch", "WebFetch"];
 const isRole = (agent?: string) => !!agent && agent.startsWith("eldar-");
@@ -54,7 +62,7 @@ export function buildPrompt(op: OpKind, arg: string, today: string, agent?: stri
 
 export function claudeArgs(prompt: string, resume: string | undefined, agent?: string): string[] {
   const tools = isRole(agent) ? [...ALLOWED_TOOLS, ...ROLE_TOOLS] : ALLOWED_TOOLS;
-  const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits", "--allowedTools", ...tools];
+  const args = ["-p", prompt, "--output-format", "stream-json", "--verbose", "--permission-mode", "acceptEdits", ...ISOLATION, "--allowedTools", ...tools];
   if (agent) args.push("--agent", agent);
   if (resume) args.push("--resume", resume);
   return args;
