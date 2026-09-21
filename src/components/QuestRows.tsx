@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
-import { nextStep, questMinutes, questSteps, questXp, type Quest } from "../lib/life";
+import { nextStep, questMinutes, questSteps, questXp, serializeQuest, withQuestSteps, type Quest } from "../lib/life";
 import SourceLink from "./SourceLink";
 
 function useTick(active: boolean): number {
@@ -21,8 +21,82 @@ export function fmtElapsed(ms: number): string {
   return h ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`;
 }
 
-/** Active quests with the shared timer. Used on the Day screen and the Quests screen. */
+/** A step's owner rides at the end of its text: «… — ты», «… — ET1». */
+function splitOwner(text: string): { text: string; who: string } {
+  const m = text.match(/^(.*\S)\s+—\s+([^—]{1,20})$/);
+  return m ? { text: m[1], who: m[2].trim() } : { text, who: "" };
+}
+
+/** Day screen: not the quests themselves but the next undone step of each, nearest deadline first. */
+function NextSteps({ quests }: { quests: Quest[] }) {
+  const { life, timer, startTimer, stopTimer, saveText, reload } = useStore();
+  const { themeLabel } = useT();
+  const now = useTick(!!timer);
+  const [busy, setBusy] = useState<string | null>(null);
+  const days = life ? [...life.days.values()] : [];
+  const today = new Date().toISOString().slice(0, 10);
+
+  const rows = quests
+    .map((q) => { const steps = questSteps(q.body); return { q, steps, next: nextStep(steps) }; })
+    .sort((a, b) => (a.q.due || "9999").localeCompare(b.q.due || "9999"));
+  if (!rows.length) return <div className="small muted">Активных квестов нет.</div>;
+
+  const tick = async (q: Quest, i: number) => {
+    setBusy(q.rel);
+    try {
+      const steps = questSteps(q.body).map((x, j) => (j === i ? { ...x, done: true } : x));
+      await saveText(q.rel, serializeQuest({ ...q, body: withQuestSteps(q.body, steps) }));
+      await reload();
+    } finally { setBusy(null); }
+  };
+
+  return (
+    <div className="qlist">
+      {rows.map(({ q, steps, next }) => {
+        const running = timer?.quest === q.title;
+        const overdue = q.due && q.due < today;
+        const step = next ? splitOwner(next.text) : null;
+        return (
+          <div className={`quest nstep ${running ? "running" : ""}`} key={q.rel}>
+            <button
+              className={`tbtn ${running ? "on" : ""}`}
+              title={running ? "остановить и записать время" : "запустить таймер"}
+              disabled={!!timer && !running}
+              onClick={() => (running ? stopTimer() : startTimer(q.title))}
+            >
+              {running ? "■" : "▶"}
+            </button>
+            <div style={{ minWidth: 0 }}>
+              <div className="name">
+                {step ? step.text : <Link to={`/quest/${encodeURIComponent(q.rel)}`}>{q.title}</Link>}
+                {step?.who && <span className="nwho">{step.who}</span>}
+              </div>
+              <div className="sub">
+                {step ? <Link to={`/quest/${encodeURIComponent(q.rel)}`}>{q.title}</Link> : (q.theme ? themeLabel(q.theme) : "без темы")}
+                {steps.length > 0 && <> · {steps.filter((x) => x.done).length}/{steps.length}</>}
+                {q.due ? <span className={overdue ? "overdue" : ""}> · до {q.due.slice(5)}</span> : ""}
+              </div>
+            </div>
+            <div className="qmeta">
+              {running ? <b className="live">{fmtElapsed(now - timer!.startedAt)}</b> : <span>{questMinutes(q.title, days)} мин</span>}
+            </div>
+            {next && (
+              <button className="qcheck" disabled={busy === q.rel} title="шаг сделан" onClick={() => void tick(q, steps.indexOf(next))} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Active quests with the shared timer. Used on the Quests and Theme screens; the Day screen shows next steps. */
 export default function QuestRows({ quests, onClose, compact }: { quests: Quest[]; onClose?: (q: Quest) => void; compact?: boolean }) {
+  if (compact) return <NextSteps quests={quests} />;
+  return <FullRows quests={quests} onClose={onClose} />;
+}
+
+function FullRows({ quests, onClose }: { quests: Quest[]; onClose?: (q: Quest) => void }) {
   const { life, timer, startTimer, stopTimer } = useStore();
   const { themeLabel } = useT();
   const now = useTick(!!timer);
@@ -54,7 +128,7 @@ export default function QuestRows({ quests, onClose, compact }: { quests: Quest[
                 {q.project ? ` · ${q.project}` : ""}
                 {q.due ? <span className={overdue ? "overdue" : ""}> · до {q.due}</span> : ""}
                 {steps.length > 0 && <> · шаги {steps.filter((x) => x.done).length}/{steps.length}</>}
-                {!compact && q.source ? <> · <SourceLink source={q.source} /></> : null}
+                {q.source ? <> · <SourceLink source={q.source} /></> : null}
               </div>
               {next && <div className="qnextline">дальше: {next.text}</div>}
             </div>
