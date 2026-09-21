@@ -8,7 +8,8 @@
  * meets a day that has not happened yet.
  */
 import { WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
-import { normalizeTime, type Day, type Quest } from "./life";
+import { emptyDay, normalizeTime, type Day, type Quest } from "./life";
+import { sessionCalendarDate } from "./maghrib";
 import type { LifeEvent } from "./events";
 
 export { CALENDAR_FILE as CALENDAR_REL } from "./life";
@@ -161,6 +162,21 @@ export function blockOn(b: PlanBlock, date: string): boolean {
 /** Monday of the week that holds `date`. */
 export function weekStart(date: string): string {
   return addDays(date, -((weekdayIndex(date) + 6) % 7));
+}
+
+/**
+ * The timed sessions that happened on a calendar date. Since the day runs
+ * maghrib to maghrib, an evening session sits in the next day file.
+ */
+export function factDay(date: string, days: Map<string, Day>): Day | undefined {
+  const own = days.get(date);
+  const next = days.get(addDays(date, 1));
+  const sessions = [
+    ...(own?.sessions ?? []).filter((s) => !s.at || sessionCalendarDate(date, s.at) === date),
+    ...(next?.sessions ?? []).filter((s) => s.at && sessionCalendarDate(next!.date, s.at) === date),
+  ];
+  if (!own && !sessions.length) return undefined;
+  return { ...(own ?? emptyDay(date)), sessions };
 }
 
 export function itemsOn(date: string, blocks: PlanBlock[], day: Day | undefined, quests: Quest[], events: LifeEvent[] = []): CalItem[] {

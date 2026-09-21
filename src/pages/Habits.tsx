@@ -2,12 +2,13 @@ import { useMemo, useState } from "react";
 import { useStore } from "../store";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
-import { WEEKDAYS_RU, addDays, todayStr } from "../lib/dates";
+import { WEEKDAYS_RU, addDays } from "../lib/dates";
 import { HABIT_DIR, bestStreak, habitDue, habitRate, markOf, safeFilename, serializeHabit, streak, type Habit, type HabitKind, type HabitStatus } from "../lib/life";
 import { Link } from "react-router-dom";
 import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
 import { deleteFile } from "../lib/fs";
+import { useDayToday } from "../lib/useDayToday";
 
 const ORDER: (typeof WEEKDAYS_RU)[number][] = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"];
 
@@ -29,7 +30,7 @@ function freqDays(f: string | string[]): string[] {
 export default function HabitsPage() {
   const { root, life, saveText, reload } = useStore();
   const { themeLabel } = useT();
-  const today = todayStr();
+  const today = useDayToday();
   const [form, setForm] = useState<Form>(EMPTY);
   const [editing, setEditing] = useState<string | null>(null); // rel
   const [err, setErr] = useState<string | null>(null);

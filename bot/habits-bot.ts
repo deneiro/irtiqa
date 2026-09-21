@@ -20,7 +20,7 @@ import {
   type Day, type DayMark, type Habit,
 } from "../src/lib/life";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
-import { sunset } from "./sun";
+import { MAGHRIB_DAYS_FROM, SHYMKENT, maghribOn } from "../src/lib/maghrib";
 
 // ---------- config & state ----------
 
@@ -48,7 +48,7 @@ interface State {
 }
 
 const DEFAULTS: Omit<Config, "token" | "vault"> = {
-  lat: 42.3417, lon: 69.5901, // Шымкент
+  ...SHYMKENT,
   maghribOffsetMin: 0,
   morning: "08:00", lunch: "13:00", night: "23:30",
   snoozeMin: 30,
@@ -88,13 +88,14 @@ let fresh = !existsSync(STATE); // first run: past slots are marked sent, not se
 // ---------- time: the day runs maghrib to maghrib ----------
 
 function maghrib(date: string): Date {
-  return new Date(sunset(date, cfg.lat, cfg.lon).getTime() + cfg.maghribOffsetMin * 60000);
+  return new Date(maghribOn(date, cfg.lat, cfg.lon).getTime() + cfg.maghribOffsetMin * 60000);
 }
 
-/** Which day file a moment belongs to: after maghrib it is already tomorrow. */
+/** Which day file a moment belongs to: after maghrib it is already tomorrow. Same rule as `dayOf` in the app, with the configured offset. */
 function logicalDate(t: Date): string {
   const cal = toDateStr(t);
-  return t >= maghrib(cal) ? addDays(cal, 1) : cal;
+  const next = addDays(cal, 1);
+  return next >= MAGHRIB_DAYS_FROM && t >= maghrib(cal) ? next : cal;
 }
 
 function at(date: string, hhmm: string): Date {

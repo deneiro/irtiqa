@@ -5,8 +5,9 @@ import { useStore, useVault } from "../store";
 import { ChartTip } from "../components/Bits";
 import { THEMES, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
-import { addDays, todayStr, monthOfToday } from "../lib/dates";
+import { addDays, monthOfToday } from "../lib/dates";
 import { bestStreak, habitDue, streak, workMinutesOf, xpForDay, type Day, type XpContext } from "../lib/life";
+import { useDayToday } from "../lib/useDayToday";
 
 const axis = { stroke: "var(--faint)", fontSize: 11, fontFamily: "var(--font-mono)" };
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
@@ -21,7 +22,7 @@ export default function TrendsPage() {
   const v = useVault();
   const { life } = useStore();
   const { themeLabel } = useT();
-  const today = todayStr();
+  const today = useDayToday();
 
   const data = useMemo(() => {
     const days: Map<string, Day> = life?.days ?? new Map<string, Day>();

@@ -8,7 +8,7 @@ import QuestRows from "../components/QuestRows";
 import { useT } from "../lib/i18n";
 import Markdown from "../components/Markdown";
 import type { Page } from "../lib/types";
-import { addDays, plural, todayStr, monthOfToday } from "../lib/dates";
+import { addDays, plural, monthOfToday } from "../lib/dates";
 import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, streak, withMark, type DayMark } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
@@ -29,6 +29,7 @@ import { NAMES_PAGE, suras } from "../lib/quran";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
 import { themeXps } from "../lib/levels";
+import { useDayToday } from "../lib/useDayToday";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 
@@ -45,7 +46,7 @@ export default function ThemePage() {
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState<string | null>(null);
   const { t, themeLabel, themeBlurb, relDate } = useT();
-  const today = todayStr();
+  const today = useDayToday();
 
   const pages = useMemo(() => v.pages.filter((p) => p.theme === theme), [v, theme]);
   const overview = pages.find((p) => p.file === "_Overview" && p.segments.length === 1);

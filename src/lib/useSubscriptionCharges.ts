@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useStore } from "../store";
-import { todayStr } from "./dates";
+import { dayToday } from "./maghrib";
 import { subscriptionNote, subscriptionsDue } from "./life";
 
 /**
@@ -12,7 +12,7 @@ export function useSubscriptionCharges(): void {
   const posted = useRef(new Set<string>());
   useEffect(() => {
     if (!life) return;
-    const today = todayStr();
+    const today = dayToday();
     const day = life.days.get(today);
     if (day?.closed) return;
     const txs = day?.txs ?? [];

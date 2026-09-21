@@ -5,15 +5,15 @@ import { useStore, useVault } from "../store";
 import { ChartTip } from "../components/Bits";
 import { themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
-import { todayStr } from "../lib/dates";
 import { XP } from "../lib/life";
 import { overallLevelProgress, themeXps } from "../lib/levels";
+import { useDayToday } from "../lib/useDayToday";
 
 export default function WheelPage() {
   const v = useVault();
   const { life } = useStore();
   const { themeLabel } = useT();
-  const today = todayStr();
+  const today = useDayToday();
 
   const xps = useMemo(() => (life ? themeXps(life, v.pages, today) : []), [life, v, today]);
   const total = xps.reduce((s, x) => s + x.total, 0);

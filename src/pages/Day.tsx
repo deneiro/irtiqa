@@ -4,6 +4,8 @@ import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { confirmAction, inTauri } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
+import { maghribOn } from "../lib/maghrib";
+import { useDayToday } from "../lib/useDayToday";
 import {
   HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
   markOf, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
@@ -28,10 +30,15 @@ interface CloseReport {
   auto: boolean;
 }
 
+/** The day runs maghrib to maghrib: at sunset the screen turns over to the next file. */
 export default function DayPage() {
+  const today = useDayToday();
+  return <DayView key={today} today={today} />;
+}
+
+function DayView({ today }: { today: string }) {
   const { vault, life, saveText, commitVault, reload } = useStore();
   const { themeLabel } = useT();
-  const today = todayStr();
   const habits = life?.habits ?? [];
   const fromDisk = life?.days.get(today);
 
@@ -177,14 +184,15 @@ export default function DayPage() {
     }
   };
 
-  // Past days left open get closed on the first launch after 09:00 the next day.
+  // Past days left open get closed on the first launch after 09:00 the next
+  // morning: the evening after maghrib stays a grace window for the day that ended.
   useEffect(() => {
     if (!life || autoRan.current) return;
     autoRan.current = true;
     const now = new Date();
     const yesterday = addDays(today, -1);
     const stale = [...life.days.values()]
-      .filter((d) => !d.closed && d.date < today && (d.date < yesterday || now.getHours() >= 9))
+      .filter((d) => !d.closed && d.date < today && (d.date < yesterday || (todayStr(now) === today && now.getHours() >= 9)))
       .sort((a, b) => a.date.localeCompare(b.date));
     if (!stale.length) return;
     void (async () => {
@@ -277,7 +285,10 @@ export default function DayPage() {
 
   return (
     <div>
-      <div className="eyebrow">{locked ? "День закрыт" : "Сегодня"}</div>
+      <div className="eyebrow">
+        {locked ? "День закрыт" : "Сегодня"}
+        {todayStr() !== today && ` · с магриба ${maghribOn(addDays(today, -1)).toTimeString().slice(0, 5)}`}
+      </div>
       <h1 className="title">{formatDayTitle(today)}</h1>
       <p className="lede">
         {due.length ? `${draft.habitsDone.length} из ${due.length} привычек` : "Привычек на сегодня нет"}

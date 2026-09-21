@@ -4,11 +4,12 @@ import { useStore } from "../store";
 import { ChartTip } from "../components/Bits";
 import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
-import { addDays, todayStr } from "../lib/dates";
+import { addDays } from "../lib/dates";
 import {
   ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions,
   txsInMonth, type AccountRow, type Day, type Debt, type Subscription,
 } from "../lib/life";
+import { useDayToday } from "../lib/useDayToday";
 
 const axis = { stroke: "var(--faint)", fontSize: 11, fontFamily: "var(--font-mono)" };
 
@@ -27,7 +28,7 @@ function shiftMonth(ym: string, n: number): string {
 
 export default function FinancePage() {
   const { vault, life, saveText, reload, updateToday } = useStore();
-  const today = todayStr();
+  const today = useDayToday();
   const [ym, setYm] = useState(monthOf(today));
   const [err, setErr] = useState<string | null>(null);
 

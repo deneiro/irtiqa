@@ -6,7 +6,7 @@ import { THEMES, themeColor } from "../lib/themes";
 import { WEEKDAYS_RU, addDays, formatDayTitle, todayStr, weekdayIndex } from "../lib/dates";
 import { confirmAction } from "../lib/native";
 import {
-  CALENDAR_REL, fromMin, normEnd, normalizeTime, isWeekly, itemsOn, layLanes, parseCalendar, sameBlock, serializeCalendar, toMin, weekStart,
+  CALENDAR_REL, factDay, fromMin, normEnd, normalizeTime, isWeekly, itemsOn, layLanes, parseCalendar, sameBlock, serializeCalendar, toMin, weekStart,
   type CalItem, type PlanBlock,
 } from "../lib/calendar";
 
@@ -59,7 +59,7 @@ export default function CalendarPage() {
   const blocks = useMemo(() => parseCalendar(life?.calendar ?? ""), [life]);
   const dates = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(week, i)), [week]);
   const cols = useMemo(
-    () => dates.map((d) => ({ date: d, items: layLanes(itemsOn(d, blocks, life?.days.get(d), life?.quests ?? [], life?.events ?? [])) })),
+    () => dates.map((d) => ({ date: d, items: layLanes(itemsOn(d, blocks, life ? factDay(d, life.days) : undefined, life?.quests ?? [], life?.events ?? [])) })),
     [dates, blocks, life],
   );
   const earliest = Math.min(...cols.flatMap((c) => c.items.map((x) => x.item.from)), 6 * 60);

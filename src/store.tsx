@@ -7,7 +7,7 @@ import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
 import { buildIndex, type SearchDoc } from "./lib/search";
 import { buildLife, dayRel, emptyDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
-import { todayStr } from "./lib/dates";
+import { dayOf, dayToday } from "./lib/maghrib";
 import { runCmd, treeChanged, writeText, type CmdResult } from "./lib/fs";
 import { parseLog } from "./lib/log";
 
@@ -186,7 +186,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateToday = useCallback(
     async (fn: (d: Day) => Day) => {
-      const today = todayStr();
+      const today = dayToday();
       const cur = life?.days.get(today);
       const next = fn(cur ?? emptyDay(today));
       await saveText(dayRel(today), serializeDay(next));
@@ -212,8 +212,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(TIMER_KEY);
     setTimer(null);
     const start = new Date(timer.startedAt);
-    // A session that began yesterday lands in today's file; its start time would lie there.
-    const at = todayStr(start) === todayStr() ? `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}` : undefined;
+    // A session that began in the previous day file lands in this one; its start time would lie there.
+    const at = dayOf(start) === dayToday() ? `${String(start.getHours()).padStart(2, "0")}:${String(start.getMinutes()).padStart(2, "0")}` : undefined;
     const p = { quest: timer.quest, minutes, at };
     localStorage.setItem(PENDING_KEY, JSON.stringify(p));
     setPending(p);
@@ -230,7 +230,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     await updateToday((d) => ({ ...d, sessions: [...d.sessions, at ? { quest, minutes, at } : { quest, minutes }] }));
     const q = life?.quests.find((x) => x.title === quest);
     if (q) {
-      const body = withQuestEntry(q.body, { date: todayStr(), minutes, note });
+      const body = withQuestEntry(q.body, { date: dayToday(), minutes, note });
       await saveText(q.rel, serializeQuest({ ...q, body }));
     }
     localStorage.removeItem(PENDING_KEY);

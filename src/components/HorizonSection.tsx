@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
-import { todayStr } from "../lib/dates";
 import { horizonOf } from "../lib/horizon";
+import { useDayToday } from "../lib/useDayToday";
 
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 const HALAL_PAGE = "Халяль и харам";
@@ -19,7 +19,7 @@ function monthsWord(n: number): string {
 export default function HorizonSection() {
   const v = useVault();
   const { life } = useStore();
-  const today = todayStr();
+  const today = useDayToday();
   const h = useMemo(
     () => (life ? horizonOf(life.debts, life.days, life.subscriptions, today) : null),
     [life, today],
