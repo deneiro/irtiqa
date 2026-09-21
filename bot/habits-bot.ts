@@ -226,6 +226,19 @@ function categoriesFor(income: boolean, days: Map<string, Day>): string[] {
   return [...n.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c).slice(0, 8);
 }
 
+/** A typed category in the spelling already used: «Прочее» → «прочее». The most frequent spelling wins. */
+function canonicalCategory(typed: string, days: Map<string, Day>): string {
+  const want = typed.toLowerCase().replace(/ё/g, "е");
+  const n = new Map<string, number>();
+  for (const d of days.values()) {
+    for (const t of d.txs) {
+      const c = t.category.trim();
+      if (c && c.toLowerCase().replace(/ё/g, "е") === want) n.set(c, (n.get(c) ?? 0) + 1);
+    }
+  }
+  return [...n.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? typed;
+}
+
 /** Accounts, the one used last first. */
 function accountsByUse(days: Map<string, Day>): string[] {
   const names = parseAccounts(readFileSync(join(cfg.vault, ACCOUNTS_REL), "utf8")).map((a) => a.name);
@@ -462,7 +475,7 @@ async function onMessage(m: Message) {
   if (kind === "food") await onFood(text);
   else if (kind === "money") await onMoney(text);
   else if (kind === "category" && pendingTx) {
-    pendingTx.category = text.replace(/\|/g, "/").trim();
+    pendingTx.category = canonicalCategory(text.replace(/\|/g, "/").trim(), readAllDays());
     if (APP_ONLY_CATEGORIES.includes(pendingTx.category.toLowerCase())) {
       pendingTx.category = undefined;
       await say("«Долг» и «подписки» записываются только в приложении: там они двигают ещё debts.md и подписки. Напиши другую категорию.");
