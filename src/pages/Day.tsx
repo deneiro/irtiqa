@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useStore } from "../store";
+import { useStore, type SyncResult } from "../store";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { confirmAction, inTauri } from "../lib/native";
@@ -14,7 +14,6 @@ import {
 import type { CmdResult } from "../lib/fs";
 import QuestRows from "../components/QuestRows";
 import TodayPlan from "../components/TodayPlan";
-import { CALENDAR_REL } from "../lib/calendar";
 
 const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined };
 const MARK_GLYPH: Record<string, string> = { none: "", done: "✓", failed: "✗", skipped: "→" };
@@ -26,8 +25,17 @@ function fmtMoney(n: number): string {
 
 interface CloseReport {
   day: Day;
-  git: CmdResult | null;
+  git: SyncResult | null;
   auto: boolean;
+}
+
+function syncText(git: SyncResult | null): string {
+  if (git === null) return "Записано. Коммит vault делается только из окна приложения, не из браузера.";
+  const why = (r: CmdResult) => (r.stderr || r.stdout).trim();
+  if (git.commit && git.commit.status !== 0) return `Записано. Коммит не удался: ${why(git.commit)}`;
+  if (!git.push) return "Записано.";
+  if (git.push.status !== 0) return `Записано и закоммичено, но не отправлено на GitHub: ${why(git.push)}. Уйдёт при следующем закрытии дня.`;
+  return "Записано, закоммичено и отправлено на GitHub.";
 }
 
 /** The day runs maghrib to maghrib: at sunset the screen turns over to the next file. */
@@ -107,7 +115,6 @@ function DayView({ today }: { today: string }) {
   const closeDays = useCallback(
     async (days: Day[], auto: boolean): Promise<CloseReport | null> => {
       if (!vault || !life) return null;
-      const paths: string[] = [];
       let logText = vault.logText;
       let last: Day | null = null;
       for (const d of days) {
@@ -115,7 +122,6 @@ function DayView({ today }: { today: string }) {
         const ser = serializeDay(closed);
         if (closed.date === today) lastWritten.current = ser;
         await saveText(dayRel(closed.date), ser);
-        paths.push(dayRel(closed.date));
         // The app owns its own `day` lines: refresh one in place, append a new one.
         const line = dayLogLine(closed, life.habits);
         const head = line.split(" | ")[0];
@@ -127,15 +133,12 @@ function DayView({ today }: { today: string }) {
         if (nextLog !== logText) {
           logText = nextLog;
           await saveText("wiki/log.md", logText);
-          if (!paths.includes("wiki/log.md")) paths.push("wiki/log.md");
         }
         last = closed;
       }
       if (!last) return null;
-      // The plan is edited all day long; the day's commit carries it along.
-      if (life.calendar !== null) paths.push(CALENDAR_REL);
       const msg = days.length === 1 ? `day ${last.date}` : `days ${days[0].date}..${last.date}`;
-      const git = await commitVault(paths, msg);
+      const git = await commitVault(msg);
       return { day: last, git, auto };
     },
     [vault, life, saveText, commitVault, today],
@@ -318,11 +321,7 @@ function DayView({ today }: { today: string }) {
             ))}
           </div>
           <div className="small muted" style={{ marginTop: 10 }}>
-            {report.git === null
-              ? "Записано. Коммит vault делается только из окна приложения, не из браузера."
-              : report.git.status === 0
-                ? "Записано и закоммичено в vault."
-                : `Записано. Коммит не удался: ${(report.git.stderr || report.git.stdout).trim()}`}
+            {syncText(report.git)}
           </div>
         </div>
       )}

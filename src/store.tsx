@@ -9,6 +9,12 @@ import { buildIndex, type SearchDoc } from "./lib/search";
 import { buildLife, dayRel, emptyDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
 import { dayOf, dayToday } from "./lib/maghrib";
 import { runCmd, treeChanged, writeText, type CmdResult } from "./lib/fs";
+
+/** What closing a day did with git: `commit` is null when there was nothing to commit, `push` null when it was not tried. */
+export interface SyncResult {
+  commit: CmdResult | null;
+  push: CmdResult | null;
+}
 import { parseLog } from "./lib/log";
 
 const KEY = "irtiqa.vaultRoot";
@@ -30,8 +36,8 @@ interface Store {
   life: Life | null;
   /** Write one file inside the vault (app-owned paths only). */
   saveText: (rel: string, content: string) => Promise<void>;
-  /** `git add` the paths and commit. Returns null outside the desktop app. */
-  commitVault: (paths: string[], message: string) => Promise<CmdResult | null>;
+  /** Commit every change in the vault and push it. Returns null outside the desktop app. */
+  commitVault: (message: string) => Promise<SyncResult | null>;
   /** Read-modify-write today's day file from the latest scan (used by pages other than Day). */
   updateToday: (fn: (d: Day) => Day) => Promise<void>;
   /** One running quest timer, kept in localStorage so a reload does not lose it. */
@@ -236,12 +242,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(PENDING_KEY);
     setPending(null);
   }, [pending, updateToday, life, saveText]);
+  // The day's commit carries everything changed since the last one — Claude's
+  // edits, people, quests — then goes to the remote, the only copy off this Mac.
   const commitVault = useCallback(
-    async (paths: string[], message: string): Promise<CmdResult | null> => {
+    async (message: string): Promise<SyncResult | null> => {
       if (!inTauri) return null;
-      const add = await runCmd(root, "git", ["add", "--", ...paths]);
-      if (add.status !== 0) return add;
-      return runCmd(root, "git", ["commit", "-q", "-m", message]);
+      const add = await runCmd(root, "git", ["add", "-A"]);
+      if (add.status !== 0) return { commit: add, push: null };
+      // `diff --cached --quiet` exits 1 when something is staged.
+      const staged = await runCmd(root, "git", ["diff", "--cached", "--quiet"]);
+      const commit = staged.status === 0 ? null : await runCmd(root, "git", ["commit", "-q", "-m", message]);
+      if (commit && commit.status !== 0) return { commit, push: null };
+      // Push even with nothing new: earlier commits may still be waiting from an offline close.
+      const push = await runCmd(root, "git", ["push", "-q"]);
+      return { commit, push };
     },
     [root],
   );
