@@ -17,7 +17,10 @@ export default function NeedsYou({ today }: { today: string }) {
   const [all, setAll] = useState(false);
   const items = useMemo(() => {
     if (!life || !vault) return [];
-    return attention(life, vault.pages.filter((p) => p.zone === "person"), today);
+    const overviews = vault.pages
+      .filter((p) => p.file === "_Overview" && p.segments.length === 1 && p.theme)
+      .map((p) => ({ theme: p.theme!, body: p.body }));
+    return attention(life, vault.pages.filter((p) => p.zone === "person"), today, overviews);
   }, [life, vault, today]);
   if (!items.length) return null;
   const shown = all ? items : items.slice(0, SHOWN);

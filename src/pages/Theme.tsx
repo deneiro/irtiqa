@@ -13,6 +13,7 @@ import { LATE_MEAL_HOUR, debtLeft, habitDue, isLateMeal, liveBalance, markOf, st
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
+import { staleMentions } from "../lib/stale";
 import EventForm from "../components/EventForm";
 import SportSection from "../components/SportSection";
 import SkillsSection from "../components/SkillsSection";
@@ -52,6 +53,12 @@ export default function ThemePage() {
   const overview = pages.find((p) => p.file === "_Overview" && p.segments.length === 1);
   const sections = themeSections(overview);
   const state = useMemo(() => themeState(overview), [overview]);
+  // Lines of the overview (not its «Changes» history) that still talk about quests already closed.
+  const stale = useMemo(() => {
+    if (!life) return [];
+    const md = [...state.stand, ...state.motion, ...state.radar, ...state.extra].map((x) => x.md).join("\n");
+    return staleMentions(md, life.quests, life.days.values());
+  }, [life, state]);
 
   const habits = useMemo(() => (life?.habits ?? []).filter((h) => h.theme === theme && h.status === "active"), [life, theme]);
   const quests = useMemo(() => (life?.quests ?? []).filter((q) => q.theme === theme && q.status === "active"), [life, theme]);
@@ -155,6 +162,20 @@ export default function ThemePage() {
                     </div>
                   </>
                 )}
+              </div>
+            )}
+            {stale.length > 0 && (
+              <div className="notice" style={{ marginBottom: 12 }}>
+                <b>Обзор отстал от квестов.</b> Эти строки говорят о квестах, которые уже закрыты:
+                {stale.map((m) => (
+                  <div key={m.quest.rel} className="small" style={{ marginTop: 6 }}>
+                    <Link to={`/quest/${encodeURIComponent(m.quest.rel)}`}>{m.quest.title}</Link>
+                    {" — "}{m.quest.status === "dropped" ? "брошен" : "сделан"}{m.closedOn ? ` ${m.closedOn}` : ""}
+                    {m.outcome ? `: ${m.outcome.text}` : ", итог не записан"}
+                    <div className="faint">в обзоре: «{m.line.length > 140 ? m.line.slice(0, 137) + "…" : m.line}»</div>
+                  </div>
+                ))}
+                <div className="small muted" style={{ marginTop: 6 }}>Текст обзора пишет Claude: попроси его обновить обзор темы (или «Дайджест недели»).</div>
               </div>
             )}
             <div className="state-stack">

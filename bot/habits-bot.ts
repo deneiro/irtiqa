@@ -181,7 +181,12 @@ function needsYouText(date: string, limit = 8): string | null {
     .filter((p) => /\/People\/[^_/][^/]*\.md$/.test(p))
     .map((p) => buildPage(rel(p), readFileSync(p, "utf8"), 0))
     .filter((p) => p.zone === "person");
-  const items = attention(life, people, date);
+  const overviews = readdirSync(join(cfg.vault, "wiki"), { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(cfg.vault, "wiki", e.name, "_Overview.md")))
+    .map((e) => buildPage(`wiki/${e.name}/_Overview.md`, readFileSync(join(cfg.vault, "wiki", e.name, "_Overview.md"), "utf8"), 0))
+    .filter((p) => p.theme)
+    .map((p) => ({ theme: p.theme!, body: p.body }));
+  const items = attention(life, people, date, overviews);
   if (!items.length) return null;
   const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на экране Дня.` : "";
   return ["📌 Требует тебя", ...items.slice(0, limit).map((a) => `• ${a.text}`)].join("\n") + more;

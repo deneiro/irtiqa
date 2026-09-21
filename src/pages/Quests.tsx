@@ -1,6 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
-import { confirmAction } from "../lib/native";
 import { THEMES } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { todayStr } from "../lib/dates";
@@ -13,6 +13,7 @@ const EMPTY: Form = { title: "", theme: THEMES[6].name, due: "", project: "", so
 
 export default function QuestsPage() {
   const { vault, life, saveText, reload, updateToday, timer } = useStore();
+  const nav = useNavigate();
   const { themeLabel } = useT();
   const today = todayStr();
   const [form, setForm] = useState<Form>(EMPTY);
@@ -39,15 +40,8 @@ export default function QuestsPage() {
     void write(q, { status });
   };
 
-  const closeQuest = async (q: Quest) => {
-    if (!(await confirmAction(`Закрыть квест «${q.title}»? Он попадёт в файл сегодняшнего дня.`))) return;
-    try {
-      await saveText(q.rel, serializeQuest({ ...q, status: "done" }));
-      await updateToday((d) => (d.questsClosed.includes(q.title) ? d : { ...d, questsClosed: [...d.questsClosed, q.title] }));
-      setErr(null);
-      await reload();
-    } catch (e) { setErr(String(e)); }
-  };
+  // Closing asks for the outcome, which lives on the quest's own page.
+  const closeQuest = (q: Quest) => nav(`/quest/${encodeURIComponent(q.rel)}?close=done`);
 
   const submit = async () => {
     const title = form.title.trim();

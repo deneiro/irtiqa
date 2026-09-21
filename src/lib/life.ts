@@ -465,7 +465,7 @@ const QUEST_STEPS_HEAD = "## Шаги";
 
 /** Where the description ends: at the steps, or at the journal, whichever comes first. */
 function descriptionEnd(body: string): number {
-  const heads = [body.indexOf(QUEST_STEPS_HEAD), body.indexOf(QUEST_LOG_HEAD)].filter((i) => i >= 0);
+  const heads = [body.indexOf(QUEST_STEPS_HEAD), body.indexOf(QUEST_OUTCOME_HEAD), body.indexOf(QUEST_LOG_HEAD)].filter((i) => i >= 0);
   return heads.length ? Math.min(...heads) : -1;
 }
 
@@ -529,6 +529,41 @@ export function withQuestSteps(body: string, steps: QuestStep[]): string {
   const log = body.indexOf(QUEST_LOG_HEAD);
   if (log < 0) return `${body.trim()}\n\n${section}`;
   return `${body.slice(0, log).trim()}\n\n${section}\n${body.slice(log).trim()}\n`;
+}
+
+/**
+ * How a quest ended, in one line, under `## Итог` (above the journal): what
+ * actually came of it. Written when a quest is closed or dropped, so «done»
+ * carries a result and the overviews that mention the quest can be checked
+ * against it. Two frogs were closed on 2026-09-18 with nothing settled.
+ */
+export const QUEST_OUTCOME_HEAD = "## Итог";
+export interface QuestOutcome { date: string; kind: "done" | "dropped"; text: string }
+
+export function questOutcome(body: string): QuestOutcome | undefined {
+  const at = body.indexOf(QUEST_OUTCOME_HEAD);
+  if (at < 0) return undefined;
+  for (const line of body.slice(at + QUEST_OUTCOME_HEAD.length).split(/\r?\n/)) {
+    if (/^## /.test(line)) break;
+    const m = line.match(/^\s*-\s*(\d{4}-\d{2}-\d{2})\s*·\s*(сделан|брошен)\s*—\s*(.+)$/);
+    if (m) return { date: m[1], kind: m[2] === "брошен" ? "dropped" : "done", text: m[3].trim() };
+  }
+  return undefined;
+}
+
+export function withQuestOutcome(body: string, o: QuestOutcome): string {
+  const line = `- ${o.date} · ${o.kind === "dropped" ? "брошен" : "сделан"} — ${o.text.replace(/\s+/g, " ").trim()}`;
+  const section = `${QUEST_OUTCOME_HEAD}\n${line}\n`;
+  // Drop an earlier outcome (a quest reopened and closed again keeps only the last).
+  let rest = body;
+  const at = rest.indexOf(QUEST_OUTCOME_HEAD);
+  if (at >= 0) {
+    const next = rest.slice(at + QUEST_OUTCOME_HEAD.length).search(/\n## /);
+    rest = rest.slice(0, at).replace(/\s+$/, "") + (next < 0 ? "" : "\n\n" + rest.slice(at + QUEST_OUTCOME_HEAD.length + next).replace(/^\s+/, ""));
+  }
+  const log = rest.indexOf(QUEST_LOG_HEAD);
+  if (log < 0) return `${rest.trim()}\n\n${section}`;
+  return `${rest.slice(0, log).trim()}\n\n${section}\n${rest.slice(log).trim()}\n`;
 }
 
 /** The first step not yet done — what the quest is waiting on. */

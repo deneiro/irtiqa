@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
@@ -7,11 +7,12 @@ import { pageUrl } from "../lib/vault";
 import { confirmAction } from "../lib/native";
 import { deleteFile } from "../lib/fs";
 import { todayStr } from "../lib/dates";
+import { dayToday } from "../lib/maghrib";
 import SourceLink from "../components/SourceLink";
 import QuestTime from "../components/QuestTime";
 import { fmtElapsed } from "../components/QuestRows";
 import {
-  activationBlocked, questDescription, questJournal, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
+  activationBlocked, questDescription, questJournal, questOutcome, withQuestOutcome, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
   type Quest, type QuestStatus, type QuestStep,
 } from "../lib/life";
 
@@ -35,6 +36,10 @@ export default function QuestPage() {
   const [desc, setDesc] = useState<string | null>(null);
   const [newStep, setNewStep] = useState("");
   const [open, setOpen] = useState<number | null>(null);
+  // Closing asks what came of it: «done» without a result is how two frogs closed with nothing settled.
+  const [params] = useSearchParams();
+  const [ending, setEnding] = useState<"done" | "dropped" | null>(() => (params.get("close") === "done" ? "done" : null));
+  const [outcome, setOutcome] = useState("");
   const [, force] = useState(0);
   useEffect(() => { const id = window.setInterval(() => force((n) => n + 1), 1000); return () => window.clearInterval(id); }, []);
 
@@ -59,11 +64,16 @@ export default function QuestPage() {
     catch (e) { setErr(String(e)); } finally { setBusy(false); }
   };
 
-  const close = async () => {
-    if (!(await confirmAction(`Закрыть квест «${q.title}»? Он попадёт в файл сегодняшнего дня.`))) return;
-    await write({ status: "done" });
-    await updateToday((d) => (d.questsClosed.includes(q.title) ? d : { ...d, questsClosed: [...d.questsClosed, q.title] }));
+  const finish = async () => {
+    const text = outcome.trim();
+    if (!ending || !text) return;
+    const date = dayToday();
+    await write({ status: ending, body: withQuestOutcome(q.body, { date, kind: ending, text }) });
+    if (ending === "done") await updateToday((d) => (d.questsClosed.includes(q.title) ? d : { ...d, questsClosed: [...d.questsClosed, q.title] }));
+    setEnding(null);
+    setOutcome("");
   };
+  const ended = questOutcome(q.body);
 
   const steps = questSteps(q.body);
   const doneSteps = steps.filter((x) => x.done).length;
@@ -138,6 +148,8 @@ export default function QuestPage() {
                 const status = e.target.value as QuestStatus;
                 const blocked = status === "active" ? activationBlocked(life.quests, q.title) : null;
                 if (blocked) { setErr(blocked); return; }
+                // Ending a quest in work goes through the outcome form, not a bare status flip.
+                if (q.status === "active" && (status === "done" || status === "dropped")) { setEnding(status); return; }
                 void write({ status });
               }}>
                 {STATUS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -159,8 +171,30 @@ export default function QuestPage() {
             </label>
           </div>
           {q.source && <div className="small muted" style={{ marginTop: 8 }}>откуда взялось: <SourceLink source={q.source} /></div>}
+          {ended && q.status !== "active" && (
+            <div className="small" style={{ marginTop: 8 }}>
+              <b>Итог {ended.date}:</b> {ended.text}
+            </div>
+          )}
+          {ending && (
+            <form style={{ marginTop: 12 }} onSubmit={(e) => { e.preventDefault(); void finish(); }}>
+              <div className="small muted" style={{ marginBottom: 6 }}>
+                {ending === "done" ? "Что вышло в итоге? Одной строкой: что решено, о чём договорились, что теперь по-другому." : "Почему бросаешь? Одной строкой — чтобы через месяц было понятно."}
+              </div>
+              <input
+                className="text" autoFocus style={{ width: "100%" }} value={outcome} onChange={(e) => setOutcome(e.target.value)}
+                placeholder={ending === "done" ? "например: договорились — отдаю 50к до 1 ноября" : "например: не моё, время уходит на поиск работы"}
+                autoCorrect="off" autoCapitalize="off" spellCheck={false} disabled={busy}
+              />
+              <div className="row" style={{ marginTop: 8, gap: 8 }}>
+                <button className="btn primary" type="submit" disabled={busy || !outcome.trim()}>{ending === "done" ? "закрыть квест" : "бросить квест"}</button>
+                <button className="btn ghost" type="button" onClick={() => { setEnding(null); setOutcome(""); }}>отмена</button>
+              </div>
+            </form>
+          )}
           <div className="row" style={{ marginTop: 12 }}>
-            {q.status === "active" && <button className="btn primary" disabled={busy || running} onClick={() => void close()}>закрыть квест</button>}
+            {q.status === "active" && !ending && <button className="btn primary" disabled={busy || running} onClick={() => setEnding("done")}>закрыть квест</button>}
+            {q.status === "active" && !ending && <button className="btn ghost" disabled={busy || running} onClick={() => setEnding("dropped")}>бросить</button>}
             <span className="grow" />
             <button className="btn ghost" disabled={busy} style={{ color: "var(--danger)" }} onClick={() => void remove()}>удалить</button>
           </div>

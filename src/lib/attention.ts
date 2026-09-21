@@ -9,6 +9,7 @@ import type { Page } from "./types";
 import type { Life } from "./life";
 import { ACTIVE_QUEST_LIMIT, questJournal, questSteps, nextStep, subscriptionsDue } from "./life";
 import { blockOn, parseCalendar } from "./calendar";
+import { staleMentions } from "./stale";
 import { parseHealth, daysUntil } from "./health";
 import { buildCircle } from "./circle";
 import { daysToBirthday } from "./people";
@@ -41,7 +42,10 @@ const days = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU").replace(/\u00a0/g, " ");
 const themeRoute = (name: string) => `/theme/${encodeURIComponent(name)}`;
 
-export function attention(life: Life, people: Page[], today: string): Attention[] {
+/** A theme overview as the attention list needs it: which theme, and the text to check. */
+export interface OverviewText { theme: string; body: string }
+
+export function attention(life: Life, people: Page[], today: string, overviews: OverviewText[] = []): Attention[] {
   const out: Attention[] = [];
 
   // Medical plans: a visit that was due and has not happened.
@@ -139,6 +143,19 @@ export function attention(life: Life, people: Page[], today: string): Attention[
       text: `Нет времени в календаре на неделю: ${noSlot.slice(0, 3).map((q) => q.title).join("; ")}${noSlot.length > 3 ? ` и ещё ${noSlot.length - 3}` : ""}`,
       to: noSlot.length === 1 ? `/quest/${encodeURIComponent(noSlot[0].rel)}` : "/quests",
       urgency: 58,
+    });
+  }
+
+  // Overviews still describing closed quests as open: the prose has drifted from the state.
+  const drift = overviews
+    .map((o) => ({ theme: o.theme, n: staleMentions(o.body.split(/^## (Changes|Заметки)\b/m)[0], life.quests, life.days.values()).length }))
+    .filter((x) => x.n > 0);
+  if (drift.length) {
+    out.push({
+      kind: "quest",
+      text: `Обзоры отстали от квестов: ${drift.map((d) => `${d.theme} (${d.n})`).join(", ")} — там закрытые квесты всё ещё «в движении»`,
+      to: themeRoute(drift[0].theme),
+      urgency: 30,
     });
   }
 
