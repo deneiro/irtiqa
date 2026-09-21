@@ -21,7 +21,9 @@ The app writes:
   `birthday`, `last_contact` on `People/` pages.
 
 The app never writes the body of a `wiki/` page, anything in `raw/`, or the
-vault's `CLAUDE.md`. `src/lib/fs.ts` and `write_text` in `lib.rs` enforce the
+vault's `CLAUDE.md`. The Telegram bot in `bot/` is part of the app and
+writes only habit marks into `life/days/`, through `serializeDay`.
+`src/lib/fs.ts` and `write_text` in `lib.rs` enforce the
 coarse boundary; keep the fine one by hand.
 
 ## Stack
