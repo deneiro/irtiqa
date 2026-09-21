@@ -14,9 +14,16 @@ export function ledgerLosses(onDisk: string, next: string, parse: (content: stri
   const kept = new Set(next.split(/\r?\n/).map((l) => l.trim()));
   let section = "";
   let inFm = lines[0]?.trim() === "---";
+  // Frontmatter keys the rewrite no longer carries (ledgers regenerate their header).
+  const nextKeys = new Set((next.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? "").split(/\r?\n/).map((l) => l.match(/^([A-Za-z_][\w-]*):/)?.[1]).filter(Boolean));
   for (let i = inFm ? 1 : 0; i < lines.length; i++) {
     const t = lines[i].trim();
-    if (inFm) { if (t === "---") inFm = false; continue; }
+    if (inFm) {
+      if (t === "---") { inFm = false; continue; }
+      const k = t.match(/^([A-Za-z_][\w-]*):/)?.[1];
+      if (k && !nextKeys.has(k)) lost.push(lines[i]);
+      continue;
+    }
     if (!t) continue;
     const h = t.match(/^##\s+(.*)$/);
     if (h) section = h[1].trim();

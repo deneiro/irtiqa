@@ -42,9 +42,20 @@ export default function FinancePage() {
     const rows = txsInMonth(days, ym);
     const spent = rows.filter((r) => r.tx.amount < 0).reduce((s, r) => s - r.tx.amount, 0);
     const earned = rows.filter((r) => r.tx.amount > 0).reduce((s, r) => s + r.tx.amount, 0);
-    const byCat = new Map<string, number>();
-    for (const r of rows) if (r.tx.amount < 0) byCat.set(r.tx.category || "без категории", (byCat.get(r.tx.category || "без категории") ?? 0) - r.tx.amount);
-    const cats = [...byCat.entries()].sort((a, b) => b[1] - a[1]);
+    // «Бензин», «бензин» and «БЕНЗИН» are one category: grouped by lower case, shown in the most used spelling.
+    const byCat = new Map<string, { n: number; spell: Map<string, number> }>();
+    for (const r of rows) {
+      if (r.tx.amount >= 0) continue;
+      const label = r.tx.category.trim() || "без категории";
+      const k = label.toLowerCase().replace(/ё/g, "е");
+      const c = byCat.get(k) ?? { n: 0, spell: new Map<string, number>() };
+      c.n -= r.tx.amount;
+      c.spell.set(label, (c.spell.get(label) ?? 0) + 1);
+      byCat.set(k, c);
+    }
+    const cats = [...byCat.values()]
+      .map((c) => [[...c.spell.entries()].sort((a, b) => b[1] - a[1])[0][0], c.n] as [string, number])
+      .sort((a, b) => b[1] - a[1]);
     const [y, m] = ym.split("-").map(Number);
     const last = new Date(y, m, 0).getDate();
     const perDay = Array.from({ length: last }, (_, i) => {

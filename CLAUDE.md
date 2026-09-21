@@ -37,6 +37,8 @@ running `git` / `claude`. All parsing in the frontend (`src/lib/`).
 ## Working here
 
 - One slice at a time (see README). Commit per slice. Do not stack features.
+- No new screens or theme sections unless Eldar names one (freeze since
+  2026-09-21, vault CLAUDE.md «Discipline»). Work goes into what exists.
 - UI language is Russian. The `en` dictionary in `src/lib/i18n.ts` is legacy
   from Second Brain and may be removed.
 - IrtiQa (`~/Desktop/Projects/IrtiQa`) is a reference for the game screens,

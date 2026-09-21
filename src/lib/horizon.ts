@@ -47,6 +47,9 @@ function repayments(days: Map<string, Day>, from: string, to: string): { total: 
     if (date < from || date > to) continue;
     for (const t of d.txs) {
       if (t.amount >= 0 || t.category.trim().toLowerCase() !== DEBT_CATEGORY) continue;
+      // A credit instalment posted from subscriptions is a standing charge, not a repayment of
+      // debts.md (schema): counting it made the debt-free date months too early.
+      if (t.note.trim().startsWith("подписка:")) continue;
       total -= t.amount;
       if (!first || date < first) first = date;
     }

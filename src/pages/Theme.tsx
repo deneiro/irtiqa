@@ -14,6 +14,11 @@ import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact, isAuthor } from "../lib/people";
 import { sectionSuffix, themeSections, themeState, type SectionKey } from "../lib/overview";
 import { staleMentions } from "../lib/stale";
+import { parseTalks } from "../lib/talks";
+import { parseLibrary } from "../lib/library";
+import { parseWishes } from "../lib/wishes";
+import { parseJobs } from "../lib/jobs";
+import { measures } from "../lib/health";
 import EventForm from "../components/EventForm";
 import SportSection from "../components/SportSection";
 import SkillsSection from "../components/SkillsSection";
@@ -44,6 +49,7 @@ export default function ThemePage() {
   const v = useVault();
   const { root, life, updateToday, reload } = useStore();
   const nav = useNavigate();
+  const [opened, setOpened] = useState<SectionKey[]>([]);
   const [adding, setAdding] = useState(false);
   const [marking, setMarking] = useState<string | null>(null);
   const { t, themeLabel, themeBlurb, relDate } = useT();
@@ -122,6 +128,27 @@ export default function ThemePage() {
   };
 
   if (!meta) return <div className="empty">{t("unknown_theme", { t: theme })}</div>;
+
+  /**
+   * A section with nothing in it yet is folded into one line at the bottom, so
+   * the page shows what is lived, not every form the app has. It opens on a tap:
+   * the input stays one click away.
+   */
+  const emptyLabel = (key: SectionKey): string | null => {
+    if (!life) return null;
+    const recent = (n: number) => Array.from({ length: n }, (_, i) => life.days.get(addDays(today, -i)));
+    switch (key) {
+      case "talks": return parseTalks(life.talks ?? "").length ? null : "Разговоры";
+      case "body": return measures(life.days).length ? null : "Тело";
+      case "nutrition": return recent(14).some((d) => d && d.meals.length) ? null : "Питание";
+      case "sport": return life.events.some((e) => e.theme === theme && e.tags.includes("спорт")) ? null : "Спорт";
+      case "events": return life.events.some((e) => (e.theme ?? "Memories & Fun") === theme) ? null : "События";
+      case "library": return parseLibrary(life.library ?? "").length ? null : "Посмотрел и прочитал";
+      case "wishes": return parseWishes(life.wishes ?? "").length ? null : "Желания";
+      case "career": return parseJobs(life.jobs ?? "", today).length ? null : "Карьера";
+      default: return null;
+    }
+  };
 
   const block = (key: SectionKey) => {
     switch (key) {
@@ -498,7 +525,16 @@ export default function ThemePage() {
           {overview && <Link to={pageUrl(overview)} className="small muted">обзор как страница · {relDate(overview.updated)}</Link>}
         </div>
       </div>
-      {sections.map(block)}
+      {sections.filter((k) => !emptyLabel(k) || opened.includes(k)).map(block)}
+      {sections.some((k) => emptyLabel(k) && !opened.includes(k)) && (
+        <div className="small muted" style={{ marginTop: 18 }}>
+          Пока без данных:{" "}
+          {sections.filter((k) => emptyLabel(k) && !opened.includes(k)).map((k, i) => (
+            <span key={k}>{i > 0 && " · "}<button className="linkbtn" onClick={() => setOpened([...opened, k])}>{emptyLabel(k)}</button></span>
+          ))}
+          {" "}— открой, чтобы добавить первую запись.
+        </div>
+      )}
     </div>
   );
 }
