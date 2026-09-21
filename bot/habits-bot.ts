@@ -27,7 +27,7 @@ import { join } from "node:path";
 import {
   DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
   ACCOUNTS_REL, liveBalance, parseAccounts, parseAmount, serializeDay, withMark,
-  QUEST_DIR, parseQuest, serializeQuest, withQuestEntry,
+  QUEST_DIR, parseQuest, serializeQuest, withQuestEntry, categoryName,
   type Day, type DayMark, type Habit, type Meal, type Quest, type Tx,
 } from "../src/lib/life";
 import { buildCircle } from "../src/lib/circle";
@@ -420,7 +420,7 @@ function categoriesFor(income: boolean, days: Map<string, Day>): string[] {
   const n = new Map<string, number>();
   for (const d of days.values()) {
     for (const t of d.txs) {
-      const c = t.category.trim();
+      const c = categoryName(t.category);
       if (!c || (t.amount > 0) !== income || APP_ONLY_CATEGORIES.includes(c.toLowerCase())) continue;
       n.set(c, (n.get(c) ?? 0) + 1);
     }
@@ -430,6 +430,9 @@ function categoriesFor(income: boolean, days: Map<string, Day>): string[] {
 
 /** A typed category in the spelling already used: «Прочее» → «прочее». The most frequent spelling wins. */
 function canonicalCategory(typed: string, days: Map<string, Day>): string {
+  // A merged spelling («бенза») goes in under its category («транспорт»).
+  const merged = categoryName(typed);
+  if (merged !== typed.trim()) return merged;
   const want = typed.toLowerCase().replace(/ё/g, "е");
   const n = new Map<string, number>();
   for (const d of days.values()) {

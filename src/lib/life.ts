@@ -160,10 +160,59 @@ export interface Debt {
   since: string;
   note: string;
   closed: string | undefined; // date when settled
+  /**
+   * Paid by a linked credit instalment (`взнос: <подписка>` in the note):
+   * computed from the day files on every scan, never written to «Внесено»,
+   * so a rewrite of debts.md cannot count it twice.
+   */
+  auto?: number;
 }
 
 export function debtLeft(d: Debt): number {
-  return Math.max(0, d.amount - d.paid);
+  return Math.max(0, d.amount - d.paid - (d.auto ?? 0));
+}
+
+/**
+ * Spellings of one money category, merged for counting (Eldar, 2026-09-21):
+ * fuel is transport. Keys are lower case with ё as е. Day files keep what was
+ * typed; only the totals and the bot's suggestions use the merged name.
+ */
+export const CATEGORY_ALIASES: Record<string, string> = { "бенза": "транспорт", "бензин": "транспорт" };
+
+/** The category a transaction counts under: its alias, else its own name. */
+export function categoryName(label: string): string {
+  const k = label.trim().toLowerCase().replace(/ё/g, "е");
+  return CATEGORY_ALIASES[k] ?? label.trim();
+}
+
+/** A person's debt links to their page; a bank's or an MFO's is plain text. */
+export function isInstitution(d: Debt): boolean {
+  return !/^\[\[/.test(d.who.trim());
+}
+
+/** The subscription whose charges pay this row down, from «взнос: Кредит 25к (7-го)» in its note. */
+export function instalmentOf(d: Debt): string | undefined {
+  return d.note.match(/взнос:\s*([^;]+)/)?.[1].trim() || undefined;
+}
+
+/**
+ * Credit instalments reduce the row they are linked to, from the row's date on.
+ * The charge itself is the transaction the subscription posts: category «долг»,
+ * note «подписка: <name>».
+ */
+export function applyInstalments(debts: Debt[], days: Map<string, Day>): Debt[] {
+  return debts.map((d) => {
+    const sub = instalmentOf(d);
+    if (!sub) return d;
+    let auto = 0;
+    for (const [date, day] of days) {
+      if (d.since && date < d.since) continue;
+      for (const t of day.txs) {
+        if (t.amount < 0 && t.category.trim().toLowerCase() === "долг" && t.note.trim() === `подписка: ${sub}`) auto -= t.amount;
+      }
+    }
+    return auto ? { ...d, auto } : d;
+  });
 }
 
 /** The name a debt row points at, without the wikilink brackets. */
@@ -210,7 +259,7 @@ export function payPersonDebts(debts: Debt[], who: string, direction: string, am
       const take = Math.min(rest, debtLeft(d));
       rest -= take;
       const paid = d.paid + take;
-      return { ...d, paid, closed: paid >= d.amount ? today : d.closed };
+      return { ...d, paid, closed: debtLeft({ ...d, paid }) === 0 ? today : d.closed };
     });
   // keep the original order of rows, not the sorted one
   const byRef = new Map(rows.map((r, i) => [i, r]));
@@ -1158,5 +1207,6 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   events.sort((a, b) => b.date.localeCompare(a.date));
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
   audits.sort((a, b) => b.date.localeCompare(a.date));
+  debts = applyInstalments(debts, days);
   return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, audits };
 }

@@ -6,7 +6,7 @@ import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
 import { addDays } from "../lib/dates";
 import {
-  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions, parseAccounts, parseAmount, parseDebts, parseSubscriptions,
+  ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions, parseAccounts, parseAmount, parseDebts, parseSubscriptions, categoryName,
   txsInMonth, type AccountRow, type Day, type Debt, type Subscription,
 } from "../lib/life";
 import { useDayToday } from "../lib/useDayToday";
@@ -46,7 +46,7 @@ export default function FinancePage() {
     const byCat = new Map<string, { n: number; spell: Map<string, number> }>();
     for (const r of rows) {
       if (r.tx.amount >= 0) continue;
-      const label = r.tx.category.trim() || "без категории";
+      const label = categoryName(r.tx.category) || "без категории";
       const k = label.toLowerCase().replace(/ё/g, "е");
       const c = byCat.get(k) ?? { n: 0, spell: new Map<string, number>() };
       c.n -= r.tx.amount;

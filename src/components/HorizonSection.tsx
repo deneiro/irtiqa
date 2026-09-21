@@ -36,6 +36,8 @@ export default function HorizonSection() {
       <div className="card">
         <div className="bodynums">
           <div className="bnum"><b>{fmt(h.owed)}</b><span>я должен, остаток</span></div>
+          {h.owedInstitutions > 0 && <div className="bnum"><b>{fmt(h.owedPeople)}</b><span>из них людям</span></div>}
+          {h.owedInstitutions > 0 && <div className="bnum"><b>{fmt(h.owedInstitutions)}</b><span>банкам и МФО</span></div>}
           {h.owedToMe > 0 && <div className="bnum"><b>{fmt(h.owedToMe)}</b><span>должны мне</span></div>}
           <div className="bnum"><b>{h.pace > 0 ? fmt(h.pace) : "—"}</b><span>{h.paceFrom ? `темп, ₸/мес с ${h.paceFrom}` : "темп погашения"}</span></div>
           <div className="bnum">
@@ -44,9 +46,21 @@ export default function HorizonSection() {
           </div>
         </div>
 
+        {h.institutions.length > 0 && (
+          <>
+            <div className="mrow-head">Банкам и МФО</div>
+            {h.institutions.map((p) => (
+              <div key={p.who} className="hbar">
+                <span className="hname">{p.who}</span>
+                <span className="htrack"><i style={{ width: `${Math.max(2, (100 * p.left) / h.owed)}%` }} /></span>
+                <span className="mono">{fmt(p.left)}</span>
+              </div>
+            ))}
+          </>
+        )}
         {h.people.length > 0 && (
           <>
-            <div className="mrow-head">Кому</div>
+            <div className="mrow-head">Людям</div>
             {h.people.map((p) => (
               <div key={p.who} className="hbar">
                 <span className="hname">{p.who}</span>
