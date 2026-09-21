@@ -27,8 +27,12 @@ import { join } from "node:path";
 import {
   DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
   ACCOUNTS_REL, liveBalance, parseAccounts, parseAmount, serializeDay, withMark,
-  type Day, type DayMark, type Habit, type Meal, type Tx,
+  QUEST_DIR, parseQuest, serializeQuest, withQuestEntry,
+  type Day, type DayMark, type Habit, type Meal, type Quest, type Tx,
 } from "../src/lib/life";
+import { buildCircle } from "../src/lib/circle";
+import { contactEdits } from "../src/lib/contact";
+import type { Page } from "../src/lib/types";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { buildLife } from "../src/lib/life";
 import { buildPage } from "../src/lib/vault";
@@ -147,7 +151,13 @@ function readDay(date: string): Day {
   return parseDay({ rel: dayRel(date), content: readFileSync(p, "utf8"), mtime: Math.floor(statSync(p).mtimeMs / 1000) });
 }
 
+/** A closed day is sealed: its `day` line in the log is already written. The bot does not change it behind the app's back. */
+class ClosedDay extends Error {
+  constructor(public date: string) { super(`closed ${date}`); }
+}
+
 function writeDay(d: Day) {
+  if (readDay(d.date).closed) throw new ClosedDay(d.date);
   const p = join(cfg.vault, dayRel(d.date));
   mkdirSync(join(cfg.vault, DAY_DIR), { recursive: true });
   const tmp = p + ".bot-tmp";
@@ -199,15 +209,164 @@ async function sendNeeds(date: string, quietIfEmpty: boolean) {
   else if (!quietIfEmpty) await say("📌 Ничего не горит: просроченного нет.");
 }
 
+// ---------- evening check-in: mood, stress, work ----------
+//
+// At maghrib the day that ended gets three taps and a line: mood, stress, and
+// what was worked on for how long — the inputs the Day screen needs and that
+// were filled on half the days or never. A session written here is the same
+// row the timer writes (`квест: минуты`, without a start time) plus a line in
+// the quest's journal.
+
+const fromCompact = (c: string) => `${c.slice(0, 4)}-${c.slice(4, 6)}-${c.slice(6, 8)}`;
+const scale = (prefix: string, compact: string): Button[][] => [
+  [1, 2, 3, 4, 5].map((n) => ({ text: String(n), callback_data: `${prefix}:${compact}:${n}` })),
+  [6, 7, 8, 9, 10].map((n) => ({ text: String(n), callback_data: `${prefix}:${compact}:${n}` })),
+  [{ text: "пропустить", callback_data: `${prefix}:${compact}:x` }],
+];
+
+function activeQuests(): Quest[] {
+  return walkMd(join(cfg.vault, QUEST_DIR))
+    .map((p) => parseQuest({ rel: p.slice(cfg.vault.length + 1), content: readFileSync(p, "utf8"), mtime: 0 }))
+    .filter((q) => q.status === "active")
+    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
+}
+
+function workKeyboard(compact: string): Button[][] {
+  return [
+    ...activeQuests().map((q) => [{ text: q.title.length > 40 ? q.title.slice(0, 39) + "…" : q.title, callback_data: `wq:${compact}:${key(q.title)}` }]),
+    [{ text: "ни над чем из квестов", callback_data: `wq:${compact}:none` }],
+  ];
+}
+
+async function sendCheckin(date: string) {
+  if (!cfg.chatId || readDay(date).closed) return;
+  await say(`🌇 Итог дня — ${formatDayTitle(date).toLowerCase()}.\nНастроение, 1–10?`, { reply_markup: { inline_keyboard: scale("mo", date.replaceAll("-", "")) } });
+}
+
+let pendingWork: { date: string; quest: string; minutes: number } | null = null;
+
+async function onCheckinCallback(kind: string, compact: string, code: string, extra: string, chat: number, msg: number) {
+  const date = fromCompact(compact);
+  const edit = (text: string, keyboard: Button[][] = []) =>
+    tg("editMessageText", { chat_id: chat, message_id: msg, text, reply_markup: { inline_keyboard: keyboard } }).catch(() => {});
+  if (kind === "mo" || kind === "st") {
+    const n = code === "x" ? undefined : Number(code);
+    if (n !== undefined) writeDay({ ...readDay(date), [kind === "mo" ? "mood" : "stress"]: n });
+    if (kind === "mo") await edit(`🌇 ${formatDayTitle(date)}: настроение ${n ?? "—"}.\nСтресс, 1–10?`, scale("st", compact));
+    else await edit(`🌇 ${formatDayTitle(date)}: стресс ${n ?? "—"}.\nНад чем работал за день?`, workKeyboard(compact));
+    return;
+  }
+  if (kind === "wq") {
+    if (code === "none") { await edit(`🌇 ${formatDayTitle(date)}: записано.`); return; }
+    if (code === "more") { await edit("Над чем ещё работал?", workKeyboard(compact)); return; }
+    const quest = activeQuests().find((x) => key(x.title) === code);
+    if (!quest) { await edit("Квест не нашёл — может, его уже закрыли."); return; }
+    const mins = [15, 30, 45, 60, 90, 120, 180];
+    await edit(`«${quest.title}» — сколько минут?`, pairs(mins.map((m) => ({ text: `${m} мин`, callback_data: `wm:${compact}:${code}:${m}` }))));
+    return;
+  }
+  if (kind === "wm") {
+    const quest = activeQuests().find((x) => key(x.title) === code);
+    const minutes = Number(extra);
+    if (!quest || !minutes) return;
+    pendingWork = { date, quest: quest.title, minutes };
+    ask("work", 12 * 3600_000);
+    await edit(`«${quest.title}», ${minutes} мин.`);
+    await say("Что сделано? Одной строкой — это ляжет в журнал квеста.", { reply_markup: { force_reply: true, input_field_placeholder: "что сделано" } });
+    return;
+  }
+  if (kind === "pl") { await sendContactList(msg); return; }
+  if (kind === "pc" || kind === "pm" || kind === "pt") {
+    const person = contactPeople().find((p) => key(p.page.rel) === code);
+    if (!person) { await edit("Не нашёл этого человека."); return; }
+    if (kind === "pc") {
+      await edit(`${person.name}: что было?`, [
+        [{ text: "виделись", callback_data: `pm:0:${code}` }, { text: "созвонились, переписка", callback_data: `pt:0:${code}` }],
+        [{ text: "← назад", callback_data: "pl:0:0" }],
+      ]);
+      return;
+    }
+    const today = logicalDate(new Date());
+    const life = buildLife(walkMd(join(cfg.vault, "life")).map((p) => ({ rel: p.slice(cfg.vault.length + 1), content: readFileSync(p, "utf8"), mtime: 0 })));
+    const raw = readFileSync(join(cfg.vault, person.page.rel), "utf8");
+    for (const e of contactEdits({ rel: person.page.rel, file: person.page.file, raw }, life.events, today, kind === "pm")) writeRel(e.rel, e.content);
+    await edit(`✓ ${person.name}: ${kind === "pm" ? "виделись" : "на связи"} — ${formatDayTitle(today).toLowerCase()}.`);
+  }
+}
+
+async function onWorkNote(text: string) {
+  const w = pendingWork;
+  pendingWork = null;
+  if (!w || !text.trim()) return;
+  const day = readDay(w.date);
+  writeDay({ ...day, sessions: [...day.sessions, { quest: w.quest, minutes: w.minutes }] });
+  const q = activeQuests().find((x) => x.title === w.quest);
+  if (q) writeRel(q.rel, serializeQuest({ ...q, body: withQuestEntry(q.body, { date: w.date, minutes: w.minutes, note: text }) }));
+  await say(`⏱ Записал: «${w.quest}», ${w.minutes} мин — ${text.trim()}`, {
+    reply_markup: { inline_keyboard: [[{ text: "+ ещё квест", callback_data: `wq:${w.date.replaceAll("-", "")}:more` }]] },
+  });
+}
+
+async function askWeight(date: string) {
+  if (!cfg.chatId) return;
+  ask("weight", 12 * 3600_000);
+  pendingWeightDate = date;
+  await say("⚖️ Вес сегодня? Число, например 93.5 — цель в health.md, путь виден на экране Здоровья.", { reply_markup: { force_reply: true, input_field_placeholder: "93.5" } });
+}
+let pendingWeightDate: string | null = null;
+
+async function onWeight(text: string) {
+  const n = parseAmount(text.replace(/кг|kg/gi, ""));
+  const date = pendingWeightDate ?? logicalDate(new Date());
+  if (n === undefined || n < 30 || n > 300) { ask("weight", 12 * 3600_000); await say("Не понял вес. Напиши число, например 93.5."); return; }
+  writeDay({ ...readDay(date), weight: n });
+  pendingWeightDate = null;
+  await say(`⚖️ Записал: ${n} кг (${formatDayTitle(date).toLowerCase()}).`);
+}
+
+// ---------- contacts ----------
+
+function peoplePages(): Page[] {
+  return walkMd(join(cfg.vault, "wiki"))
+    .filter((p) => /\/People\/[^_/][^/]*\.md$/.test(p))
+    .map((p) => buildPage(p.slice(cfg.vault.length + 1), readFileSync(p, "utf8"), 0))
+    .filter((p) => p.zone === "person");
+}
+
+/** The close circle (7+), most overdue first — the people a contact should be logged for. */
+function contactPeople() {
+  const life = buildLife(walkMd(join(cfg.vault, "life", "events")).map((p) => ({ rel: p.slice(cfg.vault.length + 1), content: readFileSync(p, "utf8"), mtime: 0 })));
+  return buildCircle(peoplePages(), life.events, logicalDate(new Date())).filter((i) => (i.closeness ?? 0) >= 7).slice(0, 14);
+}
+
+async function sendContactList(editMsg?: number) {
+  const list = contactPeople();
+  const keyboard = pairs(list.map((i) => ({ text: `${i.name}${(i.overdue ?? 0) > 0 ? " ⏳" : !i.lastContact && !i.lastMeet ? " ·" : ""}`, callback_data: `pc:0:${key(i.page.rel)}` })));
+  const text = "С кем был контакт? ⏳ — давно не на связи, · — контакт ни разу не записан.";
+  if (editMsg) await tg("editMessageText", { chat_id: cfg.chatId, message_id: editMsg, text, reply_markup: { inline_keyboard: keyboard } }).catch(() => {});
+  else await say(text, { reply_markup: { inline_keyboard: keyboard } });
+}
+
+/** Atomic write of one vault file the bot owns: life/, or a person page's contact keys. */
+function writeRel(rel: string, content: string) {
+  if (!rel.startsWith("life/") && !/^wiki\/[^/]+\/People\/[^_/][^/]*\.md$/.test(rel)) throw new Error(`bot may not write ${rel}`);
+  const p = join(cfg.vault, rel);
+  mkdirSync(p.slice(0, p.lastIndexOf("/")), { recursive: true });
+  writeFileSync(p + ".bot-tmp", content);
+  renameSync(p + ".bot-tmp", p);
+}
+
 // ---------- food ----------
 
 const FOOD_BUTTON = "🍽 Еда";
 const HABITS_BUTTON = "📋 Привычки";
+const CONTACT_BUTTON = "🤝 Контакт";
 const MONEY_BUTTON = "💸 Деньги";
 const WAIT_MS = 15 * 60000;
 
 /** What the next plain message answers. Kept in memory: a restart just forgets the question. */
-let awaiting: { kind: "food" | "money" | "category"; at: number } | null = null;
+type AwaitKind = "food" | "money" | "category" | "work" | "weight";
+let awaiting: { kind: AwaitKind; at: number; ttl?: number } | null = null;
 
 /** «13:30 плов — тяжело» → time, what, note. No time means now. */
 function parseMeal(text: string, now: Date): Meal | null {
@@ -390,6 +549,12 @@ async function onCallback(q: CallbackQuery) {
     }).catch(() => {}); // "message is not modified" when tapped twice
   };
 
+  if (["mo", "st", "wq", "wm", "pc", "pm", "pt", "pl"].includes(kind)) {
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    await onCheckinCallback(kind, compact ?? "", code ?? "", hkey ?? "", q.message.chat.id, q.message.message_id);
+    return;
+  }
+
   if (kind === "c" || kind === "a") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     await tg("editMessageReplyMarkup", { chat_id: q.message.chat.id, message_id: q.message.message_id, reply_markup: { inline_keyboard: [] } }).catch(() => {});
@@ -456,7 +621,7 @@ async function onCallback(q: CallbackQuery) {
 interface Message { chat: { id: number }; from?: { id: number }; text?: string; date?: number }
 
 const REPLY_KEYBOARD = {
-  keyboard: [[{ text: FOOD_BUTTON }, { text: MONEY_BUTTON }], [{ text: HABITS_BUTTON }]],
+  keyboard: [[{ text: FOOD_BUTTON }, { text: MONEY_BUTTON }], [{ text: HABITS_BUTTON }, { text: CONTACT_BUTTON }]],
   resize_keyboard: true,
   is_persistent: true,
 };
@@ -465,8 +630,8 @@ async function say(text: string, extra: Record<string, unknown> = {}) {
   await tg("sendMessage", { chat_id: cfg.chatId, text, ...extra });
 }
 
-function ask(kind: "food" | "money" | "category") {
-  awaiting = { kind, at: Date.now() };
+function ask(kind: AwaitKind, ttl?: number) {
+  awaiting = { kind, at: Date.now(), ttl };
 }
 
 async function onMessage(m: Message) {
@@ -487,9 +652,25 @@ async function onMessage(m: Message) {
         "День считается от магриба до магриба: после магриба всё идёт в завтрашний файл.",
         `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${HABITS_BUTTON} или /today — сводка сейчас.`,
         "/need — что требует тебя: врачи, люди, дни рождения, списания, застрявшие квесты. Утром приходит само.",
+        "На магрибе — итог дня: настроение, стресс и над чем работал. Вручную: /checkin. По воскресеньям утром — вес (/weight).",
+        `${CONTACT_BUTTON} — виделся или созвонился с кем-то из близких: пишет последний контакт и встречу дня.`,
       ].join("\n"),
       { reply_markup: REPLY_KEYBOARD },
     );
+    return;
+  }
+  if (text.startsWith("/checkin")) {
+    awaiting = null;
+    await sendCheckin(toDateStr(new Date()));
+    return;
+  }
+  if (text.startsWith("/weight")) {
+    await askWeight(logicalDate(new Date()));
+    return;
+  }
+  if (text.startsWith("/contact") || text === CONTACT_BUTTON) {
+    awaiting = null;
+    await sendContactList();
     return;
   }
   if (text.startsWith("/need")) {
@@ -514,7 +695,7 @@ async function onMessage(m: Message) {
     return;
   }
   if (text.startsWith("/")) return;
-  if (!awaiting || Date.now() - awaiting.at > WAIT_MS) {
+  if (!awaiting || Date.now() - awaiting.at > (awaiting.ttl ?? WAIT_MS)) {
     awaiting = null;
     await say(`Нажми кнопку внизу: «${FOOD_BUTTON}» или «${MONEY_BUTTON}».`, { reply_markup: REPLY_KEYBOARD });
     return;
@@ -524,6 +705,8 @@ async function onMessage(m: Message) {
   // When it was sent, not when this Mac woke up and read it: a meal typed at
   // 13:00 and read after maghrib still belongs to 13:00 of its own day.
   const sent = m.date ? new Date(m.date * 1000) : new Date();
+  if (kind === "work") { await onWorkNote(text); return; }
+  if (kind === "weight") { await onWeight(text); return; }
   if (kind === "food") await onFood(text, sent);
   else if (kind === "money") await onMoney(text, sent);
   else if (kind === "category" && pendingTx) {
@@ -607,6 +790,8 @@ async function tick() {
       }
       await sendDigest(logicalDate(new Date(s.at.getTime() + 1000)), s.title);
       if (s.id.endsWith(":morning")) await sendNeeds(cal, true);
+      if (s.id.endsWith(":morning") && new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(logicalDate(s.at));
+      if (s.id.endsWith(":maghrib")) await sendCheckin(cal); // the day that just ended
     }
   }
   const due = state.snoozes.filter((z) => z.at <= now.getTime());
@@ -633,6 +818,11 @@ async function poll() {
           if (u.message) await onMessage(u.message);
           if (u.callback_query) await onCallback(u.callback_query);
         } catch (e) {
+          if (e instanceof ClosedDay) {
+            await say(`День ${e.date} уже закрыт — в закрытый день бот не пишет. Если нужно поправить, открой его на экране Дня.`).catch(() => {});
+            if (u.callback_query) await tg("answerCallbackQuery", { callback_query_id: u.callback_query.id }).catch(() => {});
+            continue;
+          }
           console.error(new Date().toISOString(), "update", e);
         }
       }

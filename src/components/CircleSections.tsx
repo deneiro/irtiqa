@@ -3,10 +3,9 @@ import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
 import { todayStr } from "../lib/dates";
-import { setFrontmatterKeys } from "../lib/frontmatter";
 import { rawPageText } from "../lib/rawpage";
-import { eventDir, personName, serializeEvent } from "../lib/events";
-import { BANDS, MEETING_TITLE, TRIGGERS, buildCircle, triggerStats, type CircleItem } from "../lib/circle";
+import { contactEdits } from "../lib/contact";
+import { BANDS, TRIGGERS, buildCircle, triggerStats, type CircleItem } from "../lib/circle";
 import { isAuthor } from "../lib/people";
 
 const plural = (n: number, one: string, few: string, many: string) => {
@@ -40,22 +39,7 @@ export function CircleSection({ theme }: { theme: string }) {
     try {
       const raw = rawPageText(v, it.page.rel);
       if (raw === null) throw new Error("не нашёл страницу человека");
-      await saveText(it.page.rel, setFrontmatterKeys(raw, { last_contact: today, updated: today }));
-      if (met) {
-        const existing = (life?.events ?? []).find((e) => e.date === today && e.title === MEETING_TITLE);
-        const link = `[[${it.page.file}]]`;
-        if (existing) {
-          if (!existing.people.some((p) => personName(p).toLowerCase() === it.page.file.toLowerCase())) {
-            await saveText(existing.rel, serializeEvent({ ...existing, people: [...existing.people, link] }));
-          }
-        } else {
-          const dir = eventDir(today, MEETING_TITLE);
-          await saveText(`${dir}/event.md`, serializeEvent({
-            title: MEETING_TITLE, date: today, theme, place: "", people: [link], tags: ["встреча"],
-            body: "Кого видел сегодня. Приложение дописывает сюда людей кнопкой «виделись»; текст и фото можно добавить самому.",
-          }));
-        }
-      }
+      for (const e of contactEdits({ rel: it.page.rel, file: it.page.file, raw }, life?.events ?? [], today, met, theme)) await saveText(e.rel, e.content);
       setErr(null);
       await reload();
     } catch (e) { setErr(String(e)); } finally { setBusy(null); }

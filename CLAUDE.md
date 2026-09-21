@@ -21,8 +21,11 @@ The app writes:
   `birthday`, `last_contact` on `People/` pages.
 
 The app never writes the body of a `wiki/` page, anything in `raw/`, or the
-vault's `CLAUDE.md`. The Telegram bot in `bot/` is part of the app and
-writes only habit marks into `life/days/`, through `serializeDay`.
+vault's `CLAUDE.md`. The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
+marks, meals, money, mood, stress, weight, sessions — through `serializeDay`,
+never into a closed day), a line in a quest's journal, the day's «Встреча»
+event, and `last_contact`/`updated` on a person page (`lib/contact.ts`, the
+same edit the Circle screen makes). Nothing else.
 `src/lib/fs.ts` and `write_text` in `lib.rs` enforce the
 coarse boundary; keep the fine one by hand.
 
