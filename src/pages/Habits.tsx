@@ -93,7 +93,7 @@ export default function HabitsPage() {
   const last14 = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(today, -(13 - i))), [today]);
 
   const Row = ({ h }: { h: Habit }) => {
-    const s = streak(h.title, days, today);
+    const s = streak(h, days, today);
     const rate = habitRate(h, days, today);
     return (
       <div className="hrow">
@@ -114,8 +114,9 @@ export default function HabitsPage() {
         </div>
         <div className="hstats">
           <span title="текущий стрик"><b>{s}</b> дн.</span>
-          <span title="лучший стрик" className="faint">макс {bestStreak(h.title, days)}</span>
-          <span title="за 30 дней" className="faint">{rate.due ? `${Math.round((100 * rate.done) / rate.due)}%` : "—"}</span>
+          <span title="лучший стрик" className="faint">макс {bestStreak(h, days)}</span>
+          <span title="за 30 дней, из отмеченных" className="faint">{rate.due ? `${Math.round((100 * rate.done) / rate.due)}%` : "—"}</span>
+          {rate.unmarked > 0 && <span title="дней без отметки за 30 дней — не считаются ни сделанными, ни сорванными" className="faint">без отметки {rate.unmarked}</span>}
         </div>
         <div className="hactions">
           {h.status === "proposed" && <><button className="btn small primary" onClick={() => setStatus(h, "active")}>принять</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>отклонить</button></>}

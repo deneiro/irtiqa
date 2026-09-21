@@ -143,7 +143,7 @@ export default function ThemePage() {
                             <i />
                             <span className="hname">{h.title}</span>
                             <span className="hsub">{MARK_WORD[mark ?? (due ? "due" : "off")]}</span>
-                            <span className="mono faint">{streak(h.title, life!.days, today)}🔥</span>
+                            <span className="mono faint">{streak(h, life!.days, today)}🔥</span>
                           </button>
                         );
                       })}
@@ -315,7 +315,7 @@ export default function ThemePage() {
                           <td><Link to="/habits">{h.title}</Link></td>
                           <td className="muted">{h.kind === "bad" ? "плохая" : "хорошая"}</td>
                           <td>{mark === "done" ? "✓" : mark === "failed" ? "✗" : mark === "skipped" ? "—" : habitDue(h, today) ? <span className="faint">не отмечена</span> : <span className="faint">не сегодня</span>}</td>
-                          <td className="mono" style={{ textAlign: "right" }}>{streak(h.title, life!.days, today)}</td>
+                          <td className="mono" style={{ textAlign: "right" }}>{streak(h, life!.days, today)}</td>
                         </tr>
                       );
                     })}

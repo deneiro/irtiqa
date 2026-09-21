@@ -7,7 +7,7 @@ import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import { maghribOn } from "../lib/maghrib";
 import { useDayToday } from "../lib/useDayToday";
 import {
-  HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
+  HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, unmarkedOn, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
   markOf, mergeDay, parseAmount, parseDay, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
   type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
 } from "../lib/life";
@@ -181,7 +181,7 @@ function DayView({ today }: { today: string }) {
 
   const doClose = async () => {
     if (draft.closed || closing) return;
-    if (!(await confirmAction("Закрыть день? Неотмеченные привычки станут «не сделано», файл дня и лог уйдут в коммит."))) return;
+    if (!(await confirmAction(unmarkedOn(draft, habits).length ? `Закрыть день? ${unmarkedOn(draft, habits).length} привычек без отметки так и останутся неотмеченными. Файл дня и лог уйдут в коммит.` : "Закрыть день? Файл дня и лог уйдут в коммит."))) return;
     window.clearTimeout(timer.current);
     setClosing(true);
     try {
@@ -324,7 +324,7 @@ function DayView({ today }: { today: string }) {
         <div className="card summary" style={{ marginTop: 16 }}>
           <h3>Итог дня {report.day.date}</h3>
           <div className="row wrap" style={{ gap: 18, fontSize: 13 }}>
-            <span>привычки <b>{report.day.habitsDone.length}</b> / не сделано <b>{report.day.habitsFailed.length}</b></span>
+            <span>привычки <b>{report.day.habitsDone.length}</b> / не сделано <b>{report.day.habitsFailed.length}</b>{unmarkedOn(report.day, habits).length > 0 && <> / не отмечено <b>{unmarkedOn(report.day, habits).length}</b></>}</span>
             <span>потрачено <b>{fmtMoney(spentOf(report.day))}</b></span>
             {earnedOf(report.day) > 0 && <span>получено <b>{fmtMoney(earnedOf(report.day))}</b></span>}
             {report.day.mood !== undefined && <span>настроение <b>{report.day.mood}</b></span>}
@@ -347,7 +347,7 @@ function DayView({ today }: { today: string }) {
             {due.length === 0 && <div className="empty">Добавь первую привычку ниже. Она станет файлом в life/habits/.</div>}
             {due.map((h) => {
               const m = markOf(draft, h.title) ?? "none";
-              const s = streak(h.title, life.days, addDays(today, -1)) + (m === "done" ? 1 : 0);
+              const s = streak(h, life.days, addDays(today, -1)) + (m === "done" ? 1 : 0);
               return (
                 <div className="habit" key={h.rel}>
                   <button className={`mark ${m}`} title={MARK_TITLE[m]} onClick={() => cycle(h)} disabled={locked}>{MARK_GLYPH[m]}</button>

@@ -58,7 +58,7 @@ export default function TrendsPage() {
     const xp = new Map<string, number>();
     for (const [date, d] of days) if (date.startsWith(ym)) for (const [th, n] of xpForDay(d, ctx)) xp.set(th, (xp.get(th) ?? 0) + n);
     const xpRows = THEMES.map((t) => ({ theme: t.name, xp: xp.get(t.name) ?? 0 })).sort((a, b) => b.xp - a.xp);
-    const streaks = habits.map((h) => ({ h, cur: streak(h.title, days, today), best: bestStreak(h.title, days) })).sort((a, b) => b.cur - a.cur);
+    const streaks = habits.map((h) => ({ h, cur: streak(h, days, today), best: bestStreak(h, days) })).sort((a, b) => b.cur - a.cur);
     const monthSpent = daily.length ? [...days].filter(([date]) => date.startsWith(ym)).reduce((s, [, d]) => s + d.txs.filter((t) => t.amount < 0).reduce((x, t) => x - t.amount, 0), 0) : 0;
     const done30 = daily.reduce((s, d) => s + d["сделано"], 0);
     const due30 = daily.reduce((s, d) => s + d["сделано"] + d["сорвано"] + d["не отмечено"], 0);

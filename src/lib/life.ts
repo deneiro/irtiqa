@@ -318,7 +318,7 @@ export function parseHabit(f: MdFile): Habit {
   const kind = str(fm.kind) === "bad" ? "bad" : "good";
   const status = (str(fm.status) as HabitStatus | undefined) ?? "active";
   const rawFreq = fm.freq;
-  const freq = Array.isArray(rawFreq) ? list(rawFreq) : (str(rawFreq) ?? "daily");
+  const freq = Array.isArray(rawFreq) ? list(rawFreq) : freqFromText(str(rawFreq));
   return {
     rel: f.rel,
     title: str(fm.title) ?? file,
@@ -335,6 +335,32 @@ export function parseHabit(f: MdFile): Habit {
 
 const HABIT_KEYS = new Set(["title", "type", "theme", "kind", "freq", "status", "created", "source"]);
 const QUEST_KEYS = new Set(["title", "type", "theme", "status", "created", "due", "project", "source"]);
+
+/**
+ * A frequency written as words — the schema's own «каждый день», «раз в
+ * неделю», «пн, ср, пт», «пн–пт» — as the app models it. Used to fall back
+ * to daily for anything but the two English keywords, so a Mon/Wed/Fri habit
+ * was expected every day.
+ */
+export function freqFromText(raw: string | undefined): string | string[] {
+  const s = (raw ?? "").toLowerCase().trim();
+  if (!s || /^(daily|каждый день|ежедневно)$/.test(s)) return "daily";
+  if (/^(weekly|раз в неделю|еженедельно)$/.test(s)) return "weekly";
+  const out: string[] = [];
+  for (const part of s.split(/[,;/\s]+/).filter(Boolean)) {
+    const r = part.split(/[–—-]/);
+    const at = (w: string) => WEEKDAYS_RU.indexOf(w as (typeof WEEKDAYS_RU)[number]);
+    if (r.length === 2 && at(r[0]) >= 0 && at(r[1]) >= 0) {
+      // Monday-first range; WEEKDAYS_RU starts on Sunday.
+      const order = [1, 2, 3, 4, 5, 6, 0];
+      const a = order.indexOf(at(r[0])), b = order.indexOf(at(r[1]));
+      if (b < a) return "daily";
+      for (let i = a; i <= b; i++) out.push(WEEKDAYS_RU[order[i]]);
+    } else if (at(part) >= 0) out.push(part);
+    else return "daily"; // unreadable: the old behaviour, rather than a habit that is never due
+  }
+  return out.length ? out : "daily";
+}
 
 export function serializeHabit(h: Omit<Habit, "rel" | "body"> & { body?: string }): string {
   const lines = ["---", `title: ${yamlScalar(h.title)}`, "type: habit"];
@@ -772,13 +798,20 @@ export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
   return next;
 }
 
-/** Closing: every due habit without a mark becomes `failed`. The app records misses; the player does not confess them. */
-export function closeDay(d: Day, habits: Habit[]): Day {
-  let next: Day = { ...d, closed: true };
-  for (const h of habits) {
-    if (habitDue(h, d.date) && !markOf(next, h.title)) next = withMark(next, h.title, "failed");
-  }
-  return next;
+/**
+ * Closing a day seals it; it does not invent marks. An unmarked habit stays
+ * unmarked — «не отмечено» is its own honest state, counted apart from «не
+ * сделано». Until 2026-09-21 closing wrote every unmarked habit as failed,
+ * which put 0/15 on the day the habits were created and punished forgetting
+ * to tap as if it were breaking the habit.
+ */
+export function closeDay(d: Day, _habits: Habit[]): Day {
+  return { ...d, closed: true };
+}
+
+/** Due habits with no mark at all on that day. */
+export function unmarkedOn(d: Day, habits: Habit[]): Habit[] {
+  return habits.filter((h) => habitDue(h, d.date) && !markOf(d, h.title));
 }
 
 function fmtMoney(n: number): string {
@@ -788,7 +821,8 @@ function fmtMoney(n: number): string {
 /** The one-line `day` entry appended to wiki/log.md. */
 export function dayLogLine(d: Day, habits: Habit[]): string {
   const due = habits.filter((h) => habitDue(h, d.date)).length;
-  const parts = [`привычки ${d.habitsDone.length}/${due}`];
+  const unmarked = unmarkedOn(d, habits).length;
+  const parts = [`привычки ${d.habitsDone.length}/${due}${unmarked ? ` (не отмечено ${unmarked})` : ""}`];
   if (d.questsClosed.length) parts.push(`квесты ${d.questsClosed.length}`);
   const wm = workMinutesOf(d);
   if (wm) parts.push(`работа ${wm} мин`);
@@ -952,19 +986,23 @@ export function txsInMonth(days: Map<string, Day>, ym: string): { date: string; 
 // ---------- derived numbers ----------
 
 /** Consecutive days with the habit done, counting back from `upTo` (inclusive). Skipped days don't break a streak. */
-export function streak(habit: string, days: Map<string, Day>, upTo: string): number {
+/**
+ * Days in a row the habit was kept, counting back from `upTo`. Days it was not
+ * due (a Mon/Wed/Fri habit on Tuesday, a day before it was created) and days
+ * marked «пропуск» are neutral; so is `upTo` itself while it is still open and
+ * unmarked. A failed mark, an unmarked past day or a day with no file ends it.
+ */
+export function streak(habit: Habit, days: Map<string, Day>, upTo: string): number {
   let n = 0;
-  let cur = upTo;
-  for (let i = 0; i < 3650; i++) {
+  for (let i = 0, cur = upTo; i < 3650; i++, cur = addDays(cur, -1)) {
+    if (habit.created && cur < habit.created) break;
+    if (!habitDue(habit, cur)) continue;
     const d = days.get(cur);
-    if (!d) break;
-    const m = markOf(d, habit);
+    const m = d ? markOf(d, habit.title) : undefined;
     if (m === "done") n++;
-    else if (m === "skipped") { /* neutral */ }
+    else if (m === "skipped") continue;
+    else if (i === 0 && !m && !d?.closed) continue; // today, not marked yet: still time
     else break;
-    const prev = new Date(cur + "T12:00:00");
-    prev.setDate(prev.getDate() - 1);
-    cur = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
   }
   return n;
 }
@@ -993,34 +1031,38 @@ export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
   return xp;
 }
 
-/** Completion rate over the last `n` days the habit was due. */
-export function habitRate(h: Habit, days: Map<string, Day>, upTo: string, n = 30): { done: number; due: number } {
-  let done = 0, due = 0;
+/**
+ * Completion over the last `n` days the habit was due and marked. Unmarked days
+ * are counted apart: forgetting to tap is not the same as breaking the habit.
+ */
+export function habitRate(h: Habit, days: Map<string, Day>, upTo: string, n = 30): { done: number; due: number; unmarked: number } {
+  let done = 0, due = 0, unmarked = 0;
   let cur = upTo;
   for (let i = 0; i < n; i++) {
     if (habitDue(h, cur)) {
       const d = days.get(cur);
       const m = d ? markOf(d, h.title) : undefined;
-      if (m !== "skipped") { due++; if (m === "done") done++; }
+      if (!m) { if (d?.closed || cur < upTo) unmarked++; }
+      else if (m !== "skipped") { due++; if (m === "done") done++; }
     }
     const prev = new Date(cur + "T12:00:00");
     prev.setDate(prev.getDate() - 1);
     cur = `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, "0")}-${String(prev.getDate()).padStart(2, "0")}`;
   }
-  return { done, due };
+  return { done, due, unmarked };
 }
 
-export function bestStreak(habit: string, days: Map<string, Day>): number {
+export function bestStreak(habit: Habit, days: Map<string, Day>): number {
   const dates: string[] = [...days.keys()].sort();
-  let best = 0;
-  let run = 0;
-  let prevDate: string | null = null;
-  for (const date of dates) {
-    const m = markOf(days.get(date)!, habit);
-    if (prevDate !== null && addDays(prevDate, 1) !== date) run = 0; // a gap in the files breaks the run
+  if (!dates.length) return 0;
+  let best = 0, run = 0;
+  // Walk every calendar day, not only the files: a missing day where the habit was due ends the run.
+  for (let cur = dates[0]; cur <= dates[dates.length - 1]; cur = addDays(cur, 1)) {
+    if (!habitDue(habit, cur)) continue;
+    const d = days.get(cur);
+    const m = d ? markOf(d, habit.title) : undefined;
     if (m === "done") { run++; best = Math.max(best, run); }
     else if (m !== "skipped") run = 0;
-    prevDate = date;
   }
   return best;
 }
