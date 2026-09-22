@@ -18,6 +18,7 @@ import {
 
 const STATUS: { key: QuestStatus; label: string }[] = [
   { key: "active", label: "в работе" },
+  { key: "passive", label: "в фоне" },
   { key: "proposed", label: "предложен" },
   { key: "done", label: "сделан" },
   { key: "dropped", label: "брошен" },
@@ -149,7 +150,7 @@ export default function QuestPage() {
                 const blocked = status === "active" ? activationBlocked(life.quests, q.title) : null;
                 if (blocked) { setErr(blocked); return; }
                 // Ending a quest in work goes through the outcome form, not a bare status flip.
-                if (q.status === "active" && (status === "done" || status === "dropped")) { setEnding(status); return; }
+                if ((q.status === "active" || q.status === "passive") && (status === "done" || status === "dropped")) { setEnding(status); return; }
                 void write({ status });
               }}>
                 {STATUS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
@@ -193,8 +194,8 @@ export default function QuestPage() {
             </form>
           )}
           <div className="row" style={{ marginTop: 12 }}>
-            {q.status === "active" && !ending && <button className="btn primary" disabled={busy || running} onClick={() => setEnding("done")}>закрыть квест</button>}
-            {q.status === "active" && !ending && <button className="btn ghost" disabled={busy || running} onClick={() => setEnding("dropped")}>бросить</button>}
+            {(q.status === "active" || q.status === "passive") && !ending && <button className="btn primary" disabled={busy || running} onClick={() => setEnding("done")}>закрыть квест</button>}
+            {(q.status === "active" || q.status === "passive") && !ending && <button className="btn ghost" disabled={busy || running} onClick={() => setEnding("dropped")}>бросить</button>}
             <span className="grow" />
             <button className="btn ghost" disabled={busy} style={{ color: "var(--danger)" }} onClick={() => void remove()}>удалить</button>
           </div>

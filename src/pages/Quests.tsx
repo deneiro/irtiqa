@@ -25,6 +25,7 @@ export default function QuestsPage() {
   const days = life ? [...life.days.values()] : [];
   const groups = useMemo(() => ({
     proposed: quests.filter((q) => q.status === "proposed"),
+    passive: quests.filter((q) => q.status === "passive"),
     active: quests.filter((q) => q.status === "active"),
     done: quests.filter((q) => q.status === "done").slice().reverse(),
     dropped: quests.filter((q) => q.status === "dropped"),
@@ -75,7 +76,7 @@ export default function QuestsPage() {
       <div className="eyebrow">life/quests</div>
       <h1 className="title">Квесты</h1>
       <p className="lede">
-        {groups.active.length} активных · {groups.done.length} сделано · {groups.proposed.length} предложено из vault
+        {groups.active.length} активных{groups.passive.length ? ` · ${groups.passive.length} в фоне` : ""} · {groups.done.length} сделано · {groups.proposed.length} предложено из vault
         {timer && <> · <span className="hl">идёт таймер: {timer.quest}</span></>}
       </p>
 
@@ -113,6 +114,16 @@ export default function QuestsPage() {
         )}
         <div className="small faint" style={{ marginTop: 8 }}>Сессии короче 15 минут не считаются. Квест платит 20 XP плюс 55 за каждый час.</div>
       </div>
+
+      {groups.passive.length > 0 && (
+        <>
+          <h2 className="section">В фоне <span className="n">{groups.passive.length}</span></h2>
+          <div className="card">
+            <QuestRows quests={groups.passive} onClose={(q) => void closeQuest(q)} />
+            <div className="small faint" style={{ marginTop: 8 }}>Идут сами по расписанию агента и не занимают место среди трёх активных.</div>
+          </div>
+        </>
+      )}
 
       {groups.proposed.length > 0 && (
         <>

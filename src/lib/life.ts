@@ -33,7 +33,12 @@ export interface Habit {
   extraFm?: string[];
 }
 
-export type QuestStatus = "proposed" | "active" | "done" | "dropped";
+/**
+ * `passive` — «в фоне» (Eldar, 2026-09-22): a quest that keeps running on a
+ * schedule, carried by an agent (JH1's weekly job search), not by his attention.
+ * It does not count toward the three active quests and is never «stalled».
+ */
+export type QuestStatus = "proposed" | "active" | "passive" | "done" | "dropped";
 
 export interface Quest {
   rel: string;
@@ -439,7 +444,7 @@ export function habitDue(h: Habit, date: string): boolean {
 
 // ---------- quests ----------
 
-const QUEST_STATUSES: QuestStatus[] = ["proposed", "active", "done", "dropped"];
+const QUEST_STATUSES: QuestStatus[] = ["proposed", "active", "passive", "done", "dropped"];
 
 export function parseQuest(f: MdFile): Quest {
   const { fm, body } = parseFrontmatter(f.content);
