@@ -101,7 +101,7 @@ export default function QuestsPage() {
 
       <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
       <div className="card">
-        <QuestRows quests={groups.active} onClose={(q) => void closeQuest(q)} />
+        <QuestRows quests={groups.active} onClose={(q) => void closeQuest(q)} move={{ label: "в фон", title: "отложить в фон: не занимает место среди трёх активных", onMove: (q) => setStatus(q, "passive") }} />
         {groups.active.length > 0 && (
           <form className="addrow manual" onSubmit={(e) => { e.preventDefault(); void addManual(); }}>
             <select className="text" value={manual.quest} onChange={(e) => setManual({ ...manual, quest: e.target.value })}>
@@ -119,8 +119,8 @@ export default function QuestsPage() {
         <>
           <h2 className="section">В фоне <span className="n">{groups.passive.length}</span></h2>
           <div className="card">
-            <QuestRows quests={groups.passive} onClose={(q) => void closeQuest(q)} />
-            <div className="small faint" style={{ marginTop: 8 }}>Идут сами по расписанию агента и не занимают место среди трёх активных.</div>
+            <QuestRows quests={groups.passive} onClose={(q) => void closeQuest(q)} move={{ label: "в работу", title: "вернуть в активные", onMove: (q) => setStatus(q, "active") }} />
+            <div className="small faint" style={{ marginTop: 8 }}>Идут по расписанию агента или ждут своего часа — и не занимают место среди трёх активных.</div>
           </div>
         </>
       )}
@@ -141,6 +141,7 @@ export default function QuestsPage() {
                 <span />
                 <div className="hactions">
                   <button className="btn small primary" onClick={() => setStatus(q, "active")}>принять</button>
+                  <button className="btn small ghost" onClick={() => setStatus(q, "passive")}>в фон</button>
                   <button className="btn small ghost" onClick={() => setStatus(q, "dropped")}>отклонить</button>
                 </div>
               </div>

@@ -92,12 +92,15 @@ function NextSteps({ quests }: { quests: Quest[] }) {
 }
 
 /** Active quests with the shared timer. Used on the Quests and Theme screens; the Day screen shows next steps. */
-export default function QuestRows({ quests, onClose, compact }: { quests: Quest[]; onClose?: (q: Quest) => void; compact?: boolean }) {
+/** A button that moves a quest to another section — «в фон», «в работу». */
+export interface QuestMove { label: string; title: string; onMove: (q: Quest) => void }
+
+export default function QuestRows({ quests, onClose, move, compact }: { quests: Quest[]; onClose?: (q: Quest) => void; move?: QuestMove; compact?: boolean }) {
   if (compact) return <NextSteps quests={quests} />;
-  return <FullRows quests={quests} onClose={onClose} />;
+  return <FullRows quests={quests} onClose={onClose} move={move} />;
 }
 
-function FullRows({ quests, onClose }: { quests: Quest[]; onClose?: (q: Quest) => void }) {
+function FullRows({ quests, onClose, move }: { quests: Quest[]; onClose?: (q: Quest) => void; move?: QuestMove }) {
   const { life, timer, startTimer, stopTimer } = useStore();
   const { themeLabel } = useT();
   const now = useTick(!!timer);
@@ -137,6 +140,7 @@ function FullRows({ quests, onClose }: { quests: Quest[]; onClose?: (q: Quest) =
               {running ? <b className="live">{fmtElapsed(now - timer!.startedAt)}</b> : <span>{minutes} мин</span>}
               <span className="faint"> · +{questXp(minutes)} XP</span>
             </div>
+            {move && <button className="btn small ghost" title={move.title} onClick={() => move.onMove(q)} disabled={running}>{move.label}</button>}
             {onClose && <button className="btn small" onClick={() => onClose(q)} disabled={running}>закрыть</button>}
           </div>
         );
