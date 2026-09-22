@@ -27,7 +27,19 @@ export default function NeedsYou({ today }: { today: string }) {
   return (
     <div className="card needs">
       <h3>Требует тебя <span className="n">{items.length}</span></h3>
-      {shown.map((a, i) => (
+      {shown.map((a, i) => a.parts ? (
+        // A line of people: each name opens that person, the rest of the line the contact book.
+        <div key={i} className={`need ${a.urgency >= 80 ? "hot" : ""}`}>
+          <span className="ic">{ICON[a.kind]}</span>
+          <span className="t">
+            <Link to={a.to} className="plain">{a.parts.lead}</Link>
+            {a.parts.items.map((it, j) => (
+              <span key={it.to}>{j > 0 && ", "}<Link to={it.to} className="pname">{it.label}</Link>{it.tail}</span>
+            ))}
+            {a.parts.rest && <Link to={a.to} className="plain">{a.parts.rest}</Link>}
+          </span>
+        </div>
+      ) : (
         <Link key={i} to={a.to} className={`need ${a.urgency >= 80 ? "hot" : ""}`}>
           <span className="ic">{ICON[a.kind]}</span>
           <span className="t">{a.text}</span>

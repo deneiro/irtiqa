@@ -20,7 +20,11 @@ export default function PeoplePage() {
   const today = todayStr();
   const [q, setQ] = useState("");
   const [theme, setTheme] = useState("");
-  const [sort, setSort] = useState<Sort>("name");
+  // «Требует тебя» opens this list sorted by the longest silence (?sort=contact).
+  const [sort, setSort] = useState<Sort>(() => {
+    const s = new URLSearchParams(location.hash.split("?")[1] ?? "").get("sort");
+    return s === "contact" || s === "birthday" ? s : "name";
+  });
   const [cats, setCats] = useState<Set<Category>>(new Set());
   const [near, setNear] = useState<string>("");
   const nav = useNavigate();

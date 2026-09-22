@@ -25,6 +25,12 @@ export interface Attention {
   to: string;
   /** Higher first. Overdue things outrank upcoming ones. */
   urgency: number;
+  /**
+   * The same line in pieces, when it names people: each name links to that
+   * person's page, where the contact is marked. People live in several themes
+   * (family is not in Social & friends), so no single theme screen shows them all.
+   */
+  parts?: { lead: string; items: { label: string; to: string; tail: string }[]; rest: string };
 }
 
 /** A quest counts as stalled after this many days without a timer session or a journal line. Ticking a step leaves no date, so it does not count. */
@@ -84,14 +90,19 @@ export function attention(life: Life, people: Page[], today: string, overviews: 
   const late = circle.filter((i) => (i.overdue ?? 0) > 0).sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0));
   const never = circle.filter((i) => i.overdue === undefined && i.cadence !== undefined && !i.lastContact && !i.lastMeet)
     .sort((a, b) => (b.closeness ?? 0) - (a.closeness ?? 0));
-  const names = (xs: typeof circle, n: number, tail: (x: (typeof circle)[number]) => string) =>
-    xs.slice(0, n).map((x) => `${x.name}${tail(x)}`).join(", ") + (xs.length > n ? ` и ещё ${xs.length - n}` : "");
-  if (late.length) {
-    out.push({ kind: "people", text: `Давно не на связи: ${names(late, 3, (x) => ` (${x.overdue} дн. сверх)`)}`, to: themeRoute("Social & friends"), urgency: 60 + Math.min(late[0].overdue ?? 0, 30) });
-  }
-  if (never.length) {
-    out.push({ kind: "people", text: `Ни одного контакта не записано: ${names(never, 4, () => "")}`, to: themeRoute("Social & friends"), urgency: 55 });
-  }
+  const peopleLine = (lead: string, xs: typeof circle, n: number, tail: (x: (typeof circle)[number]) => string, urgency: number): Attention => {
+    const items = xs.slice(0, n).map((x) => ({ label: x.name, to: `/page/${encodeURIComponent(x.page.rel)}`, tail: tail(x) }));
+    const rest = xs.length > n ? ` и ещё ${xs.length - n}` : "";
+    return {
+      kind: "people",
+      text: `${lead}${items.map((i) => i.label + i.tail).join(", ")}${rest}`,
+      to: "/people?sort=contact",
+      urgency,
+      parts: { lead, items, rest },
+    };
+  };
+  if (late.length) out.push(peopleLine("Давно не на связи: ", late, 3, (x) => ` (${x.overdue} дн. сверх)`, 60 + Math.min(late[0].overdue ?? 0, 30)));
+  if (never.length) out.push(peopleLine("Ни одного контакта не записано: ", never, 4, () => "", 55));
 
   // Charges in the coming week, so the account is not empty on the day.
   const charges: string[] = [];
