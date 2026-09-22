@@ -98,6 +98,22 @@ export default function QuestsPage() {
         {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
       </div>
 
+      <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
+      <div className="card">
+        <QuestRows quests={groups.active} onClose={(q) => void closeQuest(q)} />
+        {groups.active.length > 0 && (
+          <form className="addrow manual" onSubmit={(e) => { e.preventDefault(); void addManual(); }}>
+            <select className="text" value={manual.quest} onChange={(e) => setManual({ ...manual, quest: e.target.value })}>
+              <option value="">добавить время вручную…</option>
+              {groups.active.map((q) => <option key={q.rel} value={q.title}>{q.title}</option>)}
+            </select>
+            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="минут" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: e.target.value })} />
+            <button className="btn" type="submit">+</button>
+          </form>
+        )}
+        <div className="small faint" style={{ marginTop: 8 }}>Сессии короче 15 минут не считаются. Квест платит 20 XP плюс 55 за каждый час.</div>
+      </div>
+
       {groups.proposed.length > 0 && (
         <>
           <h2 className="section">Предложено из vault <span className="n">{groups.proposed.length}</span></h2>
@@ -121,22 +137,6 @@ export default function QuestsPage() {
           </div>
         </>
       )}
-
-      <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
-      <div className="card">
-        <QuestRows quests={groups.active} onClose={(q) => void closeQuest(q)} />
-        {groups.active.length > 0 && (
-          <form className="addrow manual" onSubmit={(e) => { e.preventDefault(); void addManual(); }}>
-            <select className="text" value={manual.quest} onChange={(e) => setManual({ ...manual, quest: e.target.value })}>
-              <option value="">добавить время вручную…</option>
-              {groups.active.map((q) => <option key={q.rel} value={q.title}>{q.title}</option>)}
-            </select>
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="минут" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: e.target.value })} />
-            <button className="btn" type="submit">+</button>
-          </form>
-        )}
-        <div className="small faint" style={{ marginTop: 8 }}>Сессии короче 15 минут не считаются. Квест платит 20 XP плюс 55 за каждый час.</div>
-      </div>
 
       {groups.done.length > 0 && (
         <>
