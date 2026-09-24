@@ -140,8 +140,12 @@ function FullRows({ quests, onClose, move }: { quests: Quest[]; onClose?: (q: Qu
               {running ? <b className="live">{fmtElapsed(now - timer!.startedAt)}</b> : <span>{minutes} мин</span>}
               <span className="faint"> · +{questXp(minutes)} XP</span>
             </div>
-            {move && <button className="btn small ghost" title={move.title} onClick={() => move.onMove(q)} disabled={running}>{move.label}</button>}
-            {onClose && <button className="btn small" onClick={() => onClose(q)} disabled={running}>закрыть</button>}
+            {(move || onClose) && (
+              <div className="qactions">
+                {move && <button className="btn small qmove" title={move.title} onClick={() => move.onMove(q)} disabled={running}>{move.label}</button>}
+                {onClose && <button className="btn small qdone" onClick={() => onClose(q)} disabled={running}>✓ закрыть</button>}
+              </div>
+            )}
           </div>
         );
       })}

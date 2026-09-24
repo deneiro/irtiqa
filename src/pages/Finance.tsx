@@ -172,17 +172,17 @@ export default function FinancePage() {
       <div className="card" style={{ marginTop: 16 }}>
         <h3>
           <button className="btn small ghost" onClick={() => setYm(shiftMonth(ym, -1))}>‹</button>
-          <span style={{ textTransform: "none", letterSpacing: 0, fontSize: 15, color: "var(--ink)" }}>{monthLabel(ym)}</span>
+          <span>{monthLabel(ym)}</span>
           <button className="btn small ghost" onClick={() => setYm(shiftMonth(ym, 1))} disabled={ym >= monthOf(today)}>›</button>
           <span className="n"><span className="amt neg">−{fmt(month.spent)}</span> · <span className="amt pos">+{fmt(month.earned)}</span></span>
         </h3>
         <div className="fin-grid">
           <div className="chart" style={{ height: 200 }}>
             <ResponsiveContainer>
-              <BarChart data={month.perDay} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <BarChart data={month.perDay} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
                 <CartesianGrid vertical={false} stroke="var(--hair)" />
                 <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} interval={4} />
-                <YAxis tick={axis} axisLine={false} tickLine={false} />
+                <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v >= 1000 ? `${Math.round(v / 1000)}к` : String(v))} />
                 <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
                 <Bar dataKey="потрачено" fill="var(--accent)" radius={[3, 3, 0, 0]} />
               </BarChart>

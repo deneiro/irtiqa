@@ -79,7 +79,7 @@ export function CircleSection({ theme }: { theme: string }) {
     <section className="tblock">
       <h2 className="section">
         Круг <span className="n">{items.length} {plural(items.length, "человек", "человека", "человек")}{overdue.length ? ` · ${overdue.length} просрочено` : ""}</span>
-        <Link to="/people" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>контактная книга</Link>
+        <Link to="/people" className="small muted">контактная книга</Link>
       </h2>
       <div className="card">
         <div className="small muted">

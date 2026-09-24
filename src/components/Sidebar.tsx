@@ -35,14 +35,17 @@ export default function Sidebar() {
       <NavLink to="/quests" className={cls}>
         {t("nav_quests")} {timer && <span className="livedot" title={timer.quest} />}<span className="count">{life?.quests.filter((q) => q.status === "active").length ?? ""}</span>
       </NavLink>
+      <div className="section">{t("sec_life")}</div>
       <NavLink to="/finance" className={cls}>{t("nav_finance")}</NavLink>
       <NavLink to="/people" className={cls}>
         {t("nav_entities")} <span className="count">{vault?.pages.filter((p) => p.zone === "person" && p.file !== "_Overview" && !isAuthor(p)).length ?? ""}</span>
       </NavLink>
       <NavLink to="/profile" className={cls}>{t("nav_profile")}</NavLink>
+      <div className="section">{t("sec_review")}</div>
       <NavLink to="/log" className={cls}>{t("nav_log")}</NavLink>
       <NavLink to="/wheel" className={cls}>{t("nav_wheel")}</NavLink>
       <NavLink to="/charts" className={cls}>{t("nav_charts")}</NavLink>
+      <div className="section">{t("sec_service")}</div>
       <NavLink to="/tools" className={cls}>
         {t("nav_tools")} <span className="count">{vault?.pages.filter((p) => isToolPage(p) && p.fm.folder).length ?? ""}</span>
       </NavLink>

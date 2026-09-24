@@ -320,7 +320,7 @@ export default function ThemePage() {
         }
         return (
           <section key={key} className="tblock">
-            <h2 className="section">Питание <span className="n">{total} {plural(total, "запись", "записи", "записей")} за 14 дней</span> <Link to="/" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>записать сегодняшнюю еду</Link></h2>
+            <h2 className="section">Питание <span className="n">{total} {plural(total, "запись", "записи", "записей")} за 14 дней</span> <Link to="/" className="small muted">записать сегодняшнюю еду</Link></h2>
             <p className="small muted" style={{ marginTop: -4 }}>
               {late > 0 ? <span className="hl">{late} раз ел после {LATE_MEAL_HOUR}:00.</span> : `Поздней еды за две недели нет.`}
               {clean > 0 && ` Дней подряд без поздней еды: ${clean}.`}
@@ -350,7 +350,7 @@ export default function ThemePage() {
       case "habits":
         return (
           <section key={key} className="tblock">
-            <h2 className="section">Привычки темы <span className="n">{habits.length}</span> <Link to="/habits" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>все привычки</Link></h2>
+            <h2 className="section">Привычки темы <span className="n">{habits.length}</span> <Link to="/habits" className="small muted">все привычки</Link></h2>
             {habits.length === 0 ? <div className="empty">В этой теме пока нет активных привычек. Их можно создать из практик на любой Resource-странице.</div> : (
               <div className="card">
                 <table className="tbl">
@@ -383,7 +383,7 @@ export default function ThemePage() {
         for (const [date, d] of life?.days ?? []) if (date.startsWith(ym)) for (const tx of d.txs) { if (tx.amount < 0) spent -= tx.amount; else earned += tx.amount; }
         return (
           <section key={key} className="tblock">
-            <h2 className="section">Деньги <Link to="/finance" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>открыть финансы</Link></h2>
+            <h2 className="section">Деньги <Link to="/finance" className="small muted">открыть финансы</Link></h2>
             <div className="grid cols-4">
               <Link to="/finance" className="card stat-card"><div className="stat"><b>{fmt(total)}</b><span>на счетах</span></div></Link>
               <Link to="/finance" className="card stat-card"><div className="stat"><b>{fmt(spent)}</b><span>потрачено в этом месяце</span></div></Link>
@@ -433,7 +433,7 @@ export default function ThemePage() {
       case "people":
         return (
           <section key={key} className="tblock">
-            <h2 className="section">Люди <span className="n">{circle.length}</span> <Link to="/people" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>контактная книга</Link></h2>
+            <h2 className="section">Люди <span className="n">{circle.length}</span> <Link to="/people" className="small muted">контактная книга</Link></h2>
             <div className="people-grid">
               {circle.sort((a, b) => a.title.localeCompare(b.title)).map((p) => {
                 const c = contactsOf(p);

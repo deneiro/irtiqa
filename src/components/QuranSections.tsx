@@ -153,7 +153,7 @@ export function NamesSection() {
     <section className="tblock">
       <h2 className="section">
         99 имён Аллаха <span className="n">{done.length} из 99</span>
-        <Link to={pageUrl(page)} className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>вся страница</Link>
+        <Link to={pageUrl(page)} className="small muted">вся страница</Link>
       </h2>
       <div className="card">
         <Progress done={done.length} learning={learning.length} total={99} />

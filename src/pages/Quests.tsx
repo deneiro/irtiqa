@@ -80,8 +80,8 @@ export default function QuestsPage() {
         {timer && <> · <span className="hl">идёт таймер: {timer.quest}</span></>}
       </p>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>Новый квест</h3>
+      <details className="card create" style={{ marginTop: 16 }} open={err ? true : undefined}>
+        <summary>+ Новый квест</summary>
         <form className="qform" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
           <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Название" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
@@ -97,7 +97,7 @@ export default function QuestsPage() {
           <div className="row"><button className="btn primary" type="submit">+ добавить</button></div>
         </form>
         {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
-      </div>
+      </details>
 
       <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
       <div className="card">

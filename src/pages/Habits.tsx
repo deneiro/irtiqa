@@ -136,8 +136,8 @@ export default function HabitsPage() {
       <h1 className="title">Привычки</h1>
       <p className="lede">{groups.active.length} активных · {groups.paused.length} на паузе · {groups.proposed.length} предложено из vault</p>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>{editing ? `Правка: ${form.title}` : "Новая привычка"}</h3>
+      <details className="card create" style={{ marginTop: 16 }} open={editing || err ? true : undefined}>
+        <summary>{editing ? `Правка: ${form.title}` : "+ Новая привычка"}</summary>
         <form className="hform" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
           <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Название" value={form.title} disabled={!!editing} onChange={(e) => setForm({ ...form, title: e.target.value })} />
           <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
@@ -164,7 +164,7 @@ export default function HabitsPage() {
           </div>
         </form>
         {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
-      </div>
+      </details>
 
       {groups.proposed.length > 0 && (
         <>

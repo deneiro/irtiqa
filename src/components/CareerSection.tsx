@@ -58,7 +58,7 @@ export default function CareerSection() {
     <section className="tblock">
       <h2 className="section">
         Работа <span className="n">{st.count} мест за {months(st.span)}</span>
-        {page && <Link to={pageUrl(page)} className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>{PATH_PAGE}</Link>}
+        {page && <Link to={pageUrl(page)} className="small muted">{PATH_PAGE}</Link>}
       </h2>
       <div className="card">
         <div className="bodynums">

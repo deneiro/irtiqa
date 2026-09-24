@@ -31,7 +31,7 @@ export default function HorizonSection() {
     <section className="tblock">
       <h2 className="section">
         Горизонт <span className="n">{fmt(h.owed)} ₸ долга</span>
-        <Link to="/finance" className="small muted" style={{ textTransform: "none", letterSpacing: 0 }}>открыть финансы</Link>
+        <Link to="/finance" className="small muted">открыть финансы</Link>
       </h2>
       <div className="card">
         <div className="bodynums">
