@@ -12,7 +12,7 @@ import SourceLink from "../components/SourceLink";
 import QuestTime from "../components/QuestTime";
 import { fmtElapsed } from "../components/QuestRows";
 import {
-  activationBlocked, questDescription, questJournal, questOutcome, withQuestOutcome, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
+  questDescription, questJournal, questOutcome, withQuestOutcome, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
   type Quest, type QuestStatus, type QuestStep,
 } from "../lib/life";
 
@@ -147,8 +147,6 @@ export default function QuestPage() {
             <label className="cfield"><span>состояние</span>
               <select className="text" value={q.status} disabled={busy} onChange={(e) => {
                 const status = e.target.value as QuestStatus;
-                const blocked = status === "active" ? activationBlocked(life.quests, q.title) : null;
-                if (blocked) { setErr(blocked); return; }
                 // Ending a quest in work goes through the outcome form, not a bare status flip.
                 if ((q.status === "active" || q.status === "passive") && (status === "done" || status === "dropped")) { setEnding(status); return; }
                 void write({ status });

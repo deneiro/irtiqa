@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
-import { THEMES } from "../lib/themes";
+import { THEMES, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { todayStr } from "../lib/dates";
-import { activationBlocked, QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
+import { QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
 import QuestRows from "../components/QuestRows";
 import SourceLink from "../components/SourceLink";
 
@@ -36,8 +36,6 @@ export default function QuestsPage() {
     try { await saveText(q.rel, serializeQuest({ ...q, ...patch })); setErr(null); await reload(); } catch (e) { setErr(String(e)); }
   };
   const setStatus = (q: Quest, status: QuestStatus) => {
-    const blocked = status === "active" ? activationBlocked(quests, q.title) : null;
-    if (blocked) { setErr(blocked); return; }
     void write(q, { status });
   };
 
@@ -49,13 +47,12 @@ export default function QuestsPage() {
     if (!title || !safeFilename(title)) return;
     if (quests.some((q) => q.title === title)) { setErr("Такой квест уже есть."); return; }
     try {
-      const blocked = activationBlocked(quests, title);
       await saveText(`${QUEST_DIR}/${safeFilename(title)}.md`, serializeQuest({
-        title, theme: form.theme, status: blocked ? "proposed" : "active", created: today, due: form.due || undefined,
+        title, theme: form.theme, status: "active", created: today, due: form.due || undefined,
         project: form.project || undefined, source: form.source.trim() || undefined, body: form.body,
       }));
       setForm(EMPTY);
-      setErr(blocked ? `Квест записан во «Входящие» как предложенный. ${blocked}` : null);
+      setErr(null);
       await reload();
     } catch (e) { setErr(String(e)); }
   };
@@ -99,10 +96,27 @@ export default function QuestsPage() {
         {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
       </details>
 
-      <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
-      <div className="card">
-        <QuestRows quests={groups.active} onClose={(q) => void closeQuest(q)} move={{ label: "в фон", title: "отложить в фон: не занимает место среди трёх активных", onMove: (q) => setStatus(q, "passive") }} />
-        {groups.active.length > 0 && (
+      <h2 className="section">По темам <span className="n">{groups.active.length + groups.passive.length}</span></h2>
+      {THEMES.map((t) => {
+        const act = groups.active.filter((q) => q.theme === t.name);
+        const bg = groups.passive.filter((q) => q.theme === t.name);
+        const offered = groups.proposed.filter((q) => q.theme === t.name).length;
+        return (
+          <div className={`card qtheme ${act.length + bg.length ? "" : "bare"}`} key={t.name}>
+            <div className="qtheme-head"><i className="tdot" style={{ background: themeColor(t.name) }} /> {themeLabel(t.name)}
+              <span className="n">{act.length ? `${act.length} в работе` : ""}{act.length && bg.length ? " · " : ""}{bg.length ? `${bg.length} в фоне` : ""}</span>
+            </div>
+            {act.length > 0 && <QuestRows quests={act} onClose={(q) => void closeQuest(q)} move={{ label: "в фон", title: "отложить в фон: идёт по расписанию или ждёт своего часа", onMove: (q) => setStatus(q, "passive") }} />}
+            {bg.length > 0 && <QuestRows quests={bg} onClose={(q) => void closeQuest(q)} move={{ label: "в работу", title: "вернуть в работу", onMove: (q) => setStatus(q, "active") }} />}
+            {act.length + bg.length === 0 && <div className="small faint">Ничего в работе.{offered ? ` Предложено ниже: ${offered}.` : " Заведи квест, пусть маленький."}</div>}
+          </div>
+        );
+      })}
+      {groups.active.some((q) => !q.theme || !THEMES.some((t) => t.name === q.theme)) && (
+        <div className="card"><QuestRows quests={groups.active.filter((q) => !q.theme || !THEMES.some((t) => t.name === q.theme))} onClose={(q) => void closeQuest(q)} /></div>
+      )}
+      {groups.active.length > 0 && (
+        <div className="card">
           <form className="addrow manual" onSubmit={(e) => { e.preventDefault(); void addManual(); }}>
             <select className="text" value={manual.quest} onChange={(e) => setManual({ ...manual, quest: e.target.value })}>
               <option value="">добавить время вручную…</option>
@@ -111,18 +125,8 @@ export default function QuestsPage() {
             <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="минут" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: e.target.value })} />
             <button className="btn" type="submit">+</button>
           </form>
-        )}
-        <div className="small faint" style={{ marginTop: 8 }}>Сессии короче 15 минут не считаются. Квест платит 20 XP плюс 55 за каждый час.</div>
-      </div>
-
-      {groups.passive.length > 0 && (
-        <>
-          <h2 className="section">В фоне <span className="n">{groups.passive.length}</span></h2>
-          <div className="card">
-            <QuestRows quests={groups.passive} onClose={(q) => void closeQuest(q)} move={{ label: "в работу", title: "вернуть в активные", onMove: (q) => setStatus(q, "active") }} />
-            <div className="small faint" style={{ marginTop: 8 }}>Идут по расписанию агента или ждут своего часа — и не занимают место среди трёх активных.</div>
-          </div>
-        </>
+          <div className="small faint" style={{ marginTop: 8 }}>Сессии короче 15 минут не считаются. Квест платит 20 XP плюс 55 за каждый час.</div>
+        </div>
       )}
 
       {groups.proposed.length > 0 && (

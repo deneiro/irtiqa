@@ -114,3 +114,17 @@ export function suraPatch(state: MemoState, today: string): Record<string, strin
 }
 
 export const NAMES_PAGE = "99 имён Аллаха";
+
+/**
+ * The habit a sura in work becomes (Eldar, 2026-10-03): «беру учить» starts a
+ * daily habit in Spirituality, «выучил» or «не учу» archives it. The number
+ * leads the title so the habit is found again after a rename of the page.
+ */
+export function suraHabitTitle(s: Pick<Sura, "n" | "name">): string {
+  const short = s.name.split(" (")[0].trim();
+  return `Учить суру ${s.n}${short ? ` ${short}` : ""}`;
+}
+
+export function isSuraHabit(title: string, n: number): boolean {
+  return new RegExp(`^Учить суру ${n}(\\s|$)`).test(title);
+}

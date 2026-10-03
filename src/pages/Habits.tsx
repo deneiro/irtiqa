@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
-import { THEMES } from "../lib/themes";
+import { THEMES, groupByTheme, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { WEEKDAYS_RU, addDays } from "../lib/dates";
-import { HABIT_DIR, bestStreak, habitDue, habitRate, markOf, safeFilename, serializeHabit, streak, type Habit, type HabitKind, type HabitStatus } from "../lib/life";
+import { HABIT_DIR, HABIT_TIMES, byHabitTime, habitTimeLabel, type HabitTime, bestStreak, habitDue, habitRate, markOf, safeFilename, serializeHabit, streak, type Habit, type HabitKind, type HabitStatus } from "../lib/life";
 import { Link } from "react-router-dom";
 import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
@@ -17,8 +17,8 @@ function freqLabel(f: string | string[]): string {
   return f === "weekly" ? "раз в неделю" : "ежедневно";
 }
 
-interface Form { title: string; theme: string; kind: HabitKind; days: string[]; body: string; source: string }
-const EMPTY: Form = { title: "", theme: THEMES[2].name, kind: "good", days: [...ORDER], body: "", source: "" };
+interface Form { title: string; theme: string; kind: HabitKind; time: HabitTime | ""; days: string[]; body: string; source: string }
+const EMPTY: Form = { title: "", theme: THEMES[2].name, kind: "good", time: "", days: [...ORDER], body: "", source: "" };
 
 function formFreq(days: string[]): string | string[] {
   return days.length === 7 ? "daily" : ORDER.filter((d) => days.includes(d));
@@ -45,6 +45,8 @@ export default function HabitsPage() {
     archived: habits.filter((h) => h.status === "archived"),
   }), [habits]);
 
+  const activeByTheme = useMemo(() => groupByTheme([...groups.active].sort(byHabitTime)), [groups.active]);
+
   const write = async (h: Habit, patch: Partial<Habit>) => {
     const next = { ...h, ...patch };
     try {
@@ -61,14 +63,14 @@ export default function HabitsPage() {
     if (!form.days.length) { setErr("Выбери хотя бы один день."); return; }
     if (editing) {
       const h = habits.find((x) => x.rel === editing);
-      if (h) await write(h, { theme: form.theme, kind: form.kind, freq: formFreq(form.days), body: form.body, source: form.source.trim() || undefined });
+      if (h) await write(h, { theme: form.theme, kind: form.kind, time: form.time || undefined, freq: formFreq(form.days), body: form.body, source: form.source.trim() || undefined });
       setEditing(null);
       setForm(EMPTY);
       return;
     }
     if (habits.some((h) => h.title === title)) { setErr("Такая привычка уже есть."); return; }
     try {
-      await saveText(`${HABIT_DIR}/${safeFilename(title)}.md`, serializeHabit({ title, theme: form.theme, kind: form.kind, freq: formFreq(form.days), status: "active", created: today, source: form.source.trim() || undefined, body: form.body }));
+      await saveText(`${HABIT_DIR}/${safeFilename(title)}.md`, serializeHabit({ title, theme: form.theme, kind: form.kind, time: form.time || undefined, freq: formFreq(form.days), status: "active", created: today, source: form.source.trim() || undefined, body: form.body }));
       setForm(EMPTY);
       setErr(null);
       await reload();
@@ -86,7 +88,7 @@ export default function HabitsPage() {
 
   const startEdit = (h: Habit) => {
     setEditing(h.rel);
-    setForm({ title: h.title, theme: h.theme ?? THEMES[2].name, kind: h.kind, days: freqDays(h.freq), body: h.body, source: h.source ?? "" });
+    setForm({ title: h.title, theme: h.theme ?? THEMES[2].name, kind: h.kind, time: h.time ?? "", days: freqDays(h.freq), body: h.body, source: h.source ?? "" });
     window.scrollTo(0, 0);
   };
 
@@ -100,7 +102,7 @@ export default function HabitsPage() {
         <div style={{ minWidth: 0 }}>
           <div className="name">{h.title} {h.kind === "bad" && <span className="chip">плохая</span>}</div>
           <div className="sub">
-            {h.theme ? themeLabel(h.theme) : "без темы"} · {freqLabel(h.freq)}
+            {h.theme ? themeLabel(h.theme) : "без темы"} · {habitTimeLabel(h.time)} · {freqLabel(h.freq)}
             {h.source ? <> · <SourceLink source={h.source} /></> : null}
           </div>
           {h.body && <div className="small muted" style={{ marginTop: 4 }}>{h.body}</div>}
@@ -147,6 +149,10 @@ export default function HabitsPage() {
             <option value="good">хорошая</option>
             <option value="bad">плохая</option>
           </select>
+          <select className="text" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value as HabitTime | "" })}>
+            <option value="">весь день</option>
+            {HABIT_TIMES.map((t) => <option key={t} value={t}>{habitTimeLabel(t)}</option>)}
+          </select>
           <div className="daypick">
             {ORDER.map((d) => (
               <label key={d} className={`dp ${form.days.includes(d) ? "on" : ""}`}>
@@ -182,7 +188,13 @@ export default function HabitsPage() {
       )}
 
       <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
-      {groups.active.length ? <div className="card">{groups.active.map((h) => <Row key={h.rel} h={h} />)}</div> : <div className="empty">Пока пусто. Добавь первую привычку выше.</div>}
+      {groups.active.length ? activeByTheme.groups.map((g) => (
+        <details className="card htheme-card" key={g.theme ?? "none"} open>
+          <summary><i className="tdot" style={{ background: themeColor(g.theme) }} /> {g.theme ? themeLabel(g.theme) : "без темы"} <span className="n">{g.items.length}</span></summary>
+          {g.items.map((h) => <Row key={h.rel} h={h} />)}
+        </details>
+      )) : <div className="empty">Пока пусто. Добавь первую привычку выше.</div>}
+      {groups.active.length > 0 && activeByTheme.missing.length > 0 && <p className="small faint">Нет ни одной привычки: {activeByTheme.missing.map((t) => themeLabel(t)).join(", ")}</p>}
 
       {groups.paused.length > 0 && (
         <>

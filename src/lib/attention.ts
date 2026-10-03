@@ -7,13 +7,14 @@
  */
 import type { Page } from "./types";
 import type { Life } from "./life";
-import { ACTIVE_QUEST_LIMIT, questJournal, questSteps, nextStep, subscriptionsDue } from "./life";
+import { questJournal, questSteps, nextStep, subscriptionsDue } from "./life";
 import { blockOn, parseCalendar } from "./calendar";
 import { staleMentions } from "./stale";
 import { parseHealth, daysUntil } from "./health";
 import { buildCircle } from "./circle";
 import { daysToBirthday } from "./people";
 import { addDays } from "./dates";
+import { THEMES, themeRu } from "./themes";
 
 export type AttentionKind = "health" | "birthday" | "people" | "money" | "quest";
 
@@ -140,10 +141,12 @@ export function attention(life: Life, people: Page[], today: string, overviews: 
     }
   }
 
-  // Too many at once, and quests with no time set aside: both mean nothing gets done.
+  // Every theme has something in work, however small (Eldar, 2026-10-03): a part
+  // of life with no quest falls behind unseen. The cap of three active quests is gone.
   const active = life.quests.filter((x) => x.status === "active");
-  if (active.length > ACTIVE_QUEST_LIMIT) {
-    out.push({ kind: "quest", text: `В работе ${active.length} квестов, а можно ${ACTIVE_QUEST_LIMIT}: оставь главные, остальные — в «предложен»`, to: "/quests", urgency: 90 });
+  const bare = THEMES.filter((t) => !life.quests.some((q) => q.theme === t.name && (q.status === "active" || q.status === "passive")));
+  if (bare.length) {
+    out.push({ kind: "quest", text: `Нет квеста в теме: ${bare.map((t) => themeRu(t.name)).join(", ")}`, to: "/quests", urgency: 35 });
   }
   const blocks = parseCalendar(life.calendar ?? "");
   const week = Array.from({ length: 7 }, (_, i) => addDays(today, i));

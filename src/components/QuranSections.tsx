@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
 import { todayStr } from "../lib/dates";
+import { dayToday } from "../lib/maghrib";
 import { setFrontmatterKeys } from "../lib/frontmatter";
 import { rawPageText } from "../lib/rawpage";
-import { NAMES_PAGE, dayOf, parseNames, suraPatch, suras, withNameState, type MemoState } from "../lib/quran";
+import { NAMES_PAGE, dayOf, isSuraHabit, parseNames, suraHabitTitle, suraPatch, suras, withNameState, type MemoState } from "../lib/quran";
+import { HABIT_DIR, safeFilename, serializeHabit } from "../lib/life";
 
 const LABEL: Record<MemoState, string> = { none: "не начато", learning: "учу", done: "выучено" };
 
@@ -44,7 +46,7 @@ function Actions({ state, busy, set, before }: { state: MemoState; busy: boolean
 /** 114 suras: what is memorised, what is in work, and the text one click away. */
 export function QuranSection() {
   const v = useVault();
-  const { saveText, reload } = useStore();
+  const { saveText, reload, life } = useStore();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -65,6 +67,17 @@ export function QuranSection() {
       const raw = rawPageText(v, s.page.rel);
       if (raw === null) throw new Error("не нашёл текст страницы суры");
       await saveText(s.page.rel, setFrontmatterKeys(raw, suraPatch(state, today)));
+      // The sura in work is also a habit of the day; learned or dropped, it goes to the archive.
+      const habit = life?.habits.find((h) => isSuraHabit(h.title, n));
+      if (state === "learning") {
+        if (!habit) {
+          const title = suraHabitTitle(s);
+          await saveText(`${HABIT_DIR}/${safeFilename(title)}.md`, serializeHabit({
+            title, theme: "Spirituality & Religion", kind: "good", freq: "daily", status: "active", created: dayToday(),
+            source: `[[${s.page.file}]]`, body: `Сура ${s.n}, ${s.ayahs} аятов. Взята учить ${today}.`,
+          }));
+        } else if (habit.status !== "active") await saveText(habit.rel, serializeHabit({ ...habit, status: "active" }));
+      } else if (habit && habit.status === "active") await saveText(habit.rel, serializeHabit({ ...habit, status: "archived" }));
       setErr(null);
       await reload();
     } catch (e) { setErr(String(e)); } finally { setBusy(false); }

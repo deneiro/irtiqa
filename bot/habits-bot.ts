@@ -1,11 +1,15 @@
 /**
- * Telegram bot: four habit digests a day, marks written straight into
+ * Telegram bot: habit digests by the prayers, marks written straight into
  * `life/days/<date>.md`. The app watches the vault and picks them up.
  *
  * Eldar counts a day from maghrib to maghrib, so after sunset the marks go to
- * the next calendar date. Digests: maghrib (a new day begins), night, morning,
- * lunch. Each shows the due habits not marked yet, with ✓ / ✗ / пропуск per
- * habit and «позже» for the whole digest.
+ * the next calendar date. Each habit has a part of the day (`time:` вечер ·
+ * утро · обед, or none for the whole day), and each part comes at its own
+ * moment (Eldar, 2026-10-03): evening habits at maghrib, morning ones after
+ * fajr, lunch ones after zuhr. An hour before maghrib comes the one full
+ * digest — every habit of the day, grouped by theme, each theme opened and
+ * closed by a tap — and then mood, stress and work, while the day is still
+ * open. ✓ / ✗ / пропуск per habit and «позже» for the whole digest.
  *
  * Food: the «🍽 Еда» button under the chat asks what was eaten; the next
  * message becomes a row of `## Еда` in the day file, «ЧЧ:ММ» in front for a
@@ -28,7 +32,7 @@ import {
   DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
   ACCOUNTS_REL, liveBalance, parseAccounts, parseAmount, serializeDay, withMark,
   QUEST_DIR, parseQuest, serializeQuest, withQuestEntry, categoryName,
-  type Day, type DayMark, type Habit, type Meal, type Quest, type Tx,
+  byHabitTime, type Day, type DayMark, type Habit, type HabitTime, type Meal, type Quest, type Tx,
 } from "../src/lib/life";
 import { buildCircle } from "../src/lib/circle";
 import { contactEdits } from "../src/lib/contact";
@@ -37,7 +41,8 @@ import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { buildLife } from "../src/lib/life";
 import { buildPage } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
-import { MAGHRIB_DAYS_FROM, SHYMKENT, maghribOn } from "../src/lib/maghrib";
+import { MAGHRIB_DAYS_FROM, SHYMKENT, fajrOn, maghribOn, zuhrOn } from "../src/lib/maghrib";
+import { groupByTheme, themeRu } from "../src/lib/themes";
 
 // ---------- config & state ----------
 
@@ -52,22 +57,29 @@ interface Config {
   lat: number;
   lon: number;
   maghribOffsetMin: number;
-  morning: string;
-  lunch: string;
-  night: string;
+  /** Fajr angle below the horizon, degrees. */
+  fajrAngle: number;
+  /** Minutes after fajr / zuhr the morning and lunch digests come. */
+  afterFajrMin: number;
+  afterZuhrMin: number;
+  /** Minutes before maghrib the full digest comes. */
+  finalBeforeMin: number;
   snoozeMin: number;
 }
 
 interface State {
   offset: number;
   sent: string[]; // slot ids already delivered
-  snoozes: { at: number; date: string }[];
+  snoozes: { at: number; date: string; part?: Part }[];
 }
 
 const DEFAULTS: Omit<Config, "token" | "vault"> = {
   ...SHYMKENT,
   maghribOffsetMin: 0,
-  morning: "08:00", lunch: "13:00", night: "22:00",
+  fajrAngle: 15,
+  afterFajrMin: 30,
+  afterZuhrMin: 30,
+  finalBeforeMin: 60,
   snoozeMin: 30,
 };
 
@@ -115,23 +127,24 @@ function logicalDate(t: Date): string {
   return next >= MAGHRIB_DAYS_FROM && t >= maghrib(cal) ? next : cal;
 }
 
-function at(date: string, hhmm: string): Date {
-  return new Date(`${date}T${hhmm}:00`);
-}
-
 function hm(t: Date): string {
   return t.toTimeString().slice(0, 5);
 }
 
-interface Slot { id: string; at: Date; title: string }
+/** Which habits a digest shows: one part of the day, or all of them. */
+type Part = "e" | "m" | "l" | "a";
+const PART_TIME: Record<Exclude<Part, "a">, HabitTime> = { e: "вечер", m: "утро", l: "обед" };
+
+interface Slot { id: string; at: Date; title: string; part: Part }
 
 function slotsOf(cal: string): Slot[] {
   const m = maghrib(cal);
+  const plus = (t: Date, min: number) => new Date(t.getTime() + min * 60000);
   return [
-    { id: `${cal}:morning`, at: at(cal, cfg.morning), title: "☀️ Утро" },
-    { id: `${cal}:lunch`, at: at(cal, cfg.lunch), title: "🍽 Обед" },
-    { id: `${cal}:maghrib`, at: m, title: "🌇 Магриб — новый день" },
-    { id: `${cal}:night`, at: at(cal, cfg.night), title: "🌙 Перед сном" },
+    { id: `${cal}:morning`, at: plus(fajrOn(cal, cfg.lat, cfg.lon, cfg.fajrAngle), cfg.afterFajrMin), title: "☀️ Утро — после фаджра", part: "m" },
+    { id: `${cal}:lunch`, at: plus(zuhrOn(cal, cfg.lat, cfg.lon), cfg.afterZuhrMin), title: "🍽 Обед — после зухра", part: "l" },
+    { id: `${cal}:final`, at: plus(m, -cfg.finalBeforeMin), title: `⏳ Час до магриба — весь день`, part: "a" },
+    { id: `${cal}:maghrib`, at: m, title: "🌇 Магриб — вечер нового дня", part: "e" },
   ];
 }
 
@@ -485,45 +498,70 @@ const MARK_LABEL: Record<DayMark, string> = { done: "✓", failed: "✗", skippe
 type Mode = "d" | "f" | "s";
 const MODE_GLYPH: Record<Mode, string> = { d: "✓", f: "✗", s: "–" };
 
+/** Themes opened in the full digest, per message. Kept in memory: a restart closes them, nothing is lost. */
+const opened = new Map<number, Set<string>>();
+
+function dueFor(date: string, part: Part): Habit[] {
+  const due = readHabits().filter((h) => habitDue(h, date));
+  return (part === "a" ? due : due.filter((h) => h.time === PART_TIME[part])).sort(byHabitTime);
+}
+
 /**
  * Text + keyboard for one logical date. One full-width button per unmarked
  * habit, so long titles fit: in mode «d» a tap is ✓, the switches at the
- * bottom turn the same buttons into ✗ or пропуск.
+ * bottom turn the same buttons into ✗ or пропуск. The full digest («a») puts
+ * a theme button above its habits; the habits show only while it is open.
  */
-function digest(date: string, title: string, mode: Mode = "d"): { text: string; keyboard: Button[][] } {
-  const habits = readHabits().filter((h) => habitDue(h, date));
+function digest(date: string, title: string, part: Part, mode: Mode = "d", msg?: number): { text: string; keyboard: Button[][] } {
+  const habits = dueFor(date, part);
   const day = readDay(date);
   const open = habits.filter((h) => !markOf(day, h.title));
   const marked = habits.filter((h) => markOf(day, h.title));
   const compact = date.replaceAll("-", "");
+  const habitButton = (h: Habit): Button[] => [{ text: `${MODE_GLYPH[mode]} ${h.title}`, callback_data: `m:${compact}:${mode}:${key(h.title)}:${part}` }];
 
   const lines = [title, `${formatDayTitle(date)} · отмечено ${marked.length} из ${habits.length}`];
-  if (marked.length) lines.push("", marked.map((h) => `${MARK_LABEL[markOf(day, h.title)!]} ${h.title}`).join("\n"));
-  if (open.length) {
-    lines.push("", mode === "d" ? "Нажми привычку — будет ✓." : mode === "f" ? "Режим ✗: нажми, что не сделал." : "Режим пропуска: нажми, что пропускаешь по плану.");
-    if (mode === "d" && open.some((h) => h.kind === "bad")) lines.push("У плохих привычек ✓ значит «удержался».");
-  } else {
-    lines.push("", "Всё отмечено.");
+  const keyboard: Button[][] = [];
+  if (part === "a") {
+    const { groups, missing } = groupByTheme(habits);
+    const show = msg !== undefined ? opened.get(msg) ?? new Set<string>() : new Set<string>();
+    lines.push("");
+    for (const g of groups) {
+      const name = themeRu(g.theme);
+      const left = g.items.filter((h) => !markOf(day, h.title));
+      const done = g.items.filter((h) => markOf(day, h.title) === "done").length;
+      lines.push(`${left.length ? "▫️" : "✅"} ${name} — ${done}/${g.items.length}${left.length ? `, осталось: ${left.map((h) => h.title).join(", ")}` : ""}`);
+      if (!left.length) continue;
+      const isOpen = show.has(name);
+      keyboard.push([{ text: `${isOpen ? "▾" : "▸"} ${name} · ${left.length}`, callback_data: `t:${compact}:${mode}:${key(name)}` }]);
+      if (isOpen) keyboard.push(...left.map(habitButton));
+    }
+    if (missing.length) lines.push("", `Без привычек: ${missing.map((t) => themeRu(t)).join(", ")}.`);
+  } else if (marked.length) {
+    lines.push("", marked.map((h) => `${MARK_LABEL[markOf(day, h.title)!]} ${h.title}`).join("\n"));
   }
-
-  const keyboard: Button[][] = open.map((h) => [
-    { text: `${MODE_GLYPH[mode]} ${h.title}`, callback_data: `m:${compact}:${mode}:${key(h.title)}` },
-  ]);
   if (open.length) {
+    lines.push("", part === "a" ? "Открой тему — под ней её привычки. " + MODE_HINT[mode] : MODE_HINT[mode]);
+    if (mode === "d" && open.some((h) => h.kind === "bad")) lines.push("У плохих привычек ✓ значит «удержался».");
+    if (part !== "a") keyboard.push(...open.map(habitButton));
     keyboard.push(
       mode === "d"
-        ? [{ text: "✗ не сделал…", callback_data: `v:${compact}:f` }, { text: "– пропуск…", callback_data: `v:${compact}:s` }]
-        : [{ text: "← назад к ✓", callback_data: `v:${compact}:d` }],
+        ? [{ text: "✗ не сделал…", callback_data: `v:${compact}:f:${part}` }, { text: "– пропуск…", callback_data: `v:${compact}:s:${part}` }]
+        : [{ text: "← назад к ✓", callback_data: `v:${compact}:d:${part}` }],
     );
-    keyboard.push([{ text: `⏰ Позже, через ${cfg.snoozeMin} мин`, callback_data: `z:${compact}` }]);
+    keyboard.push([{ text: `⏰ Позже, через ${cfg.snoozeMin} мин`, callback_data: `z:${compact}:${part}` }]);
+  } else {
+    lines.push("", habits.length ? "Всё отмечено." : "На это время привычек нет.");
   }
   return { text: lines.join("\n"), keyboard };
 }
 
-async function sendDigest(date: string, title: string, onlyIfOpen = false) {
+const MODE_HINT: Record<Mode, string> = { d: "Нажми привычку — будет ✓.", f: "Режим ✗: нажми, что не сделал.", s: "Режим пропуска: нажми, что пропускаешь по плану." };
+
+async function sendDigest(date: string, title: string, part: Part, onlyIfOpen = false) {
   if (!cfg.chatId) return;
-  const { text, keyboard } = digest(date, title);
-  if (onlyIfOpen && !keyboard.length) return;
+  if (onlyIfOpen && !dueFor(date, part).some((h) => !markOf(readDay(date), h.title))) return;
+  const { text, keyboard } = digest(date, title, part);
   await tg("sendMessage", { chat_id: cfg.chatId, text, reply_markup: { inline_keyboard: keyboard } });
 }
 
@@ -541,12 +579,14 @@ async function onCallback(q: CallbackQuery) {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     return;
   }
-  const [kind, compact, code, hkey] = q.data.split(":");
+  const [kind, compact, code, hkey, partCode] = q.data.split(":");
   const date = `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`;
   const title = (q.message.text ?? "").split("\n")[0];
 
+  // Old messages carry no part: they were whole-day digests.
+  const part: Part = (["e", "m", "l", "a"].includes(kind === "m" ? partCode : hkey) ? (kind === "m" ? partCode : hkey) : "a") as Part;
   const edit = async (mode: Mode) => {
-    const { text, keyboard } = digest(date, title, mode);
+    const { text, keyboard } = digest(date, title, part, mode, q.message!.message_id);
     await tg("editMessageText", {
       chat_id: q.message!.chat.id, message_id: q.message!.message_id, text, reply_markup: { inline_keyboard: keyboard },
     }).catch(() => {}); // "message is not modified" when tapped twice
@@ -603,8 +643,20 @@ async function onCallback(q: CallbackQuery) {
     return;
   }
 
+  if (kind === "t") {
+    const msg = q.message.message_id;
+    const names = groupByTheme(dueFor(date, "a")).groups.map((g) => themeRu(g.theme));
+    const name = names.find((n) => key(n) === hkey);
+    const set = opened.get(msg) ?? new Set<string>();
+    if (name) { if (set.has(name)) set.delete(name); else set.add(name); }
+    opened.set(msg, set);
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    await edit(code as Mode);
+    return;
+  }
+
   if (kind === "z") {
-    state.snoozes.push({ at: Date.now() + cfg.snoozeMin * 60000, date });
+    state.snoozes.push({ at: Date.now() + cfg.snoozeMin * 60000, date, part: (["e", "m", "l", "a"].includes(code) ? code : "a") as Part });
     saveState(state);
     await tg("answerCallbackQuery", { callback_query_id: q.id, text: `Напомню в ${hm(new Date(state.snoozes.at(-1)!.at))}` });
     return;
@@ -649,13 +701,14 @@ async function onMessage(m: Message) {
     const s = slotsOf(toDateStr(new Date()));
     await say(
       [
-        "Сводки привычек, 4 раза в день:",
+        "Сводки привычек сегодня:",
         ...s.map((x) => `${hm(x.at)} — ${x.title}`),
         "",
+        "Утром, в обед и на магрибе приходят только привычки этого времени (поле «время дня» у привычки). За час до магриба — все привычки дня по темам: нажми тему, чтобы открыть её привычки. Привычки на весь день приходят только в эту сводку.",
         "День считается от магриба до магриба: после магриба всё идёт в завтрашний файл.",
         `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${HABITS_BUTTON} или /today — сводка сейчас.`,
         "/need — что требует тебя: врачи, люди, дни рождения, списания, застрявшие квесты. Утром приходит само.",
-        "На магрибе — итог дня: настроение, стресс и над чем работал. Вручную: /checkin. По воскресеньям утром — вес (/weight).",
+        "За час до магриба, после сводки — итог дня: настроение, стресс и над чем работал. Вручную: /checkin. По воскресеньям утром — вес (/weight).",
         `${CONTACT_BUTTON} — виделся или созвонился с кем-то из близких: пишет последний контакт и встречу дня.`,
       ].join("\n"),
       { reply_markup: REPLY_KEYBOARD },
@@ -683,7 +736,7 @@ async function onMessage(m: Message) {
   }
   if (text.startsWith("/today") || text === HABITS_BUTTON) {
     awaiting = null;
-    await sendDigest(logicalDate(new Date()), "📋 Сейчас");
+    await sendDigest(logicalDate(new Date()), "📋 Сейчас — весь день", "a");
     return;
   }
   if (text.startsWith("/food") || text === FOOD_BUTTON) {
@@ -777,6 +830,7 @@ async function writeTx(account: string) {
 // ---------- loops ----------
 
 const GRACE_MS = 3 * 3600_000; // a Mac that slept through a slot still sends it within 3 h
+const FINAL_GRACE_MS = 14 * 3600_000; // the full digest until the next morning
 
 async function tick() {
   const now = new Date();
@@ -786,22 +840,28 @@ async function tick() {
       if (s.at > now || state.sent.includes(s.id)) continue;
       state.sent.push(s.id);
       saveState(state);
-      if (fresh || now.getTime() - s.at.getTime() > GRACE_MS) continue;
-      if (s.id.endsWith(":maghrib")) {
-        // the day that just ended: whatever is still open
-        await sendDigest(cal, `🌇 Итог дня ${cal}: не отмечено`, true);
+      const late = now.getTime() - s.at.getTime();
+      if (fresh) continue;
+      if (s.part === "a") {
+        // The full digest still matters after maghrib: the day it closes can be
+        // marked until the app closes it in the morning. Late, it says so.
+        if (late > FINAL_GRACE_MS || readDay(cal).closed) continue;
+        const title = late > 15 * 60000 ? `⏳ Опоздал: Mac спал. Весь день ${formatDayTitle(cal).toLowerCase()}` : s.title;
+        await sendDigest(cal, title, "a");
+        await sendCheckin(cal);
+        continue;
       }
-      await sendDigest(logicalDate(new Date(s.at.getTime() + 1000)), s.title);
+      if (late > GRACE_MS) continue;
+      await sendDigest(logicalDate(new Date(s.at.getTime() + 1000)), s.title, s.part, true);
       if (s.id.endsWith(":morning")) await sendNeeds(cal, true);
       if (s.id.endsWith(":morning") && new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(logicalDate(s.at));
-      if (s.id.endsWith(":maghrib")) await sendCheckin(cal); // the day that just ended
     }
   }
   const due = state.snoozes.filter((z) => z.at <= now.getTime());
   if (due.length) {
     state.snoozes = state.snoozes.filter((z) => z.at > now.getTime());
     saveState(state);
-    for (const z of due) await sendDigest(z.date, "⏰ Напоминаю", true);
+    for (const z of due) await sendDigest(z.date, "⏰ Напоминаю", z.part ?? "a", true);
   }
   fresh = false;
   const keep = addDays(today, -3);

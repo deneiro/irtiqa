@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStore, type SyncResult } from "../store";
-import { THEMES } from "../lib/themes";
+import { THEMES, groupByTheme, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { confirmAction, inTauri } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
@@ -8,8 +8,8 @@ import { maghribOn } from "../lib/maghrib";
 import { useDayToday } from "../lib/useDayToday";
 import {
   HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, unmarkedOn, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
-  markOf, mergeDay, parseAmount, parseDay, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
-  type Day, type DayMark, type Habit, type HabitKind, type Tx, type XpContext,
+  markOf, mergeDay, byHabitTime, habitTimeLabel, parseAmount, parseDay, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
+  type Day, type DayMark, type Habit, type HabitKind, type HabitTime, HABIT_TIMES, type Tx, type XpContext,
 } from "../lib/life";
 import type { CmdResult } from "../lib/fs";
 import QuestRows from "../components/QuestRows";
@@ -223,8 +223,9 @@ function DayView({ today }: { today: string }) {
 
   // ----- habits -----
   const due = useMemo(() => habits.filter((h) => habitDue(h, today)), [habits, today]);
+  const dueByTheme = useMemo(() => groupByTheme([...due].sort(byHabitTime)), [due]);
   const notDue = useMemo(() => habits.filter((h) => h.status === "active" && !habitDue(h, today)), [habits, today]);
-  const [newHabit, setNewHabit] = useState({ title: "", theme: THEMES[2].name, kind: "good" as HabitKind });
+  const [newHabit, setNewHabit] = useState({ title: "", theme: THEMES[2].name, kind: "good" as HabitKind, time: "" as HabitTime | "" });
   const [habitError, setHabitError] = useState<string | null>(null);
 
   const addHabit = async () => {
@@ -234,7 +235,7 @@ function DayView({ today }: { today: string }) {
     if (!file) return;
     if (habits.some((h) => h.title === title)) { setHabitError("Такая привычка уже есть."); return; }
     try {
-      await saveText(`${HABIT_DIR}/${file}.md`, serializeHabit({ title, theme: newHabit.theme, kind: newHabit.kind, freq: "daily", status: "active", created: today, source: undefined }));
+      await saveText(`${HABIT_DIR}/${file}.md`, serializeHabit({ title, theme: newHabit.theme, kind: newHabit.kind, freq: "daily", time: newHabit.time || undefined, status: "active", created: today, source: undefined }));
       setNewHabit({ ...newHabit, title: "" });
       setHabitError(null);
       await reload();
@@ -345,20 +346,34 @@ function DayView({ today }: { today: string }) {
           <div className="card">
             <h3>Привычки <span className="n">{draft.habitsDone.length}/{due.length}</span></h3>
             {due.length === 0 && <div className="empty">Добавь первую привычку ниже. Она станет файлом в life/habits/.</div>}
-            {due.map((h) => {
-              const m = markOf(draft, h.title) ?? "none";
-              const s = streak(h, life.days, addDays(today, -1)) + (m === "done" ? 1 : 0);
+            {dueByTheme.groups.map((g) => {
+              const done = g.items.filter((h) => markOf(draft, h.title) === "done").length;
+              const open = g.items.some((h) => !markOf(draft, h.title));
               return (
-                <div className="habit" key={h.rel}>
-                  <button className={`mark ${m}`} title={MARK_TITLE[m]} onClick={() => cycle(h)} disabled={locked}>{MARK_GLYPH[m]}</button>
-                  <div>
-                    <div className="name">{h.title}</div>
-                    <div className="sub">{h.theme ? themeLabel(h.theme) : "без темы"}{h.kind === "bad" ? " · плохая привычка: ✓ = удержался" : ""}</div>
-                  </div>
-                  <div className="streak">{s > 0 ? <><b>{s}</b> дн.</> : "—"}</div>
-                </div>
+                <details className="htheme" key={g.theme ?? "none"} open={open || undefined}>
+                  <summary>
+                    <i className="tdot" style={{ background: themeColor(g.theme) }} />
+                    <span>{g.theme ? themeLabel(g.theme) : "без темы"}</span>
+                    <span className="n">{done}/{g.items.length}</span>
+                  </summary>
+                  {g.items.map((h) => {
+                    const m = markOf(draft, h.title) ?? "none";
+                    const s = streak(h, life.days, addDays(today, -1)) + (m === "done" ? 1 : 0);
+                    return (
+                      <div className="habit" key={h.rel}>
+                        <button className={`mark ${m}`} title={MARK_TITLE[m]} onClick={() => cycle(h)} disabled={locked}>{MARK_GLYPH[m]}</button>
+                        <div>
+                          <div className="name">{h.title}</div>
+                          <div className="sub">{habitTimeLabel(h.time)}{h.kind === "bad" ? " · плохая привычка: ✓ = удержался" : ""}</div>
+                        </div>
+                        <div className="streak">{s > 0 ? <><b>{s}</b> дн.</> : "—"}</div>
+                      </div>
+                    );
+                  })}
+                </details>
               );
             })}
+            {due.length > 0 && dueByTheme.missing.length > 0 && <div className="small faint" style={{ marginTop: 8 }}>Без привычек сегодня: {dueByTheme.missing.map((t) => themeLabel(t)).join(", ")}</div>}
             {notDue.length > 0 && <div className="small faint" style={{ marginTop: 8 }}>Не сегодня: {notDue.map((h) => h.title).join(", ")}</div>}
             {!locked && (
               <form className="addrow habit" onSubmit={(e) => { e.preventDefault(); void addHabit(); }}>
@@ -369,6 +384,10 @@ function DayView({ today }: { today: string }) {
                 <select className="text" value={newHabit.kind} onChange={(e) => setNewHabit({ ...newHabit, kind: e.target.value as HabitKind })}>
                   <option value="good">хорошая</option>
                   <option value="bad">плохая</option>
+                </select>
+                <select className="text" value={newHabit.time} onChange={(e) => setNewHabit({ ...newHabit, time: e.target.value as HabitTime | "" })}>
+                  <option value="">весь день</option>
+                  {HABIT_TIMES.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
                 <button className="btn" type="submit">+ добавить</button>
               </form>

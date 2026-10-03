@@ -17,6 +17,14 @@ import { WEEKDAYS_EN, WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
 
 export type HabitKind = "good" | "bad";
 export type HabitStatus = "proposed" | "active" | "paused" | "archived";
+/**
+ * When in the day a habit is done (Eldar, 2026-10-03). The day opens at
+ * maghrib, so the order is evening, morning, lunch. No `time:` means the whole
+ * day: a bad habit, or one with no fixed moment. The bot sends each part at its
+ * prayer and everything once an hour before maghrib.
+ */
+export type HabitTime = "вечер" | "утро" | "обед";
+export const HABIT_TIMES: HabitTime[] = ["вечер", "утро", "обед"];
 
 export interface Habit {
   rel: string;
@@ -25,6 +33,8 @@ export interface Habit {
   kind: HabitKind;
   /** "daily" | "weekly" | list of weekday names (ru or en) */
   freq: string | string[];
+  /** Part of the day; undefined is the whole day. */
+  time?: HabitTime;
   status: HabitStatus;
   created: string | undefined;
   source: string | undefined;
@@ -36,7 +46,7 @@ export interface Habit {
 /**
  * `passive` — «в фоне» (Eldar, 2026-09-22): a quest that keeps running on a
  * schedule, carried by an agent (JH1's weekly job search), not by his attention.
- * It does not count toward the three active quests and is never «stalled».
+ * It is never «stalled» and needs no calendar block.
  */
 export type QuestStatus = "proposed" | "active" | "passive" | "done" | "dropped";
 
@@ -379,6 +389,7 @@ export function parseHabit(f: MdFile): Habit {
     theme: str(fm.theme),
     kind,
     freq,
+    time: HABIT_TIMES.find((t) => t === str(fm.time)?.toLowerCase()),
     status: ["proposed", "active", "paused", "archived"].includes(status) ? status : "active",
     created: str(fm.created),
     source: str(fm.source),
@@ -387,7 +398,7 @@ export function parseHabit(f: MdFile): Habit {
   };
 }
 
-const HABIT_KEYS = new Set(["title", "type", "theme", "kind", "freq", "status", "created", "source"]);
+const HABIT_KEYS = new Set(["title", "type", "theme", "kind", "freq", "time", "status", "created", "source"]);
 const QUEST_KEYS = new Set(["title", "type", "theme", "status", "created", "due", "project", "source"]);
 
 /**
@@ -421,6 +432,7 @@ export function serializeHabit(h: Omit<Habit, "rel" | "body"> & { body?: string 
   if (h.theme) lines.push(`theme: ${h.theme}`);
   lines.push(`kind: ${h.kind}`);
   lines.push(`freq: ${Array.isArray(h.freq) ? yamlList(h.freq) : h.freq}`);
+  if (h.time) lines.push(`time: ${h.time}`);
   lines.push(`status: ${h.status}`);
   if (h.created) lines.push(`created: ${h.created}`);
   if (h.source) lines.push(`source: ${JSON.stringify(h.source)}`);
@@ -475,22 +487,6 @@ export function serializeQuest(q: Omit<Quest, "rel">): string {
   lines.push(...(q.extraFm ?? []), "---");
   const body = q.body.trim();
   return lines.join("\n") + "\n" + (body ? body + "\n" : "");
-}
-
-/**
- * At most this many quests in work at once (Eldar, 2026-09-21). On that day ten
- * were active and had one minute of work between them: a list that long is a
- * wish list, not a plan. Everything else waits as «предложен».
- */
-export const ACTIVE_QUEST_LIMIT = 3;
-
-/** Why `title` cannot become active now, or null when it can. */
-export function activationBlocked(quests: Quest[], title: string): string | null {
-  const others = quests.filter((q) => q.status === "active" && q.title !== title);
-  if (others.length < ACTIVE_QUEST_LIMIT) return null;
-  const n = others.length;
-  const word = n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "квеста" : "квестов";
-  return `В работе уже ${n} ${word}: ${others.map((q) => `«${q.title}»`).join(", ")}. Больше ${ACTIVE_QUEST_LIMIT} нельзя — закрой или отложи один, тогда этот можно взять.`;
 }
 
 /** Minutes logged for a quest across all days. Sessions under the minimum do not count. */
@@ -1214,4 +1210,14 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   audits.sort((a, b) => b.date.localeCompare(a.date));
   debts = applyInstalments(debts, days);
   return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, audits };
+}
+
+/** Order inside a part of the day list: evening, morning, lunch, then the whole day. */
+export function byHabitTime(a: Habit, b: Habit): number {
+  const at = (h: Habit) => (h.time ? HABIT_TIMES.indexOf(h.time) : HABIT_TIMES.length);
+  return at(a) - at(b) || (a.kind === b.kind ? 0 : a.kind === "good" ? -1 : 1) || a.title.localeCompare(b.title, "ru");
+}
+
+export function habitTimeLabel(t: HabitTime | undefined): string {
+  return t === "вечер" ? "вечер, после магриба" : t ?? "весь день";
 }

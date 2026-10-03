@@ -22,9 +22,10 @@ if [[ ! -f "$HOME_DIR/config.json" ]]; then
   "lat": 42.3417,
   "lon": 69.5901,
   "maghribOffsetMin": 0,
-  "morning": "08:00",
-  "lunch": "13:00",
-  "night": "22:00",
+  "fajrAngle": 15,
+  "afterFajrMin": 30,
+  "afterZuhrMin": 30,
+  "finalBeforeMin": 60,
   "snoozeMin": 30
 }
 EOF

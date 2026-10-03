@@ -5,8 +5,11 @@
  */
 const RAD = Math.PI / 180;
 
-/** Sunset on a local calendar date (YYYY-MM-DD) at lat/lon, as an instant. */
-export function sunset(date: string, lat: number, lon: number): Date {
+/**
+ * The sun on a local calendar date (YYYY-MM-DD) at lat/lon: solar noon, and the
+ * hour angle at which it stands `alt` degrees high. Sunset is -0.833°.
+ */
+function sun(date: string, lat: number, lon: number) {
   const [y, m, d] = date.split("-").map(Number);
   const jDate = Date.UTC(y, m - 1, d, 12) / 86400000 + 2440587.5;
   const n = Math.round(jDate - 2451545 + 0.0008);
@@ -17,10 +20,34 @@ export function sunset(date: string, lat: number, lon: number): Date {
   const jTransit = 2451545 + jStar + 0.0053 * Math.sin(M * RAD) - 0.0069 * Math.sin(2 * lambda * RAD);
   const sinDec = Math.sin(lambda * RAD) * Math.sin(23.4397 * RAD);
   const cosDec = Math.cos(Math.asin(sinDec));
-  const cosW = (Math.sin(-0.833 * RAD) - Math.sin(lat * RAD) * sinDec) / (Math.cos(lat * RAD) * cosDec);
-  const w = Math.acos(Math.max(-1, Math.min(1, cosW))) / RAD;
-  const jSet = jTransit + w / 360;
-  return new Date((jSet - 2440587.5) * 86400000);
+  const hourAngle = (alt: number) => {
+    const cosW = (Math.sin(alt * RAD) - Math.sin(lat * RAD) * sinDec) / (Math.cos(lat * RAD) * cosDec);
+    return Math.acos(Math.max(-1, Math.min(1, cosW))) / RAD;
+  };
+  const at = (j: number) => new Date((j - 2440587.5) * 86400000);
+  return { jTransit, hourAngle, at };
+}
+
+/** Sunset on a local calendar date (YYYY-MM-DD) at lat/lon, as an instant. */
+export function sunset(date: string, lat: number, lon: number): Date {
+  const s = sun(date, lat, lon);
+  return s.at(s.jTransit + s.hourAngle(-0.833) / 360);
+}
+
+/**
+ * Fajr: the sun `angle` degrees below the horizon before sunrise. 15° is the
+ * angle the Spiritual Administration of Muslims of Kazakhstan uses; the bot's
+ * config can change it.
+ */
+export function fajrOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon, angle = 15): Date {
+  const s = sun(date, lat, lon);
+  return s.at(s.jTransit - s.hourAngle(-angle) / 360);
+}
+
+/** Zuhr: just after solar noon (the sun's disc has to pass the meridian, ~2 min). */
+export function zuhrOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon): Date {
+  const s = sun(date, lat, lon);
+  return new Date(s.at(s.jTransit).getTime() + 2 * 60000);
 }
 
 // ---------- the day runs maghrib to maghrib ----------
