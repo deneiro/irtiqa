@@ -4,7 +4,7 @@
  * against, and a week grid of filled cells. XP and the wheel are not here.
  */
 import type { Page } from "./types";
-import { DEBT_I_OWE, debtLeft, habitDue, markOf, streak, type Day, type Habit, type HabitKind, type Life } from "./life";
+import { DEBT_I_OWE, debtLeft, habitDue, impliedMarks, markOf, streak, type Day, type Habit, type HabitKind, type Life } from "./life";
 import { addDays } from "./dates";
 
 export interface WinNumber {
@@ -75,7 +75,9 @@ export function weekGrid(habits: Habit[], days: Map<string, Day>, upTo: string, 
     for (let i = n - 1; i >= 0; i--) {
       const date = addDays(upTo, -i);
       const due = habits.filter((h) => h.kind === kind && habitDue(h, date));
-      const d = days.get(date);
+      const raw = days.get(date);
+      // An open day shows what its marks imply; a day with no file at all shows nothing.
+      const d = raw ? impliedMarks(raw, habits) : undefined;
       const done = d ? due.filter((h) => { const m = markOf(d, h.title); return m === "done" || m === "late"; }).length : 0;
       cells.push({ date, due: due.length, done });
     }

@@ -9,7 +9,7 @@ import { goalsFor } from "../lib/goals";
 import { parseHealth } from "../lib/health";
 import { themeColor } from "../lib/themes";
 import { heldOut, weekGrid, winNumbers } from "../lib/wins";
-import { emptyDay, habitDue, markOf, mergeDay, nextStep, questSteps, serializeDay, withMark, type Day, type DayMark, type Habit, type HabitKind } from "../lib/life";
+import { emptyDay, habitDue, impliedMarks, markOf, mergeDay, nextStep, questSteps, serializeDay, withMark, type Day, type DayMark, type Habit, type HabitKind } from "../lib/life";
 import NeedsYou from "../components/NeedsYou";
 import "./Morning.css";
 
@@ -21,18 +21,26 @@ import "./Morning.css";
  * events and quest steps come in through Claude and show up on their own.
  */
 
+/**
+ * One button (Eldar, 2026-10-11): a good habit is tapped when done and
+ * untouched means not done; a bad habit is tapped only when he gave in and
+ * untouched means he held out. Prayers keep three states. What is untouched
+ * gets its implied mark when «Готово» closes the day (`impliedMarks`).
+ */
 const PRAYER_CYCLE: Record<string, DayMark | undefined> = { none: "done", done: "late", late: "failed", failed: undefined };
-const TWO_CYCLE: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: undefined };
 const GLYPH: Record<string, string> = { none: "", done: "✓", late: "⏰", failed: "✗", skipped: "–" };
 const PRAYER_TITLE: Record<string, string> = { none: "не отмечено", done: "вовремя", late: "прочитал, но поздно", failed: "пропустил", skipped: "пропуск" };
-const BAD_TITLE: Record<string, string> = { none: "не отмечено", done: "устоял", failed: "не удержался", skipped: "пропуск", late: "" };
-const GOOD_TITLE: Record<string, string> = { none: "не отмечено", done: "сделал", failed: "не сделал", skipped: "пропуск по плану", late: "" };
+const BAD_TITLE: Record<string, string> = { none: "устоял", done: "устоял", failed: "не удержался — нажми ещё раз, если всё-таки устоял", skipped: "пропуск", late: "" };
+const GOOD_TITLE: Record<string, string> = { none: "не сделал — нажми, если сделал", done: "сделал", failed: "не сделал", skipped: "пропуск по плану", late: "" };
 
 const GROUPS: { kind: HabitKind; title: string; hint: string }[] = [
   { kind: "prayer", title: "Намаз", hint: "✓ вовремя · ⏰ поздно · ✗ пропустил" },
-  { kind: "bad", title: "Удержался", hint: "✓ устоял · ✗ не удержался" },
-  { kind: "good", title: "Привычки", hint: "✓ сделал · ✗ не сделал" },
+  { kind: "bad", title: "Удержался", hint: "нажми только то, где не удержался" },
+  { kind: "good", title: "Привычки", hint: "нажми, что сделал" },
 ];
+
+/** Did this habit count on that day: a prayer read, a bad habit held, a good one done. */
+const scored = (m: DayMark | undefined, kind: HabitKind) => (kind === "bad" ? m !== "failed" : m === "done" || m === "late");
 
 export default function MorningPage() {
   const today = useDayToday();
@@ -95,13 +103,20 @@ function Morning({ today }: { today: string }) {
   // ----- the groups due yesterday -----
   const due = useMemo(() => habits.filter((h) => habitDue(h, yesterday)), [habits, yesterday]);
   const byKind = (k: HabitKind) => due.filter((h) => h.kind === k).sort((a, b) => a.title.localeCompare(b.title, "ru"));
-  const marked = due.filter((h) => markOf(draft, h.title)).length;
+  const prayersOpen = byKind("prayer").filter((h) => !markOf(draft, h.title)).length;
+  const summary = GROUPS.map((g) => {
+    const items = byKind(g.kind);
+    return items.length ? `${g.title.toLowerCase()} ${items.filter((h) => scored(markOf(draft, h.title), g.kind)).length}/${items.length}` : "";
+  }).filter(Boolean).join(" · ");
 
   const tap = (h: Habit) => update((d) => {
-    const cur = markOf(d, h.title) ?? "none";
-    return withMark(d, h.title, h.kind === "prayer" ? PRAYER_CYCLE[cur] : TWO_CYCLE[cur]);
+    const cur = markOf(d, h.title);
+    if (h.kind === "prayer") return withMark(d, h.title, PRAYER_CYCLE[cur ?? "none"]);
+    if (h.kind === "bad") return withMark(d, h.title, cur === "failed" ? undefined : "failed");
+    return withMark(d, h.title, cur === "done" ? undefined : "done");
   });
-  const heldAll = () => update((d) => byKind("bad").reduce((acc, h) => (markOf(acc, h.title) ? acc : withMark(acc, h.title, "done")), d));
+  /** The day as its marks imply: what the grid and the streaks show before «Готово». */
+  const implied = useMemo(() => impliedMarks(draft, habits), [draft, habits]);
 
   // ----- closing: «Готово» for yesterday; anything older closes on its own -----
   const deps = useCallback(() => ({ readFresh, saveText, commitVault, habits, logText: vault?.logText ?? "" }), [readFresh, saveText, commitVault, habits, vault]);
@@ -137,12 +152,12 @@ function Morning({ today }: { today: string }) {
   // ----- wins -----
   const weightGoal = useMemo(() => (life?.health ? parseHealth(life.health).weightGoal : undefined), [life]);
   const numbers = useMemo(() => (life && vault ? winNumbers(life, vault.pages, yesterday, weightGoal) : []), [life, vault, yesterday, weightGoal]);
-  const grid = useMemo(() => (life ? weekGrid(habits, new Map([...life.days, [draft.date, draft]]), yesterday) : []), [life, habits, draft, yesterday]);
+  const grid = useMemo(() => (life ? weekGrid(habits, new Map([...life.days, [implied.date, implied]]), yesterday) : []), [life, habits, implied, yesterday]);
   const held = useMemo(() => {
     if (!life) return [];
-    const days = new Map([...life.days, [draft.date, draft]]);
+    const days = new Map([...life.days, [implied.date, implied]]);
     return habits.filter((h) => h.status === "active" && h.kind === "bad").map((h) => ({ h, n: heldOut(h, days, yesterday) })).sort((a, b) => b.n - a.n);
-  }, [life, habits, draft, yesterday]);
+  }, [life, habits, implied, yesterday]);
 
   // ----- today -----
   const quests = useMemo(() => (life?.quests ?? []).filter((q) => q.status === "active").map((q) => ({ q, steps: questSteps(q.body) })), [life]);
@@ -150,7 +165,6 @@ function Morning({ today }: { today: string }) {
 
   if (!vault || !life) return null;
   const locked = draft.closed;
-  const yDone = draft.habitsDone.length + draft.habitsLate.length;
 
   return (
     <div className="morning">
@@ -166,13 +180,13 @@ function Morning({ today }: { today: string }) {
             <div className="eyebrow">Вчера{locked ? " · закрыт" : ""}</div>
             <h2>{formatDayTitle(yesterday)}</h2>
           </div>
-          <div className="ycount mono">{marked} из {due.length} отмечено</div>
+          <div className="ycount mono">{summary}</div>
         </header>
 
         {GROUPS.map((g) => {
           const items = byKind(g.kind);
           if (!items.length) return null;
-          const got = items.filter((h) => { const m = markOf(draft, h.title); return m === "done" || m === "late"; }).length;
+          const got = items.filter((h) => scored(markOf(draft, h.title), g.kind)).length;
           const titles = g.kind === "prayer" ? PRAYER_TITLE : g.kind === "bad" ? BAD_TITLE : GOOD_TITLE;
           return (
             <div className={`ygroup ${g.kind}`} key={g.kind}>
@@ -180,16 +194,14 @@ function Morning({ today }: { today: string }) {
                 <span className="gname">{g.title}</span>
                 <span className="ghint">{g.hint}</span>
                 <span className="gn mono">{got}/{items.length}</span>
-                {g.kind === "bad" && !locked && items.some((h) => !markOf(draft, h.title)) && (
-                  <button className="btn small ghost" onClick={heldAll}>устоял во всём</button>
-                )}
               </div>
               <div className="cells">
                 {items.map((h) => {
                   const m = markOf(draft, h.title) ?? "none";
+                  const look = g.kind === "bad" && m !== "failed" ? "held" : m;
                   return (
-                    <button key={h.rel} className={`cell ${m}`} disabled={locked} onClick={() => tap(h)} title={`${h.title}: ${titles[m]}`}>
-                      <span className="g">{GLYPH[m]}</span>
+                    <button key={h.rel} className={`cell ${look}`} disabled={locked} onClick={() => tap(h)} title={`${h.title}: ${titles[m]}`}>
+                      <span className="g">{look === "held" ? "✓" : GLYPH[m]}</span>
                       <span className="t">{h.title.replace(/^Учить суру\s+/, "Сура ")}</span>
                     </button>
                   );
@@ -203,12 +215,12 @@ function Morning({ today }: { today: string }) {
         <footer className="yfoot">
           {locked ? (
             <>
-              <span className="small muted">{yDone} сделано · {draft.habitsFailed.length} нет{due.length - marked > 0 ? ` · ${due.length - marked} без отметки` : ""}</span>
+              <span className="small muted">закрыт{prayersOpen ? ` · намаз без отметки: ${prayersOpen}` : ""}</span>
               <button className="btn small ghost" onClick={reopen} disabled={busy}>исправить</button>
             </>
           ) : (
             <>
-              <span className="small muted">{due.length - marked > 0 ? `${due.length - marked} без отметки — так и останутся, это честно` : "всё отмечено"}</span>
+              <span className="small muted">{prayersOpen ? `намаз без отметки: ${prayersOpen}` : "намаз отмечен"} · не нажатое: привычка — не сделал, удержался — устоял</span>
               <button className="btn primary" onClick={done} disabled={busy}>{busy ? "…" : "Готово"}</button>
             </>
           )}

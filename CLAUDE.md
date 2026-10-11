@@ -23,7 +23,9 @@ The app writes:
 The app never writes the body of a `wiki/` page, anything in `raw/`, or the
 vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display: the only
 input left in it is the morning marking of yesterday on «Утро» (prayers with
-`habits_late`, kinds `prayer | bad | good`) and the reading actions on a
+`habits_late`, kinds `prayer | bad | good`; one-button habits — an untouched
+good habit closes as failed, an untouched bad one as held, `impliedMarks` in
+`lib/life.ts`) and the reading actions on a
 Resource page; everything else is said to Claude. The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
 marks, meals, money, mood, stress, weight, sessions — through `serializeDay`,
 never into a closed day), a line in a quest's journal, the day's «Встреча»

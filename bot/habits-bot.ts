@@ -244,9 +244,10 @@ function morningText(cal: string): string {
   const habits = readHabits();
   const due = habits.filter((h) => habitDue(h, y));
   const day = readDay(y);
+  // One-button habits: an untouched bad habit is held out, an untouched good one is not done.
   const got = (k: HabitKind) => {
     const items = due.filter((h) => h.kind === k);
-    const n = items.filter((h) => { const m = markOf(day, h.title); return m === "done" || m === "late"; }).length;
+    const n = items.filter((h) => { const m = markOf(day, h.title); return k === "bad" ? m !== "failed" : m === "done" || m === "late"; }).length;
     return items.length ? `${n}/${items.length}` : "—";
   };
   const marked = due.filter((h) => markOf(day, h.title)).length;
@@ -541,7 +542,7 @@ const MARK_LABEL: Record<DayMark, string> = { done: "✓", failed: "✗", skippe
 /** What a tap writes: ✓ (done), ✗ (failed), ⏰ (late — prayers only), – (planned skip). */
 type Mode = "d" | "f" | "l" | "s";
 const MODE_GLYPH: Record<Mode, string> = { d: "✓", f: "✗", l: "⏰", s: "–" };
-const MODE_HINT: Record<Mode, string> = { d: "Нажми — будет ✓ (у плохих ✓ значит «удержался»).", f: "Режим ✗: нажми, что не сделал.", l: "Режим ⏰: нажми намаз, который прочитал поздно.", s: "Режим пропуска: нажми, что пропускаешь по плану." };
+const MODE_HINT: Record<Mode, string> = { d: "Нажми, что сделал; в «удержался» — только то, где не удержался.", f: "Режим ✗: нажми, что не сделал.", l: "Режим ⏰: нажми намаз, который прочитал поздно.", s: "Режим пропуска: нажми, что пропускаешь по плану." };
 const CODE: Record<string, DayMark> = { d: "done", f: "failed", s: "skipped", l: "late" };
 
 const GROUP: { kind: HabitKind; title: string }[] = [{ kind: "prayer", title: "🕌 Намаз" }, { kind: "bad", title: "🛡 Удержался" }, { kind: "good", title: "🌱 Привычки" }];
@@ -562,14 +563,16 @@ function digest(date: string, title: string, mode: Mode = "d"): { text: string; 
   for (const g of GROUP) {
     const items = due.filter((h) => h.kind === g.kind);
     if (!items.length) continue;
-    const got = items.filter((h) => { const m = markOf(day, h.title); return m === "done" || m === "late"; }).length;
+    const got = items.filter((h) => { const m = markOf(day, h.title); return g.kind === "bad" ? m !== "failed" : m === "done" || m === "late"; }).length;
     const left = items.filter((h) => !markOf(day, h.title));
     const shown = items.filter((h) => markOf(day, h.title)).map((h) => `${MARK_LABEL[markOf(day, h.title)!]} ${h.title}`).join(", ");
     lines.push(`${g.title} ${got}/${items.length}${shown ? ` — ${shown}` : ""}`);
     if (!left.length) continue;
     open += left.length;
     keyboard.push([{ text: `— ${g.title} —`, callback_data: "noop:0:0" }]);
-    keyboard.push(...left.map((h) => [{ text: `${MODE_GLYPH[mode]} ${h.title}`, callback_data: `m:${compact}:${mode}:${key(h.title)}` }]));
+    // The default tap on a bad habit means «не удержался»: untouched is already «устоял».
+    const tapMode: Mode = mode === "d" && g.kind === "bad" ? "f" : mode;
+    keyboard.push(...left.map((h) => [{ text: `${MODE_GLYPH[tapMode]} ${h.title}`, callback_data: `m:${compact}:${tapMode}:${key(h.title)}` }]));
   }
   if (open) {
     lines.push("", MODE_HINT[mode]);

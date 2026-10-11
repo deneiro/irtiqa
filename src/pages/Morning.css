@@ -30,8 +30,11 @@
 .cell.late .g { background: var(--gold); color: #1d1604; }
 .cell.failed { border-color: transparent; background: color-mix(in srgb, var(--danger) 14%, transparent); color: var(--ink-2); }
 .cell.failed .g { background: var(--danger); color: #1c0909; }
-.ygroup.bad .cell.done { background: color-mix(in srgb, var(--accent) 16%, transparent); }
-.ygroup.bad .cell.done .g { background: var(--accent); color: #fff; }
+/* A bad habit untouched is a win already: calm accent, no border — the tap is for giving in. */
+.cell.held { border-color: transparent; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--ink-2); }
+.cell.held .g { background: color-mix(in srgb, var(--accent) 70%, transparent); color: #fff; }
+.cell.held:hover:not(:disabled) { border-color: color-mix(in srgb, var(--danger) 60%, transparent); }
+.ygroup.good .cell.none:hover:not(:disabled) { border-color: var(--success); }
 
 .yfoot { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); padding-top: var(--s3); border-top: 1px solid var(--hair); }
 .yfoot .btn.primary { height: 36px; padding: 0 22px; font-weight: 600; }

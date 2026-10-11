@@ -916,19 +916,30 @@ export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
 }
 
 /**
- * Closing a day seals it; it does not invent marks. An unmarked habit stays
- * unmarked — «не отмечено» is its own honest state, counted apart from «не
- * сделано». Until 2026-09-21 closing wrote every unmarked habit as failed,
- * which put 0/15 on the day the habits were created and punished forgetting
- * to tap as if it were breaking the habit.
+ * One-button habits (Eldar, 2026-10-11, replacing the 2026-09-21 «unmarked
+ * stays unmarked» rule for habits): a good habit not tapped was not done; a
+ * bad habit not tapped was held out. So the unmarked due habits of a day get
+ * their implied mark — good → failed, bad → done — when the day is read as a
+ * whole (the week grid, the streaks) and written when it closes. Prayers keep
+ * three explicit states and are never implied.
  */
-export function closeDay(d: Day, _habits: Habit[]): Day {
-  return { ...d, closed: true };
+export function impliedMarks(d: Day, habits: Habit[]): Day {
+  let next = d;
+  for (const h of habits) {
+    if (h.kind === "prayer" || !habitDue(h, d.date) || markOf(next, h.title)) continue;
+    next = withMark(next, h.title, h.kind === "bad" ? "done" : "failed");
+  }
+  return next;
 }
 
-/** Due habits with no mark at all on that day. */
+/** Closing a day seals it and writes the implied marks of the one-button habits; prayers stay as marked. */
+export function closeDay(d: Day, habits: Habit[]): Day {
+  return { ...impliedMarks(d, habits), closed: true };
+}
+
+/** Due habits with no mark at all on that day — since the one-button rule only prayers can stay unmarked. */
 export function unmarkedOn(d: Day, habits: Habit[]): Habit[] {
-  return habits.filter((h) => habitDue(h, d.date) && !markOf(d, h.title));
+  return habits.filter((h) => h.kind === "prayer" && habitDue(h, d.date) && !markOf(d, h.title));
 }
 
 function fmtMoney(n: number): string {
