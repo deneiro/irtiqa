@@ -16,9 +16,9 @@ import QuestRows from "../components/QuestRows";
 import TodayPlan from "../components/TodayPlan";
 import NeedsYou from "../components/NeedsYou";
 
-const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined };
-const MARK_GLYPH: Record<string, string> = { none: "", done: "✓", failed: "✗", skipped: "→" };
-const MARK_TITLE: Record<string, string> = { none: "не отмечено", done: "сделано", failed: "не сделано", skipped: "пропуск по плану" };
+const NEXT_MARK: Record<string, DayMark | undefined> = { none: "done", done: "failed", failed: "skipped", skipped: undefined, late: "failed" };
+const MARK_GLYPH: Record<string, string> = { none: "", done: "✓", failed: "✗", skipped: "→", late: "⏰" };
+const MARK_TITLE: Record<string, string> = { none: "не отмечено", done: "сделано", failed: "не сделано", skipped: "пропуск по плану", late: "поздно" };
 
 function fmtMoney(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
@@ -168,7 +168,8 @@ function DayView({ today }: { today: string }) {
     setClosing(true);
     try {
       const open = { ...draft, closed: false };
-      await persist(open); // sets the draft to the merged result; setting `open` here would undo the disk's additions
+      setDraft(open); // persist merges against the draft, so it has to be open already or `closed` stays true
+      await persist(open);
       setReport(null);
       setSaveError(null);
       await reload();

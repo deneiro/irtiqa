@@ -1,24 +1,21 @@
 /**
- * Telegram bot: habit digests by the prayers, marks written straight into
- * `life/days/<date>.md`. The app watches the vault and picks them up.
+ * Telegram bot, v2 (spec «Jarvis и голограмма», 2026-10-11).
  *
- * Eldar counts a day from maghrib to maghrib, so after sunset the marks go to
- * the next calendar date. Each habit has a part of the day (`time:` вечер ·
- * утро · обед, or none for the whole day), and each part comes at its own
- * moment (Eldar, 2026-10-03): evening habits at maghrib, morning ones after
- * fajr, lunch ones after zuhr. An hour before maghrib comes the one full
- * digest — every habit of the day, grouped by theme, each theme opened and
- * closed by a tap — and then mood, stress and work, while the day is still
- * open. ✓ / ✗ / пропуск per habit and «позже» for the whole digest.
+ * One message a day, after fajr: what yesterday looks like (marked or not),
+ * the streaks of what he holds out against, the four numbers, today's first
+ * step in every active quest, the week's tasks, and «Требует тебя». No
+ * buttons: the marks are made in the app's «Утро» screen, by Eldar, for the
+ * previous calendar day. An evening «итог дня» exists behind a config flag
+ * and is off by default — two messages a day is the ceiling he set.
  *
- * Food: the «🍽 Еда» button under the chat asks what was eaten; the next
- * message becomes a row of `## Еда` in the day file, «ЧЧ:ММ» in front for a
- * different time, « — » before a note. Same rows the Day screen writes.
+ * What stays from v1, on demand only: `/today` and `/yesterday` show the
+ * habit keyboard (three groups: намаз · удержался · привычки; a prayer has
+ * ✓ · ⏰ поздно · ✗), «🍽 Еда» and «💸 Деньги» write a row into the day file,
+ * «🤝 Контакт» logs a contact, `/checkin` asks mood, stress and work,
+ * `/weight` a weight (also asked on Sunday mornings).
  *
- * Money: «💸 Деньги» asks for the amount and a note («+» for income), then a
- * category, then an account; the row goes into `## Деньги`. «долг» and
- * «подписки» are not offered: a repayment must also move `debts.md`, and the
- * app posts subscriptions itself.
+ * The day is a calendar day since 2026-10-12 (`dayOf` in lib/maghrib.ts keeps
+ * the maghrib rule for the files of 2026-09-22 … 2026-10-11 only).
  *
  * Config and delivery state live outside the vault, in
  * ~/Library/Application Support/irtiqa-bot/: the token is a secret and the
@@ -31,8 +28,8 @@ import { join } from "node:path";
 import {
   DAY_DIR, HABIT_DIR, dayRel, emptyDay, habitDue, isLateMeal, markOf, normalizeTime, parseDay, parseHabit,
   ACCOUNTS_REL, liveBalance, parseAccounts, parseAmount, serializeDay, withMark,
-  QUEST_DIR, parseQuest, serializeQuest, withQuestEntry, categoryName,
-  byHabitTime, type Day, type DayMark, type Habit, type HabitTime, type Meal, type Quest, type Tx,
+  QUEST_DIR, parseQuest, serializeQuest, withQuestEntry, categoryName, questSteps, nextStep,
+  type Day, type DayMark, type Habit, type HabitKind, type Meal, type Quest, type Tx,
 } from "../src/lib/life";
 import { buildCircle } from "../src/lib/circle";
 import { contactEdits } from "../src/lib/contact";
@@ -41,8 +38,10 @@ import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { buildLife } from "../src/lib/life";
 import { buildPage } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
-import { MAGHRIB_DAYS_FROM, SHYMKENT, fajrOn, maghribOn, zuhrOn } from "../src/lib/maghrib";
-import { groupByTheme, themeRu } from "../src/lib/themes";
+import { SHYMKENT, dayOf, fajrOn, maghribOn } from "../src/lib/maghrib";
+import { goalsFor } from "../src/lib/goals";
+import { heldOut, winNumbers } from "../src/lib/wins";
+import { parseHealth } from "../src/lib/health";
 
 // ---------- config & state ----------
 
@@ -56,30 +55,26 @@ interface Config {
   chatId?: number;
   lat: number;
   lon: number;
-  maghribOffsetMin: number;
   /** Fajr angle below the horizon, degrees. */
   fajrAngle: number;
-  /** Minutes after fajr / zuhr the morning and lunch digests come. */
+  /** Minutes after fajr the morning message comes. */
   afterFajrMin: number;
-  afterZuhrMin: number;
-  /** Minutes before maghrib the full digest comes. */
-  finalBeforeMin: number;
+  /** The evening «итог дня» at maghrib. Off by default: one message a day. */
+  eveningDigest: boolean;
   snoozeMin: number;
 }
 
 interface State {
   offset: number;
   sent: string[]; // slot ids already delivered
-  snoozes: { at: number; date: string; part?: Part }[];
+  snoozes: { at: number; date: string }[];
 }
 
 const DEFAULTS: Omit<Config, "token" | "vault"> = {
   ...SHYMKENT,
-  maghribOffsetMin: 0,
   fajrAngle: 15,
   afterFajrMin: 30,
-  afterZuhrMin: 30,
-  finalBeforeMin: 60,
+  eveningDigest: false,
   snoozeMin: 30,
 };
 
@@ -114,38 +109,24 @@ const cfg = loadConfig();
 const state = loadState();
 let fresh = !existsSync(STATE); // first run: past slots are marked sent, not sent
 
-// ---------- time: the day runs maghrib to maghrib ----------
+// ---------- time ----------
 
-function maghrib(date: string): Date {
-  return new Date(maghribOn(date, cfg.lat, cfg.lon).getTime() + cfg.maghribOffsetMin * 60000);
-}
-
-/** Which day file a moment belongs to: after maghrib it is already tomorrow. Same rule as `dayOf` in the app, with the configured offset. */
+/** Which day file a moment belongs to. Same rule as the app. */
 function logicalDate(t: Date): string {
-  const cal = toDateStr(t);
-  const next = addDays(cal, 1);
-  return next >= MAGHRIB_DAYS_FROM && t >= maghrib(cal) ? next : cal;
+  return dayOf(t, cfg.lat, cfg.lon);
 }
 
 function hm(t: Date): string {
   return t.toTimeString().slice(0, 5);
 }
 
-/** Which habits a digest shows: one part of the day, or all of them. */
-type Part = "e" | "m" | "l" | "a";
-const PART_TIME: Record<Exclude<Part, "a">, HabitTime> = { e: "вечер", m: "утро", l: "обед" };
-
-interface Slot { id: string; at: Date; title: string; part: Part }
+interface Slot { id: string; at: Date; kind: "morning" | "evening" }
 
 function slotsOf(cal: string): Slot[] {
-  const m = maghrib(cal);
   const plus = (t: Date, min: number) => new Date(t.getTime() + min * 60000);
-  return [
-    { id: `${cal}:morning`, at: plus(fajrOn(cal, cfg.lat, cfg.lon, cfg.fajrAngle), cfg.afterFajrMin), title: "☀️ Утро — после фаджра", part: "m" },
-    { id: `${cal}:lunch`, at: plus(zuhrOn(cal, cfg.lat, cfg.lon), cfg.afterZuhrMin), title: "🍽 Обед — после зухра", part: "l" },
-    { id: `${cal}:final`, at: plus(m, -cfg.finalBeforeMin), title: `⏳ Час до магриба — весь день`, part: "a" },
-    { id: `${cal}:maghrib`, at: m, title: "🌇 Магриб — вечер нового дня", part: "e" },
-  ];
+  const out: Slot[] = [{ id: `${cal}:morning`, at: plus(fajrOn(cal, cfg.lat, cfg.lon, cfg.fajrAngle), cfg.afterFajrMin), kind: "morning" }];
+  if (cfg.eveningDigest) out.push({ id: `${cal}:evening`, at: maghribOn(cal, cfg.lat, cfg.lon), kind: "evening" });
+  return out;
 }
 
 // ---------- vault ----------
@@ -155,7 +136,7 @@ function readHabits(): Habit[] {
   return readdirSync(dir)
     .filter((f) => f.endsWith(".md"))
     .map((f) => parseHabit({ rel: `${HABIT_DIR}/${f}`, content: readFileSync(join(dir, f), "utf8"), mtime: 0 }))
-    .sort((a, b) => (a.kind === b.kind ? a.title.localeCompare(b.title, "ru") : a.kind === "good" ? -1 : 1));
+    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
 }
 
 function readDay(date: string): Day {
@@ -183,8 +164,6 @@ function key(title: string): string {
   return createHash("sha1").update(title).digest("hex").slice(0, 8);
 }
 
-// ---------- «требует тебя» ----------
-
 function walkMd(dir: string, out: string[] = []): string[] {
   if (!existsSync(dir)) return out;
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -196,22 +175,56 @@ function walkMd(dir: string, out: string[] = []): string[] {
   return out;
 }
 
-/** The same list the Day screen shows at the top, read fresh from the vault. */
-function needsYouText(date: string, limit = 8): string | null {
-  const rel = (p: string) => p.slice(cfg.vault.length + 1);
-  const life = buildLife(walkMd(join(cfg.vault, "life")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 })));
-  const people = walkMd(join(cfg.vault, "wiki"))
+const rel = (p: string) => p.slice(cfg.vault.length + 1);
+
+function readLife() {
+  return buildLife(walkMd(join(cfg.vault, "life")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 })));
+}
+
+function readAllDays(): Map<string, Day> {
+  const dir = join(cfg.vault, DAY_DIR);
+  const days = new Map<string, Day>();
+  for (const f of readdirSync(dir)) {
+    if (!/^\d{4}-\d{2}-\d{2}\.md$/.test(f)) continue;
+    const date = f.slice(0, 10);
+    days.set(date, parseDay({ rel: dayRel(date), content: readFileSync(join(dir, f), "utf8"), mtime: 0 }));
+  }
+  return days;
+}
+
+function peoplePages(): Page[] {
+  return walkMd(join(cfg.vault, "wiki"))
     .filter((p) => /\/People\/[^_/][^/]*\.md$/.test(p))
     .map((p) => buildPage(rel(p), readFileSync(p, "utf8"), 0))
     .filter((p) => p.zone === "person");
+}
+
+/** The sura pages, for the «сур выучено» number. */
+function suraPages(): Page[] {
+  return walkMd(join(cfg.vault, "wiki"))
+    .filter((p) => /\/Суры\/[^/]+\.md$/.test(p))
+    .map((p) => buildPage(rel(p), readFileSync(p, "utf8"), 0));
+}
+
+function activeQuests(): Quest[] {
+  return walkMd(join(cfg.vault, QUEST_DIR))
+    .map((p) => parseQuest({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 }))
+    .filter((q) => q.status === "active")
+    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
+}
+
+// ---------- «требует тебя» ----------
+
+function needsYouText(date: string, limit = 6): string | null {
+  const life = readLife();
   const overviews = readdirSync(join(cfg.vault, "wiki"), { withFileTypes: true })
     .filter((e) => e.isDirectory() && existsSync(join(cfg.vault, "wiki", e.name, "_Overview.md")))
     .map((e) => buildPage(`wiki/${e.name}/_Overview.md`, readFileSync(join(cfg.vault, "wiki", e.name, "_Overview.md"), "utf8"), 0))
     .filter((p) => p.theme)
     .map((p) => ({ theme: p.theme!, body: p.body }));
-  const items = attention(life, people, date, overviews);
+  const items = attention(life, peoplePages(), date, overviews);
   if (!items.length) return null;
-  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на экране Дня.` : "";
+  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на экране «Утро».` : "";
   return ["📌 Требует тебя", ...items.slice(0, limit).map((a) => `• ${a.text}`)].join("\n") + more;
 }
 
@@ -222,13 +235,70 @@ async function sendNeeds(date: string, quietIfEmpty: boolean) {
   else if (!quietIfEmpty) await say("📌 Ничего не горит: просроченного нет.");
 }
 
-// ---------- evening check-in: mood, stress, work ----------
-//
-// At maghrib the day that ended gets three taps and a line: mood, stress, and
-// what was worked on for how long — the inputs the Day screen needs and that
-// were filled on half the days or never. A session written here is the same
-// row the timer writes (`квест: минуты`, without a start time) plus a line in
-// the quest's journal.
+// ---------- the one morning message ----------
+
+const owner = (s: string) => s.replace(/\s*—\s*(ты|Claude|ET1|JH1|ты и Claude|Claude и ты|ты с Claude|ты решаешь, Claude делает)\s*$/i, "");
+
+function morningText(cal: string): string {
+  const y = addDays(cal, -1);
+  const habits = readHabits();
+  const due = habits.filter((h) => habitDue(h, y));
+  const day = readDay(y);
+  const got = (k: HabitKind) => {
+    const items = due.filter((h) => h.kind === k);
+    const n = items.filter((h) => { const m = markOf(day, h.title); return m === "done" || m === "late"; }).length;
+    return items.length ? `${n}/${items.length}` : "—";
+  };
+  const marked = due.filter((h) => markOf(day, h.title)).length;
+  const lines = [`☀️ ${formatDayTitle(cal)}`];
+  if (due.length) {
+    lines.push(
+      marked
+        ? `Вчера (${formatDayTitle(y).toLowerCase()}): намаз ${got("prayer")} · удержался ${got("bad")} · привычки ${got("good")}${day.closed ? "" : " — открой «Утро», доотметь и нажми «Готово»"}.`
+        : `Вчера (${formatDayTitle(y).toLowerCase()}) ещё не отмечено — открой «Утро», отметь и нажми «Готово».`,
+    );
+  }
+
+  const life = readLife();
+  const days = life.days;
+  const held = habits.filter((h) => h.status === "active" && h.kind === "bad").map((h) => ({ h, n: heldOut(h, days, y) })).filter((x) => x.n > 0).sort((a, b) => b.n - a.n);
+  if (held.length) lines.push(`🛡 ${held.slice(0, 4).map(({ h, n }) => `${h.title} ${n} дн`).join(" · ")}`);
+
+  const nums = winNumbers(life, suraPages(), y, life.health ? parseHealth(life.health).weightGoal : undefined);
+  lines.push(`📊 ${nums.map((n) => `${n.label.replace(", кг", "").replace(", ₸", "")}: ${n.value}`).join(" · ")}`);
+
+  const quests = activeQuests();
+  const steps = quests.map((q) => ({ q, next: nextStep(questSteps(q.body)) })).filter((x) => x.next);
+  if (steps.length) lines.push("", "▶ Сегодня первое:", ...steps.map(({ q, next }) => `• ${q.title}: ${owner(next!.text)}`));
+
+  const { week } = goalsFor(life.goals, cal);
+  if (week?.tasks.length) {
+    const done = week.tasks.filter((t) => t.done).length;
+    lines.push("", `📅 Неделя: задач ${done} из ${week.tasks.length}`, ...week.tasks.filter((t) => !t.done).slice(0, 4).map((t) => `○ ${t.text}`));
+  } else if (!week) lines.push("", "📅 Файла недели нет — цели недели пишутся с Claude в воскресенье.");
+  return lines.join("\n");
+}
+
+async function sendMorning(cal: string) {
+  if (!cfg.chatId) return;
+  await say(morningText(cal));
+  await sendNeeds(cal, true);
+}
+
+/** Behind `eveningDigest`: what the day holds so far — sessions, money, meals, mood. Nothing to press. */
+function eveningText(cal: string): string {
+  const d = readDay(cal);
+  const lines = [`🌇 Итог дня — ${formatDayTitle(cal).toLowerCase()}`];
+  if (d.sessions.length) lines.push(`⏱ ${d.sessions.map((s) => `${s.quest}: ${s.minutes} мин`).join(" · ")}`);
+  if (d.txs.length) lines.push(`💸 потрачено ${fmtSum(d.txs.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0))}${d.txs.some((t) => t.amount > 0) ? `, получено ${fmtSum(d.txs.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0))}` : ""}`);
+  if (d.meals.length) lines.push(`🍽 ${d.meals.map((m) => `${m.time} ${m.what}`).join(" · ")}${d.meals.some(isLateMeal) ? " — есть поздняя еда" : ""}`);
+  if (d.done.length) lines.push(`✓ ${d.done.join("; ")}`);
+  if (d.mood !== undefined) lines.push(`настроение ${d.mood}${d.stress !== undefined ? `, стресс ${d.stress}` : ""}`);
+  lines.push("", "Привычки за сегодня отметишь завтра утром в «Утро».");
+  return lines.join("\n");
+}
+
+// ---------- check-in: mood, stress, work (on demand) ----------
 
 const fromCompact = (c: string) => `${c.slice(0, 4)}-${c.slice(4, 6)}-${c.slice(6, 8)}`;
 const scale = (prefix: string, compact: string): Button[][] => [
@@ -236,13 +306,6 @@ const scale = (prefix: string, compact: string): Button[][] => [
   [6, 7, 8, 9, 10].map((n) => ({ text: String(n), callback_data: `${prefix}:${compact}:${n}` })),
   [{ text: "пропустить", callback_data: `${prefix}:${compact}:x` }],
 ];
-
-function activeQuests(): Quest[] {
-  return walkMd(join(cfg.vault, QUEST_DIR))
-    .map((p) => parseQuest({ rel: p.slice(cfg.vault.length + 1), content: readFileSync(p, "utf8"), mtime: 0 }))
-    .filter((q) => q.status === "active")
-    .sort((a, b) => a.title.localeCompare(b.title, "ru"));
-}
 
 function workKeyboard(compact: string): Button[][] {
   return [
@@ -300,7 +363,7 @@ async function onCheckinCallback(kind: string, compact: string, code: string, ex
       return;
     }
     const today = logicalDate(new Date());
-    const life = buildLife(walkMd(join(cfg.vault, "life")).map((p) => ({ rel: p.slice(cfg.vault.length + 1), content: readFileSync(p, "utf8"), mtime: 0 })));
+    const life = readLife();
     const raw = readFileSync(join(cfg.vault, person.page.rel), "utf8");
     for (const e of contactEdits({ rel: person.page.rel, file: person.page.file, raw }, life.events, today, kind === "pm")) writeRel(e.rel, e.content);
     await edit(`✓ ${person.name}: ${kind === "pm" ? "виделись" : "на связи"} — ${formatDayTitle(today).toLowerCase()}.`);
@@ -324,14 +387,14 @@ async function askWeight(date: string) {
   if (!cfg.chatId) return;
   ask("weight", 12 * 3600_000);
   pendingWeightDate = date;
-  await say("⚖️ Вес сегодня? Число, например 93.5 — цель в health.md, путь виден на экране Здоровья.", { reply_markup: { force_reply: true, input_field_placeholder: "93.5" } });
+  await say("⚖️ Вес сегодня? Число, например 90.5.", { reply_markup: { force_reply: true, input_field_placeholder: "90.5" } });
 }
 let pendingWeightDate: string | null = null;
 
 async function onWeight(text: string) {
   const n = parseAmount(text.replace(/кг|kg/gi, ""));
   const date = pendingWeightDate ?? logicalDate(new Date());
-  if (n === undefined || n < 30 || n > 300) { ask("weight", 12 * 3600_000); await say("Не понял вес. Напиши число, например 93.5."); return; }
+  if (n === undefined || n < 30 || n > 300) { ask("weight", 12 * 3600_000); await say("Не понял вес. Напиши число, например 90.5."); return; }
   writeDay({ ...readDay(date), weight: n });
   pendingWeightDate = null;
   await say(`⚖️ Записал: ${n} кг (${formatDayTitle(date).toLowerCase()}).`);
@@ -339,16 +402,9 @@ async function onWeight(text: string) {
 
 // ---------- contacts ----------
 
-function peoplePages(): Page[] {
-  return walkMd(join(cfg.vault, "wiki"))
-    .filter((p) => /\/People\/[^_/][^/]*\.md$/.test(p))
-    .map((p) => buildPage(p.slice(cfg.vault.length + 1), readFileSync(p, "utf8"), 0))
-    .filter((p) => p.zone === "person");
-}
-
 /** The close circle (7+), most overdue first — the people a contact should be logged for. */
 function contactPeople() {
-  const life = buildLife(walkMd(join(cfg.vault, "life", "events")).map((p) => ({ rel: p.slice(cfg.vault.length + 1), content: readFileSync(p, "utf8"), mtime: 0 })));
+  const life = buildLife(walkMd(join(cfg.vault, "life", "events")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 })));
   return buildCircle(peoplePages(), life.events, logicalDate(new Date())).filter((i) => (i.closeness ?? 0) >= 7).slice(0, 14);
 }
 
@@ -361,9 +417,9 @@ async function sendContactList(editMsg?: number) {
 }
 
 /** Atomic write of one vault file the bot owns: life/, or a person page's contact keys. */
-function writeRel(rel: string, content: string) {
-  if (!rel.startsWith("life/") && !/^wiki\/[^/]+\/People\/[^_/][^/]*\.md$/.test(rel)) throw new Error(`bot may not write ${rel}`);
-  const p = join(cfg.vault, rel);
+function writeRel(r: string, content: string) {
+  if (!r.startsWith("life/") && !/^wiki\/[^/]+\/People\/[^_/][^/]*\.md$/.test(r)) throw new Error(`bot may not write ${r}`);
+  const p = join(cfg.vault, r);
   mkdirSync(p.slice(0, p.lastIndexOf("/")), { recursive: true });
   writeFileSync(p + ".bot-tmp", content);
   renameSync(p + ".bot-tmp", p);
@@ -372,7 +428,7 @@ function writeRel(rel: string, content: string) {
 // ---------- food ----------
 
 const FOOD_BUTTON = "🍽 Еда";
-const HABITS_BUTTON = "📋 Привычки";
+const HABITS_BUTTON = "📋 Вчера";
 const CONTACT_BUTTON = "🤝 Контакт";
 const MONEY_BUTTON = "💸 Деньги";
 const WAIT_MS = 15 * 60000;
@@ -411,21 +467,9 @@ let pendingTx: PendingTx | null = null;
 function parseMoney(text: string): { amount: number; note: string } | null {
   const m = text.replace(/\|/g, "/").trim().match(/^([+\-−]?)\s*(\d[\d\s]*(?:[.,]\d+)*)\s*(.*)$/);
   if (!m) return null;
-  // Same reading as the app: «12,400» is twelve thousand, «12,5» twelve and a half.
   const n = parseAmount(m[2]);
   if (n === undefined || n <= 0) return null;
   return { amount: m[1] === "+" ? n : -n, note: m[3].trim() };
-}
-
-function readAllDays(): Map<string, Day> {
-  const dir = join(cfg.vault, DAY_DIR);
-  const days = new Map<string, Day>();
-  for (const f of readdirSync(dir)) {
-    if (!/^\d{4}-\d{2}-\d{2}\.md$/.test(f)) continue;
-    const date = f.slice(0, 10);
-    days.set(date, parseDay({ rel: dayRel(date), content: readFileSync(join(dir, f), "utf8"), mtime: 0 }));
-  }
-  return days;
 }
 
 /** The categories already used for this sign, most frequent first. */
@@ -443,7 +487,6 @@ function categoriesFor(income: boolean, days: Map<string, Day>): string[] {
 
 /** A typed category in the spelling already used: «Прочее» → «прочее». The most frequent spelling wins. */
 function canonicalCategory(typed: string, days: Map<string, Day>): string {
-  // A merged spelling («бенза») goes in under its category («транспорт»).
   const merged = categoryName(typed);
   if (merged !== typed.trim()) return merged;
   const want = typed.toLowerCase().replace(/ё/g, "е");
@@ -465,7 +508,7 @@ function accountsByUse(days: Map<string, Day>): string[] {
 }
 
 function fmtSum(n: number): string {
-  return Math.abs(n).toLocaleString("ru-RU").replace(/\u00a0/g, " ");
+  return Math.abs(n).toLocaleString("ru-RU").replace(/ /g, " ");
 }
 
 function txKey(t: Tx): string {
@@ -493,79 +536,58 @@ async function tg<T = unknown>(method: string, body: Record<string, unknown>): P
   return j.result;
 }
 
-const MARK_LABEL: Record<DayMark, string> = { done: "✓", failed: "✗", skipped: "–" };
+const MARK_LABEL: Record<DayMark, string> = { done: "✓", failed: "✗", skipped: "–", late: "⏰" };
 
-type Mode = "d" | "f" | "s";
-const MODE_GLYPH: Record<Mode, string> = { d: "✓", f: "✗", s: "–" };
+/** What a tap writes: ✓ (done), ✗ (failed), ⏰ (late — prayers only), – (planned skip). */
+type Mode = "d" | "f" | "l" | "s";
+const MODE_GLYPH: Record<Mode, string> = { d: "✓", f: "✗", l: "⏰", s: "–" };
+const MODE_HINT: Record<Mode, string> = { d: "Нажми — будет ✓ (у плохих ✓ значит «удержался»).", f: "Режим ✗: нажми, что не сделал.", l: "Режим ⏰: нажми намаз, который прочитал поздно.", s: "Режим пропуска: нажми, что пропускаешь по плану." };
+const CODE: Record<string, DayMark> = { d: "done", f: "failed", s: "skipped", l: "late" };
 
-/** Themes opened in the full digest, per message. Kept in memory: a restart closes them, nothing is lost. */
-const opened = new Map<number, Set<string>>();
-
-function dueFor(date: string, part: Part): Habit[] {
-  const due = readHabits().filter((h) => habitDue(h, date));
-  return (part === "a" ? due : due.filter((h) => h.time === PART_TIME[part])).sort(byHabitTime);
-}
+const GROUP: { kind: HabitKind; title: string }[] = [{ kind: "prayer", title: "🕌 Намаз" }, { kind: "bad", title: "🛡 Удержался" }, { kind: "good", title: "🌱 Привычки" }];
 
 /**
- * Text + keyboard for one logical date. One full-width button per unmarked
- * habit, so long titles fit: in mode «d» a tap is ✓, the switches at the
- * bottom turn the same buttons into ✗ or пропуск. The full digest («a») puts
- * a theme button above its habits; the habits show only while it is open.
+ * The on-demand keyboard for one date: three groups, one full-width button per
+ * unmarked habit. The default tap is ✓; the switches at the bottom turn the
+ * same buttons into ✗, ⏰ or пропуск.
  */
-function digest(date: string, title: string, part: Part, mode: Mode = "d", msg?: number): { text: string; keyboard: Button[][] } {
-  const habits = dueFor(date, part);
+function digest(date: string, title: string, mode: Mode = "d"): { text: string; keyboard: Button[][] } {
+  const due = readHabits().filter((h) => habitDue(h, date));
   const day = readDay(date);
-  const open = habits.filter((h) => !markOf(day, h.title));
-  const marked = habits.filter((h) => markOf(day, h.title));
   const compact = date.replaceAll("-", "");
-  const habitButton = (h: Habit): Button[] => [{ text: `${MODE_GLYPH[mode]} ${h.title}`, callback_data: `m:${compact}:${mode}:${key(h.title)}:${part}` }];
-
-  const lines = [title, `${formatDayTitle(date)} · отмечено ${marked.length} из ${habits.length}`];
+  const marked = due.filter((h) => markOf(day, h.title));
+  const lines = [title, `${formatDayTitle(date)} · отмечено ${marked.length} из ${due.length}`];
   const keyboard: Button[][] = [];
-  if (part === "a") {
-    const { groups, missing } = groupByTheme(habits);
-    const show = msg !== undefined ? opened.get(msg) ?? new Set<string>() : new Set<string>();
-    lines.push("");
-    for (const g of groups) {
-      const name = themeRu(g.theme);
-      const left = g.items.filter((h) => !markOf(day, h.title));
-      const done = g.items.filter((h) => markOf(day, h.title) === "done").length;
-      lines.push(`${left.length ? "▫️" : "✅"} ${name} — ${done}/${g.items.length}${left.length ? `, осталось: ${left.map((h) => h.title).join(", ")}` : ""}`);
-      if (!left.length) continue;
-      const isOpen = show.has(name);
-      keyboard.push([{ text: `${isOpen ? "▾" : "▸"} ${name} · ${left.length}`, callback_data: `t:${compact}:${mode}:${key(name)}` }]);
-      if (isOpen) keyboard.push(...left.map(habitButton));
-    }
-    if (missing.length) lines.push("", `Без привычек: ${missing.map((t) => themeRu(t)).join(", ")}.`);
-  } else if (marked.length) {
-    lines.push("", marked.map((h) => `${MARK_LABEL[markOf(day, h.title)!]} ${h.title}`).join("\n"));
+  let open = 0;
+  for (const g of GROUP) {
+    const items = due.filter((h) => h.kind === g.kind);
+    if (!items.length) continue;
+    const got = items.filter((h) => { const m = markOf(day, h.title); return m === "done" || m === "late"; }).length;
+    const left = items.filter((h) => !markOf(day, h.title));
+    const shown = items.filter((h) => markOf(day, h.title)).map((h) => `${MARK_LABEL[markOf(day, h.title)!]} ${h.title}`).join(", ");
+    lines.push(`${g.title} ${got}/${items.length}${shown ? ` — ${shown}` : ""}`);
+    if (!left.length) continue;
+    open += left.length;
+    keyboard.push([{ text: `— ${g.title} —`, callback_data: "noop:0:0" }]);
+    keyboard.push(...left.map((h) => [{ text: `${MODE_GLYPH[mode]} ${h.title}`, callback_data: `m:${compact}:${mode}:${key(h.title)}` }]));
   }
-  if (open.length) {
-    lines.push("", part === "a" ? "Открой тему — под ней её привычки. " + MODE_HINT[mode] : MODE_HINT[mode]);
-    if (mode === "d" && open.some((h) => h.kind === "bad")) lines.push("У плохих привычек ✓ значит «удержался».");
-    if (part !== "a") keyboard.push(...open.map(habitButton));
+  if (open) {
+    lines.push("", MODE_HINT[mode]);
     keyboard.push(
       mode === "d"
-        ? [{ text: "✗ не сделал…", callback_data: `v:${compact}:f:${part}` }, { text: "– пропуск…", callback_data: `v:${compact}:s:${part}` }]
-        : [{ text: "← назад к ✓", callback_data: `v:${compact}:d:${part}` }],
+        ? [{ text: "✗ не сделал…", callback_data: `v:${compact}:f` }, { text: "⏰ поздно…", callback_data: `v:${compact}:l` }, { text: "– пропуск…", callback_data: `v:${compact}:s` }]
+        : [{ text: "← назад к ✓", callback_data: `v:${compact}:d` }],
     );
-    keyboard.push([{ text: `⏰ Позже, через ${cfg.snoozeMin} мин`, callback_data: `z:${compact}:${part}` }]);
-  } else {
-    lines.push("", habits.length ? "Всё отмечено." : "На это время привычек нет.");
-  }
+    keyboard.push([{ text: `⏰ Позже, через ${cfg.snoozeMin} мин`, callback_data: `z:${compact}:0` }]);
+  } else lines.push("", due.length ? "Всё отмечено." : "Привычек на этот день нет.");
   return { text: lines.join("\n"), keyboard };
 }
 
-const MODE_HINT: Record<Mode, string> = { d: "Нажми привычку — будет ✓.", f: "Режим ✗: нажми, что не сделал.", s: "Режим пропуска: нажми, что пропускаешь по плану." };
-
-async function sendDigest(date: string, title: string, part: Part, onlyIfOpen = false) {
+async function sendDigest(date: string, title: string) {
   if (!cfg.chatId) return;
-  if (onlyIfOpen && !dueFor(date, part).some((h) => !markOf(readDay(date), h.title))) return;
-  const { text, keyboard } = digest(date, title, part);
+  const { text, keyboard } = digest(date, title);
   await tg("sendMessage", { chat_id: cfg.chatId, text, reply_markup: { inline_keyboard: keyboard } });
 }
-
-const CODE: Record<string, DayMark> = { d: "done", f: "failed", s: "skipped" };
 
 interface CallbackQuery {
   id: string;
@@ -579,18 +601,17 @@ async function onCallback(q: CallbackQuery) {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     return;
   }
-  const [kind, compact, code, hkey, partCode] = q.data.split(":");
-  const date = `${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}`;
+  const [kind, compact, code, hkey] = q.data.split(":");
+  const date = fromCompact(compact);
   const title = (q.message.text ?? "").split("\n")[0];
-
-  // Old messages carry no part: they were whole-day digests.
-  const part: Part = (["e", "m", "l", "a"].includes(kind === "m" ? partCode : hkey) ? (kind === "m" ? partCode : hkey) : "a") as Part;
   const edit = async (mode: Mode) => {
-    const { text, keyboard } = digest(date, title, part, mode, q.message!.message_id);
+    const { text, keyboard } = digest(date, title, mode);
     await tg("editMessageText", {
       chat_id: q.message!.chat.id, message_id: q.message!.message_id, text, reply_markup: { inline_keyboard: keyboard },
     }).catch(() => {}); // "message is not modified" when tapped twice
   };
+
+  if (kind === "noop") { await tg("answerCallbackQuery", { callback_query_id: q.id }); return; }
 
   if (["mo", "st", "wq", "wm", "pc", "pm", "pt", "pl"].includes(kind)) {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
@@ -639,31 +660,21 @@ async function onCallback(q: CallbackQuery) {
 
   if (kind === "v") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
-    await edit(code as Mode);
-    return;
-  }
-
-  if (kind === "t") {
-    const msg = q.message.message_id;
-    const names = groupByTheme(dueFor(date, "a")).groups.map((g) => themeRu(g.theme));
-    const name = names.find((n) => key(n) === hkey);
-    const set = opened.get(msg) ?? new Set<string>();
-    if (name) { if (set.has(name)) set.delete(name); else set.add(name); }
-    opened.set(msg, set);
-    await tg("answerCallbackQuery", { callback_query_id: q.id });
-    await edit(code as Mode);
+    await edit((code in MODE_GLYPH ? code : "d") as Mode);
     return;
   }
 
   if (kind === "z") {
-    state.snoozes.push({ at: Date.now() + cfg.snoozeMin * 60000, date, part: (["e", "m", "l", "a"].includes(code) ? code : "a") as Part });
+    state.snoozes.push({ at: Date.now() + cfg.snoozeMin * 60000, date });
     saveState(state);
     await tg("answerCallbackQuery", { callback_query_id: q.id, text: `Напомню в ${hm(new Date(state.snoozes.at(-1)!.at))}` });
     return;
   }
 
+  // kind === "m": a mark
   const habit = readHabits().find((h) => key(h.title) === hkey);
-  const mark = CODE[code];
+  let mark = CODE[code];
+  if (mark === "late" && habit?.kind !== "prayer") mark = "done"; // «поздно» only means something for a prayer
   let toast = "Привычка не найдена";
   if (habit && mark) {
     writeDay(withMark(readDay(date), habit.title, mark));
@@ -696,49 +707,31 @@ async function onMessage(m: Message) {
     saveConfig(cfg);
   }
   if (m.chat.id !== cfg.chatId) return;
+  const today = toDateStr(new Date());
   if (text.startsWith("/start") || text.startsWith("/help")) {
     awaiting = null;
-    const s = slotsOf(toDateStr(new Date()));
+    const s = slotsOf(today);
     await say(
       [
-        "Сводки привычек сегодня:",
-        ...s.map((x) => `${hm(x.at)} — ${x.title}`),
+        `Одно сообщение в день: ${s.map((x) => `${hm(x.at)} (${x.kind === "morning" ? "после фаджра" : "магриб"})`).join(", ")}.`,
+        "Утром: как выглядит вчера, серии, четыре цифры, первый шаг каждого квеста, задачи недели и «требует тебя». Отметки делаются в приложении, на экране «Утро», за вчерашний день.",
         "",
-        "Утром, в обед и на магрибе приходят только привычки этого времени (поле «время дня» у привычки). За час до магриба — все привычки дня по темам: нажми тему, чтобы открыть её привычки. Привычки на весь день приходят только в эту сводку.",
-        "День считается от магриба до магриба: после магриба всё идёт в завтрашний файл.",
-        `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${HABITS_BUTTON} или /today — сводка сейчас.`,
-        "/need — что требует тебя: врачи, люди, дни рождения, списания, застрявшие квесты. Утром приходит само.",
-        "За час до магриба, после сводки — итог дня: настроение, стресс и над чем работал. Вручную: /checkin. По воскресеньям утром — вес (/weight).",
-        `${CONTACT_BUTTON} — виделся или созвонился с кем-то из близких: пишет последний контакт и встречу дня.`,
+        `${HABITS_BUTTON} или /yesterday — отметить вчера здесь, если приложение не под рукой. /today — сегодня.`,
+        `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${CONTACT_BUTTON} — виделся или созвонился.`,
+        "/checkin — настроение, стресс, над чем работал. /weight — вес (по воскресеньям спрашиваю сам). /need — что требует тебя. /morning — утреннее сообщение сейчас.",
       ].join("\n"),
       { reply_markup: REPLY_KEYBOARD },
     );
     return;
   }
-  if (text.startsWith("/checkin")) {
-    awaiting = null;
-    await sendCheckin(toDateStr(new Date()));
-    return;
-  }
-  if (text.startsWith("/weight")) {
-    await askWeight(logicalDate(new Date()));
-    return;
-  }
-  if (text.startsWith("/contact") || text === CONTACT_BUTTON) {
-    awaiting = null;
-    await sendContactList();
-    return;
-  }
-  if (text.startsWith("/need")) {
-    awaiting = null;
-    await sendNeeds(toDateStr(new Date()), false);
-    return;
-  }
-  if (text.startsWith("/today") || text === HABITS_BUTTON) {
-    awaiting = null;
-    await sendDigest(logicalDate(new Date()), "📋 Сейчас — весь день", "a");
-    return;
-  }
+  if (text.startsWith("/checkin")) { awaiting = null; await sendCheckin(today); return; }
+  if (text.startsWith("/weight")) { await askWeight(logicalDate(new Date())); return; }
+  if (text.startsWith("/contact") || text === CONTACT_BUTTON) { awaiting = null; await sendContactList(); return; }
+  if (text.startsWith("/need")) { awaiting = null; await sendNeeds(today, false); return; }
+  if (text.startsWith("/morning")) { awaiting = null; await sendMorning(today); return; }
+  if (text.startsWith("/evening")) { awaiting = null; await say(eveningText(today)); return; }
+  if (text.startsWith("/yesterday") || text === HABITS_BUTTON) { awaiting = null; await sendDigest(addDays(today, -1), "📋 Вчера"); return; }
+  if (text.startsWith("/today")) { awaiting = null; await sendDigest(today, "📋 Сегодня"); return; }
   if (text.startsWith("/food") || text === FOOD_BUTTON) {
     ask("food");
     await say("Что съел? Например: «плов», «13:30 плов» или «плов — тяжело после».", { reply_markup: { force_reply: true, input_field_placeholder: "что съел" } });
@@ -753,13 +746,12 @@ async function onMessage(m: Message) {
   if (text.startsWith("/")) return;
   if (!awaiting || Date.now() - awaiting.at > (awaiting.ttl ?? WAIT_MS)) {
     awaiting = null;
-    await say(`Нажми кнопку внизу: «${FOOD_BUTTON}» или «${MONEY_BUTTON}».`, { reply_markup: REPLY_KEYBOARD });
+    await say(`Нажми кнопку внизу: «${FOOD_BUTTON}» или «${MONEY_BUTTON}». Всё остальное — скажи Claude.`, { reply_markup: REPLY_KEYBOARD });
     return;
   }
   const kind = awaiting.kind;
   awaiting = null;
-  // When it was sent, not when this Mac woke up and read it: a meal typed at
-  // 13:00 and read after maghrib still belongs to 13:00 of its own day.
+  // When it was sent, not when this Mac woke up and read it.
   const sent = m.date ? new Date(m.date * 1000) : new Date();
   if (kind === "work") { await onWorkNote(text); return; }
   if (kind === "weight") { await onWeight(text); return; }
@@ -769,7 +761,7 @@ async function onMessage(m: Message) {
     pendingTx.category = canonicalCategory(text.replace(/\|/g, "/").trim(), readAllDays());
     if (APP_ONLY_CATEGORIES.includes(pendingTx.category.toLowerCase())) {
       pendingTx.category = undefined;
-      await say("«Долг» и «подписки» записываются только в приложении: там они двигают ещё debts.md и подписки. Напиши другую категорию.");
+      await say("«Долг» и «подписки» записываются только в приложении или через Claude: они двигают ещё debts.md и подписки. Напиши другую категорию.");
       ask("category");
       return;
     }
@@ -829,8 +821,7 @@ async function writeTx(account: string) {
 
 // ---------- loops ----------
 
-const GRACE_MS = 3 * 3600_000; // a Mac that slept through a slot still sends it within 3 h
-const FINAL_GRACE_MS = 14 * 3600_000; // the full digest until the next morning
+const GRACE_MS = 6 * 3600_000; // a Mac that slept through the morning still sends it within 6 h
 
 async function tick() {
   const now = new Date();
@@ -841,27 +832,18 @@ async function tick() {
       state.sent.push(s.id);
       saveState(state);
       const late = now.getTime() - s.at.getTime();
-      if (fresh) continue;
-      if (s.part === "a") {
-        // The full digest still matters after maghrib: the day it closes can be
-        // marked until the app closes it in the morning. Late, it says so.
-        if (late > FINAL_GRACE_MS || readDay(cal).closed) continue;
-        const title = late > 15 * 60000 ? `⏳ Опоздал: Mac спал. Весь день ${formatDayTitle(cal).toLowerCase()}` : s.title;
-        await sendDigest(cal, title, "a");
-        await sendCheckin(cal);
-        continue;
-      }
-      if (late > GRACE_MS) continue;
-      await sendDigest(logicalDate(new Date(s.at.getTime() + 1000)), s.title, s.part, true);
-      if (s.id.endsWith(":morning")) await sendNeeds(cal, true);
-      if (s.id.endsWith(":morning") && new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(logicalDate(s.at));
+      if (fresh || late > GRACE_MS) continue;
+      if (s.kind === "morning") {
+        await sendMorning(cal);
+        if (new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(cal);
+      } else await say(eveningText(cal));
     }
   }
   const due = state.snoozes.filter((z) => z.at <= now.getTime());
   if (due.length) {
     state.snoozes = state.snoozes.filter((z) => z.at > now.getTime());
     saveState(state);
-    for (const z of due) await sendDigest(z.date, "⏰ Напоминаю", z.part ?? "a", true);
+    for (const z of due) await sendDigest(z.date, "⏰ Напоминаю");
   }
   fresh = false;
   const keep = addDays(today, -3);
@@ -882,7 +864,7 @@ async function poll() {
           if (u.callback_query) await onCallback(u.callback_query);
         } catch (e) {
           if (e instanceof ClosedDay) {
-            await say(`День ${e.date} уже закрыт — в закрытый день бот не пишет. Если нужно поправить, открой его на экране Дня.`).catch(() => {});
+            await say(`День ${e.date} уже закрыт — в закрытый день бот не пишет. Поправить можно в «Утро» кнопкой «исправить».`).catch(() => {});
             if (u.callback_query) await tg("answerCallbackQuery", { callback_query_id: u.callback_query.id }).catch(() => {});
             continue;
           }
@@ -896,7 +878,16 @@ async function poll() {
   }
 }
 
-console.log(new Date().toISOString(), "irtiqa habits bot up; vault:", cfg.vault, "chat:", cfg.chatId ?? "ждёт /start");
+// `node bot.mjs --morning [YYYY-MM-DD]` prints the morning message and exits: a dry run against any vault, no Telegram.
+if (process.argv.includes("--morning")) {
+  const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) ?? toDateStr(new Date());
+  console.log(morningText(date));
+  const needs = needsYouText(date);
+  if (needs) console.log("\n" + needs);
+  process.exit(0);
+}
+
+console.log(new Date().toISOString(), "irtiqa bot v2 up; vault:", cfg.vault, "chat:", cfg.chatId ?? "ждёт /start");
 setInterval(() => tick().catch((e) => console.error(new Date().toISOString(), "tick", e)), 20_000);
 tick().catch((e) => console.error(new Date().toISOString(), "tick", e));
 poll();

@@ -138,6 +138,10 @@ button { font: inherit; color: inherit; }
 .nav .count { margin-left: auto; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--faint); font-weight: 400; }
 .nav.active .count { color: var(--muted); }
 .nav .bar { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
+.sidebar .look > summary { list-style: none; cursor: pointer; }
+.sidebar .look > summary::-webkit-details-marker { display: none; }
+.sidebar .look > summary::after { content: "▸"; margin-left: 6px; }
+.sidebar .look[open] > summary::after { content: "▾"; }
 .sidebar .section { flex: none; font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0.02em; color: var(--faint); padding: 14px 10px 4px; }
 .sidebar .foot { flex: none; margin-top: auto; padding: var(--s3) 10px 0; font-size: var(--fs-xs); color: var(--faint); border-top: 1px solid var(--hair); }
 .sidebar .foot button { background: none; border: none; padding: 0; cursor: pointer; color: var(--muted); }

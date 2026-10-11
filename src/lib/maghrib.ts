@@ -50,14 +50,25 @@ export function zuhrOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon): Da
   return new Date(s.at(s.jTransit).getTime() + 2 * 60000);
 }
 
-// ---------- the day runs maghrib to maghrib ----------
-// Eldar's rule (2026-09-21): a day file `life/days/D.md` starts at maghrib of
-// D-1 and ends at maghrib of D. Files before the switch run midnight to midnight.
+// ---------- the day boundary ----------
+// Eldar's rule of 2026-09-21 made a day run maghrib to maghrib: `life/days/D.md`
+// from maghrib of D-1 to maghrib of D. He revoked it on 2026-10-11: from
+// `2026-10-12.md` a day is a calendar day again, midnight to midnight, marked
+// the next morning on the «Утро» screen. Files 2026-09-22 … 2026-10-11 keep
+// the old boundary and are read as they are; 2026-10-11 is the transition
+// (maghrib of 10-10 to midnight).
 
 export const SHYMKENT = { lat: 42.3417, lon: 69.5901 };
 
 /** The first day file that starts at the previous evening's maghrib. */
 export const MAGHRIB_DAYS_FROM = "2026-09-22";
+/** The first day file that is a plain calendar day again. */
+export const CALENDAR_DAYS_FROM = "2026-10-12";
+
+/** Did this file's day open at the previous maghrib? */
+export function maghribDay(file: string): boolean {
+  return file >= MAGHRIB_DAYS_FROM && file < CALENDAR_DAYS_FROM;
+}
 
 function localDate(t: Date): string {
   const m = String(t.getMonth() + 1).padStart(2, "0");
@@ -80,11 +91,11 @@ function minutesOf(t: Date): number {
   return t.getHours() * 60 + t.getMinutes();
 }
 
-/** The day file a moment belongs to: after maghrib it is already the next date. */
+/** The day file a moment belongs to: the calendar date, except in the maghrib weeks, when after sunset it was already the next date. */
 export function dayOf(t: Date, lat = SHYMKENT.lat, lon = SHYMKENT.lon): string {
   const cal = localDate(t);
   const next = nextDate(cal);
-  return next >= MAGHRIB_DAYS_FROM && t >= maghribOn(cal, lat, lon) ? next : cal;
+  return maghribDay(next) && t >= maghribOn(cal, lat, lon) ? next : cal;
 }
 
 /** The day file open right now. Use this, not todayStr(), for anything written into `life/days/`. */
@@ -92,10 +103,10 @@ export function dayToday(): string {
   return dayOf(new Date());
 }
 
-/** Next moment the day file changes: maghrib today, or tomorrow's if it has passed. */
+/** Next moment the day file changes: midnight, or in the maghrib weeks the coming sunset. */
 export function nextDayBoundary(now = new Date()): Date {
   const cal = localDate(now);
-  if (nextDate(cal) < MAGHRIB_DAYS_FROM) return new Date(nextDate(cal) + "T00:00:00");
+  if (!maghribDay(nextDate(cal))) return new Date(nextDate(cal) + "T00:00:00");
   const m = maghribOn(cal);
   return now < m ? m : maghribOn(nextDate(cal));
 }
@@ -106,7 +117,8 @@ export function nextDayBoundary(now = new Date()): Date {
  * but happened the evening before.
  */
 export function sessionCalendarDate(file: string, at: string): string {
-  if (file < MAGHRIB_DAYS_FROM) return file;
+  // The transition file 2026-10-11 holds two evenings; its own date wins.
+  if (!maghribDay(file) || file === nextDate(CALENDAR_DAYS_FROM, -1)) return file;
   const prev = nextDate(file, -1);
   const [h, m] = at.split(":").map(Number);
   return h * 60 + m >= minutesOf(maghribOn(prev)) ? prev : file;

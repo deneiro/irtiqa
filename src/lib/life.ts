@@ -15,7 +15,13 @@ import { WEEKDAYS_EN, WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
 
 // ---------- types ----------
 
-export type HabitKind = "good" | "bad";
+/**
+ * `prayer` (schema 3.7, Eldar 2026-10-11): the five prayers, Witr and Jumu'ah.
+ * Not a habit — shown as a row of cells with three states (on time · late ·
+ * missed), never as a streak. `bad` is what he wants to stop; `good` is what he
+ * is building.
+ */
+export type HabitKind = "good" | "bad" | "prayer";
 export type HabitStatus = "proposed" | "active" | "paused" | "archived";
 /**
  * When in the day a habit is done (Eldar, 2026-10-03). The day opens at
@@ -111,6 +117,8 @@ export interface Day {
   habitsDone: string[];
   habitsFailed: string[];
   habitsSkipped: string[];
+  /** A prayer read, but not on time (schema 3.7). Written only when non-empty. */
+  habitsLate: string[];
   questsClosed: string[];
   sessions: Session[];
   mood: number | undefined;
@@ -146,7 +154,7 @@ export interface DayExtra {
   tail: string[];
 }
 
-export type DayMark = "done" | "failed" | "skipped";
+export type DayMark = "done" | "failed" | "skipped" | "late";
 
 export interface AccountRow {
   name: string;
@@ -304,6 +312,8 @@ export interface Life {
   /** Raw text of `life/calendar.md`; parsed by lib/calendar.ts. */
   calendar: string | null;
   audits: Audit[];
+  /** `life/goals/<период>.md` by period key (`2026-W42`, `2026-10`); parsed by lib/goals.ts. */
+  goals: Map<string, string>;
 }
 
 export const DAY_DIR = "life/days";
@@ -318,6 +328,7 @@ export const JOBS_REL = "life/jobs.md";
 export const WISHES_REL = "life/wishes.md";
 export const LIBRARY_REL = "life/library.md";
 export const CALENDAR_FILE = "life/calendar.md";
+export const GOALS_DIR = "life/goals";
 
 // ---------- small helpers ----------
 
@@ -379,7 +390,8 @@ export function safeFilename(title: string): string {
 export function parseHabit(f: MdFile): Habit {
   const { fm, body } = parseFrontmatter(f.content);
   const file = f.rel.split("/").pop()!.replace(/\.md$/i, "");
-  const kind = str(fm.kind) === "bad" ? "bad" : "good";
+  const rawKind = str(fm.kind);
+  const kind: HabitKind = rawKind === "bad" ? "bad" : rawKind === "prayer" ? "prayer" : "good";
   const status = (str(fm.status) as HabitStatus | undefined) ?? "active";
   const rawFreq = fm.freq;
   const freq = Array.isArray(rawFreq) ? list(rawFreq) : freqFromText(str(rawFreq));
@@ -704,7 +716,7 @@ function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; jou
 }
 
 /** Frontmatter keys the app writes itself; anything else in a day file is carried through. */
-const DAY_KEYS = new Set(["date", "type", "habits_done", "habits_failed", "habits_skipped", "quests_closed", "sessions", "work_minutes", "spent", "earned", "mood", "stress", "weight", "pushups", "pullups", "closed"]);
+const DAY_KEYS = new Set(["date", "type", "habits_done", "habits_failed", "habits_skipped", "habits_late", "quests_closed", "sessions", "work_minutes", "spent", "earned", "mood", "stress", "weight", "pushups", "pullups", "closed"]);
 
 function foreignFrontmatter(content: string, known: Set<string> = DAY_KEYS): string[] {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/);
@@ -735,6 +747,7 @@ export function parseDay(f: MdFile): Day {
     habitsDone: list(fm.habits_done),
     habitsFailed: list(fm.habits_failed),
     habitsSkipped: list(fm.habits_skipped),
+    habitsLate: list(fm.habits_late),
     questsClosed: list(fm.quests_closed),
     sessions,
     mood: num(fm.mood),
@@ -753,7 +766,7 @@ export function parseDay(f: MdFile): Day {
 
 export function emptyDay(date: string): Day {
   return {
-    date, habitsDone: [], habitsFailed: [], habitsSkipped: [], questsClosed: [], sessions: [],
+    date, habitsDone: [], habitsFailed: [], habitsSkipped: [], habitsLate: [], questsClosed: [], sessions: [],
     mood: undefined, stress: undefined, weight: undefined, pushups: undefined, pullups: undefined,
     closed: false, done: [], txs: [], meals: [], journal: "",
   };
@@ -781,6 +794,7 @@ export function serializeDay(d: Day): string {
     `habits_done: ${yamlList(d.habitsDone)}`,
     `habits_failed: ${yamlList(d.habitsFailed)}`,
     `habits_skipped: ${yamlList(d.habitsSkipped)}`,
+    ...(d.habitsLate.length ? [`habits_late: ${yamlList(d.habitsLate)}`] : []),
     `quests_closed: ${yamlList(d.questsClosed)}`,
     `sessions: ${yamlList(d.sessions.map((s) => `${s.quest}: ${s.minutes}${s.at ? ` @${s.at}` : ""}`))}`,
     `work_minutes: ${workMinutesOf(d)}`,
@@ -835,15 +849,17 @@ export function markOf(d: Day, habit: string): DayMark | undefined {
   if (d.habitsDone.includes(habit)) return "done";
   if (d.habitsFailed.includes(habit)) return "failed";
   if (d.habitsSkipped.includes(habit)) return "skipped";
+  if (d.habitsLate.includes(habit)) return "late";
   return undefined;
 }
 
 export function withMark(d: Day, habit: string, mark: DayMark | undefined): Day {
   const rm = (a: string[]) => a.filter((x) => x !== habit);
-  const next: Day = { ...d, habitsDone: rm(d.habitsDone), habitsFailed: rm(d.habitsFailed), habitsSkipped: rm(d.habitsSkipped) };
+  const next: Day = { ...d, habitsDone: rm(d.habitsDone), habitsFailed: rm(d.habitsFailed), habitsSkipped: rm(d.habitsSkipped), habitsLate: rm(d.habitsLate) };
   if (mark === "done") next.habitsDone = [...next.habitsDone, habit];
   if (mark === "failed") next.habitsFailed = [...next.habitsFailed, habit];
   if (mark === "skipped") next.habitsSkipped = [...next.habitsSkipped, habit];
+  if (mark === "late") next.habitsLate = [...next.habitsLate, habit];
   return next;
 }
 
@@ -891,7 +907,7 @@ export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
     extra: theirs.extra,
   };
   // Habit marks: a habit whose mark changed here takes ours, the rest keep the disk's.
-  const titles = new Set([...base.habitsDone, ...base.habitsFailed, ...base.habitsSkipped, ...ours.habitsDone, ...ours.habitsFailed, ...ours.habitsSkipped]);
+  const titles = new Set([...base.habitsDone, ...base.habitsFailed, ...base.habitsSkipped, ...base.habitsLate, ...ours.habitsDone, ...ours.habitsFailed, ...ours.habitsSkipped, ...ours.habitsLate]);
   for (const h of titles) {
     const o = markOf(ours, h);
     if (o !== markOf(base, h)) next = withMark(next, h, o);
@@ -923,7 +939,7 @@ function fmtMoney(n: number): string {
 export function dayLogLine(d: Day, habits: Habit[]): string {
   const due = habits.filter((h) => habitDue(h, d.date)).length;
   const unmarked = unmarkedOn(d, habits).length;
-  const parts = [`привычки ${d.habitsDone.length}/${due}${unmarked ? ` (не отмечено ${unmarked})` : ""}`];
+  const parts = [`привычки ${d.habitsDone.length + d.habitsLate.length}/${due}${unmarked ? ` (не отмечено ${unmarked})` : ""}`];
   if (d.questsClosed.length) parts.push(`квесты ${d.questsClosed.length}`);
   const wm = workMinutesOf(d);
   if (wm) parts.push(`работа ${wm} мин`);
@@ -1100,7 +1116,7 @@ export function streak(habit: Habit, days: Map<string, Day>, upTo: string): numb
     if (!habitDue(habit, cur)) continue;
     const d = days.get(cur);
     const m = d ? markOf(d, habit.title) : undefined;
-    if (m === "done") n++;
+    if (m === "done" || m === "late") n++;
     else if (m === "skipped") continue;
     else if (i === 0 && !m && !d?.closed) continue; // today, not marked yet: still time
     else break;
@@ -1144,7 +1160,7 @@ export function habitRate(h: Habit, days: Map<string, Day>, upTo: string, n = 30
       const d = days.get(cur);
       const m = d ? markOf(d, h.title) : undefined;
       if (!m) { if (d?.closed || cur < upTo) unmarked++; }
-      else if (m !== "skipped") { due++; if (m === "done") done++; }
+      else if (m !== "skipped") { due++; if (m === "done" || m === "late") done++; }
     }
     const prev = new Date(cur + "T12:00:00");
     prev.setDate(prev.getDate() - 1);
@@ -1162,7 +1178,7 @@ export function bestStreak(habit: Habit, days: Map<string, Day>): number {
     if (!habitDue(habit, cur)) continue;
     const d = days.get(cur);
     const m = d ? markOf(d, habit.title) : undefined;
-    if (m === "done") { run++; best = Math.max(best, run); }
+    if (m === "done" || m === "late") { run++; best = Math.max(best, run); }
     else if (m !== "skipped") run = 0;
   }
   return best;
@@ -1186,6 +1202,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   let library: string | null = null;
   let calendar: string | null = null;
   const audits: Audit[] = [];
+  const goals = new Map<string, string>();
   for (const f of files) {
     if (f.rel.startsWith(HABIT_DIR + "/")) habits.push(parseHabit(f));
     else if (f.rel.startsWith(QUEST_DIR + "/")) quests.push(parseQuest(f));
@@ -1202,6 +1219,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel === LIBRARY_REL) library = f.content;
     else if (f.rel === CALENDAR_FILE) calendar = f.content;
     else if (f.rel.startsWith(AUDIT_DIR + "/")) audits.push(parseAudit(f));
+    else if (f.rel.startsWith(GOALS_DIR + "/")) goals.set(f.rel.slice(GOALS_DIR.length + 1).replace(/\.md$/i, ""), f.content);
   }
   habits.sort((a, b) => a.title.localeCompare(b.title, "ru"));
   quests.sort((a, b) => (a.due ?? "9999").localeCompare(b.due ?? "9999") || a.title.localeCompare(b.title, "ru"));
@@ -1209,13 +1227,14 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
   audits.sort((a, b) => b.date.localeCompare(a.date));
   debts = applyInstalments(debts, days);
-  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, audits };
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, audits, goals };
 }
 
 /** Order inside a part of the day list: evening, morning, lunch, then the whole day. */
 export function byHabitTime(a: Habit, b: Habit): number {
   const at = (h: Habit) => (h.time ? HABIT_TIMES.indexOf(h.time) : HABIT_TIMES.length);
-  return at(a) - at(b) || (a.kind === b.kind ? 0 : a.kind === "good" ? -1 : 1) || a.title.localeCompare(b.title, "ru");
+  const rank = (k: HabitKind) => (k === "prayer" ? 0 : k === "good" ? 1 : 2);
+  return at(a) - at(b) || rank(a.kind) - rank(b.kind) || a.title.localeCompare(b.title, "ru");
 }
 
 export function habitTimeLabel(t: HabitTime | undefined): string {
