@@ -23,7 +23,7 @@
 .cell .g { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 13px; background: var(--raised); color: var(--faint); flex: none; }
 .cell:hover:not(:disabled) { border-color: var(--accent-text); color: var(--ink); }
 .cell:active:not(:disabled) { transform: scale(0.97); }
-.cell:disabled { cursor: default; }
+.yday.locked .cell { opacity: 0.85; }
 .cell.done { border-color: transparent; background: color-mix(in srgb, var(--success) 18%, transparent); color: var(--ink); }
 .cell.done .g { background: var(--success); color: #07170f; }
 .cell.late { border-color: transparent; background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--ink); }

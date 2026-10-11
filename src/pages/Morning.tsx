@@ -109,12 +109,23 @@ function Morning({ today }: { today: string }) {
     return items.length ? `${g.title.toLowerCase()} ${items.filter((h) => scored(markOf(draft, h.title), g.kind)).length}/${items.length}` : "";
   }).filter(Boolean).join(" · ");
 
-  const tap = (h: Habit) => update((d) => {
+  const apply = (d: Day, h: Habit): Day => {
     const cur = markOf(d, h.title);
     if (h.kind === "prayer") return withMark(d, h.title, PRAYER_CYCLE[cur ?? "none"]);
     if (h.kind === "bad") return withMark(d, h.title, cur === "failed" ? undefined : "failed");
     return withMark(d, h.title, cur === "done" ? undefined : "done");
-  });
+  };
+  /** A tap on a closed day reopens it: fixing yesterday must not need a separate button first. */
+  const tap = (h: Habit) => {
+    if (draft.closed) {
+      const open = apply({ ...draft, closed: false }, h);
+      setDraft(open);
+      setJustClosed(false);
+      void persist(open);
+      return;
+    }
+    update((d) => apply(d, h));
+  };
   /** The day as its marks imply: what the grid and the streaks show before «Готово». */
   const implied = useMemo(() => impliedMarks(draft, habits), [draft, habits]);
 
@@ -221,7 +232,7 @@ function Morning({ today }: { today: string }) {
                   const m = markOf(draft, h.title) ?? "none";
                   const look = g.kind === "bad" && m !== "failed" ? "held" : m;
                   return (
-                    <button key={h.rel} className={`cell ${look}`} disabled={locked} onClick={() => tap(h)} title={`${h.title}: ${titles[m]}`}>
+                    <button key={h.rel} className={`cell ${look}`} onClick={() => tap(h)} title={`${h.title}: ${titles[m]}${locked ? " · нажатие откроет день заново" : ""}`}>
                       <span className="g">{look === "held" ? "✓" : GLYPH[m]}</span>
                       <span className="t">{h.title.replace(/^Учить суру\s+/, "Сура ")}</span>
                     </button>
@@ -236,8 +247,8 @@ function Morning({ today }: { today: string }) {
         <footer className="yfoot">
           {locked ? (
             <>
-              <span className="small muted">закрыт{prayersOpen ? ` · намаз без отметки: ${prayersOpen}` : ""}</span>
-              <button className="btn small ghost" onClick={reopen} disabled={busy}>исправить</button>
+              <span className="small muted">закрыт{prayersOpen ? ` · намаз без отметки: ${prayersOpen}` : ""} · нажми любую клетку, чтобы поправить</span>
+              <button className="btn small ghost" onClick={reopen} disabled={busy}>открыть заново</button>
             </>
           ) : (
             <>
