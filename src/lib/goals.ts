@@ -62,9 +62,40 @@ export function monthKey(date: string): string {
   return date.slice(0, 7);
 }
 
-/** The week and month files that cover `date`, when they exist. */
+/**
+ * The week and month files that cover `date`, when they exist. On a Sunday
+ * evening the coming week's file is already written while the current one
+ * never was, so the next week stands in when this one is missing.
+ */
 export function goalsFor(goals: Map<string, string>, date: string): { week: GoalsFile | undefined; month: GoalsFile | undefined } {
-  const wk = isoWeekKey(date), mk = monthKey(date);
-  const w = goals.get(wk), m = goals.get(mk);
-  return { week: w ? parseGoals(wk, w) : undefined, month: m ? parseGoals(mk, m) : undefined };
+  const mk = monthKey(date);
+  const m = goals.get(mk);
+  const [y, mo, d] = date.split("-").map(Number);
+  const next = new Date(Date.UTC(y, mo - 1, d + 1)).toISOString().slice(0, 10);
+  const wk = [isoWeekKey(date), isoWeekKey(next)].find((k) => goals.has(k));
+  return { week: wk ? parseGoals(wk, goals.get(wk)!) : undefined, month: m ? parseGoals(mk, m) : undefined };
+}
+
+/**
+ * The file text with task `index` (in `## Задачи` order, notes skipped)
+ * ticked or unticked. Only the checkbox changes; a plain bullet with a link
+ * gains one. Eldar taps this on «Утро»; Claude ticks the same line from his
+ * words — both end in the same file.
+ */
+export function withTaskDone(content: string, index: number, done: boolean): string {
+  const lines = content.split("\n");
+  const head = lines.findIndex((l) => /^## Задачи\s*$/.test(l));
+  if (head < 0) return content;
+  let n = -1;
+  for (let i = head + 1; i < lines.length; i++) {
+    if (/^## /.test(lines[i])) break;
+    const m = lines[i].match(/^(\s*-\s*)(?:\[([ xX])\]\s*)?(.+)$/);
+    if (!m) continue;
+    if (!m[2] && !/\[\[/.test(m[3])) continue; // a note, not a task
+    n++;
+    if (n !== index) continue;
+    lines[i] = `${m[1]}[${done ? "x" : " "}] ${m[3]}`;
+    break;
+  }
+  return lines.join("\n");
 }

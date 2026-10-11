@@ -85,7 +85,9 @@
 .qhead .n { margin-left: auto; font-size: var(--fs-sm); color: var(--muted); }
 .step { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; font-size: var(--fs-ui); line-height: 1.4; }
 .step .k { flex: none; font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.06em; color: var(--c); width: 52px; }
-.step.now { color: var(--ink); font-size: var(--fs-body); }
+.step.now { color: var(--ink); font-size: var(--fs-body); align-items: center; }
+.step.now .qcheck.big { width: 24px; height: 24px; border-radius: 7px; border-color: var(--c); flex: none; }
+.step.now .qcheck.big:hover:not(:disabled) { background: var(--c); }
 .step.now .s { font-weight: 500; }
 .step.locked { color: var(--faint); }
 .step.locked .k { color: var(--faint); font-size: 12px; letter-spacing: 0; }
@@ -97,7 +99,8 @@
 .goalcard h3 { margin-bottom: var(--s2); }
 .goal { font-size: var(--fs-ui); color: var(--ink-2); padding: 4px 0 4px 12px; border-left: 2px solid var(--hair-2); margin: 4px 0; line-height: 1.45; }
 .tasks { margin-top: var(--s3); border-top: 1px solid var(--hair); padding-top: var(--s2); }
-.task { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-size: var(--fs-ui); color: var(--ink-2); }
+.task { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-size: var(--fs-ui); color: var(--ink-2); background: none; border: 0; width: 100%; text-align: left; cursor: pointer; font: inherit; }
+.task:hover:not(:disabled) .box { border-color: var(--success); }
 .task .box { flex: none; width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--hair-2); display: grid; place-items: center; font-size: 11px; transform: translateY(2px); }
 .task.done { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--hair-2); }
 .task.done .box { background: var(--success); color: #07170f; border-color: transparent; }

@@ -5,11 +5,11 @@ import { useT } from "../lib/i18n";
 import { addDays, formatDayTitle } from "../lib/dates";
 import { useDayToday } from "../lib/useDayToday";
 import { closeDays } from "../lib/closeDays";
-import { goalsFor } from "../lib/goals";
+import { goalsFor, withTaskDone } from "../lib/goals";
 import { parseHealth } from "../lib/health";
 import { themeColor } from "../lib/themes";
 import { heldOut, weekGrid, winNumbers } from "../lib/wins";
-import { emptyDay, habitDue, impliedMarks, markOf, mergeDay, nextStep, questSteps, serializeDay, withMark, type Day, type DayMark, type Habit, type HabitKind } from "../lib/life";
+import { GOALS_DIR, emptyDay, habitDue, impliedMarks, markOf, mergeDay, nextStep, questSteps, serializeDay, serializeQuest, withMark, withQuestSteps, type Day, type DayMark, type Habit, type HabitKind, type Quest, type QuestStep } from "../lib/life";
 import NeedsYou from "../components/NeedsYou";
 import "./Morning.css";
 
@@ -159,9 +159,30 @@ function Morning({ today }: { today: string }) {
     return habits.filter((h) => h.status === "active" && h.kind === "bad").map((h) => ({ h, n: heldOut(h, days, yesterday) })).sort((a, b) => b.n - a.n);
   }, [life, habits, implied, yesterday]);
 
-  // ----- today -----
+  // ----- today: the step he does himself is ticked here; the rest comes from Claude -----
   const quests = useMemo(() => (life?.quests ?? []).filter((q) => q.status === "active").map((q) => ({ q, steps: questSteps(q.body) })), [life]);
   const { week, month } = useMemo(() => goalsFor(life?.goals ?? new Map(), today), [life, today]);
+  const [ticking, setTicking] = useState<string | null>(null);
+
+  /** Tick the current step of a quest: `- [x]`, with the date on its detail line so the quest no longer counts as stalled. */
+  const tickStep = async (q: Quest, steps: QuestStep[], step: QuestStep) => {
+    if (ticking) return;
+    setTicking(q.rel);
+    try {
+      const next = steps.map((s) => (s === step ? { ...s, done: true, detail: [s.detail, `✓ ${today}`].filter(Boolean).join("\n") } : s));
+      await saveText(q.rel, serializeQuest({ ...q, body: withQuestSteps(q.body, next) }));
+      await reload();
+    } catch (e) { setErr(String(e)); } finally { setTicking(null); }
+  };
+
+  const tickTask = async (index: number, done: boolean) => {
+    if (!week || ticking) return;
+    const rel = `${GOALS_DIR}/${week.key}.md`;
+    const content = life?.goals.get(week.key);
+    if (!content) return;
+    setTicking(rel);
+    try { await saveText(rel, withTaskDone(content, index, done)); await reload(); } catch (e) { setErr(String(e)); } finally { setTicking(null); }
+  };
 
   if (!vault || !life) return null;
   const locked = draft.closed;
@@ -282,7 +303,10 @@ function Morning({ today }: { today: string }) {
                 </div>
                 {next ? (
                   <>
-                    <div className="step now"><span className="k">сейчас</span><span className="s">{next.text.replace(/\s*—\s*(ты|Claude|ET1|JH1|ты и Claude|Claude и ты)\s*$/i, "")}</span></div>
+                    <div className="step now">
+                      <button className="qcheck big" disabled={ticking !== null} onClick={() => void tickStep(q, steps, next)} title="сделал — открыть следующий шаг" />
+                      <span className="s">{next.text.replace(/\s*—\s*(ты|Claude|ET1|JH1|ты и Claude|Claude и ты)\s*$/i, "")}</span>
+                    </div>
                     {after.map((s, i) => (
                       <div className="step locked" key={i}><span className="k">🔒</span><span className="s">{s.text.replace(/\s*—\s*(ты|Claude|ET1|JH1|ты и Claude|Claude и ты)\s*$/i, "")}</span></div>
                     ))}
@@ -304,7 +328,11 @@ function Morning({ today }: { today: string }) {
             {week && week.goals.map((g, i) => <div className="goal" key={i}>{g}</div>)}
             {week && week.tasks.length > 0 && (
               <div className="tasks">
-                {week.tasks.map((t, i) => <div className={`task ${t.done ? "done" : ""}`} key={i}><span className="box">{t.done ? "✓" : ""}</span><span>{t.text}</span></div>)}
+                {week.tasks.map((t, i) => (
+                  <button className={`task ${t.done ? "done" : ""}`} key={i} disabled={ticking !== null} onClick={() => void tickTask(i, !t.done)} title={t.done ? "вернуть в работу" : "сделал"}>
+                    <span className="box">{t.done ? "✓" : ""}</span><span>{t.text}</span>
+                  </button>
+                ))}
               </div>
             )}
           </div>
