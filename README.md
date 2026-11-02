@@ -1,98 +1,134 @@
-# ⚔️ IrtiQa — Life RPG
+# IrtiQa-Tauri
 
-Your real life, played as an RPG. Every real action — a habit, a work session, a journal entry, paying off a debt — earns your character XP and Gold. Neglect costs HP. The only way to soften a consequence is to spend Gold you actually earned.
+Личное локальное приложение над vault `personal-obsidian`. Некоммерческое,
+только Mac. Рабочее имя по папке; продукт ещё не назван.
 
-## Run it
+У приложения **нет своей базы**. Всё состояние живёт в markdown-файлах vault,
+в зоне `life/` (дни, привычки, деятельности, финансы; схема 4.1 — см. `CLAUDE.md` этого репо). Приложение читает vault с
+диска, пишет в него, и подхватывает изменения, сделанные Claude Code или
+Obsidian. Claude Code остаётся единственным LLM и запускается из приложения
+как внешний процесс. Спецификация:
+`wiki/Business & career/Projects/IrtiQa-Tauri/Wiki/Спецификация v1 — одно приложение над vault (2026-09-11).md`
+в vault.
+
+## Откуда что
+
+- Оболочка, Rust-слой (`src-tauri/`), парсер vault, поиск, рендер страниц,
+  графики, скрипты — из Second Brain (read-only viewer, который это приложение
+  заменяет).
+- Игровой слой (день, привычки, квесты, финансы, колесо) — переносится из
+  IrtiQa по срезам. Референс: `~/Desktop/Projects/IrtiQa`. История IrtiQa в
+  этом репо сохранена: коммит `296e48f` — последнее состояние перед перестройкой.
+
+## Запуск
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
-npm run build    # production bundle in dist/
-npm test         # vitest suite for the game engine + store rules
+npm run tauri dev        # окно, live reload
+npm run tauri build      # .app + .dmg в src-tauri/target/release/bundle/
 ```
 
-The game is local-first: it always runs off the save in your browser, so it works with zero setup and no network. Cloud sync is **optional** and off until you configure it (see below) — when off, every sign-in / sync control hides itself and the app is purely local. When on, sign in (Settings → Account & cloud sync, or "Returning player?" on the start screen) to mirror your save to Supabase — every change auto-uploads a few seconds later, and signing in on any device restores your character. Manual export/import is always available in **Settings**.
+Только UI, без Rust:
 
-## Deploy (Vercel + Supabase)
+```bash
+npx vite                 # http://localhost:1420
+```
 
-The app is a static Vite SPA. It deploys with **no backend at all** (local-first), or with cloud accounts once you set two env vars. Nothing in the code is hardcoded to a specific project — sync activates purely from env.
+В этом режиме Vite-middleware `/__vault` читает vault, `/__vault/write` пишет.
+`git` и `claude` из браузера недоступны — только из окна Tauri.
 
-### 1. Provision the backend (enables accounts + cross-device sync)
+## v2: Утро · Темы · Посмотреть (2026-10-11)
 
-1. Create a project at [supabase.com](https://supabase.com) (free tier is fine).
-2. Run the migration in [`supabase/migrations/0001_saves.sql`](supabase/migrations/0001_saves.sql): Supabase dashboard → **SQL Editor** → paste & run. It creates the `saves` table, the `updated_at` trigger, and row-level-security policies so each user can only touch their own row. It's idempotent.
-3. Grab **Project Settings → API**: the project **URL** and the **publishable (anon)** key. (Never use the `service_role`/secret key in client code.)
+Спецификация: `wiki/Business & career/Projects/IrtiQa-Tauri/Wiki/Спецификация
+v2 — Jarvis и голограмма (2026-10-11).md` в vault. Ввод — разговор с Claude,
+приложение показывает. В меню три вещи:
 
-*Skip this whole step to ship local-first — the app builds and runs fine with the env vars unset.*
+- **Утро** (`src/pages/Morning.tsx`) — единственный ежедневный экран. Утром
+  Эльдар отмечает **вчера** сам, одной кнопкой: намаз в трёх состояниях
+  (✓ вовремя · ⏰ поздно · ✗ пропустил — `habits_late` в файле дня);
+  «удержался» — нажимается только то, где не удержался, нетронутое значит
+  устоял; привычки — нажимается сделанное, нетронутое значит не сделал.
+  «Готово» дописывает подразумеваемые отметки (`impliedMarks`: плохая
+  нетронутая → done, хорошая нетронутая → failed), закрывает вчера, пишет строку
+  `day` в лог и коммитит vault (`src/lib/closeDays.ts`). Ниже — победы
+  (`src/lib/wins.ts`: четыре цифры — суры, вес, долг, дни без травки; сетка
+  недели; серии) и «Сегодня»: первый невыполненный шаг каждого активного
+  квеста, следующие заперты; задачи недели и цели месяца из `life/goals/`
+  (`src/lib/goals.ts`). Claude ставит галочки в шагах и задачах — экран
+  подхватывает через watcher. Отметки привычек Claude не пишет никогда.
+- **Темы** — чтение, как было: обзор темы, ресурсы, «прочитано», «применить».
+- **Посмотреть** — все экраны v1 списком, ничего не удалено.
 
-### 2. Deploy to Vercel
+Группы привычек — по `kind: prayer | bad | good`, не по теме.
 
-Import the repo at [vercel.com/new](https://vercel.com/new) (or run `npx vercel` from the project root). Vercel auto-detects Vite; [`vercel.json`](vercel.json) pins the build (`npm run build` → `dist/`), SPA rewrites, and asset caching.
+## День — календарный (с 2026-10-12)
 
-Then, in **Vercel → Settings → Environment Variables**, add the two values from step 1 (leave unset for local-first):
+С 2026-09-22 по 2026-10-11 день шёл от магриба до магриба (файл D начинался на
+магрибе D−1); 2026-10-11 Эльдар это отменил. `dayOf` / `dayToday()` в
+`src/lib/maghrib.ts` отдают календарную дату и применяют правило магриба
+только к файлам тех трёх недель (`maghribDay(file)`); `2026-10-11.md` —
+переходный файл. Незакрытое «вчера» ждёт кнопки «Готово»; всё старше вчера
+закрывается само при запуске.
 
-| Variable | Value |
-|---|---|
-| `VITE_SUPABASE_URL` | `https://<your-project>.supabase.co` |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | your publishable/anon key |
+## Телеграм-бот (`bot/`)
 
-Redeploy so the vars are baked into the client bundle (`VITE_*` vars are inlined at build time). Accounts + sync light up automatically — no code change.
+Одно сообщение в день, после фаджра (`afterFajrMin` в конфиге): как выглядит
+вчера, серии «удержался», четыре цифры, первый шаг каждого квеста, задачи
+недели, «требует тебя». Без кнопок — отметки делаются в «Утро». Вечерний
+итог есть за флагом `eveningDigest: true` (по умолчанию выключен: не больше
+двух сообщений в день). По запросу: `/yesterday` и `/today` — клавиатура
+отметок тремя группами (у намаза ✓ · ⏰ · ✗), «🍽 Еда», «💸 Деньги»,
+«🤝 Контакт», `/checkin`, `/weight` (воскресенье утром спрашивает сам),
+`/need`, `/morning`.
 
-### Local dev with sync
+```bash
+./bot/install.sh                              # собрать, записать LaunchAgent, запустить
+node "$HOME/Library/Application Support/irtiqa-bot/bot.mjs" --morning 2026-10-12   # сухой прогон утреннего текста
+```
 
-Copy [`.env.example`](.env.example) → `.env`, fill in the same two values, and `npm run dev`. `.env` is gitignored.
+Первый запуск создаёт `~/Library/Application Support/irtiqa-bot/config.json`:
+токен от @BotFather, путь к vault, координаты, `fajrAngle`, `afterFajrMin`,
+`eveningDigest`. Первый `/start` в чате делает этот чат владельцем. Лог —
+`bot.log` рядом с конфигом. Бот работает, пока Mac не спит; проспанное утро
+досылается в течение шести часов. После правки кода — снова
+`./bot/install.sh`.
 
-## What's inside
+## Rust-команды (`src-tauri/src/lib.rs`)
 
-| System | How it works |
-|---|---|
-| **Character** | Level + XP (steady curve), HP 0–100, Gold, rank titles from Seeker → Legend. **Nothing gates on HP** — not payouts, not the chest, not priority quests, not the boss. It is a readout of the last rough stretch and nothing else; effort is worth the same at 3 HP as at 100 |
-| **The Sigil** | The character as an emblem, drawn entirely from real state (`src/game/sigil.ts`): eight petals sized by attribute level so the asymmetry *is* your Wheel, overall size from character level, one ring per rank tier, inner facets every 5 levels, and a gold glow while a perfect-day streak runs. It cannot look earned unless it was. Shown large on the Profile, small in the sidebar, and exportable as a 1024px PNG |
-| **7 classes** | Chosen at creation; each gives a permanent +10% XP boost to its life areas (e.g. Magician boosts Spirituality & Family). Changeable only via the Identity Scroll item |
-| **8 attributes** | Health, Friends, Family, Money, Career, Spirituality, Development, Brightness — the eight sectors of the Wheel of Life from *Extreme Time Management* (Mrochkovskiy & Tolkachev, 2012), mapped 1:1. Every action is tagged, XP flows to both character and attributes, imbalance shows on the dashboard radar |
-| **The Wheel** | A page per attribute (`/attributes/:key`): what the sector means and why it's on the wheel, sourced from the book, plus a library of ready-to-add habits and quests so "add a habit" never starts from a blank field. Each template carries its behaviour-design mechanism (Two-Minute Rule, Habit Stacking, Implementation Intention) and a citation |
-| **Profile filtering** | Optionally set your radical profile in Settings (Ponomarenko's 7, the same vocabulary the Social hub uses for contacts). Templates then reorder to fit, and ones that reliably fail for your profile are hidden — a willpower-first habit is a good habit for an epileptoid and a trap without one. Unset means the full library, unfiltered |
-| **Habits** | Good (do it) / bad (avoid it), daily/weekly/specific dates. Missing a day is detected **automatically** — but yesterday isn't judged until 9am, so you can still log it the next morning. Unlogged days cost a little HP; a confessed relapse costs a little more. Damage scales **down** with the streak you broke — a long run is credit that cushions the miss, not exposure that amplifies it |
-| **Quests** | Time-tracked work: Start Session → live timer → Finish → "what did you do?" note → dated work log. Sessions earn nothing; one big XP/Gold payout on completion, scaled by hours actually logged. Single sessions cap at 4h so a forgotten timer can't mint XP |
-| **Quick tasks** | Plain checkboxes for one-offs, small XP |
-| **Journal** | Mood, stress, rotating reflection questions. Entries seal after 72h — only a Feather of Time reopens one, once |
-| **The Chronicle** | Every Monday, last week written back to you as prose — the strongest thread named, the one that slipped, your own journal and session notes quoted, where the week's weight landed. Assembled entirely from logged data (`src/game/chronicle.ts`), no AI and no network. Every beat self-suppresses when the data is too thin to say anything true, and a week with nothing in it is reported as empty rather than narrated. The one surface that gives instead of asks |
-| **Social Hub** | Contacts with groups/notes/birthdays, netted debts per person, events. All of it earns XP |
-| **Finances** | Accounts, transactions, categories, auto-posting subscriptions, live net worth. Blowing a monthly category budget deals HP damage scaled to the overshoot |
-| **Market** | Every item buyable **and** usable: potions, Streak Shield (auto-protects), Habit Pardon, Indulgence, Ghost Day, Feather of Time, Focus Unlock, Attribute Boost, Identity Scroll. Priced by what they save — a streak costs about a day of play (shield 30g, pardon 45g); HP is pocket change (potions 10/20/40g), because HP gates nothing |
-| **Achievements** | 56 across 14 families, bronze/silver/gold/platinum, front-loaded so the early game showers you — each pays XP + Gold with a popup |
-| **Themes** | Midnight (default), Parchment, Neon Grid, Sakura — bought with Gold, switchable anytime. Adding a theme = one CSS variable block in `src/styles.css` |
-| **Juice** | XP/Gold toasts on every action, LEVEL UP / RANK UP / ACHIEVEMENT popup animations with spark bursts |
+- `scan_vault(root)` — все `.md` под `wiki/` и `life/`, список `raw/`, `log.md`, `CLAUDE.md`.
+- `read_text(root, rel)`, `write_text(root, rel, content)` — внутри vault, атомарная запись, `raw/` и `CLAUDE.md` закрыты.
+- `run_cmd(root, program, args)` — `git`, `claude -p` в папке vault.
+- `watch_vault(root)` — событие `vault-changed` на любое изменение `.md` под `wiki/` или `life/`.
 
-## Architecture
+## Как устроен день
 
-- **Vite + React + TypeScript**, single-page app
-- **Zustand + Immer + persist** — one store (`src/store.ts`) holds all game state and rules; UI is a thin layer over it
-- **Supabase cloud sync** (`src/lib/sync.ts`) — email/password auth; the whole save is one JSONB row per user in a `saves` table guarded by row-level security. Debounced push on change; on login the newer side wins (cloud if another device wrote since this one last synced, local otherwise). Game rules still run client-side — the cloud is a mirror, not a referee
-- `src/game/engine.ts` — pure game math (leveling curves, damage formulas, payouts, date logic)
-- `src/game/constants.ts` — classes, ranks, items, achievements, themes (data-driven; extend here)
-- **Reconciliation** (`reconcile()` in the store) runs on load, on tab focus, and every minute: auto-fails missed habits for every unprocessed day, spends the Warden's weekly ward and then any Streak Shields/Indulgences/Ghost Days, and posts due subscriptions
+- `life/days/YYYY-MM-DD.md` пишется через 600 мс после любого изменения на экране. Внешние правки файла (Claude, Obsidian) подхватываются, если в приложении нет несохранённых изменений.
+- «Закрыть день»: `closed: true`; неотмеченные привычки остаются неотмеченными (с 2026-09-21 — раньше становились `failed`), строка `## [дата] day | …` дописывается в `wiki/log.md` с числом неотмеченных, затем `git add -A`, коммит `day <дата>` и `git push` в vault. Балансы счетов закрытие не трогает. В браузерном режиме всё то же без коммита.
+- Стрики и XP считаются из файлов дней, не хранятся. Числа XP в `XP` внутри `src/lib/life.ts`.
+- Плохая привычка (`kind: bad`): ✓ означает «удержался».
+- Подписка в день списания (день > длины месяца → последний день) один раз добавляется в файл дня как операция с заметкой `подписка: <название>`. Закрытый день не трогается.
+- `debts.md`: `[[Имя]]`, если есть страница в `People/`, иначе текст. «Закрыт» переносит строку в секцию «Закрытые» с датой; строки не удаляются.
+- Квест платит `20 + 55/час` по сумме `sessions` из всех дней; сессии короче 15 минут не считаются. Таймер один на всё приложение, живёт в `localStorage` под `irtiqa.timer`.
+- Страницы, кроме «День», меняют сегодняшний файл через `updateToday` в сторе: читают последний скан, применяют изменение, пишут. «День» перед уходом со страницы сбрасывает отложенную запись, чтобы никто не прочитал устаревший файл.
 
-## Design rules the code enforces
+## Скрипты над vault
 
-- **Integrity lives in what you earn, not in what gets taken away.** No reward without
-  an action; no HP restoration except items bought with earned Gold. But nothing you
-  earn is ever reduced or locked because of a bad stretch
-- **HP is a readout, and that is the whole design.** It is the one number that moves
-  down, so a rough fortnight stays visible instead of averaging away — but nothing
-  reads it back. Any gate on HP is a punishment wearing a different hat, and framing
-  it as a bonus above 75 rather than a penalty below 25 does not change how it lands
-  on someone having a bad week. The bar diagnoses; it never charges
-- **Prices track the stake, not the flavour.** A missed day costs a streak and a
-  couple of HP. Only one of those is worth insuring, so the streak items sit near a
-  day of play and the potions near nothing — a Streak Shield at 1.5 days to save two
-  hit points is an item nobody would buy, which is worse than not shipping it
-- **A bad day never makes the app worse to open.** Low HP costs nothing mechanically;
-  a broken streak is cushioned by how long it ran; an unslain weekly boss just leaves
-- **The Chronicle never invents.** Every sentence traces to logged data. A thin week
-  says so rather than being padded into a story — a fabricated narrative would
-  destroy the only thing the feature is for
-- Missing a habit is recorded by the app, not confessed by the player — and it's
-  reported as *missed*, never as *failed*
-- Quest payouts are proportional to logged work — no partial credit, no dilution
-- The past is sealed (journal locks) unless you pay
+`scripts/` — lint, dead links, raw triage, relink, `genindex.ts` (генерирует
+`wiki/index.md`). Запуск: `npx tsx scripts/<name>.ts "<путь к vault>"`.
+
+## Срезы
+
+0. ✅ Оболочка над vault: темы, страницы, поиск, watcher, запись, `life/` в скане.
+1. ✅ День: экран (`src/pages/Day.tsx`), модель `life/` (`src/lib/life.ts`), закрытие с коммитом, автозакрытие незакрытых прошлых дней после 09:00. Быстрое добавление привычки прямо на экране дня; полный CRUD привычек — срез 2.
+2. ✅ Привычки (`src/pages/Habits.tsx`) и квесты (`src/pages/Quests.tsx`): CRUD файлами, статусы, стрики и процент за 30 дней, входящие `proposed` из vault с ссылкой на источник, общий таймер квестов (`startTimer`/`stopTimer` в сторе, переживает перезагрузку) с записью `sessions` в файл дня, ручное добавление минут, закрытие квеста → `quests_closed` сегодняшнего дня. У квеста есть своя страница `/quest/:rel` (`src/pages/Quest.tsx`): запуск сессии, журнал сессий в самом файле квеста под `## Журнал`, критерий «что считается сделанным», выбор проекта из vault. Остановка таймера не пишет сессию сразу: она ждёт ответа «что сделано» в `SessionNote`, и только потом минуты идут в день и в журнал квеста.
+3. ✅ Финансы (баланс счёта считается: сверенное число плюс операции с этого дня; закрытие дня балансы не трогает) (`src/pages/Finance.tsx`): месяц по дням и категориям из файлов дней, список операций месяца, счета с уточнением баланса, подписки с автосписанием в день платежа (`src/lib/useSubscriptionCharges.ts`), долги в `debts.md` с секциями «Открытые» и «Закрытые» и ссылкой на People.
+4. ✅ Vault: панель действий на Resource-странице (`src/components/ResourceActions.tsx`): «Прочитано» пишет `read: <дата>` (+10 XP в тему в этот день), список практик из раздела «Что применить» / «Actionable techniques» (`src/lib/practices.ts`), привычка или квест из практики одним нажатием с `source: [[страница]]`, у привычек ещё и `applied:` на странице. Frontmatter правится хирургически (`src/lib/frontmatter.ts`): меняются только свои ключи, остальное байт в байт.
+5. ✅ Люди: экран `People/` (`src/pages/People.tsx`) с кнопками чатов, давностью общения, долгами, сортировкой и ближайшими днями рождения; панель на странице человека (`src/components/PersonActions.tsx`): deep-links WhatsApp / Telegram / Instagram / Email / звонок, правка контактных полей во frontmatter, «Связались сегодня» (`last_contact`), долги из `debts.md`. Модель: `src/lib/people.ts`.
+5a. ✅ Экраны жизни вместо экранов файлов (схема vault 3.1). Тема (`src/pages/Theme.tsx`) рисуется из `sections:` во frontmatter `_Overview.md` темы (`src/lib/overview.ts`): «Где стою / В движении / На радаре» карточками, привычки и квесты темы, список чтения с галочками и числом практик, wiki по подпапкам, круг людей отдельно от авторов (`isAuthor` в `src/lib/people.ts`), проекты, деньги, инструменты. Профиль (`src/pages/Profile.tsx`) это хаб: карточка на раздел, «лягушки» и «Цели 2026» сверху, `/profile/:section` открывает раздел. Лента (`src/pages/Feed.tsx`) объединяет события из `life/` и записи `log.md` человеческим языком. Тренды (`src/pages/Trends.tsx`): привычки по дням, деньги по неделям, настроение и стресс, минуты работы, XP по темам, чтение, стрики. Vault переехал вниз навигации как «Библиотека».
+6. Панель Claude.
+6. ✅ Claude (девять экспертов из `.claude/agents/` vault: восемь по темам и «Штурман»; выбор эксперта для вопроса передаётся как `--agent`) (+ операция «Привычка месяца»: предложения `status: proposed` с обоснованием, видны во входящих на экране привычек) (`src/pages/Claude.tsx`, `src/lib/claude.ts`): `claude -p` в папке vault с `--output-format stream-json`, стрим через Rust-команду `run_stream` (события `stream-line` / `stream-exit`, `kill_stream` для отмены) или через `/__vault/stream` в браузерном режиме. Кнопки: Ingest по неразобранному файлу из `raw/`, Дайджест недели, Lint, свободный вопрос с продолжением сессии (`--resume`). Правки принимаются автоматически (`acceptEdits`), из shell разрешены только git и чтение. Дочерний `claude` не наследует `CLAUDE*` и `ANTHROPIC_BASE_URL` окружения, чтобы работать с логином терминала.
+8. ✅ События (`src/pages/Event.tsx`, `src/lib/events.ts`): папка на событие в `life/events/<дата Название>/` с `event.md` и фотографиями рядом. Дата, место, кто был (`people:` ссылками в `People/`), свободный текст, сетка фото с увеличением. Фото кладутся через `write_binary` (Tauri) или `/__vault/write-binary` (браузер), показываются через asset-протокол Tauri или `/__vault/file`. Событие видно в своей теме (секция `events`), на странице каждого участника и в Ленте.
+9. ✅ Навыки (`src/components/SkillsSection.tsx`, `src/lib/skills.ts`): файл на навык в `life/skills/`, уровень 0–5, состояние (растёт, поддерживаю, ржавеет, хочу освоить, пробел), дата последней тренировки. Секция `skills` в теме «Личностный рост» показывает весь реестр, уровень меняется кликом по шкале, «тренировал» ставит сегодняшнюю дату и поднимает ржавый навык в растущие; навык, который «поддерживаю», но не трогал 60 дней, помечается.
+10. ✅ Питание и спорт: `## Еда` в файле дня (таблица «Время, Что, Заметка»), карточка «Еда» на экране дня, приём пищи после 21:00 помечается как поздний по медицинской границе из обзора темы. Секции `nutrition` (две недели еды, счёт поздних, дни без поздней еды) и `sport` (привычки и квесты темы) в «Здоровье и спорте».
+11. ✅ Правка людей из приложения (`src/lib/renamePerson.ts`, панель на странице человека): карточка редактирует `connection`, `how_we_met`, `aliases`, `tags` и текст страницы; переименование двигает файл (`rename_file` в Rust), меняет `title:` и переписывает каждую `[[ссылку]]` на него во всём vault, включая `index.md` и `log.md`, с предпросмотром «сколько ссылок в скольких файлах». Упоминания в прозе не трогаются, их число показывается. На экране «Люди» есть создание человека в темах, где схема объявляет секцию `people`.
+7. ✅ Колесо и тренды (`src/pages/Wheel.tsx`, `src/lib/levels.ts`): радар восьми тем по XP за 30 дней против прошлых 30, уровень темы по кривой атрибутов IrtiQa (60 + (L−1)·20), общий уровень по кривой персонажа (100 + (L−1)·25), карточки тем с прогрессом до уровня и XP по неделям, «тихие темы». В Трендах добавлена доля выполненных привычек по неделям, в шапке темы уровень и XP за 30 дней.

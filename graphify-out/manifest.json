@@ -1,0 +1,452 @@
+{
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/.claude/launch.json": {
+    "mtime": 1789129238.6996934,
+    "ast_hash": "ae2a716687c4fbde50ee2789730bdc5d",
+    "semantic_hash": "ae2a716687c4fbde50ee2789730bdc5d"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/package.json": {
+    "mtime": 1789129101.5799441,
+    "ast_hash": "28873fa8554ef6a2eaec233fd25a4cf9",
+    "semantic_hash": "28873fa8554ef6a2eaec233fd25a4cf9"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/scripts/check.ts": {
+    "mtime": 1789129101.5494595,
+    "ast_hash": "46b42420a4f6803a76c7c4b4c77a3444",
+    "semantic_hash": "46b42420a4f6803a76c7c4b4c77a3444"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/scripts/deadlinks.ts": {
+    "mtime": 1789129101.5475678,
+    "ast_hash": "ff4c3f045cbda09e75634860359bdc84",
+    "semantic_hash": "ff4c3f045cbda09e75634860359bdc84"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/scripts/genindex.ts": {
+    "mtime": 1789129101.5958798,
+    "ast_hash": "1e466e7f440a6d214ea1a7118e2593ad",
+    "semantic_hash": "1e466e7f440a6d214ea1a7118e2593ad"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/scripts/lint.ts": {
+    "mtime": 1789129101.5482144,
+    "ast_hash": "33fc1610ad8c97a85cd6127ffe409078",
+    "semantic_hash": "33fc1610ad8c97a85cd6127ffe409078"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/scripts/rawtriage.ts": {
+    "mtime": 1789129101.549827,
+    "ast_hash": "a47d96ed9113f72f58868aee00fbe9c5",
+    "semantic_hash": "a47d96ed9113f72f58868aee00fbe9c5"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/scripts/relink.ts": {
+    "mtime": 1789129101.5486407,
+    "ast_hash": "255925bbd348f42e7b6b48b9bdfc45a6",
+    "semantic_hash": "255925bbd348f42e7b6b48b9bdfc45a6"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/build.rs": {
+    "mtime": 1789192732.561985,
+    "ast_hash": "1be34a5c61c2c35365de3dab14298f0b",
+    "semantic_hash": "1be34a5c61c2c35365de3dab14298f0b"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/capabilities/default.json": {
+    "mtime": 1789192790.1697044,
+    "ast_hash": "359a57940a8fd27ffbd6e008be76a550",
+    "semantic_hash": "359a57940a8fd27ffbd6e008be76a550"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/src/lib.rs": {
+    "mtime": 1789216186.1343691,
+    "ast_hash": "b7c15de24207bfdf59afb26b8356b6f2",
+    "semantic_hash": "b7c15de24207bfdf59afb26b8356b6f2"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/src/main.rs": {
+    "mtime": 1789129101.5843601,
+    "ast_hash": "f163a158a6b0289d9b4ca7740789da38",
+    "semantic_hash": "f163a158a6b0289d9b4ca7740789da38"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/tauri.conf.json": {
+    "mtime": 1789192701.730666,
+    "ast_hash": "c45be2aaaa01dbeef363a3f5b5022b56",
+    "semantic_hash": "c45be2aaaa01dbeef363a3f5b5022b56"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/App.tsx": {
+    "mtime": 1789192933.9425623,
+    "ast_hash": "8637156fccb4f23e325c829c1f095500",
+    "semantic_hash": "8637156fccb4f23e325c829c1f095500"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/Back.tsx": {
+    "mtime": 1789192137.545824,
+    "ast_hash": "2b8daf48eae8f8f9eb0f4ae2c9255fc6",
+    "semantic_hash": "2b8daf48eae8f8f9eb0f4ae2c9255fc6"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/Bits.tsx": {
+    "mtime": 1789132353.201887,
+    "ast_hash": "6ffea884d8831041abd15dbc8079aba0",
+    "semantic_hash": "6ffea884d8831041abd15dbc8079aba0"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/CommandPalette.tsx": {
+    "mtime": 1789129101.5360227,
+    "ast_hash": "6df75aca8d77fc8e141a9fe5f8c242f3",
+    "semantic_hash": "6df75aca8d77fc8e141a9fe5f8c242f3"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/EventForm.tsx": {
+    "mtime": 1789192933.895218,
+    "ast_hash": "dddb303fe8639786aa459f95738385ff",
+    "semantic_hash": "dddb303fe8639786aa459f95738385ff"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/Markdown.tsx": {
+    "mtime": 1789129101.536401,
+    "ast_hash": "a02a00cade3ac7adb4c8da450b55b417",
+    "semantic_hash": "a02a00cade3ac7adb4c8da450b55b417"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/PersonActions.tsx": {
+    "mtime": 1789216273.514613,
+    "ast_hash": "d9c2e049a4f1888ee86cf19c10f7f550",
+    "semantic_hash": "d9c2e049a4f1888ee86cf19c10f7f550"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/QuestRows.tsx": {
+    "mtime": 1789131340.3523357,
+    "ast_hash": "87e4d53d0a3b072b6a2c8b7c88119773",
+    "semantic_hash": "87e4d53d0a3b072b6a2c8b7c88119773"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/ResourceActions.tsx": {
+    "mtime": 1789132353.1990213,
+    "ast_hash": "fb2ed8166ad50c53d39274781664b17c",
+    "semantic_hash": "fb2ed8166ad50c53d39274781664b17c"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/Sidebar.tsx": {
+    "mtime": 1789178459.4221394,
+    "ast_hash": "2469f8787413838b190cb24d3c381e84",
+    "semantic_hash": "2469f8787413838b190cb24d3c381e84"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/SkillsSection.tsx": {
+    "mtime": 1789209197.8837426,
+    "ast_hash": "76ef217f1e1c35f1896f31d0965f8192",
+    "semantic_hash": "76ef217f1e1c35f1896f31d0965f8192"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/components/SourceLink.tsx": {
+    "mtime": 1789131340.3489797,
+    "ast_hash": "2856102532111bd53ea82e2e7421783b",
+    "semantic_hash": "2856102532111bd53ea82e2e7421783b"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/claude.ts": {
+    "mtime": 1789150290.6177635,
+    "ast_hash": "85561ed6f1b4d733399a4c26d3c22dd9",
+    "semantic_hash": "85561ed6f1b4d733399a4c26d3c22dd9"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/claudeRuns.ts": {
+    "mtime": 1789150099.8943825,
+    "ast_hash": "7e265aa681412f2dcb380ad0c7cafa34",
+    "semantic_hash": "7e265aa681412f2dcb380ad0c7cafa34"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/dates.ts": {
+    "mtime": 1789209197.837215,
+    "ast_hash": "5a1755484ec79ec2fae35fcf63bde0a6",
+    "semantic_hash": "5a1755484ec79ec2fae35fcf63bde0a6"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/events.ts": {
+    "mtime": 1789192836.5213008,
+    "ast_hash": "911c8ee8d15472987ce001442988e10c",
+    "semantic_hash": "911c8ee8d15472987ce001442988e10c"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/frontmatter.ts": {
+    "mtime": 1789216264.4350426,
+    "ast_hash": "3bb73b5bc725be15a636b98418c17dd0",
+    "semantic_hash": "3bb73b5bc725be15a636b98418c17dd0"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/fs.ts": {
+    "mtime": 1789216186.1635935,
+    "ast_hash": "e7b586d52f7f7e429daf5234d2796a51",
+    "semantic_hash": "e7b586d52f7f7e429daf5234d2796a51"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/i18n.ts": {
+    "mtime": 1789178459.4226704,
+    "ast_hash": "7ed23902f537a74aba05a568fca298d3",
+    "semantic_hash": "7ed23902f537a74aba05a568fca298d3"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/levels.ts": {
+    "mtime": 1789178459.3711,
+    "ast_hash": "3908e74056575573a241f14df774f977",
+    "semantic_hash": "3908e74056575573a241f14df774f977"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/life.ts": {
+    "mtime": 1789208974.956807,
+    "ast_hash": "b4f8718a0e548661c5b3093f9d45a70f",
+    "semantic_hash": "b4f8718a0e548661c5b3093f9d45a70f"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/log.ts": {
+    "mtime": 1789129101.539807,
+    "ast_hash": "4b02e56d8717142c8b9392efe5587afd",
+    "semantic_hash": "4b02e56d8717142c8b9392efe5587afd"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/native.ts": {
+    "mtime": 1789193506.3726368,
+    "ast_hash": "0bcd39ff21f2430ba19982ac97152e44",
+    "semantic_hash": "0bcd39ff21f2430ba19982ac97152e44"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/overview.ts": {
+    "mtime": 1789209058.8982353,
+    "ast_hash": "ebbe27a71bb7b9264c8dafd8ad709549",
+    "semantic_hash": "ebbe27a71bb7b9264c8dafd8ad709549"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/people.ts": {
+    "mtime": 1789135461.5666778,
+    "ast_hash": "f82e6a84f3cb0f2ce5ef63b98ccd7c9d",
+    "semantic_hash": "f82e6a84f3cb0f2ce5ef63b98ccd7c9d"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/practices.ts": {
+    "mtime": 1789132424.2411401,
+    "ast_hash": "47c42bc44a460ab992a6cd0aac066b6c",
+    "semantic_hash": "47c42bc44a460ab992a6cd0aac066b6c"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/profile.ts": {
+    "mtime": 1789208194.6560156,
+    "ast_hash": "4646219991006bb0da18c81ad07bdb9d",
+    "semantic_hash": "4646219991006bb0da18c81ad07bdb9d"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/rawpage.ts": {
+    "mtime": 1789132353.1595483,
+    "ast_hash": "2881b403fc7aa9dee35d1c344cbff029",
+    "semantic_hash": "2881b403fc7aa9dee35d1c344cbff029"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/renamePerson.ts": {
+    "mtime": 1789216355.3790169,
+    "ast_hash": "9a1e20e4adf951e11abb4a94053d6278",
+    "semantic_hash": "9a1e20e4adf951e11abb4a94053d6278"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/search.ts": {
+    "mtime": 1789129101.53763,
+    "ast_hash": "07a2b33171abf086ce83ce9895524e82",
+    "semantic_hash": "07a2b33171abf086ce83ce9895524e82"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/skills.ts": {
+    "mtime": 1789207966.6983666,
+    "ast_hash": "b7bdc13060a6425e4d93e1bcc9809736",
+    "semantic_hash": "b7bdc13060a6425e4d93e1bcc9809736"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/themes.ts": {
+    "mtime": 1789129101.5401628,
+    "ast_hash": "27b4ddf6a0491d4a3fbfce24623e8d42",
+    "semantic_hash": "27b4ddf6a0491d4a3fbfce24623e8d42"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/types.ts": {
+    "mtime": 1789192836.575662,
+    "ast_hash": "779f0a79b6186c97779cea36ad433dc1",
+    "semantic_hash": "779f0a79b6186c97779cea36ad433dc1"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/useSubscriptionCharges.ts": {
+    "mtime": 1789131788.881265,
+    "ast_hash": "a2566336ade795dae4853bc4e73e7ea9",
+    "semantic_hash": "a2566336ade795dae4853bc4e73e7ea9"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/lib/vault.ts": {
+    "mtime": 1789192836.5759711,
+    "ast_hash": "59a8dae0c2ae4ec936415687ead497a1",
+    "semantic_hash": "59a8dae0c2ae4ec936415687ead497a1"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/main.tsx": {
+    "mtime": 1789129101.5336037,
+    "ast_hash": "ce7a9ffe385112f29318d3476eeca4eb",
+    "semantic_hash": "ce7a9ffe385112f29318d3476eeca4eb"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Claude.tsx": {
+    "mtime": 1789192193.376842,
+    "ast_hash": "75f9ad36541cb6ce89c3c7594f5db0fc",
+    "semantic_hash": "75f9ad36541cb6ce89c3c7594f5db0fc"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Day.tsx": {
+    "mtime": 1789209022.5399718,
+    "ast_hash": "a210df6d20f756b3fa6ff459d3d7452d",
+    "semantic_hash": "a210df6d20f756b3fa6ff459d3d7452d"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Event.tsx": {
+    "mtime": 1789209197.884338,
+    "ast_hash": "7db0a6fc3e1255b2abeb532af7a1522c",
+    "semantic_hash": "7db0a6fc3e1255b2abeb532af7a1522c"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Feed.tsx": {
+    "mtime": 1789193087.377649,
+    "ast_hash": "db2a3a2eb4694aaa24530d00c555e2cd",
+    "semantic_hash": "db2a3a2eb4694aaa24530d00c555e2cd"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Finance.tsx": {
+    "mtime": 1789193541.4020376,
+    "ast_hash": "d9316d60f7954176d8a768da3e2303bc",
+    "semantic_hash": "d9316d60f7954176d8a768da3e2303bc"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Habits.tsx": {
+    "mtime": 1789131340.3556335,
+    "ast_hash": "8f0a08a8110153ecf08b8709dc0769d3",
+    "semantic_hash": "8f0a08a8110153ecf08b8709dc0769d3"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Home.tsx": {
+    "mtime": 1789129101.5416589,
+    "ast_hash": "694c66890f21de10162ed61d35fb3044",
+    "semantic_hash": "694c66890f21de10162ed61d35fb3044"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Page.tsx": {
+    "mtime": 1789192137.5966964,
+    "ast_hash": "1f023b0af8e9fb1a8c6de94ad53aaf37",
+    "semantic_hash": "1f023b0af8e9fb1a8c6de94ad53aaf37"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/People.tsx": {
+    "mtime": 1789216445.9641194,
+    "ast_hash": "40ca38cbb26e4789ba09dd27e171c1ba",
+    "semantic_hash": "40ca38cbb26e4789ba09dd27e171c1ba"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Profile.tsx": {
+    "mtime": 1789135638.5052323,
+    "ast_hash": "6ea080a66ceb215d209927d6418161a0",
+    "semantic_hash": "6ea080a66ceb215d209927d6418161a0"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Quests.tsx": {
+    "mtime": 1789193506.4268005,
+    "ast_hash": "9b5d0dda47d2f671fd10d1f044e6c1d1",
+    "semantic_hash": "9b5d0dda47d2f671fd10d1f044e6c1d1"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Raw.tsx": {
+    "mtime": 1789129101.5423467,
+    "ast_hash": "28b8e93264cdb312bc221972c18a0be7",
+    "semantic_hash": "28b8e93264cdb312bc221972c18a0be7"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Search.tsx": {
+    "mtime": 1789129101.5420215,
+    "ast_hash": "8f68bd70681ae7d80638146eacd4f40e",
+    "semantic_hash": "8f68bd70681ae7d80638146eacd4f40e"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Setup.tsx": {
+    "mtime": 1789129169.4597714,
+    "ast_hash": "22e6f090dede0c89e61255ed43cfccff",
+    "semantic_hash": "22e6f090dede0c89e61255ed43cfccff"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Theme.tsx": {
+    "mtime": 1789209197.88245,
+    "ast_hash": "82fe67605490189164e3fe57d700e6f1",
+    "semantic_hash": "82fe67605490189164e3fe57d700e6f1"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Trends.tsx": {
+    "mtime": 1789178459.423822,
+    "ast_hash": "aec9a753682a7a790f5224221f7cfe47",
+    "semantic_hash": "aec9a753682a7a790f5224221f7cfe47"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/pages/Wheel.tsx": {
+    "mtime": 1789178472.4799864,
+    "ast_hash": "af77207aeeff5ed669b6df9702d5409b",
+    "semantic_hash": "af77207aeeff5ed669b6df9702d5409b"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/store.tsx": {
+    "mtime": 1789192871.489708,
+    "ast_hash": "55658854dbf3f90693400e80f85a0d39",
+    "semantic_hash": "55658854dbf3f90693400e80f85a0d39"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src/vite-env.d.ts": {
+    "mtime": 1789129101.5369968,
+    "ast_hash": "0352474ba2918efe13895edbc3780d94",
+    "semantic_hash": "0352474ba2918efe13895edbc3780d94"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/tsconfig.json": {
+    "mtime": 1789129101.5706577,
+    "ast_hash": "d6167f132974dd91c02900385bcea53a",
+    "semantic_hash": "d6167f132974dd91c02900385bcea53a"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/tsconfig.node.json": {
+    "mtime": 1789129101.5709398,
+    "ast_hash": "767b2e9abe6452170cdc399ca052cfbc",
+    "semantic_hash": "767b2e9abe6452170cdc399ca052cfbc"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/vite.config.ts": {
+    "mtime": 1789216186.1505346,
+    "ast_hash": "b202cc16c88d09d5646652c55c13b90b",
+    "semantic_hash": "b202cc16c88d09d5646652c55c13b90b"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/CLAUDE.md": {
+    "mtime": 1789129238.6935956,
+    "ast_hash": "fe452ede70654ff2460125e4ee249cb7",
+    "semantic_hash": "fe452ede70654ff2460125e4ee249cb7"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/README.md": {
+    "mtime": 1789216513.102459,
+    "ast_hash": "513122af95f25265909d36da2f3d4e86",
+    "semantic_hash": "513122af95f25265909d36da2f3d4e86"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/index.html": {
+    "mtime": 1789129101.5889413,
+    "ast_hash": "d2db74871a5d83dde0586be5d0b44b86",
+    "semantic_hash": "d2db74871a5d83dde0586be5d0b44b86"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/public/tauri.svg": {
+    "mtime": 1789129101.552704,
+    "ast_hash": "f49b888a6830a38f02ffeb65891186b1",
+    "semantic_hash": "f49b888a6830a38f02ffeb65891186b1"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/public/vite.svg": {
+    "mtime": 1789129101.5523777,
+    "ast_hash": "8e3a10e157f75ada21ab742c022d5430",
+    "semantic_hash": "8e3a10e157f75ada21ab742c022d5430"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/128x128.png": {
+    "mtime": 1789129101.5629992,
+    "ast_hash": "6a3a31d7ec787ac1ed72833b44a667dd",
+    "semantic_hash": "6a3a31d7ec787ac1ed72833b44a667dd"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/128x128@2x.png": {
+    "mtime": 1789129101.5642228,
+    "ast_hash": "27f76e8c0a8a56952c89bc07cd7fa71f",
+    "semantic_hash": "27f76e8c0a8a56952c89bc07cd7fa71f"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/32x32.png": {
+    "mtime": 1789129101.5635233,
+    "ast_hash": "06bf88e79df197ed1016b07a7deaeffc",
+    "semantic_hash": "06bf88e79df197ed1016b07a7deaeffc"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square107x107Logo.png": {
+    "mtime": 1789129101.5608087,
+    "ast_hash": "9382f82d5e8ad7b1d2eff9f3971d8b4e",
+    "semantic_hash": "9382f82d5e8ad7b1d2eff9f3971d8b4e"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square142x142Logo.png": {
+    "mtime": 1789129101.5626884,
+    "ast_hash": "00ae2eec81ab8b204cfa00fab0be0362",
+    "semantic_hash": "00ae2eec81ab8b204cfa00fab0be0362"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square150x150Logo.png": {
+    "mtime": 1789129101.5596159,
+    "ast_hash": "e1801702d0413307442ae55aa8c9acf1",
+    "semantic_hash": "e1801702d0413307442ae55aa8c9acf1"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square284x284Logo.png": {
+    "mtime": 1789129101.5632257,
+    "ast_hash": "5b2d2aab134c383787597dc197319cb8",
+    "semantic_hash": "5b2d2aab134c383787597dc197319cb8"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square30x30Logo.png": {
+    "mtime": 1789129101.5592754,
+    "ast_hash": "2702003bb4f224ccdbd3464e18c562c5",
+    "semantic_hash": "2702003bb4f224ccdbd3464e18c562c5"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square310x310Logo.png": {
+    "mtime": 1789129101.5614042,
+    "ast_hash": "a1c28af3eb9254a3f8141adecb290e3b",
+    "semantic_hash": "a1c28af3eb9254a3f8141adecb290e3b"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square44x44Logo.png": {
+    "mtime": 1789129101.5637462,
+    "ast_hash": "0836f45b54365b7300d79c6df814a9a6",
+    "semantic_hash": "0836f45b54365b7300d79c6df814a9a6"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square71x71Logo.png": {
+    "mtime": 1789129101.5639586,
+    "ast_hash": "91cc13421035e4351aa0dcf81407e3fb",
+    "semantic_hash": "91cc13421035e4351aa0dcf81407e3fb"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/Square89x89Logo.png": {
+    "mtime": 1789129101.5610578,
+    "ast_hash": "0deca3cac5c14bee39f4f63dfdcb9045",
+    "semantic_hash": "0deca3cac5c14bee39f4f63dfdcb9045"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/StoreLogo.png": {
+    "mtime": 1789129101.5605485,
+    "ast_hash": "9373c3288326966e31cc9fdad60870d6",
+    "semantic_hash": "9373c3288326966e31cc9fdad60870d6"
+  },
+  "/Users/eldar/Desktop/Projects/IrtiQa-Tauri/src-tauri/icons/icon.png": {
+    "mtime": 1789129101.5588992,
+    "ast_hash": "d07d64dd4e09797a7d2bf1c5df878162",
+    "semantic_hash": "d07d64dd4e09797a7d2bf1c5df878162"
+  }
+}
