@@ -22,7 +22,7 @@ The app writes:
 
 The app never writes the body of a `wiki/` page, anything in `raw/`, or the
 vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display: the only
-input left in it is the morning marking of yesterday on «Утро» (prayers with
+input left in it is the morning marking of yesterday on «Главный» (ex-«Утро»; prayers with
 `habits_late`, kinds `prayer | bad | good`; one-button habits — an untouched
 good habit closes as failed, an untouched bad one as held, `impliedMarks` in
 `lib/life.ts`) and the reading actions on a
@@ -44,7 +44,7 @@ running `git` / `claude`. All parsing in the frontend (`src/lib/`).
 - One slice at a time (see README). Commit per slice. Do not stack features.
 - No new screens or theme sections unless Eldar names one (freeze since
   2026-09-21, vault CLAUDE.md «Discipline»). Work goes into what exists.
-  v2 menu is Утро · Темы · Посмотреть; v1 screens stay under «Посмотреть»,
+  v2 menu is Главный · Темы (2026-11-02: «Посмотреть» left the menu, v1 routes still exist); «Главный» has two columns — habits left, the projects he is doing now right. The bot asks an evening survey (`eveningAskAt`, default 21:00) one question at a time;
   nothing is deleted. Do not add input forms to the app: Claude is the input.
 - The day is a calendar day since 2026-10-12; `dayToday()` still applies the
   maghrib rule to the files of 2026-09-22 … 2026-10-11 (`maghribDay`).
@@ -63,7 +63,7 @@ running `git` / `claude`. All parsing in the frontend (`src/lib/`).
   parsed for `life/archive/quests/`. `nowStep()` reads `## Сейчас`.
 - The day's tasks are `## Задачи` in the day file, first in the body (`Day.tasks`,
   parsed and written by `parseDay`/`serializeDay`). There are no day-level goals
-  files any more; «Утро» and the bot read the day file. `quests_closed:` is written
+  files any more; «Главный» and the bot read the day file. `quests_closed:` is written
   only when non-empty.
 - All person pages are in `wiki/People/`; `theme:` in frontmatter is the relationship.
   New people are created there.
