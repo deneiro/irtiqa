@@ -1,4 +1,4 @@
-# IrtiQa-Tauri — rules for this repo
+# IrtiQa (repo IrtiQa-Tauri) — rules for this repo
 
 Personal, local, non-commercial Mac app over Eldar's Obsidian vault. Read
 `README.md` first. The product spec lives in the vault, not here:

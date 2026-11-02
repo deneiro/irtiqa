@@ -6,7 +6,7 @@ export const LANG_KEY = "irtiqa.lang";
 
 const en = {
   // shell
-  app: "IrtiQa-Tauri",
+  app: "IrtiQa",
   search_vault: "Search the vault",
   reading: "Reading the vault…",
   nav_day: "Day",
@@ -203,7 +203,7 @@ const en = {
 export type Key = keyof typeof en;
 
 const ru: Record<Key, string> = {
-  app: "IrtiQa-Tauri",
+  app: "IrtiQa",
   search_vault: "Поиск по vault",
   reading: "Читаю vault…",
   nav_day: "День",

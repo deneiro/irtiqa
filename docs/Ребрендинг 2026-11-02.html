@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IrtiQa — ребрендинг</title>
+<style>
+  :root{
+    --bg:#0d0f15; --surface:#161923; --raised:#1e2230; --hair:#242938;
+    --ink:#eceef4; --muted:#9197aa; --faint:#747a8e;
+    --accent:#6d5fe0; --accent-text:#a99ffb; --accent-soft:rgba(122,108,240,.16);
+    --success:#46c48c; --gold:#e3b04b; --danger:#ef7474;
+    --font:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);padding:40px 16px 80px}
+  main{max-width:960px;margin:0 auto}
+  h1{font-size:30px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+  h2{font-size:20px;font-weight:600;margin:48px 0 14px;padding-top:24px;border-top:1px solid var(--hair)}
+  h3{font-size:15px;font-weight:600;margin:22px 0 8px;color:var(--ink)}
+  p{margin:8px 0;color:var(--muted)} p b{color:var(--ink);font-weight:600}
+  .lead{color:var(--muted);font-size:16px}
+  .tag{display:inline-block;font:12px/1 var(--mono);padding:4px 8px;border-radius:5px;background:var(--raised);color:var(--muted);margin-left:6px;vertical-align:middle}
+  .tag.rec{background:var(--accent-soft);color:var(--accent-text)}
+  .tag.del{background:rgba(239,116,116,.14);color:var(--danger)}
+  .tag.keep{background:rgba(70,196,140,.14);color:var(--success)}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 10px;border-bottom:1px solid var(--hair);vertical-align:top}
+  th{color:var(--faint);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  td code,p code,li code{font:13px var(--mono);color:var(--accent-text);background:var(--raised);padding:1px 6px;border-radius:4px}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:18px}
+  .card.rec{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .card h3{margin-top:0}
+  .card p{font-size:14px}
+  .icon-row{display:flex;gap:18px;align-items:flex-end;margin:10px 0 14px;flex-wrap:wrap}
+  .icon-row figure{margin:0;text-align:center;color:var(--faint);font-size:12px}
+  .icon-row svg{display:block;margin:0 auto 6px}
+  .dock{display:flex;gap:14px;align-items:flex-end;padding:14px 18px;border-radius:16px;background:linear-gradient(180deg,#2a2e3b,#1b1e28);border:1px solid var(--hair);width:max-content;margin:14px 0}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  .sw{width:92px;height:56px;border-radius:8px;display:flex;align-items:flex-end;padding:6px;font:11px var(--mono);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+  ol,ul{color:var(--muted);padding-left:22px} li{margin:6px 0} li b{color:var(--ink);font-weight:600}
+  .menu{display:flex;gap:6px;margin:10px 0}
+  .menu span{padding:7px 14px;border-radius:7px;background:var(--raised);color:var(--muted);font-size:14px}
+  .menu span.on{background:var(--accent);color:#fff}
+  .note{border-left:3px solid var(--gold);padding:8px 14px;background:var(--surface);border-radius:0 8px 8px 0;margin:14px 0;color:var(--muted);font-size:14px}
+  .ask{border:1px dashed var(--accent);border-radius:10px;padding:14px 18px;margin-top:40px}
+  .ask p{color:var(--ink)}
+  .win{border:1px solid var(--hair);border-radius:10px;overflow:hidden;background:var(--surface);margin:12px 0}
+  .win .bar{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--raised);border-bottom:1px solid var(--hair);font-size:12px;color:var(--faint)}
+  .win .bar i{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .win .body{padding:14px 16px;font-size:13px;color:var(--muted)}
+  .light{background:#f4f3f7;color:#1b1b22}
+  .light .bar{background:#e9e8ef;color:#777;border-color:#dcdbe3}
+  .light .body{color:#555}
+  @media (prefers-color-scheme: light){ /* страница намеренно тёмная: это цвета приложения */ }
+</style>
+</head>
+<body>
+<main>
+
+<h1>IrtiQa — что на Маке и каким будет приложение</h1>
+<p class="lead">Два вопроса одной страницей: откуда три одинаковых значка и что ставить вместо них. Ничего ещё не удалено и не переименовано — это предложение.</p>
+
+<h2>1. Почему три одинаковых IrtiQa</h2>
+<p>Spotlight и Launchpad индексируют любой <code>.app</code>, где бы он ни лежал. У тебя их пять с одним именем и одной иконкой, три из них Spotlight показывает как приложения.</p>
+
+<table>
+<tr><th>Где лежит</th><th>Что это</th><th>Дата</th><th>Решение</th></tr>
+<tr><td><code>/Applications/IrtiQa-Tauri.app</code></td><td>Установленная версия. Код <b>до схемы 4.1</b>: не знает <code>life/activities/</code>, задач дня и <code>wiki/People/</code></td><td>13 окт</td><td><span class="tag del">заменить</span></td></tr>
+<tr><td><code>src-tauri/target/release/bundle/macos/IrtiQa-Tauri.app</code></td><td>Та же сборка 13 окт, осталась после <code>tauri build</code>. Spotlight видит её как второе приложение</td><td>13 окт</td><td><span class="tag del">удалить</span></td></tr>
+<tr><td><code>src-tauri/target/debug/bundle/macos/IrtiQa-Tauri.app</code></td><td>Отладочная сборка, 34 МБ. Третье приложение в Spotlight</td><td>12 сен</td><td><span class="tag del">удалить</span></td></tr>
+<tr><td><code>/Applications/IrtiQa-Tauri.app.old</code></td><td>Бэкап при обновлении 3 окт. Расширение <code>.old</code>, Spotlight его не показывает</td><td>3 окт</td><td><span class="tag del">удалить</span></td></tr>
+<tr><td><code>/Applications/Second Brain.app</code></td><td>Предшественник, из которого вырос IrtiQa-Tauri. В vault записано: заменён</td><td>11 сен</td><td><span class="tag del">удалить</span></td></tr>
+</table>
+
+<div class="note">Чтобы история не повторилась: файл <code>.metadata_never_index</code> в <code>src-tauri/target/</code> запрещает Spotlight индексировать папку сборок. После этого в Spotlight будет ровно одно приложение, в <code>/Applications</code>.</div>
+
+<h2>2. Имя</h2>
+<p>Сейчас продукт называется <b>IrtiQa-Tauri</b> и в заголовке окна, и в Dock, и в бандле. «Tauri» — это фреймворк, а не часть имени. Название самого продукта в vault помечено как «не выбрано» с сентября.</p>
+
+<div class="grid">
+  <div class="card rec">
+    <h3>IrtiQa <span class="tag rec">предлагаю</span></h3>
+    <p>ارتقاء — восхождение. Имя уже твоё, уже в vault и в голове. Убираем только хвост «-Tauri».</p>
+    <p><code>productName: IrtiQa</code> · <code>com.eldar.irtiqa</code> · окно «IrtiQa»</p>
+  </div>
+  <div class="card">
+    <h3>Иртика</h3>
+    <p>Кириллицей, как ты сам пишешь в чате. Минус: латинский <code>IrtiQa</code> остаётся в коде и ссылках, два написания одного слова.</p>
+  </div>
+  <div class="card">
+    <h3>Утро</h3>
+    <p>По главному экрану. Минус: приложение шире одного экрана, и слово слишком общее для Spotlight.</p>
+  </div>
+</div>
+
+<h2>3. Иконка</h2>
+<p>Сейчас стоит <b>стандартная иконка Tauri</b> (две жёлто-голубые дуги), её видит каждый, кто собрал пустой проект. Три эскиза, все в форме скруглённого квадрата macOS, на цветах самого приложения.</p>
+
+<div class="icon-row">
+  <figure>
+    <svg width="128" height="128" viewBox="0 0 128 128"><defs><clipPath id="sq1"><rect x="8" y="8" width="112" height="112" rx="28"/></clipPath><linearGradient id="g1" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#121420"/><stop offset="1" stop-color="#1e2230"/></linearGradient></defs>
+      <g clip-path="url(#sq1)"><rect x="8" y="8" width="112" height="112" fill="url(#g1)"/>
+      <rect x="30" y="86" width="18" height="14" rx="3" fill="#6d5fe0" opacity=".55"/>
+      <rect x="52" y="70" width="18" height="30" rx="3" fill="#6d5fe0" opacity=".75"/>
+      <rect x="74" y="52" width="18" height="48" rx="3" fill="#6d5fe0"/>
+      <circle cx="83" cy="36" r="7" fill="#e3b04b"/></g>
+    </svg>
+    <figcaption>A · ступени и солнце</figcaption>
+  </figure>
+  <figure>
+    <svg width="128" height="128" viewBox="0 0 128 128"><defs><clipPath id="sq2"><rect x="8" y="8" width="112" height="112" rx="28"/></clipPath></defs>
+      <g clip-path="url(#sq2)"><rect x="8" y="8" width="112" height="112" fill="#6d5fe0"/>
+      <path d="M36 92 L64 40 L92 92" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M50 92 L64 66 L78 92" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/></g>
+    </svg>
+    <figcaption>B · вершина, монохром</figcaption>
+  </figure>
+  <figure>
+    <svg width="128" height="128" viewBox="0 0 128 128"><defs><clipPath id="sq3"><rect x="8" y="8" width="112" height="112" rx="28"/></clipPath><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d0f15"/><stop offset="1" stop-color="#20243a"/></linearGradient></defs>
+      <g clip-path="url(#sq3)"><rect x="8" y="8" width="112" height="112" fill="url(#g3)"/>
+      <path d="M26 96 C 46 92, 60 74, 70 56 C 78 42, 86 34, 102 30" fill="none" stroke="#a99ffb" stroke-width="9" stroke-linecap="round"/>
+      <path d="M88 26 L104 30 L98 46" fill="none" stroke="#a99ffb" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="34" cy="92" r="5" fill="#46c48c"/></g>
+    </svg>
+    <figcaption>C · кривая роста</figcaption>
+  </figure>
+</div>
+
+<p>Как это выглядит в Dock рядом с тем, что есть сейчас:</p>
+<div class="dock">
+  <svg width="64" height="64" viewBox="0 0 128 128"><defs><clipPath id="d0"><rect x="8" y="8" width="112" height="112" rx="28"/></clipPath></defs><g clip-path="url(#d0)"><rect x="8" y="8" width="112" height="112" fill="#fff"/><circle cx="76" cy="52" r="30" fill="none" stroke="#ffb629" stroke-width="12"/><circle cx="52" cy="76" r="30" fill="none" stroke="#24c8db" stroke-width="12"/></g></svg>
+  <svg width="64" height="64" viewBox="0 0 128 128"><g clip-path="url(#sq1)"><rect x="8" y="8" width="112" height="112" fill="url(#g1)"/><rect x="30" y="86" width="18" height="14" rx="3" fill="#6d5fe0" opacity=".55"/><rect x="52" y="70" width="18" height="30" rx="3" fill="#6d5fe0" opacity=".75"/><rect x="74" y="52" width="18" height="48" rx="3" fill="#6d5fe0"/><circle cx="83" cy="36" r="7" fill="#e3b04b"/></g></svg>
+  <svg width="64" height="64" viewBox="0 0 128 128"><g clip-path="url(#sq2)"><rect x="8" y="8" width="112" height="112" fill="#6d5fe0"/><path d="M36 92 L64 40 L92 92" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/><path d="M50 92 L64 66 L78 92" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/></g></svg>
+  <svg width="64" height="64" viewBox="0 0 128 128"><g clip-path="url(#sq3)"><rect x="8" y="8" width="112" height="112" fill="url(#g3)"/><path d="M26 96 C 46 92, 60 74, 70 56 C 78 42, 86 34, 102 30" fill="none" stroke="#a99ffb" stroke-width="9" stroke-linecap="round"/><path d="M88 26 L104 30 L98 46" fill="none" stroke="#a99ffb" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><circle cx="34" cy="92" r="5" fill="#46c48c"/></g></svg>
+</div>
+<p>Слева направо: нынешняя Tauri, A, B, C. Мой выбор — <b>A</b>: ступени читаются как «восхождение» и в 16 px, солнце даёт одну тёплую точку на тёмном Dock. B самая броская, но «вершина» есть у десятка приложений. Любой эскиз дорисовывается за один проход, <code>npx tauri icon</code> делает из одного PNG весь набор.</p>
+
+<h2>4. Цвета остаются</h2>
+<p>Палитра приложения уже есть и живёт в <code>src/styles.css</code>. Ребрендинг её не трогает: иконка и имя подстраиваются под неё, а не наоборот.</p>
+<div class="swatches">
+  <div class="sw" style="background:#0d0f15;border:1px solid #242938">bg</div>
+  <div class="sw" style="background:#161923">surface</div>
+  <div class="sw" style="background:#1e2230">raised</div>
+  <div class="sw" style="background:#6d5fe0">accent</div>
+  <div class="sw" style="background:#a99ffb;color:#1b1b22;text-shadow:none">accent-text</div>
+  <div class="sw" style="background:#46c48c">success</div>
+  <div class="sw" style="background:#e3b04b">gold</div>
+  <div class="sw" style="background:#ef7474">danger</div>
+</div>
+
+<h2>5. Что внутри после переустановки</h2>
+<p>Ставится версия со схемой 4.1, уже слитая в <code>main</code> (<code>5e78b2c</code>): деятельности вместо квестов, задачи дня из файла дня, все люди в <code>wiki/People/</code>, vault на Desktop. Это то, чего установленная копия от 13 октября не умеет.</p>
+<p>Меню как ты решил 11 октября, без новых экранов:</p>
+<div class="menu"><span class="on">Утро</span><span>Темы</span><span>Посмотреть</span></div>
+<p>Что было отложено словами «чуть-чуть изменим» и остаётся на твоё решение, не часть ребрендинга:</p>
+<ul>
+  <li>убрать кнопки ввода со старых экранов под «Посмотреть» (ввод идёт через Claude);</li>
+  <li>оставить ли экраны v1 вообще или свести всё к «Утро» и «Темы».</li>
+</ul>
+
+<h2>6. Порядок действий, если согласен</h2>
+<ol>
+  <li><b>Убрать лишнее.</b> В корзину: <code>.app.old</code>, <code>Second Brain.app</code>, оба бандла в <code>target/</code>. Установленный <code>IrtiQa-Tauri.app</code> заменяется на шаге 4.</li>
+  <li><b>Закрыть папку сборок от Spotlight.</b> <code>.metadata_never_index</code> в <code>src-tauri/target/</code>.</li>
+  <li><b>Переименовать.</b> <code>productName</code>, <code>identifier</code>, заголовок окна, <code>package.json</code>, README и <code>CLAUDE.md</code> репо. Папка репо и проект в vault остаются <code>IrtiQa-Tauri</code>, чтобы не ломать ссылки. Новая иконка через <code>npx tauri icon</code>.</li>
+  <li><b>Собрать и поставить.</b> <code>npx tauri build</code> → <code>/Applications/IrtiQa.app</code>, запуск на настоящем vault, проверка «Утро».</li>
+  <li><b>Записать.</b> Обзор проекта в vault, <code>log.md</code>, ветка и PR в репо.</li>
+</ol>
+<div class="note">Смена <code>identifier</code> с <code>com.eldar.irtiqa-tauri</code> на <code>com.eldar.irtiqa</code> для macOS означает новое приложение: сохранённое положение окна сбросится, у бота привычек ничего не меняется (он живёт отдельно в launchd).</div>
+
+<div class="ask">
+  <p><b>Нужно от тебя:</b> имя (IrtiQa / Иртика / Утро / своё), эскиз иконки (A / B / C / своя идея) и «да» на удаление четырёх копий. После этого делаю шаги 1–5 за один заход.</p>
+</div>
+
+</main>
+</body>
+</html>

@@ -1,12 +1,12 @@
 [package]
-name = "irtiqa-tauri"
+name = "irtiqa"
 version = "0.1.0"
 description = "Personal life app over Eldar's Obsidian vault"
 authors = ["Eldar Baurzhan"]
 edition = "2021"
 
 [lib]
-name = "irtiqa_tauri_lib"
+name = "irtiqa_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
