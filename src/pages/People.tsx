@@ -8,7 +8,6 @@ import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
 import { CATEGORIES, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, type Category } from "../lib/people";
-import { themeSections } from "../lib/overview";
 import { safeFilename } from "../lib/life";
 
 type Sort = "name" | "contact" | "birthday";
@@ -32,15 +31,8 @@ export default function PeoplePage() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  /** Themes that keep a People folder: `people`, or Social's `circle`, which is the same folder sorted by silence. */
-  const peopleThemes = useMemo(
-    () => THEMES.filter((t) => {
-      const ov = v.pages.find((p) => p.file === "_Overview" && p.theme === t.name && p.segments.length === 1);
-      const s = themeSections(ov);
-      return s.includes("people") || s.includes("circle");
-    }).map((t) => t.name),
-    [v],
-  );
+  /** 4.1: every person page lives in `wiki/People/`; `theme:` names the primary relationship, so any theme can be chosen. */
+  const peopleThemes = useMemo(() => THEMES.map((t) => t.name), []);
   const [form, setForm] = useState({ name: "", theme: "", connection: "", how: "" });
   // Most new people are friends; the form starts there.
   const formTheme = form.theme || (peopleThemes.includes("Social & friends") ? "Social & friends" : peopleThemes[0]) || THEMES[1].name;
@@ -52,7 +44,7 @@ export default function PeoplePage() {
     try {
       const file = safeFilename(name);
       if (!file) throw new Error("Такое имя не годится для файла");
-      const rel = `wiki/${formTheme}/People/${file}.md`;
+      const rel = `wiki/People/${file}.md`; // 4.1: one folder for all people
       if (v.pages.some((p) => p.rel.toLowerCase() === rel.toLowerCase())) throw new Error("Такой человек уже есть");
       const q = (x: string) => (/[:#"'[\]{}]/.test(x) ? JSON.stringify(x) : x);
       const text = [

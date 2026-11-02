@@ -182,7 +182,7 @@ const en = {
   setup_stats: "{p} pages · {l} log entries · {r} raw files",
   choose_folder: "Choose folder…",
   rescan_plain: "Rescan",
-  reset_icloud: "Reset to iCloud vault",
+  reset_icloud: "Reset to default vault",
   // misc
   nothing_here: "Nothing here yet.",
   today: "today",
@@ -368,7 +368,7 @@ const ru: Record<Key, string> = {
   setup_stats: "{p} страниц · {l} записей журнала · {r} сырых файлов",
   choose_folder: "Выбрать папку…",
   rescan_plain: "Перечитать",
-  reset_icloud: "Вернуть iCloud vault",
+  reset_icloud: "Вернуть vault по умолчанию",
   nothing_here: "Пока пусто.",
   today: "сегодня",
   yesterday: "вчера",

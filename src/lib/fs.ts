@@ -79,9 +79,9 @@ export async function deleteFile(root: string, rel: string): Promise<void> {
   if (!r.ok) throw new Error(await r.text());
 }
 
-/** Move a person page to the macOS Trash. Only `wiki/<Тема>/People/<Имя>.md`. */
+/** Move a person page to the macOS Trash. Only `wiki/People/<Имя>.md` (4.1; the old `wiki/<Тема>/People/` form is still accepted). */
 export async function trashPerson(root: string, rel: string): Promise<void> {
-  if (!/^wiki\/[^/]+\/People\/[^_/][^/]*\.md$/.test(rel)) throw new Error(`Not a person page: ${rel}`);
+  if (!/^wiki\/(?:[^/]+\/)?People\/[^_/][^/]*\.md$/.test(rel)) throw new Error(`Not a person page: ${rel}`);
   treeChanged.value = true;
   if (inTauri) return invoke("trash_person", { root, rel });
   const r = await fetch("/__vault/trash", {

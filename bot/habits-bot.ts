@@ -272,10 +272,11 @@ function morningText(cal: string): string {
   const steps = quests.map((q) => ({ q, next: nextStep(questSteps(q.body)) })).filter((x) => x.next);
   if (steps.length) lines.push("", "▶ Сегодня первое:", ...steps.map(({ q, next }) => `• ${q.title}: ${owner(next!.text)}`));
 
-  const { day: todayGoals, week, month } = goalsFor(life.goals, cal);
-  if (todayGoals?.tasks.length) {
-    const done = todayGoals.tasks.filter((t) => t.done).length;
-    lines.push("", `✅ Сегодня: задач ${done} из ${todayGoals.tasks.length}`, ...todayGoals.tasks.filter((t) => !t.done).map((t) => `○ ${t.text}`));
+  const { week, month } = goalsFor(life.goals, cal);
+  const todayTasks = readDay(cal).tasks; // 4.1: the day's tasks are in the day file
+  if (todayTasks.length) {
+    const done = todayTasks.filter((t) => t.done).length;
+    lines.push("", `✅ Сегодня: задач ${done} из ${todayTasks.length}`, ...todayTasks.filter((t) => !t.done).map((t) => `○ ${t.text}`));
   }
   if (week?.tasks.length) {
     const done = week.tasks.filter((t) => t.done).length;
@@ -345,7 +346,7 @@ async function onCheckinCallback(kind: string, compact: string, code: string, ex
     if (code === "none") { await edit(`🌇 ${formatDayTitle(date)}: записано.`); return; }
     if (code === "more") { await edit("Над чем ещё работал?", workKeyboard(compact)); return; }
     const quest = activeQuests().find((x) => key(x.title) === code);
-    if (!quest) { await edit("Квест не нашёл — может, его уже закрыли."); return; }
+    if (!quest) { await edit("Деятельность не нашёл — может, её уже закрыли."); return; }
     const mins = [15, 30, 45, 60, 90, 120, 180];
     await edit(`«${quest.title}» — сколько минут?`, pairs(mins.map((m) => ({ text: `${m} мин`, callback_data: `wm:${compact}:${code}:${m}` }))));
     return;

@@ -9,7 +9,7 @@ import { goalsFor, withTaskDone, type GoalsFile } from "../lib/goals";
 import { parseHealth } from "../lib/health";
 import { themeColor } from "../lib/themes";
 import { heldOut, weekGrid, winNumbers } from "../lib/wins";
-import { GOALS_DIR, emptyDay, habitDue, impliedMarks, markOf, mergeDay, nextStep, questSteps, serializeDay, serializeQuest, withMark, withQuestSteps, type Day, type DayMark, type Habit, type HabitKind, type Quest, type QuestStep } from "../lib/life";
+import { GOALS_DIR, dayRel, emptyDay, habitDue, impliedMarks, markOf, mergeDay, nextStep, nowStep, questSteps, serializeDay, serializeQuest, withMark, withQuestSteps, type Day, type DayMark, type Habit, type HabitKind, type Quest, type QuestStep } from "../lib/life";
 import NeedsYou from "../components/NeedsYou";
 import "./Morning.css";
 
@@ -195,7 +195,10 @@ function Morning({ today }: { today: string }) {
 
   // ----- today: the step he does himself is ticked here; the rest comes from Claude -----
   const quests = useMemo(() => (life?.quests ?? []).filter((q) => q.status === "active").map((q) => ({ q, steps: questSteps(q.body) })), [life]);
-  const { day: todayGoals, week, month } = useMemo(() => goalsFor(life?.goals ?? new Map(), today), [life, today]);
+  const { week, month } = useMemo(() => goalsFor(life?.goals ?? new Map(), today), [life, today]);
+  /** 4.1: the day's tasks live in the day file (`## Задачи`), not in a goals file. Shown as a GoalsFile so the card below is shared. */
+  const todayDay = life?.days.get(today);
+  const todayGoals: GoalsFile | undefined = todayDay && todayDay.tasks.length ? { key: today, period: "day", from: today, to: today, goals: [], tasks: todayDay.tasks } : undefined;
   const [ticking, setTicking] = useState<string | null>(null);
 
   /** Tick the current step of a quest: `- [x]`, with the date on its detail line so the quest no longer counts as stalled. */
@@ -211,6 +214,18 @@ function Morning({ today }: { today: string }) {
 
   const tickTask = async (file: GoalsFile, index: number, done: boolean) => {
     if (ticking) return;
+    if (file.period === "day") {
+      // 4.1: a day task is ticked in the day file itself.
+      const d = life?.days.get(file.key);
+      if (!d) return;
+      setTicking(dayRel(file.key));
+      try {
+        const tasks = d.tasks.map((t, i) => (i === index ? { ...t, done } : t));
+        await saveText(dayRel(file.key), serializeDay({ ...d, tasks }));
+        await reload();
+      } catch (e) { setErr(String(e)); } finally { setTicking(null); }
+      return;
+    }
     const rel = `${GOALS_DIR}/${file.key}.md`;
     const content = life?.goals.get(file.key);
     if (!content) return;
@@ -324,7 +339,7 @@ function Morning({ today }: { today: string }) {
         <div className="goals3">
           {(
             [
-              { f: todayGoals, title: "Сегодня", none: "Задач на сегодня нет. Скажи Claude утром, что сегодня." },
+              { f: todayGoals, title: "Сегодня", none: "Задач на сегодня нет. Скажи Claude утром, что сегодня — он запишет их в файл дня." },
               { f: week, title: `Неделя ${week ? week.key.replace(/^\d+-W/, "") : ""}`, none: "Файла недели нет. Воскресенье вечером: цели недели со мной." },
               { f: month, title: `Месяц ${month ? month.key.slice(5) : ""}`, none: "Файла месяца нет." },
             ] as { f: GoalsFile | undefined; title: string; none: string }[]
@@ -354,10 +369,11 @@ function Morning({ today }: { today: string }) {
 
       {/* ---------- quests: the current step of each ---------- */}
       <section className="today">
-        <div className="eyebrow">Квесты — текущий шаг</div>
+        <div className="eyebrow">Деятельности — что сейчас</div>
         <div className="qcards">
           {quests.map(({ q, steps }) => {
             const next = nextStep(steps);
+            const now = nowStep(q.body);
             const at = next ? steps.indexOf(next) : -1;
             const after = at >= 0 ? steps.slice(at + 1).filter((s) => !s.done).slice(0, 2) : [];
             const doneN = steps.filter((s) => s.done).length;
@@ -368,6 +384,9 @@ function Morning({ today }: { today: string }) {
                   <Link to={`/quest/${encodeURIComponent(q.rel)}`} className="qt">{q.title}</Link>
                   <span className="mono n">{steps.length ? `${doneN}/${steps.length}` : ""}</span>
                 </div>
+                {now && (!next || now !== next.text) && (
+                  <div className="step now"><span className="k">▶</span><span className="s">{now}</span></div>
+                )}
                 {next ? (
                   <>
                     <div className="step now">
@@ -379,13 +398,13 @@ function Morning({ today }: { today: string }) {
                     ))}
                   </>
                 ) : (
-                  <div className="step none"><span className="s">{steps.length ? "все шаги сделаны — скажи Claude, что дальше, или закрой квест" : "шагов нет — скажи Claude первый"}</span></div>
+                  <div className="step none"><span className="s">{steps.length ? "все шаги сделаны — скажи Claude, что дальше, или закрой деятельность" : "шагов нет — скажи Claude первый"}</span></div>
                 )}
-                <div className="small faint qtheme-line">{q.theme ? themeLabel(q.theme) : ""}{q.due ? ` · до ${q.due}` : ""}</div>
+                <div className="small faint qtheme-line">{q.theme ? themeLabel(q.theme) : ""}{q.cadence ? ` · ${q.cadence}` : ""}{q.goal ? ` · → ${q.goal.replace(/\[\[|\]\]/g, "")}` : ""}{q.due ? ` · до ${q.due}` : ""}</div>
               </div>
             );
           })}
-          {quests.length === 0 && <div className="empty">Активных квестов нет. Скажи Claude, что в работе.</div>}
+          {quests.length === 0 && <div className="empty">Активных деятельностей нет. Скажи Claude, что в работе.</div>}
         </div>
       </section>
 

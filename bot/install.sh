@@ -18,7 +18,7 @@ if [[ ! -f "$HOME_DIR/config.json" ]]; then
   cat > "$HOME_DIR/config.json" <<EOF
 {
   "token": "",
-  "vault": "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Documents/personal-obsidian",
+  "vault": "$HOME/Desktop/personal-obsidian",
   "lat": 42.3417,
   "lon": 69.5901,
   "maghribOffsetMin": 0,

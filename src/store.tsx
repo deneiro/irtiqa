@@ -23,8 +23,7 @@ const LANG_KEY = "irtiqa.lang";
 const TIMER_KEY = "irtiqa.timer";
 const PENDING_KEY = "irtiqa.pendingSession";
 export type Lang = "en" | "ru";
-export const DEFAULT_ROOT =
-  "/Users/eldar/Library/Mobile Documents/com~apple~CloudDocs/Documents/personal-obsidian";
+export const DEFAULT_ROOT = "/Users/eldar/Desktop/personal-obsidian"; // moved out of iCloud 2026-11-01
 
 interface Store {
   root: string;

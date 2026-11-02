@@ -18,10 +18,12 @@ import {
 
 const STATUS: { key: QuestStatus; label: string }[] = [
   { key: "active", label: "в работе" },
-  { key: "passive", label: "в фоне" },
-  { key: "proposed", label: "предложен" },
-  { key: "done", label: "сделан" },
-  { key: "dropped", label: "брошен" },
+  { key: "paused", label: "на паузе" },
+  { key: "done", label: "сделана" },
+  // legacy values, still in life/archive/quests/
+  { key: "passive", label: "в фоне (старое)" },
+  { key: "proposed", label: "предложен (старое)" },
+  { key: "dropped", label: "брошен (старое)" },
 ];
 
 export default function QuestPage() {

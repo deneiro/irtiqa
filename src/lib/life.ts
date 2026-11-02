@@ -52,11 +52,12 @@ export interface Habit {
 }
 
 /**
- * `passive` — «в фоне» (Eldar, 2026-09-22): a quest that keeps running on a
- * schedule, carried by an agent (JH1's weekly job search), not by his attention.
- * It is never «stalled» and needs no calendar block.
+ * Schema 4.1 (2026-11-02): «квест» became «деятельность» — one file per
+ * ongoing thing in `life/activities/`, statuses `active | paused | done`.
+ * The type keeps the old name in code; the old values `proposed`, `passive`,
+ * `dropped` are still parsed so the files in `life/archive/quests/` read.
  */
-export type QuestStatus = "proposed" | "active" | "passive" | "done" | "dropped";
+export type QuestStatus = "active" | "paused" | "done" | "proposed" | "passive" | "dropped";
 
 export interface Quest {
   rel: string;
@@ -67,6 +68,10 @@ export interface Quest {
   due: string | undefined;
   project: string | undefined;
   source: string | undefined;
+  /** 4.1: the goal this activity moves, e.g. `"[[2026]] · 2 000 000 ₸/мес"`. */
+  goal?: string | undefined;
+  /** 4.1: `каждый день`, `пн–пт`, `раз в неделю`. */
+  cadence?: string | undefined;
   body: string;
   /** Frontmatter keys the app does not model, carried through a rewrite untouched. */
   extraFm?: string[];
@@ -130,6 +135,8 @@ export interface Day {
   pushups: number | undefined;
   pullups: number | undefined;
   closed: boolean;
+  /** 4.1: `## Задачи` — the day's checklist, first in the body. Claude writes it from Eldar's words; «Утро» ticks it. */
+  tasks: DayTask[];
   done: string[]; // ## Сделано bullets
   txs: Tx[]; // ## Деньги rows
   meals: Meal[]; // ## Еда rows
@@ -149,12 +156,15 @@ export interface DayExtra {
   /** Text between the frontmatter and the first `##` heading. */
   lead: string[];
   /** Lines inside the known sections that did not parse, kept in their section. */
+  tasks: string[];
   done: string[];
   money: string[];
   food: string[];
   /** Sections the app does not know, verbatim with their headings. */
   tail: string[];
 }
+
+export interface DayTask { done: boolean; text: string }
 
 export type DayMark = "done" | "failed" | "skipped" | "late";
 
@@ -320,7 +330,7 @@ export interface Life {
 
 export const DAY_DIR = "life/days";
 export const HABIT_DIR = "life/habits";
-export const QUEST_DIR = "life/quests";
+export const QUEST_DIR = "life/activities";
 export const ACCOUNTS_REL = "life/finance/accounts.md";
 export const SUBS_REL = "life/finance/subscriptions.md";
 export const DEBTS_REL = "life/finance/debts.md";
@@ -414,7 +424,7 @@ export function parseHabit(f: MdFile): Habit {
 }
 
 const HABIT_KEYS = new Set(["title", "type", "theme", "kind", "freq", "time", "status", "created", "source"]);
-const QUEST_KEYS = new Set(["title", "type", "theme", "status", "created", "due", "project", "source"]);
+const QUEST_KEYS = new Set(["title", "type", "theme", "status", "created", "due", "project", "source", "goal", "cadence"]);
 
 /**
  * A frequency written as words — the schema's own «каждый день», «раз в
@@ -471,7 +481,7 @@ export function habitDue(h: Habit, date: string): boolean {
 
 // ---------- quests ----------
 
-const QUEST_STATUSES: QuestStatus[] = ["proposed", "active", "passive", "done", "dropped"];
+const QUEST_STATUSES: QuestStatus[] = ["active", "paused", "done", "proposed", "passive", "dropped"];
 
 export function parseQuest(f: MdFile): Quest {
   const { fm, body } = parseFrontmatter(f.content);
@@ -486,14 +496,18 @@ export function parseQuest(f: MdFile): Quest {
     due: str(fm.due),
     project: str(fm.project),
     source: str(fm.source),
+    goal: str(fm.goal),
+    cadence: str(fm.cadence),
     body: body.trim(),
     extraFm: foreignFrontmatter(f.content, QUEST_KEYS),
   };
 }
 
 export function serializeQuest(q: Omit<Quest, "rel">): string {
-  const lines = ["---", `title: ${yamlScalar(q.title)}`, "type: quest"];
+  const lines = ["---", `title: ${yamlScalar(q.title)}`, "type: activity"];
   if (q.theme) lines.push(`theme: ${q.theme}`);
+  if (q.goal) lines.push(`goal: ${JSON.stringify(q.goal)}`);
+  if (q.cadence) lines.push(`cadence: ${q.cadence}`);
   lines.push(`status: ${q.status}`);
   if (q.created) lines.push(`created: ${q.created}`);
   if (q.due) lines.push(`due: ${q.due}`);
@@ -527,6 +541,25 @@ export function questJournal(body: string): QuestEntry[] {
 }
 
 const QUEST_STEPS_HEAD = "## Шаги";
+const NOW_HEAD = /^## Сейчас\s*$/;
+
+/**
+ * 4.1: the one next step, under `## Сейчас` — the first bullet there. Claude
+ * rewrites it freely; the app shows it before the `## Шаги` checklist.
+ */
+export function nowStep(body: string): string | undefined {
+  const lines = body.split(/\r?\n/);
+  const at = lines.findIndex((l) => NOW_HEAD.test(l));
+  if (at < 0) return undefined;
+  for (let i = at + 1; i < lines.length; i++) {
+    const l = lines[i];
+    if (/^## /.test(l)) break;
+    const m = l.match(/^\s*[-*]\s+(?:\[[ xX]\]\s*)?(.+)$/);
+    if (m) return m[1].trim();
+    if (l.trim()) return l.trim();
+  }
+  return undefined;
+}
 
 /** Where the description ends: at the steps, or at the journal, whichever comes first. */
 function descriptionEnd(body: string): number {
@@ -661,6 +694,7 @@ export function questXp(minutes: number): number {
 
 // ---------- days ----------
 
+const H_TASKS = /^## Задачи\s*$/;
 const H_DONE = /^## Сделано\s*$/;
 const H_MONEY = /^## Деньги\s*$/;
 const H_JOURNAL = /^## Журнал\s*$/;
@@ -669,15 +703,17 @@ const H_FOOD = /^##\s*(Еда|Food)\s*$/i;
 const cellsOf = (t: string) => t.slice(1, t.endsWith("|") ? -1 : undefined).split("|").map((c) => c.trim());
 const isSeparator = (cells: string[]) => cells.every((c) => /^:?-+:?$/.test(c) || c === "");
 
-function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; journal: string; extra: Omit<DayExtra, "fm"> } {
+function sections(body: string): { tasks: DayTask[]; done: string[]; txs: Tx[]; meals: Meal[]; journal: string; extra: Omit<DayExtra, "fm"> } {
   const lines = body.split(/\r?\n/);
-  let cur: "lead" | "done" | "money" | "food" | "journal" | "tail" = "lead";
+  let cur: "lead" | "tasks" | "done" | "money" | "food" | "journal" | "tail" = "lead";
+  const tasks: DayTask[] = [];
   const done: string[] = [];
   const txs: Tx[] = [];
   const meals: Meal[] = [];
   const journal: string[] = [];
-  const extra: Omit<DayExtra, "fm"> = { lead: [], done: [], money: [], food: [], tail: [] };
+  const extra: Omit<DayExtra, "fm"> = { lead: [], tasks: [], done: [], money: [], food: [], tail: [] };
   for (const line of lines) {
+    if (H_TASKS.test(line)) { cur = "tasks"; continue; }
     if (H_DONE.test(line)) { cur = "done"; continue; }
     if (H_MONEY.test(line)) { cur = "money"; continue; }
     if (H_FOOD.test(line)) { cur = "food"; continue; }
@@ -690,6 +726,10 @@ function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; jou
       extra.tail.push(line);
     } else if (cur === "journal") {
       journal.push(line);
+    } else if (cur === "tasks") {
+      const m = line.match(/^\s*[-*]\s+\[( |x|X)\]\s*(.*)$/);
+      if (m && m[2].trim()) tasks.push({ done: m[1] !== " ", text: m[2].trim() });
+      else if (t) extra.tasks.push(line); // a note line («Времени в календаре нет…») is kept, not a task
     } else if (cur === "done") {
       const m = line.match(/^\s*[-*]\s+(.*)$/);
       if (m && m[1].trim()) done.push(m[1].trim());
@@ -715,7 +755,7 @@ function sections(body: string): { done: string[]; txs: Tx[]; meals: Meal[]; jou
   const trimEnds = (a: string[]) => { while (a.length && !a[0].trim()) a.shift(); while (a.length && !a[a.length - 1].trim()) a.pop(); return a; };
   trimEnds(extra.lead);
   trimEnds(extra.tail);
-  return { done, txs, meals, journal: journal.join("\n").trim(), extra };
+  return { tasks, done, txs, meals, journal: journal.join("\n").trim(), extra };
 }
 
 /** Frontmatter keys the app writes itself; anything else in a day file is carried through. */
@@ -759,6 +799,7 @@ export function parseDay(f: MdFile): Day {
     pushups: num(fm.pushups),
     pullups: num(fm.pullups),
     closed: fm.closed === true || String(fm.closed).toLowerCase() === "true",
+    tasks: s.tasks,
     done: s.done,
     txs: s.txs,
     meals: s.meals,
@@ -771,7 +812,7 @@ export function emptyDay(date: string): Day {
   return {
     date, habitsDone: [], habitsFailed: [], habitsSkipped: [], habitsLate: [], questsClosed: [], sessions: [],
     mood: undefined, stress: undefined, weight: undefined, pushups: undefined, pullups: undefined,
-    closed: false, done: [], txs: [], meals: [], journal: "",
+    closed: false, tasks: [], done: [], txs: [], meals: [], journal: "",
   };
 }
 
@@ -798,7 +839,7 @@ export function serializeDay(d: Day): string {
     `habits_failed: ${yamlList(d.habitsFailed)}`,
     `habits_skipped: ${yamlList(d.habitsSkipped)}`,
     ...(d.habitsLate.length ? [`habits_late: ${yamlList(d.habitsLate)}`] : []),
-    `quests_closed: ${yamlList(d.questsClosed)}`,
+    ...(d.questsClosed.length ? [`quests_closed: ${yamlList(d.questsClosed)}`] : []), // 4.1: not written when empty
     `sessions: ${yamlList(d.sessions.map((s) => `${s.quest}: ${s.minutes}${s.at ? ` @${s.at}` : ""}`))}`,
     `work_minutes: ${workMinutesOf(d)}`,
     `spent: ${fmtAmount(spentOf(d))}`,
@@ -819,6 +860,12 @@ export function serializeDay(d: Day): string {
   const loose = (a: string[]) => a.filter((l) => !l.trim().startsWith("|"));
   const body: string[] = [];
   if (x?.lead.length) body.push(...x.lead, "");
+  if (d.tasks.length || x?.tasks.length) {
+    body.push("## Задачи");
+    for (const t of d.tasks) body.push(`- [${t.done ? "x" : " "}] ${t.text}`);
+    if (x?.tasks.length) body.push(...x.tasks);
+    body.push("");
+  }
   body.push("## Сделано");
   for (const it of d.done) body.push(`- ${it}`);
   if (x?.done.length) body.push(...x.done);
@@ -903,6 +950,7 @@ export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
     pushups: pick(base.pushups, ours.pushups, theirs.pushups),
     pullups: pick(base.pullups, ours.pullups, theirs.pullups),
     closed: pick(base.closed, ours.closed, theirs.closed),
+    tasks: rows(base.tasks, ours.tasks, theirs.tasks),
     done: rows(base.done, ours.done, theirs.done),
     txs: rows(base.txs, ours.txs, theirs.txs),
     meals: rows(base.meals, ours.meals, theirs.meals).sort((a, b) => a.time.localeCompare(b.time)),
@@ -954,7 +1002,8 @@ export function dayLogLine(d: Day, habits: Habit[]): string {
   const due = habits.filter((h) => habitDue(h, d.date)).length;
   const unmarked = unmarkedOn(d, habits).length;
   const parts = [`привычки ${d.habitsDone.length + d.habitsLate.length}/${due}${unmarked ? ` (не отмечено ${unmarked})` : ""}`];
-  if (d.questsClosed.length) parts.push(`квесты ${d.questsClosed.length}`);
+  if (d.tasks.length) parts.push(`задачи ${d.tasks.filter((t) => t.done).length}/${d.tasks.length}`);
+  if (d.questsClosed.length) parts.push(`закрыто ${d.questsClosed.length}`);
   const wm = workMinutesOf(d);
   if (wm) parts.push(`работа ${wm} мин`);
   parts.push(`потрачено ${fmtMoney(spentOf(d))}`);

@@ -160,9 +160,9 @@ export function serializeCalendar(blocks: PlanBlock[], today: string): string {
   const cutoff = addDays(today, -31);
   const once = blocks.filter((b) => !isWeekly(b) && b.date >= cutoff).sort((a, b) => a.date.localeCompare(b.date) || byTime(a, b));
   const lines = HEAD.map((l) => l.replace("{date}", today));
-  lines.push("", "## Каждую неделю", "", "| Дни | С | До | Что | Квест | Тема |", "|---|---|---|---|---|---|");
+  lines.push("", "## Каждую неделю", "", "| Дни | С | До | Что | Деятельность | Тема |", "|---|---|---|---|---|---|");
   for (const b of weekly) lines.push(row(formatDays(b.days), b));
-  lines.push("", "## Разово", "", "| Дата | С | До | Что | Квест | Тема |", "|---|---|---|---|---|---|");
+  lines.push("", "## Разово", "", "| Дата | С | До | Что | Деятельность | Тема |", "|---|---|---|---|---|---|");
   for (const b of once) lines.push(row(b.date, b));
   return lines.join("\n") + "\n";
 }
