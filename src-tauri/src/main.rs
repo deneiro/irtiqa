@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    irtiqa_tauri_lib::run()
+    irtiqa_lib::run()
 }
