@@ -5,7 +5,7 @@ import { useT } from "../lib/i18n";
 import { addDays, formatDayTitle } from "../lib/dates";
 import { useDayToday } from "../lib/useDayToday";
 import { closeDays } from "../lib/closeDays";
-import { goalsFor, withTaskDone } from "../lib/goals";
+import { goalsFor, withTaskDone, type GoalsFile } from "../lib/goals";
 import { parseHealth } from "../lib/health";
 import { themeColor } from "../lib/themes";
 import { heldOut, weekGrid, winNumbers } from "../lib/wins";
@@ -151,6 +151,29 @@ function Morning({ today }: { today: string }) {
     try { await persist(open); setJustClosed(false); await reload(); } catch (e) { setErr(String(e)); } finally { setBusy(false); }
   };
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) return;
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        if (draftRef.current.closed) void reopen();
+        else void done();
+        return;
+      }
+      if (!e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey && e.key >= "1" && e.key <= "7") {
+        const prayers = byKind("prayer");
+        const idx = Number(e.key) - 1;
+        if (prayers[idx]) {
+          e.preventDefault();
+          tap(prayers[idx]);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [due]);
+
   const autoRan = useRef(false);
   useEffect(() => {
     if (!life || autoRan.current) return;
@@ -172,7 +195,7 @@ function Morning({ today }: { today: string }) {
 
   // ----- today: the step he does himself is ticked here; the rest comes from Claude -----
   const quests = useMemo(() => (life?.quests ?? []).filter((q) => q.status === "active").map((q) => ({ q, steps: questSteps(q.body) })), [life]);
-  const { week, month } = useMemo(() => goalsFor(life?.goals ?? new Map(), today), [life, today]);
+  const { day: todayGoals, week, month } = useMemo(() => goalsFor(life?.goals ?? new Map(), today), [life, today]);
   const [ticking, setTicking] = useState<string | null>(null);
 
   /** Tick the current step of a quest: `- [x]`, with the date on its detail line so the quest no longer counts as stalled. */
@@ -186,10 +209,10 @@ function Morning({ today }: { today: string }) {
     } catch (e) { setErr(String(e)); } finally { setTicking(null); }
   };
 
-  const tickTask = async (index: number, done: boolean) => {
-    if (!week || ticking) return;
-    const rel = `${GOALS_DIR}/${week.key}.md`;
-    const content = life?.goals.get(week.key);
+  const tickTask = async (file: GoalsFile, index: number, done: boolean) => {
+    if (ticking) return;
+    const rel = `${GOALS_DIR}/${file.key}.md`;
+    const content = life?.goals.get(file.key);
     if (!content) return;
     setTicking(rel);
     try { await saveText(rel, withTaskDone(content, index, done)); await reload(); } catch (e) { setErr(String(e)); } finally { setTicking(null); }
@@ -253,7 +276,7 @@ function Morning({ today }: { today: string }) {
           ) : (
             <>
               <span className="small muted">{prayersOpen ? `намаз без отметки: ${prayersOpen}` : "намаз отмечен"} · не нажатое: привычка — не сделал, удержался — устоял</span>
-              <button className="btn primary" onClick={done} disabled={busy}>{busy ? "…" : "Готово"}</button>
+              <button className="btn primary" onClick={done} disabled={busy} title="Готово (⌘↵)">{busy ? "…" : "Готово"}</button>
             </>
           )}
         </footer>
@@ -295,10 +318,43 @@ function Morning({ today }: { today: string }) {
         </div>
       </section>
 
-      {/* ---------- today ---------- */}
+      {/* ---------- tasks: today, week, month — everything he has to do, in one place ---------- */}
       <section className="today">
-        <div className="eyebrow">Сегодня</div>
-        <NeedsYou today={today} />
+        <div className="eyebrow">Задачи</div>
+        <div className="goals3">
+          {(
+            [
+              { f: todayGoals, title: "Сегодня", none: "Задач на сегодня нет. Скажи Claude утром, что сегодня." },
+              { f: week, title: `Неделя ${week ? week.key.replace(/^\d+-W/, "") : ""}`, none: "Файла недели нет. Воскресенье вечером: цели недели со мной." },
+              { f: month, title: `Месяц ${month ? month.key.slice(5) : ""}`, none: "Файла месяца нет." },
+            ] as { f: GoalsFile | undefined; title: string; none: string }[]
+          ).map(({ f, title, none }) => (
+            <div className="card goalcard" key={title}>
+              <h3>{title}{f && f.tasks.length ? <span className="n">{f.tasks.filter((t) => t.done).length}/{f.tasks.length}</span> : null}</h3>
+              {!f && <div className="small muted">{none}</div>}
+              {f && f.tasks.length > 0 && (
+                <div className="tasks first">
+                  {f.tasks.map((t, i) => (
+                    <button className={`task ${t.done ? "done" : ""}`} key={i} disabled={ticking !== null} onClick={() => void tickTask(f, i, !t.done)} title={t.done ? "вернуть в работу" : "сделал"}>
+                      <span className="box">{t.done ? "✓" : ""}</span><span>{t.text}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {f && f.goals.length > 0 && (
+                <div className="goals-of">
+                  {f.goals.map((g, i) => <div className="goal" key={i}>{g}</div>)}
+                </div>
+              )}
+              {f && !f.tasks.length && !f.goals.length && <div className="small muted">Пусто.</div>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- quests: the current step of each ---------- */}
+      <section className="today">
+        <div className="eyebrow">Квесты — текущий шаг</div>
         <div className="qcards">
           {quests.map(({ q, steps }) => {
             const next = nextStep(steps);
@@ -331,28 +387,11 @@ function Morning({ today }: { today: string }) {
           })}
           {quests.length === 0 && <div className="empty">Активных квестов нет. Скажи Claude, что в работе.</div>}
         </div>
+      </section>
 
-        <div className="goals2">
-          <div className="card goalcard">
-            <h3>Неделя {week ? week.key.replace(/^\d+-W/, "") : ""}{week && week.tasks.length ? <span className="n">{week.tasks.filter((t) => t.done).length}/{week.tasks.length}</span> : null}</h3>
-            {!week && <div className="small muted">Файла недели нет. Воскресенье вечером: цели недели со мной.</div>}
-            {week && week.goals.map((g, i) => <div className="goal" key={i}>{g}</div>)}
-            {week && week.tasks.length > 0 && (
-              <div className="tasks">
-                {week.tasks.map((t, i) => (
-                  <button className={`task ${t.done ? "done" : ""}`} key={i} disabled={ticking !== null} onClick={() => void tickTask(i, !t.done)} title={t.done ? "вернуть в работу" : "сделал"}>
-                    <span className="box">{t.done ? "✓" : ""}</span><span>{t.text}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <div className="card goalcard">
-            <h3>Месяц {month ? month.key.slice(5) : ""}</h3>
-            {!month && <div className="small muted">Файла месяца нет.</div>}
-            {month && month.goals.map((g, i) => <div className="goal" key={i}>{g}</div>)}
-          </div>
-        </div>
+      {/* ---------- needs you: last, looked at once (Eldar, 2026-10-13) ---------- */}
+      <section className="today needs-last">
+        <NeedsYou today={today} />
       </section>
     </div>
   );

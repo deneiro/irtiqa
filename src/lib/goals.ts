@@ -1,9 +1,9 @@
 /**
  * `life/goals/<период>.md` — goals for five years, a year, a month, an ISO
- * week (vault CLAUDE.md «Цели по периодам»). Written by Claude from Eldar's
- * words; the app only reads them. The week file's `## Задачи` is a checklist
- * Claude ticks when he says a task is done, so the «Утро» screen can show
- * «задач 2 из 4» without anyone pressing anything in the app.
+ * week and a day (vault CLAUDE.md «Цели по периодам»). Written by Claude from
+ * Eldar's words. `## Задачи` is a checklist in the day, week and month files
+ * (day added 2026-10-13: «на утро я хотел бы видеть прям все задания»);
+ * Claude ticks it from his words, «Утро» lets him tick it himself.
  */
 
 export interface GoalTask { done: boolean; text: string }
@@ -14,7 +14,7 @@ export interface GoalsFile {
   to: string | undefined;
   /** Bullets under `## Цели`, the trailing `→ [[...]]` pointer stripped. */
   goals: string[];
-  /** Checklist under `## Задачи` (week only). A plain bullet counts as an open task. */
+  /** Checklist under `## Задачи` (day, week, month). A plain bullet with a `[[link]]` counts as an open task. */
   tasks: GoalTask[];
 }
 
@@ -63,17 +63,22 @@ export function monthKey(date: string): string {
 }
 
 /**
- * The week and month files that cover `date`, when they exist. On a Sunday
- * evening the coming week's file is already written while the current one
- * never was, so the next week stands in when this one is missing.
+ * The day, week and month files that cover `date`, when they exist. On a
+ * Sunday evening the coming week's file is already written while the current
+ * one never was, so the next week stands in when this one is missing.
  */
-export function goalsFor(goals: Map<string, string>, date: string): { week: GoalsFile | undefined; month: GoalsFile | undefined } {
+export function goalsFor(goals: Map<string, string>, date: string): { day: GoalsFile | undefined; week: GoalsFile | undefined; month: GoalsFile | undefined } {
   const mk = monthKey(date);
   const m = goals.get(mk);
+  const dd = goals.get(date);
   const [y, mo, d] = date.split("-").map(Number);
   const next = new Date(Date.UTC(y, mo - 1, d + 1)).toISOString().slice(0, 10);
   const wk = [isoWeekKey(date), isoWeekKey(next)].find((k) => goals.has(k));
-  return { week: wk ? parseGoals(wk, goals.get(wk)!) : undefined, month: m ? parseGoals(mk, m) : undefined };
+  return {
+    day: dd ? parseGoals(date, dd) : undefined,
+    week: wk ? parseGoals(wk, goals.get(wk)!) : undefined,
+    month: m ? parseGoals(mk, m) : undefined,
+  };
 }
 
 /**

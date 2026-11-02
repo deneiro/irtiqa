@@ -12,29 +12,33 @@ export interface SearchDoc {
   type: string;
 }
 
+export const SEARCH_OPTIONS = {
+  boost: { title: 6, file: 5, aliases: 4, tags: 3 },
+  prefix: true,
+  fuzzy: (term: string) => (term.length > 4 ? 0.2 : false),
+  combineWith: "AND" as const,
+};
+
+export function toSearchDoc(p: Page): SearchDoc {
+  return {
+    id: p.rel,
+    title: p.title,
+    file: p.file,
+    aliases: p.aliases.join(" "),
+    tags: p.tags.join(" "),
+    body: p.body,
+    theme: p.theme ?? "",
+    type: p.type,
+  };
+}
+
 export function buildIndex(pages: Page[]): MiniSearch<SearchDoc> {
   const ms = new MiniSearch<SearchDoc>({
     fields: ["title", "file", "aliases", "tags", "body"],
     storeFields: ["id"],
-    searchOptions: {
-      boost: { title: 6, file: 5, aliases: 4, tags: 3 },
-      prefix: true,
-      fuzzy: (term) => (term.length > 4 ? 0.2 : false),
-      combineWith: "AND",
-    },
+    searchOptions: SEARCH_OPTIONS,
   });
-  ms.addAll(
-    pages.map((p) => ({
-      id: p.rel,
-      title: p.title,
-      file: p.file,
-      aliases: p.aliases.join(" "),
-      tags: p.tags.join(" "),
-      body: p.body,
-      theme: p.theme ?? "",
-      type: p.type,
-    })),
-  );
+  ms.addAll(pages.map(toSearchDoc));
   return ms;
 }
 

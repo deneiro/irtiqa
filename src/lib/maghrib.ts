@@ -39,13 +39,13 @@ export function sunset(date: string, lat: number, lon: number): Date {
  * angle the Spiritual Administration of Muslims of Kazakhstan uses; the bot's
  * config can change it.
  */
-export function fajrOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon, angle = 15): Date {
+export function fajrOn(date: string, lat = getCoords().lat, lon = getCoords().lon, angle = 15): Date {
   const s = sun(date, lat, lon);
   return s.at(s.jTransit - s.hourAngle(-angle) / 360);
 }
 
 /** Zuhr: just after solar noon (the sun's disc has to pass the meridian, ~2 min). */
-export function zuhrOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon): Date {
+export function zuhrOn(date: string, lat = getCoords().lat, lon = getCoords().lon): Date {
   const s = sun(date, lat, lon);
   return new Date(s.at(s.jTransit).getTime() + 2 * 60000);
 }
@@ -58,7 +58,36 @@ export function zuhrOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon): Da
 // the old boundary and are read as they are; 2026-10-11 is the transition
 // (maghrib of 10-10 to midnight).
 
-export const SHYMKENT = { lat: 42.3417, lon: 69.5901 };
+export interface Coordinates {
+  lat: number;
+  lon: number;
+}
+
+export const SHYMKENT: Coordinates = { lat: 42.3417, lon: 69.5901 };
+const COORDS_KEY = "irtiqa.coords";
+
+export function getCoords(): Coordinates {
+  if (typeof localStorage !== "undefined") {
+    try {
+      const raw = localStorage.getItem(COORDS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed.lat === "number" && typeof parsed.lon === "number" && Number.isFinite(parsed.lat) && Number.isFinite(parsed.lon)) {
+          return parsed;
+        }
+      }
+    } catch {
+      /* fallback to default */
+    }
+  }
+  return SHYMKENT;
+}
+
+export function setCoords(coords: Coordinates): void {
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem(COORDS_KEY, JSON.stringify(coords));
+  }
+}
 
 /** The first day file that starts at the previous evening's maghrib. */
 export const MAGHRIB_DAYS_FROM = "2026-09-22";
@@ -82,7 +111,7 @@ function nextDate(date: string, n = 1): string {
   return localDate(d);
 }
 
-export function maghribOn(date: string, lat = SHYMKENT.lat, lon = SHYMKENT.lon): Date {
+export function maghribOn(date: string, lat = getCoords().lat, lon = getCoords().lon): Date {
   return sunset(date, lat, lon);
 }
 
@@ -92,7 +121,7 @@ function minutesOf(t: Date): number {
 }
 
 /** The day file a moment belongs to: the calendar date, except in the maghrib weeks, when after sunset it was already the next date. */
-export function dayOf(t: Date, lat = SHYMKENT.lat, lon = SHYMKENT.lon): string {
+export function dayOf(t: Date, lat = getCoords().lat, lon = getCoords().lon): string {
   const cal = localDate(t);
   const next = nextDate(cal);
   return maghribDay(next) && t >= maghribOn(cal, lat, lon) ? next : cal;

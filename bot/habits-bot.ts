@@ -272,11 +272,19 @@ function morningText(cal: string): string {
   const steps = quests.map((q) => ({ q, next: nextStep(questSteps(q.body)) })).filter((x) => x.next);
   if (steps.length) lines.push("", "▶ Сегодня первое:", ...steps.map(({ q, next }) => `• ${q.title}: ${owner(next!.text)}`));
 
-  const { week } = goalsFor(life.goals, cal);
+  const { day: todayGoals, week, month } = goalsFor(life.goals, cal);
+  if (todayGoals?.tasks.length) {
+    const done = todayGoals.tasks.filter((t) => t.done).length;
+    lines.push("", `✅ Сегодня: задач ${done} из ${todayGoals.tasks.length}`, ...todayGoals.tasks.filter((t) => !t.done).map((t) => `○ ${t.text}`));
+  }
   if (week?.tasks.length) {
     const done = week.tasks.filter((t) => t.done).length;
     lines.push("", `📅 Неделя: задач ${done} из ${week.tasks.length}`, ...week.tasks.filter((t) => !t.done).slice(0, 4).map((t) => `○ ${t.text}`));
   } else if (!week) lines.push("", "📅 Файла недели нет — цели недели пишутся с Claude в воскресенье.");
+  if (month?.tasks.length) {
+    const done = month.tasks.filter((t) => t.done).length;
+    lines.push("", `🗓 Месяц: задач ${done} из ${month.tasks.length}`, ...month.tasks.filter((t) => !t.done).slice(0, 4).map((t) => `○ ${t.text}`));
+  }
   return lines.join("\n");
 }
 

@@ -44,6 +44,8 @@ export interface Habit {
   status: HabitStatus;
   created: string | undefined;
   source: string | undefined;
+  /** Bad habits: `clean_since:` — the day he stopped, in his words. Read only; kept through a rewrite by `extraFm`. */
+  cleanSince?: string;
   body: string;
   /** Frontmatter keys the app does not model, carried through a rewrite untouched. */
   extraFm?: string[];
@@ -405,6 +407,7 @@ export function parseHabit(f: MdFile): Habit {
     status: ["proposed", "active", "paused", "archived"].includes(status) ? status : "active",
     created: str(fm.created),
     source: str(fm.source),
+    cleanSince: str(fm.clean_since)?.match(/^\d{4}-\d{2}-\d{2}/)?.[0],
     body: body.trim(),
     extraFm: foreignFrontmatter(f.content, HABIT_KEYS),
   };
@@ -1119,8 +1122,22 @@ export function txsInMonth(days: Map<string, Day>, ym: string): { date: string; 
  * due (a Mon/Wed/Fri habit on Tuesday, a day before it was created) and days
  * marked «пропуск» are neutral; so is `upTo` itself while it is still open and
  * unmarked. A failed mark, an unmarked past day or a day with no file ends it.
+ *
+ * A bad habit with `clean_since:` (Eldar names the day he stopped, 2026-10-13)
+ * counts every day from that date as held unless a day says «failed»: the
+ * one-button rule — untouched means held — applied back to before the app
+ * knew the habit, and to days that have no file.
  */
 export function streak(habit: Habit, days: Map<string, Day>, upTo: string): number {
+  if (habit.kind === "bad" && habit.cleanSince) {
+    let n = 0;
+    for (let cur = upTo; cur >= habit.cleanSince; cur = addDays(cur, -1)) {
+      const d = days.get(cur);
+      if (d && markOf(d, habit.title) === "failed") break;
+      n++;
+    }
+    return n;
+  }
   let n = 0;
   for (let i = 0, cur = upTo; i < 3650; i++, cur = addDays(cur, -1)) {
     if (habit.created && cur < habit.created) break;

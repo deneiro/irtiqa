@@ -70,7 +70,10 @@ fn is_hidden(entry: &walkdir::DirEntry) -> bool {
         .unwrap_or(false)
 }
 
-fn md_files(root: &Path, dir: &Path, skip: &[&str]) -> Vec<MdFile> {
+#[derive(Default)]
+struct VaultCache(Mutex<HashMap<String, (u64, String)>>);
+
+fn md_files(root: &Path, dir: &Path, skip: &[&str], cache: &mut HashMap<String, (u64, String)>) -> Vec<MdFile> {
     let mut out = Vec::new();
     if !dir.is_dir() {
         return out;
@@ -88,23 +91,49 @@ fn md_files(root: &Path, dir: &Path, skip: &[&str]) -> Vec<MdFile> {
         if skip.contains(&rel.as_str()) {
             continue;
         }
-        if let Ok(content) = fs::read_to_string(p) {
-            out.push(MdFile { rel, content, mtime: mtime_of(p) });
-        }
+        let mtime = mtime_of(p);
+        let content = match cache.get(&rel) {
+            Some((cached_mtime, cached_content)) if *cached_mtime == mtime => {
+                cached_content.clone()
+            }
+            _ => {
+                if let Ok(c) = fs::read_to_string(p) {
+                    cache.insert(rel.clone(), (mtime, c.clone()));
+                    c
+                } else {
+                    continue;
+                }
+            }
+        };
+        out.push(MdFile { rel, content, mtime });
     }
     out
 }
 
 #[tauri::command]
-fn scan_vault(root: String) -> Result<Scan, String> {
+fn scan_vault(cache: State<VaultCache>, root: String) -> Result<Scan, String> {
     let root_path = PathBuf::from(&root);
     if !root_path.join("wiki").is_dir() {
         return Err(format!("No `wiki/` folder inside {root}"));
     }
 
+    let mut cache_guard = cache.0.lock().map_err(|e| e.to_string())?;
+
     // log.md is handled separately.
-    let pages = md_files(&root_path, &root_path.join("wiki"), &["wiki/log.md"]);
-    let life = md_files(&root_path, &root_path.join("life"), &[]);
+    let pages = md_files(&root_path, &root_path.join("wiki"), &["wiki/log.md"], &mut cache_guard);
+    let life = md_files(&root_path, &root_path.join("life"), &[], &mut cache_guard);
+
+    // Prune cache entries for files that no longer exist
+    let mut existing: std::collections::HashSet<&str> = std::collections::HashSet::with_capacity(pages.len() + life.len());
+    for f in &pages {
+        existing.insert(&f.rel);
+    }
+    for f in &life {
+        existing.insert(&f.rel);
+    }
+    cache_guard.retain(|k, _| existing.contains(k.as_str()));
+    drop(cache_guard);
+
     let mut media: Vec<String> = Vec::new();
     for entry in WalkDir::new(root_path.join("life")).into_iter().filter_map(Result::ok) {
         let path = entry.path();
@@ -359,6 +388,11 @@ fn run_stream(app: AppHandle, state: State<Runs>, root: String, id: String, prog
         .stdout(Stdio::piped())
         .stderr(Stdio::piped());
     clean_env(&mut cmd);
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt;
+        cmd.process_group(0);
+    }
     let mut child = cmd.spawn().map_err(|e| format!("{program}: {e}"))?;
     let stdout = child.stdout.take().ok_or("no stdout")?;
     let stderr = child.stderr.take().ok_or("no stderr")?;
@@ -403,6 +437,11 @@ fn run_stream(app: AppHandle, state: State<Runs>, root: String, id: String, prog
 fn kill_stream(state: State<Runs>, id: String) -> Result<(), String> {
     let mut map = state.0.lock().map_err(|e| e.to_string())?;
     if let Some(mut child) = map.remove(&id) {
+        #[cfg(unix)]
+        {
+            let pid = child.id();
+            let _ = Command::new("/bin/kill").args(["-TERM", &format!("-{pid}")]).status();
+        }
         let _ = child.kill();
     }
     Ok(())
@@ -464,6 +503,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(WatchState::default())
         .manage(Runs::default())
+        .manage(VaultCache::default())
         .invoke_handler(tauri::generate_handler![scan_vault, read_text, write_text, write_binary, delete_file, rename_file, trash_person, run_cmd, run_stream, kill_stream, watch_vault])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

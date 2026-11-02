@@ -5,7 +5,7 @@ import MiniSearch from "minisearch";
 import type { MdFile, Scan, Vault } from "./lib/types";
 import { buildVault } from "./lib/vault";
 import { inTauri } from "./lib/native";
-import { buildIndex, type SearchDoc } from "./lib/search";
+import { buildIndex, toSearchDoc, type SearchDoc } from "./lib/search";
 import { buildLife, dayRel, emptyDay, mergeDay, parseDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
 import { LedgerConflict, ledgerLosses } from "./lib/guard";
 import { dayOf, dayToday } from "./lib/maghrib";
@@ -181,7 +181,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const pages = vault?.pages;
   // The search index costs seconds on a large vault; build it only once search is used.
   const [wantIndex, setWantIndex] = useState(false);
-  const index = useMemo(() => (pages && wantIndex ? buildIndex(pages) : null), [pages, wantIndex]);
+  const indexRef = useRef<MiniSearch<SearchDoc> | null>(null);
+  const prevPagesRef = useRef<Map<string, number>>(new Map()); // rel -> mtime
+
+  const index = useMemo(() => {
+    if (!pages || !wantIndex) return null;
+    if (!indexRef.current) {
+      const idx = buildIndex(pages);
+      indexRef.current = idx;
+      prevPagesRef.current = new Map(pages.map((p) => [p.rel, p.mtime]));
+      return idx;
+    }
+    const idx = indexRef.current;
+    const oldMap = prevPagesRef.current;
+    const newMap = new Map(pages.map((p) => [p.rel, p.mtime]));
+
+    for (const [rel] of oldMap) {
+      if (!newMap.has(rel)) {
+        if (idx.has(rel)) idx.discard(rel);
+      }
+    }
+    for (const p of pages) {
+      const oldMtime = oldMap.get(p.rel);
+      if (oldMtime === undefined || oldMtime !== p.mtime) {
+        if (idx.has(p.rel)) idx.discard(p.rel);
+        idx.add(toSearchDoc(p));
+      }
+    }
+    prevPagesRef.current = newMap;
+    return idx;
+  }, [pages, wantIndex]);
   const needIndex = useCallback(() => setWantIndex(true), []);
   const lifeFiles = vault?.life;
   const media = vault?.media;
@@ -333,7 +362,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const commit = staged.status === 0 ? null : await runCmd(root, "git", ["commit", "-q", "-m", message]);
       if (commit && commit.status !== 0) return { commit, push: null };
       // Push even with nothing new: earlier commits may still be waiting from an offline close.
-      const push = await runCmd(root, "git", ["push", "-q"]);
+      // Race with a 4s timeout so slow or offline networks never freeze day close.
+      const pushPromise = runCmd(root, "git", ["push", "-q"]).catch((e) => ({
+        status: -1,
+        stdout: "",
+        stderr: String(e),
+      }));
+      const pushTimeout = new Promise<CmdResult | null>((resolve) => setTimeout(() => resolve(null), 4000));
+      const push = await Promise.race([pushPromise, pushTimeout]);
       return { commit, push };
     },
     [root],

@@ -94,9 +94,12 @@
 .step.none { color: var(--muted); }
 .qtheme-line { margin-top: 4px; }
 
-.goals2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s3); margin-top: var(--s3); }
-@media (max-width: 1000px) { .goals2 { grid-template-columns: 1fr; } }
-.goalcard h3 { margin-bottom: var(--s2); }
+.goals3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s3); }
+@media (max-width: 1000px) { .goals3 { grid-template-columns: 1fr; } }
+.goalcard h3 { margin-bottom: var(--s2); display: flex; align-items: baseline; gap: 8px; }
+.tasks.first { margin-top: 0; border-top: 0; padding-top: 0; }
+.goals-of { margin-top: var(--s3); border-top: 1px solid var(--hair); padding-top: var(--s2); }
+.needs-last .needs { margin: 0; }
 .goal { font-size: var(--fs-ui); color: var(--ink-2); padding: 4px 0 4px 12px; border-left: 2px solid var(--hair-2); margin: 4px 0; line-height: 1.45; }
 .tasks { margin-top: var(--s3); border-top: 1px solid var(--hair); padding-top: var(--s2); }
 .task { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; font-size: var(--fs-ui); color: var(--ink-2); background: none; border: 0; width: 100%; text-align: left; cursor: pointer; font: inherit; }
