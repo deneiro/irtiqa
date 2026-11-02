@@ -1,4 +1,4 @@
-/* «Утро»: one screen, three blocks — yesterday · wins · today. */
+/* «Главный»: one screen, two columns — habits (yesterday · wins) left, the projects he is doing now right. */
 .morning .title { margin: 2px 0 var(--s4); }
 
 /* ---- yesterday ---- */
@@ -107,3 +107,18 @@
 .task .box { flex: none; width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--hair-2); display: grid; place-items: center; font-size: 11px; transform: translateY(2px); }
 .task.done { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--hair-2); }
 .task.done .box { background: var(--success); color: #07170f; border-color: transparent; }
+
+/* ---- two columns (Eldar, 2026-11-02) ---- */
+.main > .home { max-width: 1400px; }
+.home-cols { display: grid; grid-template-columns: minmax(0, 11fr) minmax(0, 9fr); gap: var(--s6); align-items: start; }
+.home-col { min-width: 0; }
+.colhead { margin-bottom: var(--s3); padding-bottom: 6px; border-bottom: 1px solid var(--hair); }
+.home .wins { margin-top: var(--s4); }
+.home .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.home .gridwrap { grid-template-columns: 1fr; gap: var(--s3); }
+.home .today.first { margin-top: 0; }
+.home .today { margin-top: var(--s5); }
+.home .goals3 { grid-template-columns: 1fr; }
+.home .goals3 .goalcard:first-child { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.home .qcards { grid-template-columns: 1fr; }
+@media (max-width: 1180px) { .home-cols { grid-template-columns: 1fr; } }

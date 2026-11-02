@@ -14,11 +14,12 @@ import NeedsYou from "../components/NeedsYou";
 import "./Morning.css";
 
 /**
- * «Утро» — the one screen of v2 (spec 2026-10-11). Eldar wakes up, opens the
- * app, marks *yesterday* himself (prayers in three states, what he held out
- * against, the habits he is building), presses «Готово», sees what grew, and
- * then what today's first step is. Nothing else is entered here: money, meals,
- * events and quest steps come in through Claude and show up on their own.
+ * «Главный» (ex-«Утро», Eldar 2026-11-02) — the one screen. Two columns:
+ * habits on the left (yesterday to mark, the numbers, the week), the projects
+ * he is doing now on the right (today's tasks, every active activity with its
+ * current step, the week and the month, what needs him). He marks *yesterday*
+ * himself, presses «Готово», sees what grew. Nothing else is entered here:
+ * money, meals, events and steps come in through Claude and the evening bot.
  */
 
 /**
@@ -237,12 +238,16 @@ function Morning({ today }: { today: string }) {
   const locked = draft.closed;
 
   return (
-    <div className="morning">
-      <div className="eyebrow">Утро</div>
+    <div className="morning home">
+      <div className="eyebrow">Главный</div>
       <h1 className="title">{formatDayTitle(today)}</h1>
 
       {err && <div className="notice err">Не удалось записать: {err}</div>}
 
+      <div className="home-cols">
+      {/* ================= left: habits ================= */}
+      <div className="home-col habits-col">
+      <div className="eyebrow colhead">Привычки</div>
       {/* ---------- yesterday ---------- */}
       <section className={`card yday ${locked ? "locked" : ""}`}>
         <header className="yhead">
@@ -333,9 +338,13 @@ function Morning({ today }: { today: string }) {
         </div>
       </section>
 
+      </div>
+
+      {/* ================= right: the projects he is doing now ================= */}
+      <div className="home-col projects-col">
+      <div className="eyebrow colhead">Проекты сейчас</div>
       {/* ---------- tasks: today, week, month — everything he has to do, in one place ---------- */}
-      <section className="today">
-        <div className="eyebrow">Задачи</div>
+      <section className="today first">
         <div className="goals3">
           {(
             [
@@ -358,7 +367,7 @@ function Morning({ today }: { today: string }) {
               )}
               {f && f.goals.length > 0 && (
                 <div className="goals-of">
-                  {f.goals.map((g, i) => <div className="goal" key={i}>{g}</div>)}
+                  {f.goals.map((g, i) => <div className="goal" key={i}>{g.replace(/\*\*/g, "").replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, "$1")}</div>)}
                 </div>
               )}
               {f && !f.tasks.length && !f.goals.length && <div className="small muted">Пусто.</div>}
@@ -367,7 +376,7 @@ function Morning({ today }: { today: string }) {
         </div>
       </section>
 
-      {/* ---------- quests: the current step of each ---------- */}
+      {/* ---------- activities: the current step of each ---------- */}
       <section className="today">
         <div className="eyebrow">Деятельности — что сейчас</div>
         <div className="qcards">
@@ -412,6 +421,8 @@ function Morning({ today }: { today: string }) {
       <section className="today needs-last">
         <NeedsYou today={today} />
       </section>
+      </div>
+      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { useT } from "../lib/i18n";
 import { anyRunning, useRuns } from "../lib/claudeRuns";
 
 /**
- * One thing in the menu (Eldar, 2026-11-02: «Утро»): the daily screen is the
+ * One thing in the menu (Eldar, 2026-11-02: «Главный», ex-«Утро»): the daily screen is the
  * app. «Темы» — reading, which he asked to keep (2026-10-11) — is folded under
  * a closed disclosure. The v1 screens («Посмотреть») left the menu; their
  * routes still exist for links from pages, nothing was deleted. Nothing is
@@ -33,7 +33,7 @@ export default function Sidebar() {
         <kbd>⌘K</kbd>
       </button>
 
-      <NavLink to="/" end className={cls}>Утро {timer && <span className="livedot" title={timer.quest} />}</NavLink>
+      <NavLink to="/" end className={cls}>Главный {timer && <span className="livedot" title={timer.quest} />}</NavLink>
 
       <details className="look">
         <summary className="section">Темы{claudeBusy && <span className="livedot" title="claude работает" />}</summary>
