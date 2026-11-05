@@ -7,8 +7,10 @@
  * day — each prayer «да · поздно · нет», every other habit «да · нет» — then
  * what got done and four questions about the day (2026-11-05). Each answer
  * lands in the day file at once; the habit taps are his marks. The morning
- * message after fajr is off by default (`morning` in config.json) and still
- * comes on /morning.
+ * summary after fajr is off by default (`morning` in config.json) and still
+ * comes on /morning. In its place, after fajr, one question: «что сегодня в
+ * планах?» — every message after it is one task in the day's `## Задачи`,
+ * until «✓ Всё» or the evening survey (2026-11-05, `plan` in config.json).
  *
  * What stays from v1, on demand only: `/today` and `/yesterday` show the
  * habit keyboard (three groups: намаз · удержался · привычки; a prayer has
@@ -65,6 +67,8 @@ interface Config {
   eveningAskAt: string;
   /** The morning message after fajr. Off since 2026-11-05: «только вопросы и всё»; /morning still sends it. */
   morning: boolean;
+  /** The morning question «что сегодня в планах?» after fajr; each reply is a task of the day. */
+  plan: boolean;
   snoozeMin: number;
 }
 
@@ -74,6 +78,8 @@ interface State {
   snoozes: { at: number; date: string }[];
   /** The open evening survey: which day, the question asked now, the questions fixed when it began. */
   survey?: { date: string; i: number; steps: SurveyStep[] } | null;
+  /** The open morning plan: which day the tasks go to. */
+  plan?: { date: string } | null;
 }
 
 const DEFAULTS: Omit<Config, "token" | "vault"> = {
@@ -82,6 +88,7 @@ const DEFAULTS: Omit<Config, "token" | "vault"> = {
   afterFajrMin: 30,
   eveningAskAt: "21:00",
   morning: false,
+  plan: true,
   snoozeMin: 30,
 };
 
@@ -127,11 +134,13 @@ function hm(t: Date): string {
   return t.toTimeString().slice(0, 5);
 }
 
-interface Slot { id: string; at: Date; kind: "morning" | "evening" }
+interface Slot { id: string; at: Date; kind: "morning" | "plan" | "evening" }
 
 function slotsOf(cal: string): Slot[] {
   const plus = (t: Date, min: number) => new Date(t.getTime() + min * 60000);
-  const out: Slot[] = cfg.morning ? [{ id: `${cal}:morning`, at: plus(fajrOn(cal, cfg.lat, cfg.lon, cfg.fajrAngle), cfg.afterFajrMin), kind: "morning" }] : [];
+  const after = plus(fajrOn(cal, cfg.lat, cfg.lon, cfg.fajrAngle), cfg.afterFajrMin);
+  const out: Slot[] = cfg.morning ? [{ id: `${cal}:morning`, at: after, kind: "morning" }] : [];
+  if (cfg.plan) out.push({ id: `${cal}:plan`, at: after, kind: "plan" });
   if (/^\d{2}:\d{2}$/.test(cfg.eveningAskAt)) out.push({ id: `${cal}:evening`, at: new Date(`${cal}T${cfg.eveningAskAt}:00`), kind: "evening" });
   return out;
 }
@@ -410,6 +419,7 @@ const surveyScale = (compact: string, i: number): Button[][] => [
 
 async function startSurvey(date: string) {
   if (!cfg.chatId || readDay(date).closed) return;
+  if (state.plan) setPlan(null); // the evening closes the morning list
   setSurvey({ date, i: -1, steps: surveySteps(date) });
   awaiting = null;
   pendingTx = null;
@@ -519,6 +529,44 @@ async function onSurveyCallback(compact: string, i: number, code: string, chat: 
     await edit(`${step.q} — ${HABIT_ANSWERS[step.hk].find((a) => a.code === code)!.text}`);
   }
   await nextSurveyQuestion();
+}
+
+// ---------- the morning plan: one message, one task ----------
+
+const PLAN_END = /^(вс[её]|готово|хватит|конец)[.!]?$/i;
+
+function setPlan(p: State["plan"]) {
+  state.plan = p;
+  saveState(state);
+}
+
+async function startPlan(date: string) {
+  if (!cfg.chatId || readDay(date).closed) return;
+  setPlan({ date });
+  const compact = date.replaceAll("-", "");
+  await say("🗓 Что сегодня в планах?\nОдно сообщение — одна задача.", {
+    reply_markup: { inline_keyboard: [[{ text: "✓ Всё на сегодня", callback_data: `pl:${compact}:0:end` }]] },
+  });
+}
+
+/** «09:00 урок — [[Engliko]]» → `- [ ] 09:00 урок — [[Engliko]]` in the day's `## Задачи`; several lines are several tasks. */
+async function onPlanTask(text: string) {
+  const p = state.plan!;
+  const day = readDay(p.date);
+  const have = new Set(day.tasks.map((t) => t.text.toLowerCase()));
+  const items = text.split(/\n+/).map((x) => x.trim().replace(/^[-•*]\s*(\[[ x]\]\s*)?/, "")).filter((x) => x && !have.has(x.toLowerCase()));
+  if (!items.length) { await say("Это уже есть в списке."); return; }
+  const tasks = [...day.tasks, ...items.map((t) => ({ done: false, text: t }))];
+  writeDay({ ...day, tasks });
+  await say(items.map((t, i) => `＋ ${tasks.length - items.length + i + 1}. ${t}`).join("\n"));
+}
+
+async function endPlan() {
+  const p = state.plan;
+  if (!p) return;
+  setPlan(null);
+  const tasks = readDay(p.date).tasks;
+  await say(tasks.length ? [`📋 План на сегодня — ${tasks.length}:`, ...tasks.map((t) => `${t.done ? "✓" : "○"} ${t.text}`)].join("\n") : "План пустой. /plan — начать заново.");
 }
 
 // ---------- check-in: mood, stress, work (on demand) ----------
@@ -838,6 +886,13 @@ async function onCallback(q: CallbackQuery) {
 
   if (kind === "noop") { await tg("answerCallbackQuery", { callback_query_id: q.id }); return; }
 
+  if (kind === "pl") {
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    await tg("editMessageReplyMarkup", { chat_id: q.message.chat.id, message_id: q.message.message_id, reply_markup: { inline_keyboard: [] } }).catch(() => {});
+    if (state.plan?.date === date) await endPlan();
+    return;
+  }
+
   if (kind === "sv") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     await onSurveyCallback(compact ?? "", Number(code), hkey ?? "", q.message.chat.id, q.message.message_id);
@@ -944,7 +999,8 @@ async function onMessage(m: Message) {
     const s = slotsOf(today);
     await say(
       [
-        `Сообщения сами: ${s.map((x) => `${hm(x.at)} (${x.kind === "morning" ? "после фаджра" : "вечерние вопросы"})`).join(", ") || "нет"}.`,
+        `Сообщения сами: ${s.map((x) => `${hm(x.at)} (${x.kind === "morning" ? "сводка после фаджра" : x.kind === "plan" ? "что сегодня в планах" : "вечерние вопросы"})`).join(", ") || "нет"}.`,
+        "Утром — «что сегодня в планах?»: каждое сообщение — одна задача дня, «✓ Всё» или «всё» — закончить. /plan — спросить снова.",
         "",
         `${HABITS_BUTTON} или /yesterday — отметить вчера разом. /today — сегодня.`,
         `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${CONTACT_BUTTON} — виделся или созвонился.`,
@@ -960,6 +1016,7 @@ async function onMessage(m: Message) {
   if (text.startsWith("/contact") || text === CONTACT_BUTTON) { awaiting = null; await sendContactList(); return; }
   if (text.startsWith("/need")) { awaiting = null; await sendNeeds(today, false); return; }
   if (text.startsWith("/morning")) { awaiting = null; await sendMorning(today); return; }
+  if (text.startsWith("/plan")) { awaiting = null; await startPlan(today); return; }
   if (text.startsWith("/evening")) {
     if (state.survey) await askCurrent(); // an open survey goes on where it stopped
     else await startSurvey(logicalDate(new Date()));
@@ -987,6 +1044,12 @@ async function onMessage(m: Message) {
     const reply = await onSurveyAnswer(text, sent);
     if (reply) await say(reply);
     if (!awaiting) await nextSurveyQuestion(); // a parse failure re-asks instead
+    return;
+  }
+  if (state.plan && state.plan.date !== today) setPlan(null); // yesterday's list is closed
+  if (!awaiting && state.plan) {
+    if (PLAN_END.test(text)) await endPlan();
+    else await onPlanTask(text);
     return;
   }
   if (!awaiting && sv) { await say("Тут ответ кнопкой 👇"); await askCurrent(); return; }
@@ -1079,8 +1142,9 @@ async function tick() {
       state.sent.push(s.id);
       saveState(state);
       const late = now.getTime() - s.at.getTime();
-      if (fresh || late > (s.kind === "morning" ? GRACE_MS : EVENING_GRACE_MS)) continue;
-      if (s.kind === "morning") {
+      if (fresh || late > (s.kind === "evening" ? EVENING_GRACE_MS : GRACE_MS)) continue;
+      if (s.kind === "plan") await startPlan(cal);
+      else if (s.kind === "morning") {
         await sendMorning(cal);
         if (new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(cal);
       } else await startSurvey(cal); // an unfinished survey of the day before gives way to this one
