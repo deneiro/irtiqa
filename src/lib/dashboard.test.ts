@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { dateRange, defaultTab, weekOf, weightNow, weightPace, windowStats } from "./dashboard";
+import { activities, dateRange, defaultTab, focusFor, goalView, signals, waiting, weekOf, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
 import { parseGoalLine, parseGoals } from "./goals";
 import { buildLife } from "./life";
 import type { MdFile } from "./types";
@@ -122,4 +122,69 @@ test("weightPace: a gain target reads the same way, passed or still ahead", () =
   assert.equal(weightPace(life, "2031-05-13", 57, "2031-06-12"), "ontrack"); // passed
   assert.equal(weightPace(life, "2031-05-13", 60, "2031-06-12"), "ontrack"); // ahead, the trend gets there
   assert.equal(weightPace(life, "2031-05-13", 70, "2031-06-12"), "behind"); // ahead, the trend does not
+});
+
+const act = (file: string, cadence: string, body: string, extra: Record<string, string> = {}) =>
+  md(`life/activities/${file}.md`, { title: file, type: "activity", theme: "Business & career", status: "active", cadence, ...extra }, body);
+const ACTS = [
+  act("А движется", "каждый день", "## Сейчас\n- шаг\n\n## Журнал\n- 2030-01-08 · запись\n"),
+  act("Б стоит", "каждый день", "## Журнал\n- 2030-01-07 · запись\n"),
+  act("В раз в неделю", "раз в неделю", "## Журнал\n- 2030-01-01 · запись\n"),
+  act("Г просрочена", "раз в неделю", "## Журнал\n- 2030-01-09 · запись\n", { due: "2030-01-09" }),
+  act("Д пустая", "каждый день", "## Сейчас\n- начать\n"),
+  act("Е шаг", "каждый день", "## Шаги\n- [x] сделано — ты\n  ✓ 2030-01-09\n"),
+];
+const goalsFile = (key: string, fm: string, body: string): MdFile => ({ rel: `life/goals/${key}.md`, mtime: 0, content: `---\ntype: goals\n${fm}\n---\n${body}` });
+
+test("activities: overdue, empty, idle by cadence, moving; worst first", () => {
+  const list = activities(buildLife(ACTS), "2030-01-10");
+  assert.deepEqual(Object.fromEntries(list.map((a) => [a.quest.title, [a.state, a.idle]])), {
+    "А движется": ["moving", 2], "Б стоит": ["idle", 3], "В раз в неделю": ["moving", 9],
+    "Г просрочена": ["overdue", 1], "Д пустая": ["empty", undefined], "Е шаг": ["moving", 1],
+  });
+  assert.equal(list[0].quest.title, "Г просрочена");
+  assert.equal(list.find((a) => a.quest.title === "А движется")!.now, "шаг");
+});
+
+test("goalView: hot, done, no data, weight pace, placeholder", () => {
+  const life = buildLife(WEIGHTS);
+  assert.equal(goalView("**Оплаты** · мера: оплаты · сейчас: 0 · срок: 2030-01-23", life, "2030-01-21").chip, "hot");
+  assert.equal(goalView("**Сайт** · мера: запущен · ✓ 2030-01-05", life, "2030-01-21").chip, "done");
+  assert.equal(goalView("**Оплаты** · мера: оплаты · сейчас: —", life, "2030-01-21").chip, "nodata");
+  assert.equal(goalView("**Сайт** · мера: запущен · сейчас: да", life, "2030-01-21").chip, undefined);
+  const w = goalView("**70 кг к 1 мая** · мера: вес · срок: 2030-05-01", life, "2030-01-21");
+  assert.equal(w.chip, "ontrack");
+  assert.equal(w.now, "78 кг (2030-01-20)");
+  assert.equal(goalView("*(третья — словами)*", life, "2030-01-21").placeholder, true);
+});
+
+test("signals: dates first, then late meals, good habits, what stands — at most four", () => {
+  const life = buildLife([
+    ...HABITS, ...DAYS, ...ACTS,
+    goalsFile("2030-W01", "period: week", "## Цели\n- **Оплаты** · мера: оплаты · сейчас: 0 · срок: 2030-01-04\n"),
+    goalsFile("2030-01", "period: month", "## Цели\n- **Оплаты месяца** · мера: оплаты · сейчас: 0 · срок: 2030-01-04\n"),
+  ]);
+  const s = signals(life, "2030-01-03");
+  assert.deepEqual(s.map((x) => x.level), ["red", "red", "gold", "gold"]);
+  assert.equal(s[0].title, "Срок завтра — Оплаты месяца"); // one signal per date, the month's wording
+  assert.match(s[1].title, /^Еда после 21:00 — 1 раз/);
+  assert.match(s[2].title, /^Полезные привычки — 1 из 4/);
+  assert.match(s[3].title, /^Не движутся 5 из 6/); // on 2030-01-03 only «В раз в неделю» has a move (01-01)
+});
+
+test("focusFor falls back to the previous period and marks it stale", () => {
+  const life = buildLife([goalsFile("2030-W01", "period: week", "## Цели\n- x\n\n## Фокус\n1. Строка\n\n_Claude, 2029-12-29_\n")]);
+  assert.deepEqual(focusFor(life, "2030-W02", "2030-W01"), { key: "2030-W02", lines: ["Строка"], on: "2029-12-29", stale: true });
+  assert.equal(focusFor(life, "2030-W01", "2029-W52").stale, false);
+});
+
+test("waiting reads the list under «## Ждёт», links as text", () => {
+  const life = buildLife([{ rel: "life/now.md", mtime: 0, content: "---\ntype: now\n---\n## Ждёт тебя\n- Снять [[Ролик|ролик]]\n- Позвонить\n\n## Последнее\n- не это\n" }]);
+  assert.deepEqual(waiting(life), ["Снять ролик", "Позвонить"]);
+});
+
+test("yesterdayView names the marks and the evening thoughts", () => {
+  const y = yesterdayView(buildLife([...HABITS, ...DAYS]), "2030-01-02");
+  assert.deepEqual(y.prayer, { done: ["Фаджр"], late: [], failed: [] });
+  assert.deepEqual([y.falls, y.goodDone, y.goodMissed, y.reflections], [[], ["Выпить 2 литра воды"], ["Прогулка"], ["Благодарен: семье"]]);
 });

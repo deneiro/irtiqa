@@ -4,8 +4,9 @@
  * too (`--dashboard`). Nothing here names a habit, a person or a sum: the
  * repository is public, everything comes from the vault files.
  */
-import { addDays, weekdayIndex } from "./dates";
-import { habitDue, isLateMeal, markOf, type Day, type Life } from "./life";
+import { addDays, plural, weekdayIndex } from "./dates";
+import { isoWeekKey, monthKey, parseGoalLine, parseGoals, type GoalLine, type GoalsFile } from "./goals";
+import { habitDue, isLateMeal, markOf, nowStep, type Day, type Habit, type Life, type Quest } from "./life";
 import { heldOut } from "./wins";
 
 export type Tab = "day" | "week" | "month";
@@ -149,4 +150,207 @@ export function weightPace(life: Life, today: string, target: number, by: string
   if (down ? last.value <= target : last.value >= target) return "ontrack";
   const projected = last.value + slope * (dayNum(by) - dayNum(last.date));
   return (down ? projected <= target : projected >= target) ? "ontrack" : "behind";
+}
+
+export const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
+export const plainLinks = (s: string) => s.replace(/\[\[(?:[^\]|]+\|)?([^\]]+)\]\]/g, "$1");
+
+export const PRAYER_ORDER = ["Фаджр", "Зухр", "Жума", "Аср", "Магриб", "Иша", "Витр"];
+const KIND_RANK: Record<Habit["kind"], number> = { prayer: 0, bad: 1, good: 2 };
+
+/** Active habits in the bot's order: prayers by the time of day, then held out, then good. */
+export function habitRows(life: Life): Habit[] {
+  const pr = (t: string) => { const i = PRAYER_ORDER.indexOf(t); return i < 0 ? PRAYER_ORDER.length : i; };
+  return life.habits.filter((h) => h.status === "active")
+    .sort((a, b) => KIND_RANK[a.kind] - KIND_RANK[b.kind] || pr(a.title) - pr(b.title) || a.title.localeCompare(b.title, "ru"));
+}
+
+export type ActState = "overdue" | "empty" | "idle" | "moving";
+/** Worst first: what does not move goes to the top. */
+export const ACT_RANK: Record<ActState, number> = { overdue: 0, empty: 1, idle: 2, moving: 3 };
+
+export interface ActivityView {
+  quest: Quest;
+  state: ActState;
+  /** The latest day it moved: a journal line, a ticked step, a session. */
+  last: string | undefined;
+  idle: number | undefined;
+  /** Moves in the last 7 days, today included. */
+  week: number;
+  now: string | undefined;
+}
+
+function moves(q: Quest, days: Map<string, Day>, today: string): string[] {
+  const journal = ("\n" + q.body).split(/\n## /).find((s) => s.startsWith("Журнал")) ?? "";
+  const dates = [...journal.matchAll(/^- (\d{4}-\d{2}-\d{2})/gm), ...q.body.matchAll(/✓\s*(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]);
+  for (const d of days.values()) if (d.sessions.some((s) => s.quest === q.title)) dates.push(d.date);
+  return dates.filter((d) => d <= today);
+}
+
+/** Overdue past `due:`, empty with no move at all, idle after 3 quiet days (daily, пн–пт) or 10 (the rest), else moving. */
+export function activityView(q: Quest, days: Map<string, Day>, today: string): ActivityView {
+  const ds = moves(q, days, today);
+  const last = ds.length ? ds.reduce((a, b) => (a > b ? a : b)) : undefined;
+  const idle = last ? daysBetween(last, today) : undefined;
+  const limit = /кажд|пн/i.test(q.cadence ?? "") ? 3 : 10;
+  const state: ActState = q.due && q.due < today ? "overdue" : idle === undefined ? "empty" : idle >= limit ? "idle" : "moving";
+  return { quest: q, state, last, idle, week: ds.filter((d) => d >= addDays(today, -6)).length, now: nowStep(q.body) };
+}
+
+export function activities(life: Life, today: string): ActivityView[] {
+  return life.quests.filter((q) => q.status === "active").map((q) => activityView(q, life.days, today))
+    .sort((a, b) => ACT_RANK[a.state] - ACT_RANK[b.state] || a.quest.title.localeCompare(b.quest.title, "ru"));
+}
+
+export type GoalChip = "hot" | "done" | "behind" | "ontrack" | "nodata";
+export interface GoalView { line: GoalLine; chip: GoalChip | undefined; now: string | undefined; placeholder: boolean }
+
+const kgTarget = (title: string) => { const m = title.match(/(\d+(?:[.,]\d+)?)\s*кг/); return m ? Number(m[1].replace(",", ".")) : undefined; };
+
+/**
+ * A goal's chip: hot when its date is 3 days off or past, done with ✓. For
+ * weight and income the app reads «сейчас» from the days itself; any other
+ * goal shows its own «сейчас:» and gets no chip unless that is empty.
+ */
+export function goalView(text: string, life: Life, today: string): GoalView {
+  const line = parseGoalLine(text);
+  if (/^\(/.test(line.title)) return { line, chip: undefined, now: undefined, placeholder: true };
+  if (line.doneOn) return { line, chip: "done", now: line.now, placeholder: false };
+  const measure = (line.measure ?? "").toLowerCase();
+  let now = line.now && !/^(—|-|нет данных)/i.test(line.now) ? line.now : undefined;
+  let chip: GoalChip | undefined = now ? undefined : "nodata";
+  if (/вес/.test(measure)) {
+    const w = weightNow(life, today), target = kgTarget(line.title);
+    now = w ? `${w.last.value} кг (${w.last.date})` : undefined;
+    chip = w && target && line.due ? weightPace(life, today, target, line.due) : "nodata";
+  } else if (/доход/.test(measure)) {
+    const s = windowStats(life, `${today.slice(0, 7)}-01`, today);
+    now = s.money.days ? `${fmt(s.money.earned)} ₸ за месяц` : undefined;
+    chip = now ? undefined : "nodata";
+  }
+  if (line.due && line.due <= addDays(today, 3)) chip = "hot";
+  return { line, chip, now, placeholder: false };
+}
+
+/** The nearest open goal measured in weight, from the week, month and year files. */
+export function weightGoal(life: Life, today: string): { target: number; by: string } | undefined {
+  for (const key of [isoWeekKey(today), monthKey(today), today.slice(0, 4)]) {
+    const c = life.goals.get(key);
+    for (const g of c ? parseGoals(key, c).goals.map(parseGoalLine) : []) {
+      const target = kgTarget(g.title);
+      if (/вес/i.test(g.measure ?? "") && target && g.due && g.due >= today && !g.doneOn) return { target, by: g.due };
+    }
+  }
+  return undefined;
+}
+
+export interface Rung { label: string; key: string | undefined; goals: GoalView[]; tasks: { done: number; total: number } }
+
+/** Five years → year → month → week. Five-year goals carry no measure, so no chip. */
+export function ladder(life: Life, today: string): Rung[] {
+  const year = today.slice(0, 4);
+  const five = [...life.goals].find(([, c]) => /^period:\s*five\s*$/m.test(c)) ?? [...life.goals].find(([k]) => /^\d{4}$/.test(k) && k > year);
+  const rung = (label: string, key: string | undefined, chips = true): Rung => {
+    const c = key ? life.goals.get(key) : undefined;
+    const f = key && c ? parseGoals(key, c) : undefined;
+    const goals = (f?.goals ?? []).map((g) => goalView(g, life, today)).map((g) => (chips ? g : { ...g, chip: undefined }));
+    return { label, key: f ? key : undefined, goals, tasks: { done: f?.tasks.filter((t) => t.done).length ?? 0, total: f?.tasks.length ?? 0 } };
+  };
+  return [rung("5 лет", five?.[0], false), rung("Год", year), rung("Месяц", monthKey(today)), rung("Неделя", isoWeekKey(today))];
+}
+
+export interface Signal { level: "red" | "gold"; title: string; fact: string; source: string }
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const nDays = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}`;
+function dueWords(due: string, today: string): string {
+  const n = daysBetween(today, due);
+  return n < 0 ? `срок прошёл ${nDays(-n)} назад` : n === 0 ? "срок сегодня" : n === 1 ? "срок завтра" : `срок через ${nDays(n)}`;
+}
+
+/** «Горит», at most four: dates first, then late meals (red), then good habits and what does not move (gold). */
+export function signals(life: Life, today: string): Signal[] {
+  const out: Signal[] = [];
+  const seen = new Set<string>();
+  for (const key of [monthKey(today), isoWeekKey(today), today.slice(0, 4)]) {
+    const c = life.goals.get(key);
+    for (const g of c ? parseGoals(key, c).goals.map((t) => goalView(t, life, today)) : []) {
+      if (g.chip !== "hot" || !g.line.due || seen.has(g.line.due)) continue;
+      seen.add(g.line.due);
+      out.push({ level: "red", title: `${cap(dueWords(g.line.due, today))} — ${g.line.title}`, fact: [`сейчас: ${g.now ?? "—"}`, g.line.measure ? `мера: ${g.line.measure}` : ""].filter(Boolean).join(" · "), source: `цели ${key}` });
+    }
+  }
+  const acts = activities(life, today);
+  for (const a of acts) {
+    const due = a.quest.due;
+    if (due && due >= today && due <= addDays(today, 3)) out.push({ level: "red", title: `${cap(dueWords(due, today))} — ${a.quest.title}`, fact: a.now ?? "", source: "деятельность" });
+  }
+  const s = windowStats(life, addDays(today, -7), addDays(today, -1));
+  if (s.lateMeals) out.push({ level: "red", title: `Еда после 21:00 — ${s.lateMeals} ${plural(s.lateMeals, "раз", "раза", "раз")} за неделю`, fact: `записи еды за ${nDays(s.mealDays)}`, source: "файлы дней, ## Еда" });
+  if (s.good.total && s.good.done / s.good.total < 0.3) out.push({ level: "gold", title: `Полезные привычки — ${s.good.done} из ${s.good.total} за 7 дней`, fact: s.good.missedBy.map(([t, n]) => `${t} ${n}`).join(" · "), source: "вечерний опрос" });
+  const stuck = acts.filter((a) => a.state !== "moving");
+  if (stuck.length) {
+    const group = (st: ActState, head: string, item: (a: ActivityView) => string) => {
+      const xs = stuck.filter((a) => a.state === st);
+      return xs.length ? `${head}: ${xs.map(item).join(", ")}` : "";
+    };
+    const fact = [group("overdue", "срок прошёл", (a) => a.quest.title), group("empty", "записей нет", (a) => a.quest.title), group("idle", "стоят", (a) => `${a.quest.title} ${a.idle} дн`)].filter(Boolean).join(" · ");
+    out.push({ level: "gold", title: `Не движутся ${stuck.length} из ${acts.length} ${plural(acts.length, "деятельности", "деятельностей", "деятельностей")}`, fact, source: "деятельности: журнал, шаги, сессии" });
+  }
+  return out.slice(0, 4);
+}
+
+export interface Focus { key: string; lines: string[]; on: string | undefined; stale: boolean }
+
+/** Claude's `## Фокус` of a period; when it is missing, the previous period's lines, marked stale. */
+export function focusFor(life: Life, key: string, prevKey: string): Focus {
+  const read = (k: string): GoalsFile | undefined => { const c = life.goals.get(k); return c ? parseGoals(k, c) : undefined; };
+  const cur = read(key);
+  if (cur?.focus.length) return { key, lines: cur.focus, on: cur.focusOn, stale: false };
+  const prev = read(prevKey);
+  return { key, lines: prev?.focus ?? [], on: prev?.focusOn, stale: !!prev?.focus.length };
+}
+
+/** The bullets under `## Ждёт …` in life/now.md, links reduced to their text. */
+export function waiting(life: Life): string[] {
+  const lines = (life.now ?? "").split("\n");
+  const at = lines.findIndex((l) => /^## Ждёт/.test(l));
+  const out: string[] = [];
+  for (const l of at < 0 ? [] : lines.slice(at + 1)) {
+    if (/^## /.test(l)) break;
+    const m = l.match(/^\s*-\s+(.+)$/);
+    if (m) out.push(plainLinks(m[1]).trim());
+  }
+  return out;
+}
+
+const REFLECT = /^-\s*(Недоволен|Мог бы изменить|Хотел, но не сделал|Благодарен):/;
+/** The four evening questions about the day, as the bot writes them into `## Журнал`. */
+export function reflections(d: Day | undefined): string[] {
+  return d ? d.journal.split("\n").filter((l) => REFLECT.test(l)).map((l) => l.replace(/^-\s*/, "")) : [];
+}
+
+export interface Yesterday {
+  date: string;
+  day: Day | undefined;
+  prayer: { done: string[]; late: string[]; failed: string[] };
+  falls: string[];
+  goodDone: string[];
+  goodMissed: string[];
+  reflections: string[];
+}
+
+export function yesterdayView(life: Life, today: string): Yesterday {
+  const date = addDays(today, -1);
+  const d = life.days.get(date);
+  const rows = habitRows(life).filter((h) => habitDue(h, date));
+  const titles = (kind: Habit["kind"], ok: (m: string | undefined) => boolean) => (d ? rows.filter((h) => h.kind === kind && ok(markOf(d, h.title))).map((h) => h.title) : []);
+  return {
+    date, day: d,
+    prayer: { done: titles("prayer", (m) => m === "done"), late: titles("prayer", (m) => m === "late"), failed: titles("prayer", (m) => m === "failed") },
+    falls: titles("bad", (m) => m === "failed"),
+    goodDone: titles("good", (m) => m === "done" || m === "late"),
+    goodMissed: titles("good", (m) => m === "failed"),
+    reflections: reflections(d),
+  };
 }
