@@ -3,6 +3,7 @@ import { defaultTab, type Tab } from "../lib/dashboard";
 import { useDayToday } from "../lib/useDayToday";
 import { useStore } from "../store";
 import Today from "./main/Today";
+import Week from "./main/Week";
 import "./Main.css";
 
 const TABS: { id: Tab; label: string; hint: string }[] = [
@@ -38,7 +39,7 @@ export default function MainPage() {
         </nav>
       </div>
       <div key={tab} className="dash-page">
-        {!life ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} today={today} /> : <p className="d-faint">Вкладка подключается в задачах 8–9.</p>}
+        {!life ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : <p className="d-faint">Вкладка подключается в задаче 9.</p>}
       </div>
     </div>
   );
