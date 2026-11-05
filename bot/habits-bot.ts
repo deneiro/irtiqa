@@ -44,6 +44,7 @@ import { buildPage } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
 import { SHYMKENT, dayOf, fajrOn } from "../src/lib/maghrib";
 import { goalsFor } from "../src/lib/goals";
+import { activities, signals, weekCompare, windowStats } from "../src/lib/dashboard";
 import { heldOut, winNumbers } from "../src/lib/wins";
 import { parseHealth } from "../src/lib/health";
 
@@ -1187,6 +1188,22 @@ async function poll() {
       await new Promise((r) => setTimeout(r, 10_000));
     }
   }
+}
+
+// `node bot.mjs --dashboard [YYYY-MM-DD]` prints what «Главный» shows that morning and exits — the spec v3 check against the mockup.
+if (process.argv.includes("--dashboard")) {
+  const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) ?? toDateStr(new Date());
+  const life = readLife();
+  const y = addDays(date, -1);
+  const brief = (s: ReturnType<typeof windowStats>) => ({ ...s, coverage: s.coverage.map((f) => (f ? 1 : 0)).join("") });
+  const wc = weekCompare(life, date);
+  console.log(JSON.stringify({
+    s7: brief(windowStats(life, addDays(y, -6), y)),
+    signals: signals(life, date).map((g) => `${g.level} ${g.title} | ${g.fact}`),
+    activities: activities(life, date).map((a) => `${a.state} ${a.idle ?? "-"} ${a.week} ${a.quest.title}`),
+    week: { cur: brief(wc.cur), prev: brief(wc.prev) },
+  }, null, 1));
+  process.exit(0);
 }
 
 // `node bot.mjs --morning [YYYY-MM-DD]` prints the morning message and exits: a dry run against any vault, no Telegram.
