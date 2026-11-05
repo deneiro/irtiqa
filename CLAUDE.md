@@ -44,7 +44,7 @@ running `git` / `claude`. All parsing in the frontend (`src/lib/`).
 - One slice at a time (see README). Commit per slice. Do not stack features.
 - No new screens or theme sections unless Eldar names one (freeze since
   2026-09-21, vault CLAUDE.md «Discipline»). Work goes into what exists.
-  v2 menu is Главный · Темы (2026-11-02: «Посмотреть» left the menu, v1 routes still exist); «Главный» has two columns — habits left, the projects he is doing now right. The bot asks an evening survey (`eveningAskAt`, default 21:00) one question at a time — since 2026-11-05 every due habit too (prayer да · поздно · нет, others да · нет, text from the habit's `ask:` key) and four questions about the day into `## Журнал`; the morning message is off (`morning`), the bot only asks;
+  v2 menu is Главный · Темы (2026-11-02: «Посмотреть» left the menu, v1 routes still exist); «Главный» has two columns — habits left, the projects he is doing now right. The bot asks an evening survey (`eveningAskAt`, default 21:00) one question at a time — since 2026-11-05 every due habit too (prayer да · поздно · нет, others да · нет, text from the habit's `ask:` key) and four questions about the day into `## Журнал`; the morning summary is off (`morning`); after fajr it asks «что сегодня в планах?» (`plan`) and every message after it is one task in the day's `## Задачи` until «всё» or the evening survey; the bot only asks;
   nothing is deleted. Do not add input forms to the app: Claude is the input.
 - The day is a calendar day since 2026-10-12; `dayToday()` still applies the
   maghrib rule to the files of 2026-09-22 … 2026-10-11 (`maghribDay`).
