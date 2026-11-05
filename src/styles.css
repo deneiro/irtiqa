@@ -428,7 +428,6 @@ textarea.text { width: 100%; height: auto; min-height: 180px; padding: var(--s2)
 .badge.ok { background: color-mix(in srgb, var(--success) 16%, transparent); color: var(--success); }
 .badge.err { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
 .badge.warn { background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); }
-.summary { border-color: color-mix(in srgb, var(--accent-hover) 55%, transparent); }
 .xp-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: var(--fs-ui); color: var(--ink-2); border-bottom: 1px solid var(--hair); }
 .xp-row:last-child { border-bottom: none; }
 .xp-row b { font-family: var(--font-mono); font-weight: 500; color: var(--accent-text); }
@@ -914,3 +913,10 @@ a.chip { text-decoration: none; }
 
 table.tbl.lib td:first-child { min-width: 160px; }
 table.tbl.lib .num { text-align: right; white-space: nowrap; width: 1%; }
+
+/* Rules several screens render with: .num (Library cells), .grid (every grid cols-N), .today (Calendar), .qhead (Quest header).
+   Keep this block last: it overrides the .grid and .qhead rules above. */
+.num { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: var(--s3) var(--s4); box-shadow: var(--shadow-1); min-width: 0; }
+.grid { display: grid; grid-template-columns: 92px repeat(7, 1fr); gap: 6px 6px; align-items: center; }
+.today { margin-top: var(--s6); }
+.qhead { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s2); }

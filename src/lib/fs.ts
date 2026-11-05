@@ -3,8 +3,9 @@
  * browser dev mode the Vite middleware in vite.config.ts stands in for it.
  *
  * Ownership (see the vault's CLAUDE.md, `## life/`): the app writes under
- * `life/`, appends `day` lines to `wiki/log.md`, and edits only its own
- * frontmatter keys on knowledge pages. Nothing else.
+ * `life/`, the few fields it owns on knowledge pages, and `People/` pages,
+ * including the files a person's rename or delete edits because they link to
+ * them (`wiki/log.md` among them). Nothing else.
  */
 import { invoke } from "@tauri-apps/api/core";
 import { inTauri } from "./native";
@@ -98,7 +99,7 @@ export interface CmdResult {
   stderr: string;
 }
 
-/** Run a program inside the vault folder (git, claude). Tauri only. */
+/** Run a program inside the vault folder (today only `open`, for a tool's launch file). Tauri only. */
 export async function runCmd(root: string, program: string, args: string[]): Promise<CmdResult> {
   if (!inTauri) throw new Error("runCmd needs the desktop app");
   return invoke<CmdResult>("run_cmd", { root, program, args });

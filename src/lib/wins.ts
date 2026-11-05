@@ -1,11 +1,10 @@
 /**
- * Small wins, the only metrics on the «Утро» screen (spec v2, 2026-10-11):
- * four numbers Eldar named as goals, the streaks of what he holds out
- * against, and a week grid of filled cells. XP and the wheel are not here.
+ * Small wins: four numbers Eldar named as goals (the bot's morning summary
+ * prints them) and the streaks of what he holds out against (the dashboard
+ * reads those too). XP and the wheel are not here.
  */
 import type { Page } from "./types";
-import { DEBT_I_OWE, debtLeft, habitDue, impliedMarks, markOf, streak, type Day, type Habit, type HabitKind, type Life } from "./life";
-import { addDays } from "./dates";
+import { DEBT_I_OWE, debtLeft, streak, type Day, type Habit, type Life } from "./life";
 
 export interface WinNumber {
   key: "suras" | "weight" | "debt" | "clean";
@@ -56,31 +55,7 @@ export function winNumbers(life: Life, pages: Page[], upTo: string, weightGoal?:
   } else out.push({ key: "weight", label: "вес, кг", value: "—", sub: "замера ещё нет", trend: 0 });
   const owed = debtOwed(life);
   out.push({ key: "debt", label: "долг, ₸", value: fmtShort(owed), sub: owed ? `${fmt(owed)} людям и банкам` : "долгов нет", trend: 0 });
-  const clean = life.habits.find((h) => h.status === "active" && h.kind === "bad" && /травк/i.test(h.title));
-  if (clean) {
-    const n = heldOut(clean, life.days, upTo);
-    out.push({ key: "clean", label: "дней без травки", value: String(n), sub: n ? "серия идёт" : "отметь вчера, серия начнётся", trend: n ? 1 : 0 });
-  }
+  const best = life.habits.filter((h) => h.status === "active" && h.kind === "bad").map((h) => ({ h, n: heldOut(h, life.days, upTo) })).sort((a, b) => b.n - a.n)[0];
+  if (best) out.push({ key: "clean", label: "дней без срыва", value: String(best.n), sub: best.n ? best.h.title : "серия начнётся с первого дня без срыва", trend: best.n ? 1 : 0 });
   return out;
-}
-
-export interface GridCell { date: string; due: number; done: number }
-export interface GridRow { kind: HabitKind; label: string; cells: GridCell[] }
-
-/** Seven days ending at `upTo`, one row per kind: how many of the due were done (a late prayer counts). */
-export function weekGrid(habits: Habit[], days: Map<string, Day>, upTo: string, n = 7): GridRow[] {
-  const kinds: { kind: HabitKind; label: string }[] = [{ kind: "prayer", label: "Намаз" }, { kind: "bad", label: "Удержался" }, { kind: "good", label: "Привычки" }];
-  return kinds.map(({ kind, label }) => {
-    const cells: GridCell[] = [];
-    for (let i = n - 1; i >= 0; i--) {
-      const date = addDays(upTo, -i);
-      const due = habits.filter((h) => h.kind === kind && habitDue(h, date));
-      const raw = days.get(date);
-      // An open day shows what its marks imply; a day with no file at all shows nothing.
-      const d = raw ? impliedMarks(raw, habits) : undefined;
-      const done = d ? due.filter((h) => { const m = markOf(d, h.title); return m === "done" || m === "late"; }).length : 0;
-      cells.push({ date, due: due.length, done });
-    }
-    return { kind, label, cells };
-  });
 }

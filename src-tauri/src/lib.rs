@@ -198,8 +198,12 @@ fn read_text(root: String, rel: String) -> Result<String, String> {
 }
 
 /// Write a whole file atomically (temp file + rename), creating parent folders.
-/// The app only ever writes under `life/`, `wiki/log.md`, and frontmatter of
-/// knowledge pages — the frontend enforces that; this command enforces the vault boundary.
+/// The frontend decides what the app writes (`src/lib/fs.ts` gates the paths, the
+/// repo's CLAUDE.md lists the rest): files under `life/`, the fields it owns on
+/// knowledge pages, `People/` pages, and the edits a person's rename or delete
+/// makes to the files that link to them — `wiki/log.md` and `wiki/index.md` among
+/// them (`src/lib/renamePerson.ts`). This command enforces only the vault
+/// boundary: `raw/` and the vault's `CLAUDE.md` are refused.
 #[tauri::command]
 fn write_text(root: String, rel: String, content: String) -> Result<(), String> {
     let target = safe_join(&root, &rel)?;
@@ -214,9 +218,8 @@ fn write_text(root: String, rel: String, content: String) -> Result<(), String> 
     fs::rename(&tmp, &target).map_err(|e| e.to_string())
 }
 
-/// Run a program inside the vault folder and wait for it. Used for `git` on
-/// day close and for `claude -p` from the Claude panel. Finder-launched apps get
-/// a bare PATH, so the usual tool locations are appended.
+/// PATH for the programs the app starts, through `run_cmd` and `run_stream`.
+/// Finder-launched apps get a bare PATH, so the usual tool locations are appended.
 fn tool_path() -> String {
     let home = std::env::var("HOME").unwrap_or_default();
     let mut path = std::env::var("PATH").unwrap_or_default();
@@ -344,6 +347,9 @@ fn base64_decode(data: &str) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+/// Run a program inside the vault folder and wait for it. Its only caller is
+/// `launchTool` in `src/lib/tools.ts` (macOS `open`); `claude -p` goes through
+/// `run_stream`.
 #[tauri::command]
 fn run_cmd(root: String, program: String, args: Vec<String>) -> Result<CmdResult, String> {
     let mut cmd = Command::new(&program);

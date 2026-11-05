@@ -11,7 +11,7 @@ export type Block =
   | { kind: "result"; text: string; costUsd: number | undefined; durationMs: number | undefined; isError: boolean }
   | { kind: "note"; text: string };
 
-export type OpKind = "ingest" | "digest" | "lint" | "ask" | "habit" | "apply";
+export type OpKind = "ingest" | "digest" | "lint" | "ask" | "habit" | "apply" | "focus";
 
 export interface Run {
   id: string;

@@ -5,7 +5,8 @@
  * does not open the app). In the evening a survey, one question per message:
  * weight, food, money, mood, stress (2026-11-02), then every habit due that
  * day — each prayer «да · поздно · нет», every other habit «да · нет» — then
- * what got done and four questions about the day (2026-11-05). Each answer
+ * what got done, every open task of the day (да · нет, spec v3) and four
+ * questions about the day (2026-11-05). Each answer
  * lands in the day file at once; the habit taps are his marks. The morning
  * summary after fajr is off by default (`morning` in config.json) and still
  * comes on /morning. In its place, after fajr, one question: «что сегодня в
@@ -44,6 +45,7 @@ import { buildPage } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
 import { SHYMKENT, dayOf, fajrOn } from "../src/lib/maghrib";
 import { goalsFor } from "../src/lib/goals";
+import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats } from "../src/lib/dashboard";
 import { heldOut, winNumbers } from "../src/lib/wins";
 import { parseHealth } from "../src/lib/health";
 
@@ -161,7 +163,7 @@ function readDay(date: string): Day {
   return parseDay({ rel: dayRel(date), content: readFileSync(p, "utf8"), mtime: Math.floor(statSync(p).mtimeMs / 1000) });
 }
 
-/** A closed day is sealed: its `day` line in the log is already written. The bot does not change it behind the app's back. */
+/** A day closed before 2026-11-05 keeps `closed: true` and the bot leaves it alone. The app no longer closes days, and no `day` line is written to the log any more. */
 class ClosedDay extends Error {
   constructor(public date: string) { super(`closed ${date}`); }
 }
@@ -240,7 +242,7 @@ function needsYouText(date: string, limit = 6): string | null {
     .map((p) => ({ theme: p.theme!, body: p.body }));
   const items = attention(life, peoplePages(), date, overviews);
   if (!items.length) return null;
-  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на главном экране.` : "";
+  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на экране «День».` : "";
   return ["📌 Требует тебя", ...items.slice(0, limit).map((a) => `• ${a.text}`)].join("\n") + more;
 }
 
@@ -271,8 +273,8 @@ function morningText(cal: string): string {
   if (due.length) {
     lines.push(
       marked
-        ? `Вчера (${formatDayTitle(y).toLowerCase()}): намаз ${got("prayer")} · удержался ${got("bad")} · привычки ${got("good")}${day.closed ? "" : " — открой приложение, доотметь и нажми «Готово»"}.`
-        : `Вчера (${formatDayTitle(y).toLowerCase()}) ещё не отмечено — открой приложение, отметь и нажми «Готово».`,
+        ? `Вчера (${formatDayTitle(y).toLowerCase()}): намаз ${got("prayer")} · удержался ${got("bad")} · привычки ${got("good")}.`
+        : `Вчера (${formatDayTitle(y).toLowerCase()}): отметок нет — вечерний опрос не пройден.`,
     );
   }
 
@@ -320,6 +322,7 @@ function eveningText(cal: string): string {
   if (d.txs.length) lines.push(`💸 потрачено ${fmtSum(d.txs.filter((t) => t.amount < 0).reduce((s, t) => s + t.amount, 0))}${d.txs.some((t) => t.amount > 0) ? `, получено ${fmtSum(d.txs.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0))}` : ""}`);
   if (d.meals.length) lines.push(`🍽 ${d.meals.map((m) => `${m.time} ${m.what}`).join(" · ")}${d.meals.some(isLateMeal) ? " — есть поздняя еда" : ""}`);
   if (d.done.length) lines.push(`✓ ${d.done.join("; ")}`);
+  if (d.tasks.length) lines.push(`☑️ задачи ${d.tasks.filter((t) => t.done).length}/${d.tasks.length}`);
   if (d.mood !== undefined) lines.push(`настроение ${d.mood}${d.stress !== undefined ? `, стресс ${d.stress}` : ""}`);
   const due = readHabits().filter((h) => habitDue(h, cal));
   const got = (k: HabitKind) => {
@@ -339,7 +342,7 @@ function eveningText(cal: string): string {
 //
 // Order: the numbers of the day, then every habit due that day (prayers in
 // their order, then what he holds out against, then the good ones), then what
-// got done and four questions about the day. A habit is a question by itself:
+// got done, every open task of the day and four questions about the day. A habit is a question by itself:
 // a new active habit file is asked from the next evening on, with the text of
 // its `ask:` key or one made from the title. A tap is his own mark, the same
 // one the app writes.
@@ -348,7 +351,8 @@ type BasicStep = "weight" | "food" | "money" | "mood" | "stress" | "done";
 type SurveyStep =
   | { kind: BasicStep }
   | { kind: "habit"; habit: string; hk: HabitKind; q: string }
-  | { kind: "reflect"; label: string; q: string };
+  | { kind: "reflect"; label: string; q: string }
+  | { kind: "task"; text: string; q: string };
 const SURVEY_Q: Record<BasicStep, string> = {
   weight: "⚖️ Сколько весишь сегодня?",
   food: "🍽 Что ел сегодня? Через запятую, время по желанию: «9:00 овсянка, 13:30 плов»",
@@ -364,7 +368,6 @@ const REFLECT: { label: string; q: string }[] = [
   { label: "Хотел, но не сделал", q: "🎯 Что хотел сделать, но не смог — и было бы классно, если бы сделал?" },
   { label: "Благодарен", q: "🤲 Чему благодарен за этот день?" },
 ];
-const PRAYER_ORDER = ["Фаджр", "Зухр", "Жума", "Аср", "Магриб", "Иша", "Витр"];
 const HABIT_ANSWERS: Record<HabitKind, { code: string; text: string }[]> = {
   prayer: [{ code: "y", text: "✓ да" }, { code: "l", text: "⏰ поздно" }, { code: "n", text: "✗ нет" }],
   bad: [{ code: "y", text: "да" }, { code: "n", text: "нет" }],
@@ -396,13 +399,14 @@ function surveySteps(date: string): SurveyStep[] {
     ...(["weight", "food", "money", "mood", "stress"] as BasicStep[]).map((kind) => ({ kind })),
     ...habits.map((h) => ({ kind: "habit" as const, habit: h.title, hk: h.kind, q: habitQuestion(h) })),
     { kind: "done" },
+    ...readDay(date).tasks.filter((t) => !t.done).map((t) => ({ kind: "task" as const, text: t.text, q: `✅ ${plainLinks(t.text)} — сделал?` })),
     ...REFLECT.map((r) => ({ kind: "reflect" as const, ...r })),
   ];
 }
 
-const questionOf = (s: SurveyStep) => (s.kind === "habit" || s.kind === "reflect" ? s.q : SURVEY_Q[s.kind]);
+const questionOf = (s: SurveyStep) => (s.kind === "habit" || s.kind === "reflect" || s.kind === "task" ? s.q : SURVEY_Q[s.kind]);
 /** Steps answered by a typed line; the rest by a button. */
-const typed = (s: SurveyStep) => !["mood", "stress", "habit"].includes(s.kind);
+const typed = (s: SurveyStep) => !["mood", "stress", "habit", "task"].includes(s.kind);
 
 /** The open survey, in state.json: a restart or a sleeping Mac does not lose the question. */
 function setSurvey(s: State["survey"]) {
@@ -437,6 +441,7 @@ async function nextSurveyQuestion() {
     if (step.kind === "mood" && d.mood !== undefined) continue;
     if (step.kind === "stress" && d.stress !== undefined) continue;
     if (step.kind === "habit" && markOf(d, step.habit)) continue;
+    if (step.kind === "task" && !d.tasks.some((t) => !t.done && t.text === step.text)) continue; // ticked, renamed or gone since the survey began
     break;
   }
   if (sv.i >= sv.steps.length) {
@@ -461,6 +466,10 @@ async function askCurrent() {
   } else if (step.kind === "habit") {
     awaiting = null;
     const row = HABIT_ANSWERS[step.hk].map((a) => ({ text: a.text, callback_data: `sv:${compact}:${sv.i}:${a.code}` }));
+    await say(step.q, { reply_markup: { inline_keyboard: [row, ...skipRow(compact, sv.i)] } });
+  } else if (step.kind === "task") {
+    awaiting = null;
+    const row = [{ text: "да", callback_data: `sv:${compact}:${sv.i}:y` }, { text: "нет", callback_data: `sv:${compact}:${sv.i}:n` }];
     await say(step.q, { reply_markup: { inline_keyboard: [row, ...skipRow(compact, sv.i)] } });
   } else {
     ask("survey", 12 * 3600_000);
@@ -493,7 +502,7 @@ async function onSurveyAnswer(text: string, sent: Date): Promise<string> {
     if (!meals.length) { ask("survey", 12 * 3600_000); return "Не понял. Напиши, что ел, через запятую — или пропусти."; }
     const all = [...day.meals, ...meals].sort((a, b) => a.time.localeCompare(b.time));
     writeDay({ ...day, meals: all });
-    return `🍽 ${meals.map((m) => `${m.time} ${m.what}`).join(" · ")}${meals.some(isLateMeal) ? "\n⚠️ После 21:00 — за границей по панкреатиту." : ""}`;
+    return `🍽 ${meals.map((m) => `${m.time} ${m.what}`).join(" · ")}${meals.some(isLateMeal) ? "\n⚠️ После 21:00 — поздняя еда." : ""}`;
   }
   if (step === "money") {
     const txs = splitList(text).map(parseMoney).filter((t): t is { amount: number; note: string } => !!t).map((t) => ({ amount: t.amount, category: "", account: "", note: t.note }) as Tx);
@@ -527,6 +536,17 @@ async function onSurveyCallback(compact: string, i: number, code: string, chat: 
     if (!mark) return;
     writeDay(withMark(readDay(date), step.habit, mark));
     await edit(`${step.q} — ${HABIT_ANSWERS[step.hk].find((a) => a.code === code)!.text}`);
+  } else if (step.kind === "task") {
+    if (code !== "y" && code !== "n") return; // a stale prayer button («l») or anything else: nothing is answered
+    let found = true;
+    if (code === "y") {
+      // Tasks are matched by text: tick the first open one, so two identical tasks take one «да» each.
+      const day = readDay(date);
+      const at = day.tasks.findIndex((t) => !t.done && t.text === step.text);
+      found = at >= 0;
+      if (found) writeDay({ ...day, tasks: day.tasks.map((t, j) => (j === at ? { ...t, done: true } : t)) });
+    }
+    await edit(`${step.q} — ${!found ? "не нашёл в списке" : code === "y" ? "да" : "нет"}`);
   }
   await nextSurveyQuestion();
 }
@@ -1004,7 +1024,7 @@ async function onMessage(m: Message) {
         "",
         `${HABITS_BUTTON} или /yesterday — отметить вчера разом. /today — сегодня.`,
         `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${CONTACT_BUTTON} — виделся или созвонился.`,
-        `Вечером${/^\d{2}:\d{2}$/.test(cfg.eveningAskAt) ? ` в ${cfg.eveningAskAt}` : ""} — вопросы по одному: вес, еда, деньги, настроение, стресс, каждый намаз (да · поздно · нет), каждая привычка (да · нет), что сделал, чем недоволен, что изменил бы, что хотел и не смог, чему благодарен. Без ответа следующий вопрос не приходит; если Mac спал в это время — спросит, когда проснётся. /evening — продолжить или начать опрос, /summary — итог дня.`,
+        `Вечером${/^\d{2}:\d{2}$/.test(cfg.eveningAskAt) ? ` в ${cfg.eveningAskAt}` : ""} — вопросы по одному: вес, еда, деньги, настроение, стресс, каждый намаз (да · поздно · нет), каждая привычка (да · нет), что сделал, каждая задача дня (да · нет), чем недоволен, что изменил бы, что хотел и не смог, чему благодарен. Без ответа следующий вопрос не приходит; если Mac спал в это время — спросит, когда проснётся. /evening — продолжить или начать опрос, /summary — итог дня.`,
         "/checkin — настроение, стресс, над чем работал. /weight — вес. /need — что требует тебя. /morning — утренняя сводка.",
       ].join("\n"),
       { reply_markup: REPLY_KEYBOARD },
@@ -1084,7 +1104,7 @@ async function onFood(text: string, now: Date) {
   const date = mealDate(meal.time, now);
   const day = readDay(date);
   writeDay({ ...day, meals: [...day.meals, meal].sort((a, b) => a.time.localeCompare(b.time)) });
-  const late = isLateMeal(meal) ? "\n⚠️ После 21:00 — это за границей по панкреатиту." : "";
+  const late = isLateMeal(meal) ? "\n⚠️ После 21:00 — поздняя еда." : "";
   await say(`🍽 Записал (${formatDayTitle(date).toLowerCase()}): ${meal.time} ${meal.what}${meal.note ? ` — ${meal.note}` : ""}${late}`, {
     reply_markup: { inline_keyboard: [[{ text: "↩︎ Отменить", callback_data: `u:${date.replaceAll("-", "")}:${key(meal.time + meal.what + meal.note)}` }]] },
   });
@@ -1175,7 +1195,7 @@ async function poll() {
           if (u.callback_query) await onCallback(u.callback_query);
         } catch (e) {
           if (e instanceof ClosedDay) {
-            await say(`День ${e.date} уже закрыт — в закрытый день бот не пишет. Поправить можно на главном экране приложения.`).catch(() => {});
+            await say(`День ${e.date} закрыт прежней версией приложения: бот в него не пишет. Сними \`closed: true\` в файле дня или скажи Claude.`).catch(() => {});
             if (u.callback_query) await tg("answerCallbackQuery", { callback_query_id: u.callback_query.id }).catch(() => {});
             continue;
           }
@@ -1187,6 +1207,22 @@ async function poll() {
       await new Promise((r) => setTimeout(r, 10_000));
     }
   }
+}
+
+// `node bot.mjs --dashboard [YYYY-MM-DD]` prints what «Главный» shows that morning and exits — the spec v3 check against the mockup.
+if (process.argv.includes("--dashboard")) {
+  const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) ?? toDateStr(new Date());
+  const life = readLife();
+  const y = addDays(date, -1);
+  const brief = (s: ReturnType<typeof windowStats>) => ({ ...s, coverage: s.coverage.map((f) => (f ? 1 : 0)).join("") });
+  const wc = weekCompare(life, date);
+  console.log(JSON.stringify({
+    s7: brief(windowStats(life, addDays(y, -6), y)),
+    signals: signals(life, date).map((g) => `${g.level} ${g.title} | ${g.fact}`),
+    activities: activities(life, date).map((a) => `${a.state} ${a.idle ?? "-"} ${a.week} ${a.quest.title}`),
+    week: { cur: brief(wc.cur), prev: brief(wc.prev) },
+  }, null, 1));
+  process.exit(0);
 }
 
 // `node bot.mjs --morning [YYYY-MM-DD]` prints the morning message and exits: a dry run against any vault, no Telegram.

@@ -3,8 +3,9 @@
  * week and a day (vault CLAUDE.md «Цели по периодам»). Written by Claude from
  * Eldar's words. `## Задачи` is a checklist in the day, week and month files
  * (day added 2026-10-13: «на утро я хотел бы видеть прям все задания»);
- * Claude ticks it from his words, «Утро» lets him tick it himself.
+ * Claude ticks it from his words; the app only reads it.
  */
+import { addDays, weekdayIndex } from "./dates";
 
 export interface GoalTask { done: boolean; text: string }
 export interface GoalsFile {
@@ -16,6 +17,9 @@ export interface GoalsFile {
   goals: string[];
   /** Checklist under `## Задачи` (day, week, month). A plain bullet with a `[[link]]` counts as an open task. */
   tasks: GoalTask[];
+  /** `## Фокус` (spec v3): Claude's numbered lines for the period, and the date he signed them. */
+  focus: string[];
+  focusOn: string | undefined;
 }
 
 function section(body: string, head: string): string {
@@ -32,7 +36,11 @@ export function parseGoals(key: string, content: string): GoalsFile {
   const body = "\n" + content.replace(/^---[\s\S]*?\n---\n?/, "");
   const strip = (l: string) =>
     l.replace(/^\s*-\s*(\[[ xX]\]\s*)?/, "")
-      .replace(/\s*→\s*\[\[[^\]]*\]\][^.]*\.?$/, "") // the pointer to the period above
+      // The pointer to the period above. A reached goal's `✓ date` written after it (spec v3: it ends the line) stays.
+      .replace(/\s*→\s*\[\[[^\]]*\]\]([^.]*)\.?$/, (_m, tail: string) => {
+        const done = tail.match(/✓\s*\d{4}-\d{2}-\d{2}/)?.[0];
+        return done ? ` ${done}` : "";
+      })
       .replace(/\s*—\s*шаг\s+(в\s+\[\[[^\]]*\]\]|там же)\s*$/, "") // the pointer to the quest
       .trim();
   const goals = section(body, "Цели").split("\n").filter((l) => /^\s*-\s+/.test(l)).map(strip).filter(Boolean);
@@ -44,7 +52,33 @@ export function parseGoals(key: string, content: string): GoalsFile {
     if (!m[1] && !/\[\[/.test(m[2])) continue;
     tasks.push({ done: /[xX]/.test(m[1] ?? ""), text: strip(m[2]) });
   }
-  return { key, period: fm(content, "period"), from: fm(content, "from"), to: fm(content, "to"), goals, tasks };
+  const focusText = section(body, "Фокус");
+  const focus = focusText.split("\n").map((l) => l.match(/^\s*\d+[.)]\s+(.+)$/)?.[1].trim()).filter((l): l is string => !!l);
+  const focusOn = focusText.match(/_Claude,\s*(\d{4}-\d{2}-\d{2})_/)?.[1];
+  return { key, period: fm(content, "period"), from: fm(content, "from"), to: fm(content, "to"), goals, tasks, focus, focusOn };
+}
+
+/** One goal, read by its parts: `**цель** · мера: … · сейчас: … · срок: YYYY-MM-DD · → [[выше]]`; a reached goal ends with `✓ YYYY-MM-DD`. */
+export interface GoalLine {
+  title: string;
+  measure: string | undefined;
+  now: string | undefined;
+  due: string | undefined;
+  doneOn: string | undefined;
+}
+
+export function parseGoalLine(text: string): GoalLine {
+  const doneOn = text.match(/✓\s*(\d{4}-\d{2}-\d{2})/)?.[1];
+  // The `·` that stood before the pointer (or was left by `parseGoals`, which cuts the pointer only) is not part of a field.
+  const parts = text.split(/\s→\s/)[0].replace(/\s*·\s*$/, "").split(/\s+·\s+/).map((p) => p.trim());
+  const part = (k: string) => parts.find((p) => p.startsWith(`${k}:`))?.slice(k.length + 1).trim() || undefined;
+  return {
+    title: parts[0].replace(/\*+/g, "").replace(/\s*✓.*$/, "").trim(),
+    measure: part("мера"),
+    now: part("сейчас"),
+    due: part("срок")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0],
+    doneOn,
+  };
 }
 
 /** ISO week key of a date: `2026-W42` (Monday to Sunday). */
@@ -60,6 +94,15 @@ export function isoWeekKey(date: string): string {
 
 export function monthKey(date: string): string {
   return date.slice(0, 7);
+}
+
+/**
+ * The week whose `## Фокус` is the current one. Claude writes it on Sunday
+ * evening for the coming week, so from Sunday on it is the next ISO week, on
+ * any other day this one. The vault's `scripts/focus.sh` applies the same rule.
+ */
+export function focusWeekKey(today: string): string {
+  return isoWeekKey(weekdayIndex(today) === 0 ? addDays(today, 1) : today);
 }
 
 /**
@@ -79,28 +122,4 @@ export function goalsFor(goals: Map<string, string>, date: string): { day: Goals
     week: wk ? parseGoals(wk, goals.get(wk)!) : undefined,
     month: m ? parseGoals(mk, m) : undefined,
   };
-}
-
-/**
- * The file text with task `index` (in `## Задачи` order, notes skipped)
- * ticked or unticked. Only the checkbox changes; a plain bullet with a link
- * gains one. Eldar taps this on «Утро»; Claude ticks the same line from his
- * words — both end in the same file.
- */
-export function withTaskDone(content: string, index: number, done: boolean): string {
-  const lines = content.split("\n");
-  const head = lines.findIndex((l) => /^## Задачи\s*$/.test(l));
-  if (head < 0) return content;
-  let n = -1;
-  for (let i = head + 1; i < lines.length; i++) {
-    if (/^## /.test(lines[i])) break;
-    const m = lines[i].match(/^(\s*-\s*)(?:\[([ xX])\]\s*)?(.+)$/);
-    if (!m) continue;
-    if (!m[2] && !/\[\[/.test(m[3])) continue; // a note, not a task
-    n++;
-    if (n !== index) continue;
-    lines[i] = `${m[1]}[${done ? "x" : " "}] ${m[3]}`;
-    break;
-  }
-  return lines.join("\n");
 }

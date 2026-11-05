@@ -4,7 +4,7 @@ import Sidebar from "./components/Sidebar";
 import CommandPalette from "./components/CommandPalette";
 import Home from "./pages/Home";
 import DayPage from "./pages/Day";
-import MorningPage from "./pages/Morning";
+import MainPage from "./pages/Main";
 import HabitsPage from "./pages/Habits";
 import QuestsPage from "./pages/Quests";
 import FinancePage from "./pages/Finance";
@@ -71,7 +71,7 @@ function Shell() {
       <main className="main">
         <Back />
         <Routes>
-          <Route path="/" element={<MorningPage />} />
+          <Route path="/" element={<MainPage />} />
           <Route path="/day" element={<DayPage />} />
           <Route path="/vault" element={<Home />} />
           <Route path="/calendar" element={<CalendarPage />} />
