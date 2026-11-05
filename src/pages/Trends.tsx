@@ -112,7 +112,7 @@ export default function TrendsPage() {
         </div>
         <div className="card">
           <h3>Настроение и стресс</h3>
-          {moodData.length === 0 ? <div className="small muted">Пока нет оценок: ставь настроение и стресс при закрытии дня.</div> : (
+          {moodData.length === 0 ? <div className="small muted">Пока нет оценок: настроение и стресс спрашивает вечерний опрос бота.</div> : (
             <div className="chart" style={{ height: 200 }}>
               <ResponsiveContainer>
                 <LineChart data={data.daily} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>

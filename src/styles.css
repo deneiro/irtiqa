@@ -915,8 +915,8 @@ a.chip { text-decoration: none; }
 table.tbl.lib td:first-child { min-width: 160px; }
 table.tbl.lib .num { text-align: right; white-space: nowrap; width: 1%; }
 
-/* From pages/Morning.css, verbatim; other screens render with them: .num (Library cells), .grid (every grid cols-N), .today (Calendar), .qhead (Quest header).
-   Keep this block last: it overrides the .grid and .qhead rules above, as Morning.css did. */
+/* Rules several screens render with: .num (Library cells), .grid (every grid cols-N), .today (Calendar), .qhead (Quest header).
+   Keep this block last: it overrides the .grid and .qhead rules above. */
 .num { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: var(--s3) var(--s4); box-shadow: var(--shadow-1); min-width: 0; }
 .grid { display: grid; grid-template-columns: 92px repeat(7, 1fr); gap: 6px 6px; align-items: center; }
 .today { margin-top: var(--s6); }

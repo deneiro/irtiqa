@@ -135,7 +135,7 @@ export interface Day {
   pushups: number | undefined;
   pullups: number | undefined;
   closed: boolean;
-  /** 4.1: `## Задачи` — the day's checklist, first in the body. Claude writes it from Eldar's words; «Утро» ticks it. */
+  /** 4.1: `## Задачи` — the day's checklist, first in the body. Claude and the bot's morning question write it from Eldar's words; the bot's evening survey ticks it. */
   tasks: DayTask[];
   done: string[]; // ## Сделано bullets
   txs: Tx[]; // ## Деньги rows
@@ -967,52 +967,6 @@ export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
     if (o !== markOf(base, h)) next = withMark(next, h, o);
   }
   return next;
-}
-
-/**
- * One-button habits (Eldar, 2026-10-11, replacing the 2026-09-21 «unmarked
- * stays unmarked» rule for habits): a good habit not tapped was not done; a
- * bad habit not tapped was held out. So the unmarked due habits of a day get
- * their implied mark — good → failed, bad → done — when the day is read as a
- * whole (the week grid, the streaks) and written when it closes. Prayers keep
- * three explicit states and are never implied.
- */
-export function impliedMarks(d: Day, habits: Habit[]): Day {
-  let next = d;
-  for (const h of habits) {
-    if (h.kind === "prayer" || !habitDue(h, d.date) || markOf(next, h.title)) continue;
-    next = withMark(next, h.title, h.kind === "bad" ? "done" : "failed");
-  }
-  return next;
-}
-
-/** Closing a day seals it and writes the implied marks of the one-button habits; prayers stay as marked. */
-export function closeDay(d: Day, habits: Habit[]): Day {
-  return { ...impliedMarks(d, habits), closed: true };
-}
-
-/** Due habits with no mark at all on that day — since the one-button rule only prayers can stay unmarked. */
-export function unmarkedOn(d: Day, habits: Habit[]): Habit[] {
-  return habits.filter((h) => h.kind === "prayer" && habitDue(h, d.date) && !markOf(d, h.title));
-}
-
-function fmtMoney(n: number): string {
-  return Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
-}
-
-/** The one-line `day` entry appended to wiki/log.md. */
-export function dayLogLine(d: Day, habits: Habit[]): string {
-  const due = habits.filter((h) => habitDue(h, d.date)).length;
-  const unmarked = unmarkedOn(d, habits).length;
-  const parts = [`привычки ${d.habitsDone.length + d.habitsLate.length}/${due}${unmarked ? ` (не отмечено ${unmarked})` : ""}`];
-  if (d.tasks.length) parts.push(`задачи ${d.tasks.filter((t) => t.done).length}/${d.tasks.length}`);
-  if (d.questsClosed.length) parts.push(`закрыто ${d.questsClosed.length}`);
-  const wm = workMinutesOf(d);
-  if (wm) parts.push(`работа ${wm} мин`);
-  parts.push(`потрачено ${fmtMoney(spentOf(d))}`);
-  if (earnedOf(d)) parts.push(`получено ${fmtMoney(earnedOf(d))}`);
-  if (d.mood !== undefined) parts.push(`настроение ${d.mood}`);
-  return `## [${d.date}] day | ${parts.join(", ")}`;
 }
 
 // ---------- accounts ----------

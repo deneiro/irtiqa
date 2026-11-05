@@ -3,7 +3,7 @@
  * week and a day (vault CLAUDE.md «Цели по периодам»). Written by Claude from
  * Eldar's words. `## Задачи` is a checklist in the day, week and month files
  * (day added 2026-10-13: «на утро я хотел бы видеть прям все задания»);
- * Claude ticks it from his words, «Утро» lets him tick it himself.
+ * Claude ticks it from his words; the app only reads it.
  */
 
 export interface GoalTask { done: boolean; text: string }
@@ -112,28 +112,4 @@ export function goalsFor(goals: Map<string, string>, date: string): { day: Goals
     week: wk ? parseGoals(wk, goals.get(wk)!) : undefined,
     month: m ? parseGoals(mk, m) : undefined,
   };
-}
-
-/**
- * The file text with task `index` (in `## Задачи` order, notes skipped)
- * ticked or unticked. Only the checkbox changes; a plain bullet with a link
- * gains one. Eldar taps this on «Утро»; Claude ticks the same line from his
- * words — both end in the same file.
- */
-export function withTaskDone(content: string, index: number, done: boolean): string {
-  const lines = content.split("\n");
-  const head = lines.findIndex((l) => /^## Задачи\s*$/.test(l));
-  if (head < 0) return content;
-  let n = -1;
-  for (let i = head + 1; i < lines.length; i++) {
-    if (/^## /.test(lines[i])) break;
-    const m = lines[i].match(/^(\s*-\s*)(?:\[([ xX])\]\s*)?(.+)$/);
-    if (!m) continue;
-    if (!m[2] && !/\[\[/.test(m[3])) continue; // a note, not a task
-    n++;
-    if (n !== index) continue;
-    lines[i] = `${m[1]}[${done ? "x" : " "}] ${m[3]}`;
-    break;
-  }
-  return lines.join("\n");
 }

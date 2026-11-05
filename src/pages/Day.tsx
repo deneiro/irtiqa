@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useStore, type SyncResult } from "../store";
+import { useStore } from "../store";
 import { THEMES, groupByTheme, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
-import { confirmAction, inTauri } from "../lib/native";
+import { confirmAction } from "../lib/native";
 import { addDays, formatDayTitle, todayStr } from "../lib/dates";
 import { maghribOn } from "../lib/maghrib";
 import { useDayToday } from "../lib/useDayToday";
 import {
-  HABIT_DIR, LATE_MEAL_HOUR, closeDay, dayLogLine, unmarkedOn, dayRel, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
-  markOf, mergeDay, byHabitTime, habitTimeLabel, parseAmount, parseDay, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
+  HABIT_DIR, LATE_MEAL_HOUR, earnedOf, emptyDay, habitDue, isLateMeal, normalizeTime,
+  markOf, mergeDay, byHabitTime, habitTimeLabel, parseAmount, safeFilename, serializeDay, serializeHabit, spentOf, streak, withMark, xpForDay,
   type Day, type DayMark, type Habit, type HabitKind, type HabitTime, HABIT_TIMES, type Tx, type XpContext,
 } from "../lib/life";
-import type { CmdResult } from "../lib/fs";
 import QuestRows from "../components/QuestRows";
 import TodayPlan from "../components/TodayPlan";
 import NeedsYou from "../components/NeedsYou";
@@ -24,21 +23,6 @@ function fmtMoney(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
 }
 
-interface CloseReport {
-  day: Day;
-  git: SyncResult | null;
-  auto: boolean;
-}
-
-function syncText(git: SyncResult | null): string {
-  if (git === null) return "Записано. Коммит vault делается только из окна приложения, не из браузера.";
-  const why = (r: CmdResult) => (r.stderr || r.stdout).trim();
-  if (git.commit && git.commit.status !== 0) return `Записано. Коммит не удался: ${why(git.commit)}`;
-  if (!git.push) return "Записано.";
-  if (git.push.status !== 0) return `Записано и закоммичено, но не отправлено на GitHub: ${why(git.push)}. Уйдёт при следующем закрытии дня.`;
-  return "Записано, закоммичено и отправлено на GitHub.";
-}
-
 /** The day runs maghrib to maghrib: at sunset the screen turns over to the next file. */
 export default function DayPage() {
   const today = useDayToday();
@@ -46,7 +30,7 @@ export default function DayPage() {
 }
 
 function DayView({ today }: { today: string }) {
-  const { vault, life, saveText, saveDayMerged, readFresh, commitVault, reload } = useStore();
+  const { vault, life, saveText, saveDayMerged, reload } = useStore();
   const { themeLabel } = useT();
   const habits = life?.habits ?? [];
   const fromDisk = life?.days.get(today);
@@ -113,114 +97,26 @@ function DayView({ today }: { today: string }) {
   const draftRef = useRef(draft);
   draftRef.current = draft;
 
-  // ----- closing -----
-  const [report, setReport] = useState<CloseReport | null>(null);
-  const [closing, setClosing] = useState(false);
-  const [autoClosed, setAutoClosed] = useState<string[]>([]);
-  const autoRan = useRef(false);
+  // ----- reopening -----
+  const [reopening, setReopening] = useState(false);
 
-  /** Close one or more days: write files, update accounts, append log lines, one commit. */
-  const closeDays = useCallback(
-    async (days: Day[], auto: boolean): Promise<CloseReport | null> => {
-      if (!vault || !life) return null;
-      // The log on disk, not the scanned copy: Claude may have appended since.
-      let logText = (await readFresh("wiki/log.md")) ?? vault.logText;
-      let last: Day | null = null;
-      for (const d of days) {
-        // Close what the file holds now, with this screen's edits on top.
-        const onDisk = await readFresh(dayRel(d.date));
-        const fresh = onDisk === null ? d : parseDay({ rel: dayRel(d.date), content: onDisk, mtime: 0 });
-        const from = d.date === today ? base.current : life.days.get(d.date) ?? d;
-        const closed = closeDay(mergeDay(from, d, fresh), life.habits);
-        const ser = serializeDay(closed);
-        if (closed.date === today) { lastWritten.current = ser; base.current = closed; }
-        await saveText(dayRel(closed.date), ser);
-        // The app owns its own `day` lines: refresh one in place, append a new one.
-        const line = dayLogLine(closed, life.habits);
-        const head = line.split(" | ")[0];
-        const lines = logText.split("\n");
-        const at = lines.findIndex((l) => l.startsWith(head));
-        let nextLog = logText;
-        if (at >= 0) { if (lines[at] !== line) { lines[at] = line; nextLog = lines.join("\n"); } }
-        else nextLog = logText.replace(/\s*$/, "") + "\n\n" + line + "\n";
-        if (nextLog !== logText) {
-          logText = nextLog;
-          await saveText("wiki/log.md", logText);
-        }
-        last = closed;
-      }
-      if (!last) return null;
-      const msg = days.length === 1 ? `day ${last.date}` : `days ${days[0].date}..${last.date}`;
-      const git = await commitVault(msg);
-      return { day: last, git, auto };
-    },
-    [vault, life, saveText, readFresh, commitVault, today],
-  );
-
-  /**
-   * Reopen a closed day. The balances the close had applied are rolled back by
-   * the inverse of the day's transactions, so closing again lands the corrected
-   * numbers once, not twice; the `day` line in the log is rewritten in place.
-   */
+  /** The app no longer closes days; this lifts the lock from an old file that still says `closed: true`. */
   const reopen = async () => {
-    if (!life || closing) return;
-    if (!(await confirmAction(`Открыть день ${draft.date} заново? Строка в логе обновится при следующем закрытии.`))) return;
-    setClosing(true);
+    if (!life || reopening) return;
+    if (!(await confirmAction(`Открыть день ${draft.date} заново?`))) return;
+    setReopening(true);
     try {
       const open = { ...draft, closed: false };
       setDraft(open); // persist merges against the draft, so it has to be open already or `closed` stays true
       await persist(open);
-      setReport(null);
       setSaveError(null);
       await reload();
     } catch (e) {
       setSaveError(String(e));
     } finally {
-      setClosing(false);
+      setReopening(false);
     }
   };
-
-  const doClose = async () => {
-    if (draft.closed || closing) return;
-    if (!(await confirmAction(unmarkedOn(draft, habits).length ? `Закрыть день? ${unmarkedOn(draft, habits).length} привычек без отметки так и останутся неотмеченными. Файл дня и лог уйдут в коммит.` : "Закрыть день? Файл дня и лог уйдут в коммит."))) return;
-    window.clearTimeout(timer.current);
-    setClosing(true);
-    try {
-      const r = await closeDays([draft], false);
-      if (r) {
-        dirty.current = false;
-        setDraft(r.day);
-        setReport(r);
-      }
-      await reload();
-    } catch (e) {
-      setSaveError(String(e));
-    } finally {
-      setClosing(false);
-    }
-  };
-
-  // Past days left open get closed on the first launch after 09:00 the next
-  // morning: the evening after maghrib stays a grace window for the day that ended.
-  useEffect(() => {
-    if (!life || autoRan.current) return;
-    autoRan.current = true;
-    const now = new Date();
-    const yesterday = addDays(today, -1);
-    const stale = [...life.days.values()]
-      .filter((d) => !d.closed && d.date < today && (d.date < yesterday || (todayStr(now) === today && now.getHours() >= 9)))
-      .sort((a, b) => a.date.localeCompare(b.date));
-    if (!stale.length) return;
-    void (async () => {
-      try {
-        await closeDays(stale, true);
-        setAutoClosed(stale.map((d) => d.date));
-        await reload();
-      } catch (e) {
-        setSaveError(String(e));
-      }
-    })();
-  }, [life, today, closeDays, reload]);
 
   // ----- habits -----
   const due = useMemo(() => habits.filter((h) => habitDue(h, today)), [habits, today]);
@@ -316,31 +212,6 @@ function DayView({ today }: { today: string }) {
       {!locked && <NeedsYou today={today} />}
 
       {saveError && <div className="notice err">Не удалось записать: {saveError}</div>}
-      {autoClosed.length > 0 && (
-        <div className="notice" style={{ marginTop: 10 }}>
-          Автоматически закрыты незакрытые дни: {autoClosed.join(", ")}.
-        </div>
-      )}
-
-      {report && (
-        <div className="card summary" style={{ marginTop: 16 }}>
-          <h3>Итог дня {report.day.date}</h3>
-          <div className="row wrap" style={{ gap: 18, fontSize: 13 }}>
-            <span>привычки <b>{report.day.habitsDone.length}</b> / не сделано <b>{report.day.habitsFailed.length}</b>{unmarkedOn(report.day, habits).length > 0 && <> / не отмечено <b>{unmarkedOn(report.day, habits).length}</b></>}</span>
-            <span>потрачено <b>{fmtMoney(spentOf(report.day))}</b></span>
-            {earnedOf(report.day) > 0 && <span>получено <b>{fmtMoney(earnedOf(report.day))}</b></span>}
-            {report.day.mood !== undefined && <span>настроение <b>{report.day.mood}</b></span>}
-          </div>
-          <div style={{ marginTop: 10 }}>
-            {[...xpForDay(report.day, xpCtx).entries()].map(([theme, n]) => (
-              <div className="xp-row" key={theme}><span>{themeLabel(theme)}</span><b>+{n} XP</b></div>
-            ))}
-          </div>
-          <div className="small muted" style={{ marginTop: 10 }}>
-            {syncText(report.git)}
-          </div>
-        </div>
-      )}
 
       <div className="day-grid">
         <div className="col">
@@ -523,21 +394,14 @@ function DayView({ today }: { today: string }) {
             {draft.questsClosed.length > 0 && <div className="small muted" style={{ marginTop: 8 }}>Закрыто сегодня: {draft.questsClosed.join(", ")}</div>}
           </div>
 
-          <div className={`closebar ${locked ? "closed" : ""}`}>
-            {locked ? (
-              <>
-                <span className="badge ok">закрыт</span>
-                <span className="small muted">День зафиксирован, поэтому привычки, деньги и ползунки не двигаются.</span>
-                <span className="grow" />
-                <button className="btn small" onClick={() => void reopen()} disabled={closing}>открыть заново</button>
-              </>
-            ) : (
-              <>
-                <button className="btn primary" onClick={() => void doClose()} disabled={closing}>{closing ? "Закрываю…" : "Закрыть день"}</button>
-                <span className="small muted">{inTauri ? "Запишет файл, строку в лог и сделает коммит." : "В браузере: без коммита."}</span>
-              </>
-            )}
-          </div>
+          {locked && (
+            <div className="closebar closed">
+              <span className="badge ok">закрыт</span>
+              <span className="small muted">День зафиксирован, поэтому привычки, деньги и ползунки не двигаются.</span>
+              <span className="grow" />
+              <button className="btn small" onClick={() => void reopen()} disabled={reopening}>открыть заново</button>
+            </div>
+          )}
 
           <div className="card">
             <h3>Неделя</h3>

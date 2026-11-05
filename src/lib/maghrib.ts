@@ -53,10 +53,9 @@ export function zuhrOn(date: string, lat = getCoords().lat, lon = getCoords().lo
 // ---------- the day boundary ----------
 // Eldar's rule of 2026-09-21 made a day run maghrib to maghrib: `life/days/D.md`
 // from maghrib of D-1 to maghrib of D. He revoked it on 2026-10-11: from
-// `2026-10-12.md` a day is a calendar day again, midnight to midnight, marked
-// the next morning on the «Утро» screen. Files 2026-09-22 … 2026-10-11 keep
-// the old boundary and are read as they are; 2026-10-11 is the transition
-// (maghrib of 10-10 to midnight).
+// `2026-10-12.md` a day is a calendar day again, midnight to midnight. Files
+// 2026-09-22 … 2026-10-11 keep the old boundary and are read as they are;
+// 2026-10-11 is the transition (maghrib of 10-10 to midnight).
 
 export interface Coordinates {
   lat: number;

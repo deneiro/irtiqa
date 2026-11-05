@@ -106,7 +106,7 @@ export default function SelfSection() {
           </div>
         ) : (
           <div className="small faint" style={{ marginTop: 10 }}>
-            Оценок настроения пока {rated.length}. Они ставятся при закрытии дня — график соберётся сам.
+            Оценок настроения пока {rated.length}. Их спрашивает вечерний опрос бота — график соберётся сам.
           </div>
         )}
 
