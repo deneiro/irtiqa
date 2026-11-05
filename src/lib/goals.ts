@@ -16,6 +16,9 @@ export interface GoalsFile {
   goals: string[];
   /** Checklist under `## Задачи` (day, week, month). A plain bullet with a `[[link]]` counts as an open task. */
   tasks: GoalTask[];
+  /** `## Фокус` (spec v3): Claude's numbered lines for the period, and the date he signed them. */
+  focus: string[];
+  focusOn: string | undefined;
 }
 
 function section(body: string, head: string): string {
@@ -44,7 +47,32 @@ export function parseGoals(key: string, content: string): GoalsFile {
     if (!m[1] && !/\[\[/.test(m[2])) continue;
     tasks.push({ done: /[xX]/.test(m[1] ?? ""), text: strip(m[2]) });
   }
-  return { key, period: fm(content, "period"), from: fm(content, "from"), to: fm(content, "to"), goals, tasks };
+  const focusText = section(body, "Фокус");
+  const focus = focusText.split("\n").map((l) => l.match(/^\s*\d+[.)]\s+(.+)$/)?.[1].trim()).filter((l): l is string => !!l);
+  const focusOn = focusText.match(/_Claude,\s*(\d{4}-\d{2}-\d{2})_/)?.[1];
+  return { key, period: fm(content, "period"), from: fm(content, "from"), to: fm(content, "to"), goals, tasks, focus, focusOn };
+}
+
+/** One goal, read by its parts: `**цель** · мера: … · сейчас: … · срок: YYYY-MM-DD · → [[выше]]`; a reached goal ends with `✓ YYYY-MM-DD`. */
+export interface GoalLine {
+  title: string;
+  measure: string | undefined;
+  now: string | undefined;
+  due: string | undefined;
+  doneOn: string | undefined;
+}
+
+export function parseGoalLine(text: string): GoalLine {
+  const doneOn = text.match(/✓\s*(\d{4}-\d{2}-\d{2})/)?.[1];
+  const parts = text.split(/\s→\s/)[0].split(/\s+·\s+/).map((p) => p.trim());
+  const part = (k: string) => parts.find((p) => p.startsWith(`${k}:`))?.slice(k.length + 1).trim() || undefined;
+  return {
+    title: parts[0].replace(/\*+/g, "").replace(/\s*✓.*$/, "").trim(),
+    measure: part("мера"),
+    now: part("сейчас"),
+    due: part("срок")?.match(/^\d{4}-\d{2}-\d{2}/)?.[0],
+    doneOn,
+  };
 }
 
 /** ISO week key of a date: `2026-W42` (Monday to Sunday). */

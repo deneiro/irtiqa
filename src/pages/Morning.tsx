@@ -199,7 +199,7 @@ function Morning({ today }: { today: string }) {
   const { week, month } = useMemo(() => goalsFor(life?.goals ?? new Map(), today), [life, today]);
   /** 4.1: the day's tasks live in the day file (`## Задачи`), not in a goals file. Shown as a GoalsFile so the card below is shared. */
   const todayDay = life?.days.get(today);
-  const todayGoals: GoalsFile | undefined = todayDay && todayDay.tasks.length ? { key: today, period: "day", from: today, to: today, goals: [], tasks: todayDay.tasks } : undefined;
+  const todayGoals: GoalsFile | undefined = todayDay && todayDay.tasks.length ? { key: today, period: "day", from: today, to: today, goals: [], tasks: todayDay.tasks, focus: [], focusOn: undefined } : undefined;
   const [ticking, setTicking] = useState<string | null>(null);
 
   /** Tick the current step of a quest: `- [x]`, with the date on its detail line so the quest no longer counts as stalled. */
