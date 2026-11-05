@@ -1129,7 +1129,7 @@ export function txsInMonth(days: Map<string, Day>, ym: string): { date: string; 
  * marked «пропуск» are neutral; so is `upTo` itself while it is still open and
  * unmarked. A failed mark, an unmarked past day or a day with no file ends it.
  *
- * A bad habit with `clean_since:` (Eldar names the day he stopped, 2026-10-13)
+ * A bad habit with `clean_since:` (the day the owner stopped, in their words)
  * counts every day from that date as held unless a day says «failed»: the
  * one-button rule — untouched means held — applied back to before the app
  * knew the habit, and to days that have no file.

@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { activities, cell, dateRange, defaultTab, focusFor, goalView, plainStep, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
-import { parseGoalLine, parseGoals } from "./goals";
+import { buildPrompt } from "./claude";
+import { activities, cell, dateRange, defaultTab, fmt, focusFor, goalView, plainStep, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
+import { addDays, weekdayIndex } from "./dates";
+import { focusWeekKey, isoWeekKey, parseGoalLine, parseGoals } from "./goals";
 import { buildLife } from "./life";
 import type { MdFile } from "./types";
 
@@ -257,4 +259,121 @@ test("spheres: the prayer and meal facts say how much was recorded", () => {
   // the weight is current through today; the meals say on how many of the 7 days they were written
   const meal = "## Еда\n| Время | Что | Заметка |\n|---|---|---|\n| 22:15 | чай |  |\n";
   assert.equal(fact([...HABITS, day("2030-01-05", { weight: "80" }, meal), day("2030-01-10", { weight: "79" })], "Health & sport"), "вес 79 кг (2030-01-10) · еда после 21:00 за неделю: 1 (записи за 1 из 7 дн.)");
+});
+
+// ---- final review fixes ----
+
+test("yesterdayView: recorded is true only for a day file with a habit mark", () => {
+  const life = buildLife([...HABITS, ...DAYS]);
+  const quiet = yesterdayView(life, "2030-01-01"); // 2029-12-31 is a file with no mark: falls and good habits are unknown, not empty
+  assert.equal(quiet.recorded, false);
+  assert.ok(quiet.day);
+  assert.equal(yesterdayView(life, "2030-01-02").recorded, true); // 2030-01-01 carries marks
+  const none = yesterdayView(life, "2030-01-05"); // no file at all
+  assert.deepEqual([none.recorded, none.day], [false, undefined]);
+});
+
+test("signals: two goals on one date in one file are two signals, the nearest date first; the cascade still merges", () => {
+  const one = buildLife([goalsFile("2030-01", "period: month", [
+    "## Цели",
+    "- **Поздняя** · мера: шт · сейчас: 0 · срок: 2030-01-05",
+    "- **Первая** · мера: шт · сейчас: 0 · срок: 2030-01-04",
+    "- **Вторая** · мера: шт · сейчас: 0 · срок: 2030-01-04",
+    "",
+  ].join("\n"))]);
+  assert.deepEqual(signals(one, "2030-01-03").map((x) => [x.level, x.title]), [
+    ["red", "Срок завтра — Первая"], ["red", "Срок завтра — Вторая"], ["red", "Срок через 2 дня — Поздняя"],
+  ]);
+  // the week repeats the month's date: the same goal, the month's wording; the week's own other date stays
+  const two = buildLife([
+    goalsFile("2030-01", "period: month", "## Цели\n- **Месяц** · мера: шт · сейчас: 0 · срок: 2030-01-04\n"),
+    goalsFile("2030-W01", "period: week", "## Цели\n- **Неделя** · мера: шт · сейчас: 0 · срок: 2030-01-04\n- **Ещё** · мера: шт · сейчас: 0 · срок: 2030-01-05\n"),
+  ]);
+  assert.deepEqual(signals(two, "2030-01-03").map((x) => x.title), ["Срок завтра — Месяц", "Срок через 2 дня — Ещё"]);
+});
+
+test("focusWeekKey: a Sunday names the next ISO week, any other day this one — as scripts/focus.sh does", () => {
+  assert.equal(focusWeekKey("2026-12-27"), "2026-W53"); // Sunday; the Monday after is 2026-12-28
+  assert.equal(focusWeekKey("2027-01-03"), "2027-W01"); // Sunday, itself still in ISO week 53 of 2026
+  assert.equal(isoWeekKey("2027-01-03"), "2026-W53");
+  assert.equal(focusWeekKey("2027-01-04"), "2027-W01"); // Monday
+  assert.equal(focusWeekKey("2026-11-07"), "2026-W45"); // Saturday
+  // «Неделя» takes the week before the focus week as the same rule seven days back; it equals the week before the focus week on every day
+  for (let d = "2026-12-14", i = 0; i < 60; d = addDays(d, 1), i++) {
+    const base = weekdayIndex(d) === 0 ? addDays(d, 1) : d;
+    assert.equal(focusWeekKey(addDays(d, -7)), isoWeekKey(addDays(base, -7)), d);
+  }
+});
+
+test("the Focus button's prompt names the file focusWeekKey and monthKey give", () => {
+  const target = (arg: string, today: string) => buildPrompt("focus", arg, today).prompt.match(/Target file: life\/goals\/([^.]+)\.md/)![1];
+  assert.equal(target("week", "2026-12-27"), "2026-W53");
+  assert.equal(target("week", "2027-01-03"), "2027-W01");
+  assert.equal(target("week", "2026-11-07"), "2026-W45");
+  assert.equal(target("month", "2026-11-07"), "2026-11");
+});
+
+test("activities: a session written under the file name moves an activity whose title differs", () => {
+  const life = buildLife([
+    act("Файл", "каждый день", "## Сейчас\n- шаг\n", { title: "Другое название" }),
+    day("2030-01-09", { sessions: '["Файл: 30"]' }),
+  ]);
+  const [a] = activities(life, "2030-01-10");
+  assert.deepEqual([a.quest.title, a.state, a.last, a.idle], ["Другое название", "moving", "2030-01-09", 1]);
+  // a session under the title still counts, one under another name does not
+  const byTitle = buildLife([act("Файл", "каждый день", "", { title: "Другое название" }), day("2030-01-09", { sessions: '["Другое название: 30"]' })]);
+  assert.equal(activities(byTitle, "2030-01-10")[0].state, "moving");
+  const other = buildLife([act("Файл", "каждый день", "", { title: "Другое название" }), day("2030-01-09", { sessions: '["Чужое: 30"]' })]);
+  assert.equal(activities(other, "2030-01-10")[0].state, "empty");
+});
+
+test("goalView: the title, the measure and «сейчас» reach the signal and the row as plain words", () => {
+  const line = "**Открыть [[Страница|страницу]]** · мера: [[Меры|оплаты]] · сейчас: 2 из [[Всего|пяти]] · срок: 2030-01-04";
+  const life = buildLife([goalsFile("2030-01", "period: month", `## Цели\n- ${line}\n`)]);
+  const g = goalView(line, life, "2030-01-03");
+  assert.deepEqual([g.line.title, g.line.measure, g.now], ["Открыть страницу", "оплаты", "2 из пяти"]);
+  const [sig] = signals(life, "2030-01-03");
+  assert.equal(sig.title, "Срок завтра — Открыть страницу");
+  assert.equal(sig.fact, "сейчас: 2 из пяти · мера: оплаты");
+  assert.ok(!(sig.title + sig.fact).includes("[["));
+});
+
+test("goalView: «сейчас: -2» is a value, a lone dash or «нет данных» is not", () => {
+  const life = buildLife([]);
+  const at = (now: string) => goalView(`**Баланс** · мера: шт · сейчас: ${now}`, life, "2030-01-03");
+  assert.deepEqual([at("-2").now, at("-2").chip], ["-2", undefined]);
+  assert.deepEqual([at("-").now, at("-").chip], [undefined, "nodata"]);
+  assert.deepEqual([at("— пока").now, at("— пока").chip], [undefined, "nodata"]);
+  assert.deepEqual([at("нет данных").now, at("нет данных").chip], [undefined, "nodata"]);
+  assert.equal(at("—3").now, "—3");
+});
+
+test("weekCompare: the week's weight is read through today; a Monday keeps the week that ended", () => {
+  const life = buildLife([day("2029-12-27", { weight: "81" }), day("2030-01-01", { weight: "80" }), day("2030-01-03", { weight: "79" }), day("2030-01-07", { weight: "78" })]);
+  const thu = weekCompare(life, "2030-01-03"); // today's own weight is the week's last
+  assert.deepEqual([thu.curWeight, thu.prevWeight], [{ date: "2030-01-03", value: 79 }, { date: "2029-12-27", value: 81 }]);
+  const mon = weekCompare(life, "2030-01-07"); // the week on screen ended yesterday; Monday's weight belongs to the next one
+  assert.deepEqual([mon.from, mon.to, mon.curWeight], ["2029-12-31", "2030-01-06", { date: "2030-01-03", value: 79 }]);
+  assert.equal(weekCompare(buildLife([]), "2030-01-03").curWeight, undefined);
+});
+
+test("spheres: the «Бизнес» fact counts today's income, on the 1st too", () => {
+  const money = "## Деньги\n| Сумма | Категория | Счёт | Заметка |\n|---|---|---|---|\n| 5000 | доход | Нал |  |\n";
+  const business = (files: MdFile[], today: string) => spheres(buildLife(files), [], today).find((s) => s.theme === "Business & career")!.fact;
+  assert.equal(business([day("2030-01-10", {}, money)], "2030-01-10"), `доход за месяц: ${fmt(5000)} ₸`);
+  assert.equal(business([day("2030-01-09", {}, money)], "2030-01-10"), `доход за месяц: ${fmt(5000)} ₸`);
+  assert.equal(business([day("2030-02-01", {}, money)], "2030-02-01"), `доход за месяц: ${fmt(5000)} ₸`); // yesterday is last month
+  assert.equal(business([day("2030-01-31", {}, money)], "2030-02-01"), "доход за месяц не записан");
+  // the goal row reads the same window
+  assert.equal(goalView("**Доход** · мера: доход", buildLife([day("2030-01-10", {}, money)]), "2030-01-10").now, `${fmt(5000)} ₸ за месяц`);
+});
+
+test("parseGoals reads «1)» numbering and an unsigned focus; focusFor marks it as the previous period's", () => {
+  const body = "## Цели\n- x\n\n## Фокус\n1) Первое\n2) Второе\n";
+  const f = parseGoals("2030-W02", `---\ntype: goals\nperiod: week\n---\n${body}`);
+  assert.deepEqual(f.focus, ["Первое", "Второе"]);
+  assert.equal(f.focusOn, undefined);
+  const life = buildLife([goalsFile("2030-W02", "period: week", body)]);
+  assert.deepEqual(focusFor(life, "2030-W03", "2030-W02"), { key: "2030-W03", lines: ["Первое", "Второе"], on: undefined, stale: true });
+  assert.equal(focusFor(life, "2030-W02", "2030-W01").stale, false);
 });

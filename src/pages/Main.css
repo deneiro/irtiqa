@@ -53,7 +53,7 @@ main > .dash { max-width: 1260px; }
 .d-arc text.edge { fill: var(--d-smoke); }
 .d-arc .horizon { stroke: var(--d-hair-2); }
 .d-arc .night { fill: none; stroke: var(--d-hair-2); stroke-width: 1.2; stroke-dasharray: 2 5; }
-.d-arc .day { fill: none; stroke: url(#d-sunpath); stroke-width: 1.6; stroke-linecap: round; }
+.d-arc .day { fill: none; stroke-width: 1.6; stroke-linecap: round; } /* the sun-path gradient is the stroke attribute on the path (parts.tsx), not a CSS paint: safer in WKWebView */
 .d-arc .pt .core { fill: var(--d-night); stroke: var(--d-ash); stroke-width: 1.2; }
 .d-arc .pt.done .core { fill: var(--d-sage); stroke: none; }
 .d-arc .pt.done .halo { fill: var(--d-sage); opacity: .12; }
@@ -133,7 +133,8 @@ main > .dash { max-width: 1260px; }
 .d-dots i.on { background: var(--d-sun); box-shadow: 0 0 8px rgba(231, 194, 122, .35); }
 .d-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .d-tile { min-width: 0; padding: 14px 16px 15px; border-radius: 14px; background: rgba(237, 231, 218, .022); }
-.d-tile .k { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 500 10.5px/1.3 var(--d-mono); letter-spacing: .15em; text-transform: uppercase; color: var(--d-ash); }
+.d-tile .k { display: flex; align-items: center; gap: 8px; font: 500 10.5px/1.3 var(--d-mono); letter-spacing: .15em; text-transform: uppercase; color: var(--d-ash); }
+.d-tile .k > :first-child { margin-right: auto; } /* the name left; the arrow hint and the tone dot together on the right */
 .d-tile .k i { flex: none; width: 6px; height: 6px; border-radius: 50%; }
 .d-tile .k i.sage { background: var(--d-sage); }
 .d-tile .k i.honey { background: var(--d-honey); }

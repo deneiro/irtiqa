@@ -24,9 +24,10 @@ The app writes:
   `wiki/log.md` among them (`lib/renamePerson.ts`).
 
 Beyond that the app never writes the body of a `wiki/` page, anything in `raw/`,
-or the vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 2026-11-05 habit marks come from the bot's evening survey and «Главный» is a read-only dashboard (spec v3). The Day, Habits, Quests and Finance screens still have input controls. The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
-marks, meals, money, mood, stress, weight, sessions — through `serializeDay`,
-never into a closed day), a line in an activity's journal, the day's «Встреча»
+or the vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 2026-11-05 habit marks come from the bot's evening survey and «Главный» is a read-only dashboard (spec v3). Screens other than «Главный» still have input controls (Day, Habits, Quests, Finance, Theme — it still marks today's habits — People, Event, person and Resource pages). The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
+marks, meals, money, mood, stress, weight, sessions, the day's `## Задачи` — the
+morning plan and the evening ticks — `## Сделано` and the `## Журнал` lines —
+through `serializeDay`, never into a closed day), a line in an activity's journal, the day's «Встреча»
 event, and `last_contact`/`updated` on a person page (`lib/contact.ts`, the
 same edit the Circle screen makes). Nothing else.
 `src/lib/fs.ts` and `write_text` in `lib.rs` enforce the
@@ -51,7 +52,7 @@ running programs (`claude`; `open` for a tool's launch file). All parsing in the
 - IrtiQa (`~/Desktop/Projects/IrtiQa`) is a reference for the game screens,
   not a dependency. Port ideas and CSS, not the Zustand store.
 - Numbers derived from days (streaks, XP, spending) are computed, never stored.
-- `npx tsc --noEmit && npx vite build` must pass before a commit.
+- `npx tsc --noEmit && npm test && npx vite build` must pass before a commit.
 
 ## Schema 4.1 of the vault (2026-11-02)
 

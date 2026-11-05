@@ -8,8 +8,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { inTauri } from "./native";
 import { addRun, patchRun, type Block, type OpKind, type Run } from "./claudeRuns";
-import { addDays, weekdayIndex } from "./dates";
-import { isoWeekKey, monthKey } from "./goals";
+import { focusWeekKey, monthKey } from "./goals";
 
 // No `find`: `-exec` and `-delete` make it a shell. Glob and Grep cover the reading.
 const ALLOWED_TOOLS = ["Bash(git add:*)", "Bash(git commit:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(ls:*)", "Bash(wc:*)"];
@@ -28,8 +27,8 @@ export function buildPrompt(op: OpKind, arg: string, today: string, agent?: stri
   switch (op) {
     case "focus": {
       const month = arg === "month";
-      // On a Sunday the week's focus is written for the coming week.
-      const key = month ? monthKey(today) : isoWeekKey(weekdayIndex(today) === 0 ? addDays(today, 1) : today);
+      // On a Sunday the week's focus is written for the coming week (`focusWeekKey`).
+      const key = month ? monthKey(today) : focusWeekKey(today);
       return {
         title: month ? "Фокус месяца" : "Фокус недели",
         prompt: `Run the Focus operation for the ${month ? "month" : "week"}: .claude/skills/vault-ops/goals/SKILL.md, section «Фокус». Today is ${today}. Target file: life/goals/${key}.md. Write only what that section says — the «## Фокус» lines, the goals file if it is missing, one log.md line. Report in Russian: the lines you wrote and the file.`,

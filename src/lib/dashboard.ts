@@ -1,8 +1,10 @@
 /**
  * «Главный» as a dashboard (spec v3, 2026-11-05): the numbers, signals and
  * views of its three tabs. Pure — no React, no writes — so the bot can call it
- * too (`--dashboard`). Nothing here names a habit, a person or a sum: the
- * repository is public, everything comes from the vault files.
+ * too (`--dashboard`). The repository is public, so nothing here names one
+ * person's habits, people or sums: they all come from the vault files. The only
+ * names in this file are the generic set of prayers in `PRAYER_ORDER`, kept in
+ * the order of a day.
  */
 import type { CircleItem } from "./circle";
 import { addDays, plural, weekdayIndex } from "./dates";
@@ -198,7 +200,9 @@ export interface ActivityView {
 function moves(q: Quest, days: Map<string, Day>, today: string): string[] {
   const journal = ("\n" + q.body).split(/\n## /).find((s) => s.startsWith("Журнал")) ?? "";
   const dates = [...journal.matchAll(/^- (\d{4}-\d{2}-\d{2})/gm), ...q.body.matchAll(/✓\s*(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]);
-  for (const d of days.values()) if (d.sessions.some((s) => s.quest === q.title)) dates.push(d.date);
+  // Days and the calendar name an activity by its file, the title may differ.
+  const file = q.rel.split("/").pop()!.replace(/\.md$/i, "");
+  for (const d of days.values()) if (d.sessions.some((s) => s.quest === q.title || s.quest === file)) dates.push(d.date);
   return dates.filter((d) => d <= today);
 }
 
@@ -220,19 +224,23 @@ export function activities(life: Life, today: string): ActivityView[] {
 export type GoalChip = "hot" | "done" | "behind" | "ontrack" | "nodata";
 export interface GoalView { line: GoalLine; chip: GoalChip | undefined; now: string | undefined; placeholder: boolean }
 
+const NO_DATA = /^(—|-)(\s|$)|^нет данных/i;
 const kgTarget = (title: string) => { const m = title.match(/(\d+(?:[.,]\d+)?)\s*кг/); return m ? Number(m[1].replace(",", ".")) : undefined; };
 
 /**
  * A goal's chip: hot when its date is 3 days off or past, done with ✓. For
  * weight and income the app reads «сейчас» from the days itself; any other
- * goal shows its own «сейчас:» and gets no chip unless that is empty.
+ * goal shows its own «сейчас:» and gets no chip unless that is empty. The
+ * title, the measure and «сейчас» come out as plain words (no wikilinks, no
+ * markdown), so the signal and the row print them as they are.
  */
 export function goalView(text: string, life: Life, today: string): GoalView {
-  const line = parseGoalLine(text);
+  const raw = parseGoalLine(text);
+  const line: GoalLine = { ...raw, title: plainStep(raw.title), measure: raw.measure && plainLinks(raw.measure), now: raw.now && plainLinks(raw.now) };
   if (/^\(/.test(line.title)) return { line, chip: undefined, now: undefined, placeholder: true };
   if (line.doneOn) return { line, chip: "done", now: line.now, placeholder: false };
   const measure = (line.measure ?? "").toLowerCase();
-  let now = line.now && !/^(—|-|нет данных)/i.test(line.now) ? line.now : undefined;
+  let now = line.now && !NO_DATA.test(line.now) ? line.now : undefined;
   let chip: GoalChip | undefined = now ? undefined : "nodata";
   if (/вес/.test(measure)) {
     const w = weightNow(life, today), target = kgTarget(line.title);
@@ -286,15 +294,21 @@ function dueWords(due: string, today: string): string {
 /** «Горит», at most four: dates first, then late meals (red), then good habits and what does not move (gold). */
 export function signals(life: Life, today: string): Signal[] {
   const out: Signal[] = [];
+  // Goals with a date, month first. A week or year goal on a date the files above already took is the same goal
+  // (the cascade); two goals on one date inside one file are two goals. Nearest date first.
   const seen = new Set<string>();
+  const dated: { due: string; signal: Signal }[] = [];
   for (const key of [monthKey(today), isoWeekKey(today), today.slice(0, 4)]) {
     const c = life.goals.get(key);
+    const here: string[] = [];
     for (const g of c ? parseGoals(key, c).goals.map((t) => goalView(t, life, today)) : []) {
       if (g.chip !== "hot" || !g.line.due || seen.has(g.line.due)) continue;
-      seen.add(g.line.due);
-      out.push({ level: "red", title: `${cap(dueWords(g.line.due, today))} — ${g.line.title}`, fact: [`сейчас: ${g.now ?? "—"}`, g.line.measure ? `мера: ${g.line.measure}` : ""].filter(Boolean).join(" · "), source: `цели ${key}` });
+      here.push(g.line.due);
+      dated.push({ due: g.line.due, signal: { level: "red", title: `${cap(dueWords(g.line.due, today))} — ${g.line.title}`, fact: [`сейчас: ${g.now ?? "—"}`, g.line.measure ? `мера: ${g.line.measure}` : ""].filter(Boolean).join(" · "), source: `цели ${key}` } });
     }
+    here.forEach((d) => seen.add(d));
   }
+  out.push(...dated.sort((a, b) => a.due.localeCompare(b.due)).map((x) => x.signal));
   const acts = activities(life, today);
   for (const a of acts) {
     const due = a.quest.due;
@@ -348,6 +362,8 @@ export function reflections(d: Day | undefined): string[] {
 export interface Yesterday {
   date: string;
   day: Day | undefined;
+  /** The file carries a habit mark. Without one «срывы» and «полезные» are unknown, not empty. */
+  recorded: boolean;
   prayer: { done: string[]; late: string[]; failed: string[] };
   falls: string[];
   goodDone: string[];
@@ -361,7 +377,7 @@ export function yesterdayView(life: Life, today: string): Yesterday {
   const rows = habitRows(life).filter((h) => habitDue(h, date));
   const titles = (kind: Habit["kind"], ok: (m: string | undefined) => boolean) => (d ? rows.filter((h) => h.kind === kind && ok(markOf(d, h.title))).map((h) => h.title) : []);
   return {
-    date, day: d,
+    date, day: d, recorded: !!d && marked(d),
     prayer: { done: titles("prayer", (m) => m === "done"), late: titles("prayer", (m) => m === "late"), failed: titles("prayer", (m) => m === "failed") },
     falls: titles("bad", (m) => m === "failed"),
     goodDone: titles("good", (m) => m === "done" || m === "late"),
@@ -390,10 +406,10 @@ export interface WeekCompare { from: string; to: string; cur: Stats; prev: Stats
 export function weekCompare(life: Life, today: string): WeekCompare {
   const yesterday = addDays(today, -1);
   const wk = weekOf(weekdayIndex(today) === 1 ? yesterday : today);
-  const to = wk.to < yesterday ? wk.to : yesterday;
   const pw = weekOf(addDays(wk.from, -1));
   const lastIn = (from: string, upTo: string) => weightSeries(life, upTo).filter((w) => w.date >= from).pop();
-  return { from: wk.from, to: wk.to, cur: windowStats(life, wk.from, to), prev: windowStats(life, pw.from, pw.to), curWeight: lastIn(wk.from, to), prevWeight: lastIn(pw.from, pw.to) };
+  // The counts stop at yesterday; the weight is read through today, as the «Вес» tile reads it (on a Monday the week is the one that ended).
+  return { from: wk.from, to: wk.to, cur: windowStats(life, wk.from, yesterday), prev: windowStats(life, pw.from, pw.to), curWeight: lastIn(wk.from, wk.to < today ? wk.to : today), prevWeight: lastIn(pw.from, pw.to) };
 }
 
 export interface Story { done: { date: string; items: string[] }[]; events: { date: string; title: string }[]; thoughts: { date: string; line: string }[] }
@@ -424,7 +440,7 @@ export function spheres(life: Life, circle: CircleItem[], today: string): Sphere
   const acts = activities(life, today);
   const m30 = windowStats(life, addDays(today, -30), yesterday);
   const w7 = windowStats(life, addDays(today, -7), yesterday);
-  const month = windowStats(life, `${today.slice(0, 7)}-01`, yesterday);
+  const month = windowStats(life, `${today.slice(0, 7)}-01`, today); // income through today, as goalView reads it
   const w = weightNow(life, today); // through today, as goalView reads it
   const pr = m30.prayer;
   const debt = life.debts.filter((d) => d.direction === DEBT_I_OWE && !d.closed).reduce((a, d) => a + debtLeft(d), 0);

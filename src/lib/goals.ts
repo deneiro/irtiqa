@@ -5,6 +5,7 @@
  * (day added 2026-10-13: «на утро я хотел бы видеть прям все задания»);
  * Claude ticks it from his words; the app only reads it.
  */
+import { addDays, weekdayIndex } from "./dates";
 
 export interface GoalTask { done: boolean; text: string }
 export interface GoalsFile {
@@ -93,6 +94,15 @@ export function isoWeekKey(date: string): string {
 
 export function monthKey(date: string): string {
   return date.slice(0, 7);
+}
+
+/**
+ * The week whose `## Фокус` is the current one. Claude writes it on Sunday
+ * evening for the coming week, so from Sunday on it is the next ISO week, on
+ * any other day this one. The vault's `scripts/focus.sh` applies the same rule.
+ */
+export function focusWeekKey(today: string): string {
+  return isoWeekKey(weekdayIndex(today) === 0 ? addDays(today, 1) : today);
 }
 
 /**

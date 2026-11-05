@@ -1,7 +1,7 @@
 import { useMemo, type ReactNode } from "react";
 import { addDays, plural, weekdayIndex, WEEKDAYS_RU } from "../../lib/dates";
 import { activities, cell, dateRange, fmt, focusFor, goalView, habitRows, plainLinks, weekCompare, weekStory, type Cell, type Stats, type WeekCompare, type Weight } from "../../lib/dashboard";
-import { isoWeekKey, parseGoals } from "../../lib/goals";
+import { focusWeekKey, isoWeekKey, parseGoals } from "../../lib/goals";
 import type { Life } from "../../lib/life";
 import { themeColor } from "../../lib/themes";
 import { Card, ClaudeBlock, Glance, GoalRow, Hero, dayMonth, short } from "./parts";
@@ -12,9 +12,8 @@ const TITLE: Record<Cell, string> = { done: "да", held: "удержался", 
 export default function Week({ life, today }: { life: Life; today: string }) {
   const wc = useMemo(() => weekCompare(life, today), [life, today]);
   const sunday = weekdayIndex(today) === 0;
-  const base = sunday ? addDays(today, 1) : today; // on a Sunday Claude writes the next week
-  const focusKey = isoWeekKey(base);
-  const focus = focusFor(life, focusKey, isoWeekKey(addDays(base, -7)));
+  const focusKey = focusWeekKey(today); // on a Sunday Claude writes the next week
+  const focus = focusFor(life, focusKey, focusWeekKey(addDays(today, -7))); // seven days back keeps the weekday: the week before the focus week
   const key = isoWeekKey(wc.from);
   const file = life.goals.get(key);
   const goals = file ? parseGoals(key, file) : undefined;
@@ -25,6 +24,7 @@ export default function Week({ life, today }: { life: Life; today: string }) {
   const max = Math.max(1, ...acts.map((a) => a.week));
   const c = wc.cur;
   const none = c.recorded === 0; // no day with a mark: the counts taken from marks have nothing behind them, so «—», not a made-up 0
+  const noGood = none || !c.good.total, noPrayer = none || !c.prayer.due; // …and a kind with nothing asked on the recorded days is «—» too, not «0 / 0»
   const title = wc.from.slice(5, 7) === wc.to.slice(5, 7) ? `${Number(wc.from.slice(8))}–${dayMonth(wc.to)}` : `${short(wc.from)} – ${short(wc.to)}`;
   // The focus week is the hero's week except on a Sunday (Claude writes the next week) and a Monday (the hero shows the week that ended): there it is named.
   const focusTitle = focusKey === key ? "фокус недели" : sunday ? "фокус на следующую неделю" : `фокус на неделю ${Number(focusKey.slice(-2))}`;
@@ -35,14 +35,16 @@ export default function Week({ life, today }: { life: Life; today: string }) {
         <Glance items={[
           { v: c.recorded, of: `/ ${c.length}`, label: "дней с записями" },
           { v: none ? "—" : c.falls, label: plural(c.falls, "срыв", "срыва", "срывов") },
-          { v: none ? "—" : c.good.done, of: none ? undefined : `/ ${c.good.total}`, label: "полезных" },
-          { v: none ? "—" : c.prayer.done, of: none ? undefined : `/ ${c.prayer.due}`, label: "намазов вовремя" },
+          { v: noGood ? "—" : c.good.done, of: noGood ? undefined : `/ ${c.good.total}`, label: "полезных" },
+          { v: noPrayer ? "—" : c.prayer.done, of: noPrayer ? undefined : `/ ${c.prayer.due}`, label: "намазов вовремя" },
         ]} />
       </Hero>
       <div className="d-cols">
         <div className="d-stack">
           <Card title="Цели недели" right={`life/goals/${key}`}>
-            {goals ? goals.goals.map((g, i) => <GoalRow key={i} g={goalView(g, life, today)} />) : <p className="d-faint">Файла недели нет — Claude создаст его в воскресенье.</p>}
+            {!goals ? <p className="d-faint">Файла недели нет — его создаст «Попросить Claude».</p>
+              : goals.goals.length ? goals.goals.map((g, i) => <GoalRow key={i} g={goalView(g, life, today)} />)
+              : <p className="d-faint">целей на неделю нет</p>}
             {goals && goals.tasks.length > 0 && (
               <>
                 <div className="d-sub"><span className="d-kick">Задачи недели</span><span className="n">{goals.tasks.filter((t) => t.done).length} / {goals.tasks.length}</span></div>

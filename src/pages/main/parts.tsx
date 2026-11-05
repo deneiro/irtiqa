@@ -53,7 +53,7 @@ export function Glance({ items }: { items: { v: ReactNode; of?: string; label: s
 export function Tile({ k, v, of, sub, foot, tone, thin, hint }: { k: string; v: ReactNode; of?: string; sub?: ReactNode; foot?: ReactNode; tone?: Tone; thin?: boolean; hint?: string }) {
   return (
     <div className={`d-tile${thin ? " thin" : ""}`}>
-      <div className="k"><span>{k}</span>{hint ? <span className="hint">{hint}</span> : tone && <i className={tone} />}</div>
+      <div className="k"><span>{k}</span>{hint && <span className="hint">{hint}</span>}{tone && <i className={tone} />}</div>
       <div className="v">{v}{of && <span className="of"> {of}</span>}</div>
       {sub && <div className="s">{sub}</div>}
       {foot && <div className="c">{foot}</div>}
@@ -118,7 +118,8 @@ export function ClaudeBlock({ title, focus, period, note }: { title: string; foc
       <div className="d-kick who">Claude · {title}</div>
       {focus.lines.length ? <ol>{focus.lines.map((l) => <li key={l}>{l}</li>)}</ol> : <p className="d-faint">Claude ещё не написал.</p>}
       <div className="note">
-        {focus.on && <>написано {short(focus.on)}{focus.stale ? " · это прошлый период" : ""} · </>}
+        {focus.on && <>написано {short(focus.on)} · </>}
+        {focus.stale && <>это прошлый период · </>}
         {note}{" "}
         {running ? <Link to="/claude">Claude пишет… открыть</Link> : <button className="d-link" onClick={() => void startRun(root, "focus", period, today, undefined)}>Попросить Claude</button>}
       </div>
@@ -134,7 +135,7 @@ export function GoalRow({ g }: { g: GoalView }) {
     : g.chip === "ontrack" ? <Status tone="sage">идёт</Status>
     : g.chip === "nodata" ? <Status tone="smoke">нет данных</Status> : null;
   const meta = [g.line.measure && `мера: ${g.line.measure}`, g.now && `сейчас: ${g.now}`, g.line.due && `срок ${short(g.line.due)}`].filter(Boolean).join(" · ");
-  return <div className="d-goal"><div className="gt">{plainStep(g.line.title)}</div>{(meta || chip) && <div className="gm">{meta && <span>{meta}</span>}{chip}</div>}</div>;
+  return <div className="d-goal"><div className="gt">{g.line.title}</div>{(meta || chip) && <div className="gm">{meta && <span>{meta}</span>}{chip}</div>}</div>;
 }
 
 export type PrayerMark = "done" | "late" | "failed" | "none";
@@ -167,7 +168,7 @@ export function DayArc({ prayers }: { prayers: { title: string; mark: PrayerMark
         <line className="horizon" x1={0} x2={W} y1={hy} y2={hy} />
         <path className="night" d={path(214, 180)} />
         <path className="night" d={path(0, -62)} />
-        <path className="day" pathLength={1} d={path(180, 0)} />
+        <path className="day" pathLength={1} stroke="url(#d-sunpath)" d={path(180, 0)} />
         <text x={0} y={hy + 16} className="edge">рассвет</text>
         <text x={W} y={hy + 16} textAnchor="end" className="edge">закат</text>
         {prayers.map((p, i) => {

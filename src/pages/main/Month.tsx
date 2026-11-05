@@ -28,7 +28,7 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
   const pts = useMemo(() => series(life, addDays(yesterday, -29), yesterday), [life, yesterday]);
   const circle = useMemo(() => buildCircle(vault.pages.filter((p) => p.zone === "person"), life.events, today), [vault, life, today]);
   const goal = weightGoal(life, today);
-  const weights = weightSeries(life, yesterday).filter((w) => w.date >= addDays(yesterday, -60));
+  const weights = weightSeries(life, today).filter((w) => w.date >= addDays(today, -60)); // every weight through today; the 30-day counts stop at yesterday
   const rec = pts.filter((p) => p.stats?.recorded);
   const prayed = rec.reduce((a, p) => { const c = p.stats!.prayer; return { done: a.done + c.done, marked: a.marked + c.done + c.late + c.failed }; }, { done: 0, marked: 0 });
   const falls = pts.reduce((a, p) => a + (p.stats?.falls ?? 0), 0);
@@ -49,6 +49,7 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
           { v: none ? "—" : falls, label: plural(falls, "срыв", "срыва", "срывов") },
           { v: last ? last.value : "—", of: last ? "кг" : undefined, label: goal ? `вес, цель ${goal.target}` : "вес" },
         ]} />
+        <p className="d-foot">за 30 дней, {short(pts[0].date)} – {short(pts[pts.length - 1].date)}</p>
       </Hero>
       <Card title="Куда двигаюсь" right="восхождение: неделя → месяц → год → пять лет" className="d-full">
         <div className="d-stairs">
