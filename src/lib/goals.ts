@@ -64,7 +64,8 @@ export interface GoalLine {
 
 export function parseGoalLine(text: string): GoalLine {
   const doneOn = text.match(/✓\s*(\d{4}-\d{2}-\d{2})/)?.[1];
-  const parts = text.split(/\s→\s/)[0].split(/\s+·\s+/).map((p) => p.trim());
+  // The `·` that stood before the pointer (or was left by `parseGoals`, which cuts the pointer only) is not part of a field.
+  const parts = text.split(/\s→\s/)[0].replace(/\s*·\s*$/, "").split(/\s+·\s+/).map((p) => p.trim());
   const part = (k: string) => parts.find((p) => p.startsWith(`${k}:`))?.slice(k.length + 1).trim() || undefined;
   return {
     title: parts[0].replace(/\*+/g, "").replace(/\s*✓.*$/, "").trim(),

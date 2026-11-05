@@ -16,3 +16,10 @@ test("parseGoalLine splits the parts and cuts the pointer", () => {
   assert.equal(parseGoalLine("**Сайт запущен** · мера: запущен · ✓ 2030-01-05").doneOn, "2030-01-05");
   assert.equal(parseGoalLine("*(третья — словами или пусто)*").title, "(третья — словами или пусто)");
 });
+
+test("parseGoalLine leaves no separator behind where the pointer was cut", () => {
+  const f = parseGoals("2030-11", "## Цели\n- **Цель** · мера: раз · сейчас: 3 · → [[2030]] (выше). Пояснение.\n- **Другая** · мера: шт · → [[2030]]\n- **Третья** · → [[2030]]\n");
+  assert.deepEqual(f.goals.map(parseGoalLine).map((g) => [g.title, g.measure, g.now]), [
+    ["Цель", "раз", "3"], ["Другая", "шт", undefined], ["Третья", undefined, undefined],
+  ]);
+});
