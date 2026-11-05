@@ -3,8 +3,9 @@
  * browser dev mode the Vite middleware in vite.config.ts stands in for it.
  *
  * Ownership (see the vault's CLAUDE.md, `## life/`): the app writes under
- * `life/` and edits only its own frontmatter keys on knowledge pages.
- * Nothing else.
+ * `life/`, the few fields it owns on knowledge pages, and `People/` pages,
+ * including the files a person's rename or delete edits because they link to
+ * them (`wiki/log.md` among them). Nothing else.
  */
 import { invoke } from "@tauri-apps/api/core";
 import { inTauri } from "./native";

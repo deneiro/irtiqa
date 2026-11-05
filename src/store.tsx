@@ -32,8 +32,6 @@ interface Store {
   saveText: (rel: string, content: string) => Promise<void>;
   /** Read-modify-write today's day file, read fresh from disk (used by pages other than Day). */
   updateToday: (fn: (d: Day) => Day) => Promise<void>;
-  /** The file as it is on disk right now; null when missing (or in browser mode, the last scan). */
-  readFresh: (rel: string) => Promise<string | null>;
   /**
    * Write a day edited from `base`, merged with whatever the disk holds now
    * (the bot, Obsidian, Claude). Returns the day as written.
@@ -243,6 +241,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [root, patch],
   );
 
+  /** The file as it is on disk right now; null when missing (or in browser mode, the last scan). */
   const readFresh = useCallback(
     async (rel: string): Promise<string | null> => {
       if (inTauri) return invoke<string>("read_text", { root, rel }).catch(() => null);
@@ -343,8 +342,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [pending, updateToday, life, saveText]);
 
   const value = useMemo<Store>(
-    () => ({ root, setRoot, vault, index, needIndex, life, saveText, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
-    [root, vault, index, needIndex, life, saveText, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
+    () => ({ root, setRoot, vault, index, needIndex, life, saveText, updateToday, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
+    [root, vault, index, needIndex, life, saveText, updateToday, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

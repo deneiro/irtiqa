@@ -15,12 +15,16 @@ it can be rebuilt from files at any time.
 
 The app writes:
 - everything under `life/` (`days/`, `habits/`, `activities/`, `finance/`);
-- only these frontmatter keys on knowledge pages: `read`, `applied` on
-  `Resource/` pages; `phone`, `telegram`, `whatsapp`, `instagram`, `email`,
-  `birthday`, `last_contact` on `People/` pages (since 2026-11-02 all person pages live in `wiki/People/`).
+- on knowledge pages only what it owns: the frontmatter keys `read`, `applied`
+  on `Resource/` pages and `learning`, `memorized` on sura pages, and the two
+  last cells of a row on the 99 names page;
+- `People/` pages in full (since 2026-11-02 all person pages live in
+  `wiki/People/`): it creates, edits, renames and deletes them, and a rename or
+  delete also edits the files that link to that person, `wiki/index.md` and
+  `wiki/log.md` among them (`lib/renamePerson.ts`).
 
-The app never writes the body of a `wiki/` page, anything in `raw/`, or the
-vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 2026-11-05 it takes no input of its own beyond the Resource-page reading actions — habit marks come from the bot's evening survey and «Главный» is a read-only dashboard (spec v3). The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
+Beyond that the app never writes the body of a `wiki/` page, anything in `raw/`,
+or the vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 2026-11-05 habit marks come from the bot's evening survey and «Главный» is a read-only dashboard (spec v3). The Day, Habits, Quests and Finance screens still have input controls. The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
 marks, meals, money, mood, stress, weight, sessions — through `serializeDay`,
 never into a closed day), a line in an activity's journal, the day's «Встреча»
 event, and `last_contact`/`updated` on a person page (`lib/contact.ts`, the
