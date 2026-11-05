@@ -4,6 +4,7 @@ import { useDayToday } from "../lib/useDayToday";
 import { useStore } from "../store";
 import Today from "./main/Today";
 import Week from "./main/Week";
+import Month from "./main/Month";
 import "./Main.css";
 
 const TABS: { id: Tab; label: string; hint: string }[] = [
@@ -20,7 +21,7 @@ const TABS: { id: Tab; label: string; hint: string }[] = [
  */
 export default function MainPage() {
   const today = useDayToday();
-  const { life } = useStore();
+  const { life, vault } = useStore();
   const [params, setParams] = useSearchParams();
   const asked = params.get("tab");
   const tab: Tab = asked === "day" || asked === "week" || asked === "month" ? asked : defaultTab(today);
@@ -39,7 +40,7 @@ export default function MainPage() {
         </nav>
       </div>
       <div key={tab} className="dash-page">
-        {!life ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : <p className="d-faint">Вкладка подключается в задаче 9.</p>}
+        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
       </div>
     </div>
   );
