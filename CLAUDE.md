@@ -20,7 +20,7 @@ The app writes:
   `birthday`, `last_contact` on `People/` pages (since 2026-11-02 all person pages live in `wiki/People/`).
 
 The app never writes the body of a `wiki/` page, anything in `raw/`, or the
-vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 2026-11-05 it takes no input at all — habit marks come from the bot's evening survey and «Главный» is a read-only dashboard (spec v3). The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
+vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 2026-11-05 it takes no input of its own beyond the Resource-page reading actions — habit marks come from the bot's evening survey and «Главный» is a read-only dashboard (spec v3). The Telegram bot in `bot/` is part of the app. It writes `life/days/` (habit
 marks, meals, money, mood, stress, weight, sessions — through `serializeDay`,
 never into a closed day), a line in an activity's journal, the day's «Встреча»
 event, and `last_contact`/`updated` on a person page (`lib/contact.ts`, the
@@ -31,7 +31,7 @@ coarse boundary; keep the fine one by hand.
 ## Stack
 
 Tauri 2 + React 19 + TypeScript + Vite. Rust only for file I/O, the watcher and
-running `git` / `claude`. All parsing in the frontend (`src/lib/`).
+running programs (`claude`; `open` for a tool's launch file). All parsing in the frontend (`src/lib/`).
 
 ## Working here
 

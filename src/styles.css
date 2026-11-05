@@ -428,7 +428,6 @@ textarea.text { width: 100%; height: auto; min-height: 180px; padding: var(--s2)
 .badge.ok { background: color-mix(in srgb, var(--success) 16%, transparent); color: var(--success); }
 .badge.err { background: color-mix(in srgb, var(--danger) 16%, transparent); color: var(--danger); }
 .badge.warn { background: color-mix(in srgb, var(--gold) 16%, transparent); color: var(--gold); }
-.summary { border-color: color-mix(in srgb, var(--accent-hover) 55%, transparent); }
 .xp-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: var(--fs-ui); color: var(--ink-2); border-bottom: 1px solid var(--hair); }
 .xp-row:last-child { border-bottom: none; }
 .xp-row b { font-family: var(--font-mono); font-weight: 500; color: var(--accent-text); }

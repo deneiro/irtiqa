@@ -98,7 +98,7 @@ export interface CmdResult {
   stderr: string;
 }
 
-/** Run a program inside the vault folder (git, claude). Tauri only. */
+/** Run a program inside the vault folder (today only `open`, for a tool's launch file). Tauri only. */
 export async function runCmd(root: string, program: string, args: string[]): Promise<CmdResult> {
   if (!inTauri) throw new Error("runCmd needs the desktop app");
   return invoke<CmdResult>("run_cmd", { root, program, args });

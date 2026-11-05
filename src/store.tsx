@@ -9,13 +9,7 @@ import { buildIndex, toSearchDoc, type SearchDoc } from "./lib/search";
 import { buildLife, dayRel, emptyDay, mergeDay, parseDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
 import { LedgerConflict, ledgerLosses } from "./lib/guard";
 import { dayOf, dayToday } from "./lib/maghrib";
-import { runCmd, treeChanged, writeText, type CmdResult } from "./lib/fs";
-
-/** What closing a day did with git: `commit` is null when there was nothing to commit, `push` null when it was not tried. */
-export interface SyncResult {
-  commit: CmdResult | null;
-  push: CmdResult | null;
-}
+import { treeChanged, writeText } from "./lib/fs";
 import { parseLog } from "./lib/log";
 
 const KEY = "irtiqa.vaultRoot";
@@ -36,8 +30,6 @@ interface Store {
   life: Life | null;
   /** Write one file inside the vault (app-owned paths only). */
   saveText: (rel: string, content: string) => Promise<void>;
-  /** Commit every change in the vault and push it. Returns null outside the desktop app. */
-  commitVault: (message: string) => Promise<SyncResult | null>;
   /** Read-modify-write today's day file, read fresh from disk (used by pages other than Day). */
   updateToday: (fn: (d: Day) => Day) => Promise<void>;
   /** The file as it is on disk right now; null when missing (or in browser mode, the last scan). */
@@ -349,34 +341,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(PENDING_KEY);
     setPending(null);
   }, [pending, updateToday, life, saveText]);
-  // The day's commit carries everything changed since the last one — Claude's
-  // edits, people, quests — then goes to the remote, the only copy off this Mac.
-  const commitVault = useCallback(
-    async (message: string): Promise<SyncResult | null> => {
-      if (!inTauri) return null;
-      const add = await runCmd(root, "git", ["add", "-A"]);
-      if (add.status !== 0) return { commit: add, push: null };
-      // `diff --cached --quiet` exits 1 when something is staged.
-      const staged = await runCmd(root, "git", ["diff", "--cached", "--quiet"]);
-      const commit = staged.status === 0 ? null : await runCmd(root, "git", ["commit", "-q", "-m", message]);
-      if (commit && commit.status !== 0) return { commit, push: null };
-      // Push even with nothing new: earlier commits may still be waiting from an offline close.
-      // Race with a 4s timeout so slow or offline networks never freeze day close.
-      const pushPromise = runCmd(root, "git", ["push", "-q"]).catch((e) => ({
-        status: -1,
-        stdout: "",
-        stderr: String(e),
-      }));
-      const pushTimeout = new Promise<CmdResult | null>((resolve) => setTimeout(() => resolve(null), 4000));
-      const push = await Promise.race([pushPromise, pushTimeout]);
-      return { commit, push };
-    },
-    [root],
-  );
 
   const value = useMemo<Store>(
-    () => ({ root, setRoot, vault, index, needIndex, life, saveText, commitVault, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
-    [root, vault, index, needIndex, life, saveText, commitVault, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
+    () => ({ root, setRoot, vault, index, needIndex, life, saveText, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
+    [root, vault, index, needIndex, life, saveText, updateToday, readFresh, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
