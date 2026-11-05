@@ -88,7 +88,8 @@ export function actStatus(a: ActivityView): ReactNode {
 export function ActivityList({ acts }: { acts: ActivityView[] }) {
   const moving = acts.filter((a) => a.state === "moving").length;
   return (
-    <Card title="Деятельности" right={`${moving} движутся · ${acts.length - moving} стоят`}>
+    <Card title="Деятельности" right={acts.length ? `${moving} движутся · ${acts.length - moving} стоят` : undefined}>
+      {!acts.length && <p className="d-faint">деятельностей нет</p>}
       {acts.map((a) => {
         const step = a.now ? plainStep(a.now) : "";
         return (
@@ -97,7 +98,7 @@ export function ActivityList({ acts }: { acts: ActivityView[] }) {
             <div>
               <div className="t">{a.quest.title}</div>
               <div className="th">{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</div>
-              {step && <div className="now">{step}</div>}
+              {step && <div className="d-now">{step}</div>}
             </div>
             {actStatus(a)}
           </Link>
@@ -126,7 +127,7 @@ export function ClaudeBlock({ title, focus, period, note }: { title: string; foc
 }
 
 export function GoalRow({ g }: { g: GoalView }) {
-  if (g.placeholder) return <div className="d-goal empty"><div className="gt">цели нет — твоими словами или пусто</div></div>;
+  if (g.placeholder) return <div className="d-goal d-empty"><div className="gt">цели нет — твоими словами или пусто</div></div>;
   const chip = g.chip === "hot" ? <Status tone="ember">горит</Status>
     : g.chip === "done" ? <Status tone="sage">готово</Status>
     : g.chip === "behind" ? <Status tone="honey">отстаёт</Status>
@@ -151,6 +152,8 @@ export function DayArc({ prayers }: { prayers: { title: string; mark: PrayerMark
   };
   const of = (m: PrayerMark) => prayers.filter((p) => p.mark === m);
   const late = of("late"), failed = of("failed");
+  // Not a made-up «0 вовремя»: with no mark at all (no day file, or nothing answered) the caption is «—».
+  const said = of("none").length === prayers.length ? "—" : `${of("done").length} вовремя${late.length ? ` · ${late.length} поздно (${late.map((p) => p.title).join(", ")})` : ""}${failed.length ? ` · ${failed.length} пропущено` : ""}`;
   return (
     <div className="d-arc">
       <svg viewBox={`-12 0 ${W + 24} 286`} role="img" aria-label="Намаз вчера по времени дня">
@@ -183,7 +186,7 @@ export function DayArc({ prayers }: { prayers: { title: string; mark: PrayerMark
         })}
       </svg>
       <div className="cap">
-        <span>Вчера: {of("done").length} вовремя{late.length ? ` · ${late.length} поздно (${late.map((p) => p.title).join(", ")})` : ""}{failed.length ? ` · ${failed.length} пропущено` : ""}</span>
+        <span>Вчера: {said}</span>
         <span>намаз по времени дня</span>
       </div>
     </div>

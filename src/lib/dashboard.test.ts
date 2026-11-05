@@ -170,6 +170,9 @@ test("signals: dates first, then late meals, good habits, what stands — at mos
   assert.match(s[1].title, /^Еда после 21:00 — 1 раз/);
   assert.match(s[2].title, /^Полезные привычки — 1 из 4/);
   assert.match(s[3].title, /^Не движутся 5 из 6/); // on 2030-01-03 only «В раз в неделю» has a move (01-01)
+  // an activity due within 3 days: its «## Сейчас» step reaches the signal as plain words — no date, no wikilink, no «— ты»
+  const soon = buildLife([act("Ж срок", "каждый день", "## Сейчас\n- 2030-01-03 Открыть [[Страница|страницу]] — ты\n", { due: "2030-01-05" })]);
+  assert.equal(signals(soon, "2030-01-03")[0].fact, "Открыть страницу");
 });
 
 test("focusFor falls back to the previous period and marks it stale", () => {

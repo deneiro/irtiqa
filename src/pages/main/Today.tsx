@@ -25,6 +25,7 @@ export default function Today({ life, today }: { life: Life; today: string }) {
   const mark = (t: string): PrayerMark => (y.prayer.done.includes(t) ? "done" : y.prayer.late.includes(t) ? "late" : y.prayer.failed.includes(t) ? "failed" : "none");
   const prayers = habitRows(life).filter((h) => h.kind === "prayer" && habitDue(h, yesterday)).map((h) => ({ title: h.title, mark: mark(h.title) }));
   const [first, ...rest] = sig;
+  const wait = waiting(life);
   return (
     <>
       <Hero kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} />}>
@@ -42,7 +43,7 @@ export default function Today({ life, today }: { life: Life; today: string }) {
             {tasks.length ? <ul className="d-tasks">{tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}>{plainLinks(t.text)}</li>)}</ul> : <p className="d-faint">Задач нет — бот спросит утром.</p>}
             {focus.lines[0] && (
               <div className="d-claude-line">
-                <div className="d-kick who">Claude · фокус недели</div>
+                <div className="d-kick who">Claude · фокус недели{focus.stale ? " · это прошлый период" : ""}</div>
                 <p>{focus.lines[0]}</p>
                 {focus.lines.length > 1 && <Link to="/?tab=week">ещё {focus.lines.length - 1} →</Link>}
               </div>
@@ -54,7 +55,7 @@ export default function Today({ life, today }: { life: Life; today: string }) {
           <StateCard life={life} today={today} s={s} prev={prev} win={win} setWin={setWin} tasksToday={tasks.length} />
           <YesterdayCard y={y} />
           <Card title="Ждёт тебя" right="из now.md">
-            <ul className="d-plain">{waiting(life).map((w) => <li key={w}>{w}</li>)}</ul>
+            {wait.length ? <ul className="d-plain">{wait.map((w, i) => <li key={i}>{w}</li>)}</ul> : <p className="d-faint">пока ничего</p>}
           </Card>
         </div>
       </div>
@@ -73,23 +74,31 @@ function StateCard({ life, today, s, prev, win, setWin, tasksToday }: { life: Li
   const perDay = (x: Stats) => (x.recorded ? x.falls / x.recorded : undefined);
   const p = s.prayer, marked = p.done + p.late + p.failed;
   const yesterday = addDays(today, -1);
-  const w = weightNow(life, yesterday), goal = weightGoal(life, today);
+  const w = weightNow(life, yesterday), goal = weightGoal(life, today), runs = streaks(life, yesterday);
   const thin = (n: number) => n < half;
+  /** No day of the window carries a habit mark: nothing to count, so «—» and no tone — never a made-up 0. */
+  const noMarks = s.recorded === 0;
+  const blank = (k: string, foot: string) => <Tile k={k} v="—" foot={foot} thin />;
+  const noRecords = `нет записей за ${days(s.length)}`;
   return (
-    <Card title="Состояние" right={<span className="d-seg">{([7, 10] as const).map((n) => <button key={n} className={n === win ? "on" : ""} onClick={() => setWin(n)}>{n} дней</button>)}</span>}>
+    <Card title="Состояние" right={<span className="d-seg">{([7, 10] as const).map((n) => <button key={n} className={n === win ? "on" : ""} aria-pressed={n === win} onClick={() => setWin(n)}>{n} дней</button>)}</span>}>
       <div className="d-cover"><Dots flags={s.coverage} dates={dateRange(s.from, s.to)} />записи за {days(s.recorded)} из {s.length} · {short(s.from)} – {short(s.to)}</div>
       <div className="d-tiles">
-        <Tile k="Намаз" hint={arrow(share(s), share(prev), true)} tone={!p.due ? undefined : p.unmarked / p.due > 0.25 ? "honey" : "sage"} v={p.done} of={`/ ${marked}`} sub={`вовремя · ${p.late} поздно · ${p.failed} пропущено`} foot={p.unmarked ? `${p.unmarked} без отметки из ${p.due}` : undefined} />
-        <Tile k="Срывы" hint={arrow(perDay(s), perDay(prev), false)} tone={s.falls ? "ember" : "sage"} v={s.falls} sub={list(s.fallsBy) || "ни одного"} foot={`удержался ${s.held} ${plural(s.held, "раз", "раза", "раз")}`} />
-        <Tile k="Полезные" hint={arrow(goodShare(s), goodShare(prev), true)} tone={!s.good.total ? undefined : s.good.done / s.good.total < 0.3 ? "ember" : "sage"} v={s.good.done} of={`/ ${s.good.total}`} sub={list(s.good.missedBy)} />
+        {noMarks ? blank("Намаз", noRecords) : <Tile k="Намаз" hint={arrow(share(s), share(prev), true)} tone={!p.due ? undefined : p.unmarked / p.due > 0.25 ? "honey" : "sage"} v={p.done} of={`/ ${marked}`} sub={`вовремя · ${p.late} поздно · ${p.failed} пропущено`} foot={p.unmarked ? `${p.unmarked} без отметки из ${p.due}` : undefined} />}
+        {noMarks ? blank("Срывы", noRecords) : <Tile k="Срывы" hint={arrow(perDay(s), perDay(prev), false)} tone={s.falls ? "ember" : "sage"} v={s.falls} sub={list(s.fallsBy) || "ни одного"} foot={`удержался ${s.held} ${plural(s.held, "раз", "раза", "раз")}`} />}
+        {noMarks ? blank("Полезные", noRecords) : <Tile k="Полезные" hint={arrow(goodShare(s), goodShare(prev), true)} tone={!s.good.total ? undefined : s.good.done / s.good.total < 0.3 ? "ember" : "sage"} v={s.good.done} of={`/ ${s.good.total}`} sub={list(s.good.missedBy)} />}
         <Tile k="Вес" hint={w ? short(w.last.date) : undefined} v={w ? w.last.value : "—"} of={w ? "кг" : undefined} sub={w?.before ? `${signed(w.last.value - w.before.value)} кг с ${short(w.before.date)}` : undefined} foot={w && goal ? `до ${goal.target} кг: ${signed(goal.target - w.last.value)} за ${days(daysBetween(today, goal.by))}` : undefined} />
         <Tile k="Настроение" hint={arrow(s.mood.avg, prev.mood.avg, true)} v={s.mood.avg ?? "—"} foot={`${days(s.mood.n)} из ${s.length}`} thin={thin(s.mood.n)} />
         <Tile k="Стресс" hint={arrow(s.stress.avg, prev.stress.avg, false)} v={s.stress.avg ?? "—"} foot={`${days(s.stress.n)} из ${s.length}`} thin={thin(s.stress.n)} />
         <Tile k="Деньги" v={s.money.days ? fmt(s.money.spent) : "—"} of={s.money.days ? "₸" : undefined} sub={s.money.days ? `доход ${fmt(s.money.earned)} ₸` : undefined} foot={s.money.days ? `${days(s.money.days)} с записями` : `нет записей за ${days(s.length)}`} thin={!s.money.days} />
-        <Tile k="Задачи" v={s.tasks.done} of={`/ ${s.tasks.total}`} sub={`сегодня ${tasksToday}`} foot={`были в ${s.tasks.days} из ${s.length} дней`} thin={thin(s.tasks.days)} />
+        {s.tasks.total ? <Tile k="Задачи" v={s.tasks.done} of={`/ ${s.tasks.total}`} sub={`сегодня ${tasksToday}`} foot={`были в ${s.tasks.days} из ${s.length} дней`} thin={thin(s.tasks.days)} /> : <Tile k="Задачи" v="—" sub={tasksToday ? `сегодня ${tasksToday}` : undefined} foot={`нет задач за ${days(s.length)}`} thin />}
       </div>
-      <div className="d-sub"><span className="d-kick">Без срыва, дней подряд</span></div>
-      <div className="d-streaks">{streaks(life, yesterday).map((x) => <span key={x.habit} className={`d-streak ${streakTone(x.days)}`}><b>{x.days}</b>{x.habit}</span>)}</div>
+      {runs.length > 0 && (
+        <>
+          <div className="d-sub"><span className="d-kick">Без срыва, дней подряд</span></div>
+          <div className="d-streaks">{runs.map((x) => <span key={x.habit} className={`d-streak ${streakTone(x.days)}`}><b>{x.days}</b>{x.habit}</span>)}</div>
+        </>
+      )}
       {!comparable && <p className="d-foot">Стрелок «лучше / хуже» нет: в прошлых {win} днях записи за {days(prev.recorded)}. Бледные числа — ответы меньше чем за половину дней.</p>}
     </Card>
   );

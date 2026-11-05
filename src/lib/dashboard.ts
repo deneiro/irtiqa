@@ -298,7 +298,7 @@ export function signals(life: Life, today: string): Signal[] {
   const acts = activities(life, today);
   for (const a of acts) {
     const due = a.quest.due;
-    if (due && due >= today && due <= addDays(today, 3)) out.push({ level: "red", title: `${cap(dueWords(due, today))} — ${a.quest.title}`, fact: a.now ?? "", source: "деятельность" });
+    if (due && due >= today && due <= addDays(today, 3)) out.push({ level: "red", title: `${cap(dueWords(due, today))} — ${a.quest.title}`, fact: a.now ? plainStep(a.now) : "", source: "деятельность" });
   }
   const s = windowStats(life, addDays(today, -7), addDays(today, -1));
   if (s.lateMeals) out.push({ level: "red", title: `Еда после 21:00 — ${s.lateMeals} ${plural(s.lateMeals, "раз", "раза", "раз")} за неделю`, fact: `записи еды за ${nDays(s.mealDays)}`, source: "файлы дней, ## Еда" });

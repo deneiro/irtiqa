@@ -34,7 +34,7 @@ export default function MainPage() {
           IrtiQa · Главный
         </div>
         <nav className="dash-tabs">
-          {TABS.map((t) => <button key={t.id} className={t.id === tab ? "on" : ""} onClick={() => setParams({ tab: t.id })}>{t.label}<small>{t.hint}</small></button>)}
+          {TABS.map((t) => <button key={t.id} className={t.id === tab ? "on" : ""} aria-current={t.id === tab ? "page" : undefined} onClick={() => setParams({ tab: t.id })}>{t.label}<small>{t.hint}</small></button>)}
         </nav>
       </div>
       <div key={tab} className="dash-page">
