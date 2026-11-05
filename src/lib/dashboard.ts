@@ -109,7 +109,10 @@ export function windowStats(life: Life, from: string, to: string): Stats {
   };
 }
 
-/** Days without a fall for each active bad habit, longest first (`heldOut`). */
+/**
+ * Held-out run per active bad habit, longest first (`heldOut`). With `clean_since`: every day since the last failed day
+ * (or since `clean_since`) counts as held. Without it: consecutive done/late marks on due days.
+ */
 export function streaks(life: Life, upTo: string): { habit: string; days: number }[] {
   return life.habits.filter((h) => h.status === "active" && h.kind === "bad")
     .map((h) => ({ habit: h.title, days: heldOut(h, life.days, upTo) }))
@@ -130,7 +133,10 @@ export function weightNow(life: Life, upTo: string): { last: Weight; before: Wei
   return last ? { last, before: ws.filter((w) => w.date <= addDays(last.date, -7)).pop() } : undefined;
 }
 
-/** The 21-day trend carried to the deadline: does it reach the target? Fewer than two weights — no data. */
+/**
+ * The 21-day trend carried to the deadline: does it reach the target? The direction is read from the first weight of
+ * the window, so a target the last weight has already reached or passed is on track. Fewer than two weights — no data.
+ */
 export function weightPace(life: Life, today: string, target: number, by: string): "behind" | "ontrack" | "nodata" {
   const pts = weightSeries(life, today).filter((w) => w.date >= addDays(today, -21));
   if (pts.length < 2) return "nodata";
@@ -139,7 +145,8 @@ export function weightPace(life: Life, today: string, target: number, by: string
   const sxx = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
   const slope = sxx ? xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / sxx : 0;
   const last = pts[pts.length - 1];
-  if (last.value === target) return "ontrack";
+  const down = target < pts[0].value;
+  if (down ? last.value <= target : last.value >= target) return "ontrack";
   const projected = last.value + slope * (dayNum(by) - dayNum(last.date));
-  return (target < last.value ? projected <= target : projected >= target) ? "ontrack" : "behind";
+  return (down ? projected <= target : projected >= target) ? "ontrack" : "behind";
 }

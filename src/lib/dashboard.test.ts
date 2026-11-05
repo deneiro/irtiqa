@@ -102,3 +102,24 @@ test("weightNow and weightPace follow the 21-day trend", () => {
   assert.equal(weightPace(life, "2030-01-21", 70, "2030-02-20"), "behind");
   assert.equal(weightPace(life, "2030-03-01", 75, "2030-04-01"), "nodata");
 });
+
+test("weightPace: a loss target already passed counts as reached", () => {
+  // 77 → 76 → 75 → 74.8, target 75: the direction comes from where the window began, not from the side the last weight is on
+  const life = buildLife([
+    day("2031-03-01", { weight: "77" }), day("2031-03-05", { weight: "76" }),
+    day("2031-03-09", { weight: "75" }), day("2031-03-12", { weight: "74.8" }),
+  ]);
+  assert.equal(weightPace(life, "2031-03-13", 75, "2031-04-12"), "ontrack");
+  assert.equal(weightPace(life, "2031-03-10", 75, "2031-04-12"), "ontrack"); // landed exactly on it
+});
+
+test("weightPace: a gain target reads the same way, passed or still ahead", () => {
+  // 55 → 56 → 57 → 57.4, about +0.22 per day: near 64 by the deadline
+  const life = buildLife([
+    day("2031-05-01", { weight: "55" }), day("2031-05-05", { weight: "56" }),
+    day("2031-05-09", { weight: "57" }), day("2031-05-12", { weight: "57.4" }),
+  ]);
+  assert.equal(weightPace(life, "2031-05-13", 57, "2031-06-12"), "ontrack"); // passed
+  assert.equal(weightPace(life, "2031-05-13", 60, "2031-06-12"), "ontrack"); // ahead, the trend gets there
+  assert.equal(weightPace(life, "2031-05-13", 70, "2031-06-12"), "behind"); // ahead, the trend does not
+});
