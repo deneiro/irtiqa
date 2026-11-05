@@ -45,7 +45,7 @@ import { buildPage } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
 import { SHYMKENT, dayOf, fajrOn } from "../src/lib/maghrib";
 import { goalsFor } from "../src/lib/goals";
-import { activities, signals, weekCompare, windowStats } from "../src/lib/dashboard";
+import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats } from "../src/lib/dashboard";
 import { heldOut, winNumbers } from "../src/lib/wins";
 import { parseHealth } from "../src/lib/health";
 
@@ -163,7 +163,7 @@ function readDay(date: string): Day {
   return parseDay({ rel: dayRel(date), content: readFileSync(p, "utf8"), mtime: Math.floor(statSync(p).mtimeMs / 1000) });
 }
 
-/** A closed day is sealed: its `day` line in the log is already written. The bot does not change it behind the app's back. */
+/** A day closed before 2026-11-05 keeps `closed: true` and the bot leaves it alone. The app no longer closes days, and no `day` line is written to the log any more. */
 class ClosedDay extends Error {
   constructor(public date: string) { super(`closed ${date}`); }
 }
@@ -242,7 +242,7 @@ function needsYouText(date: string, limit = 6): string | null {
     .map((p) => ({ theme: p.theme!, body: p.body }));
   const items = attention(life, peoplePages(), date, overviews);
   if (!items.length) return null;
-  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на главном экране.` : "";
+  const more = items.length > limit ? `\n…и ещё ${items.length - limit} — на экране «День».` : "";
   return ["📌 Требует тебя", ...items.slice(0, limit).map((a) => `• ${a.text}`)].join("\n") + more;
 }
 
@@ -273,8 +273,8 @@ function morningText(cal: string): string {
   if (due.length) {
     lines.push(
       marked
-        ? `Вчера (${formatDayTitle(y).toLowerCase()}): намаз ${got("prayer")} · удержался ${got("bad")} · привычки ${got("good")}${day.closed ? "" : " — открой приложение, доотметь и нажми «Готово»"}.`
-        : `Вчера (${formatDayTitle(y).toLowerCase()}) ещё не отмечено — открой приложение, отметь и нажми «Готово».`,
+        ? `Вчера (${formatDayTitle(y).toLowerCase()}): намаз ${got("prayer")} · удержался ${got("bad")} · привычки ${got("good")}.`
+        : `Вчера (${formatDayTitle(y).toLowerCase()}): отметок нет — вечерний опрос не пройден.`,
     );
   }
 
@@ -368,7 +368,6 @@ const REFLECT: { label: string; q: string }[] = [
   { label: "Хотел, но не сделал", q: "🎯 Что хотел сделать, но не смог — и было бы классно, если бы сделал?" },
   { label: "Благодарен", q: "🤲 Чему благодарен за этот день?" },
 ];
-const PRAYER_ORDER = ["Фаджр", "Зухр", "Жума", "Аср", "Магриб", "Иша", "Витр"];
 const HABIT_ANSWERS: Record<HabitKind, { code: string; text: string }[]> = {
   prayer: [{ code: "y", text: "✓ да" }, { code: "l", text: "⏰ поздно" }, { code: "n", text: "✗ нет" }],
   bad: [{ code: "y", text: "да" }, { code: "n", text: "нет" }],
@@ -400,7 +399,7 @@ function surveySteps(date: string): SurveyStep[] {
     ...(["weight", "food", "money", "mood", "stress"] as BasicStep[]).map((kind) => ({ kind })),
     ...habits.map((h) => ({ kind: "habit" as const, habit: h.title, hk: h.kind, q: habitQuestion(h) })),
     { kind: "done" },
-    ...readDay(date).tasks.filter((t) => !t.done).map((t) => ({ kind: "task" as const, text: t.text, q: `✅ ${t.text} — сделал?` })),
+    ...readDay(date).tasks.filter((t) => !t.done).map((t) => ({ kind: "task" as const, text: t.text, q: `✅ ${plainLinks(t.text)} — сделал?` })),
     ...REFLECT.map((r) => ({ kind: "reflect" as const, ...r })),
   ];
 }
@@ -442,7 +441,7 @@ async function nextSurveyQuestion() {
     if (step.kind === "mood" && d.mood !== undefined) continue;
     if (step.kind === "stress" && d.stress !== undefined) continue;
     if (step.kind === "habit" && markOf(d, step.habit)) continue;
-    if (step.kind === "task" && d.tasks.find((t) => t.text === step.text)?.done) continue;
+    if (step.kind === "task" && !d.tasks.some((t) => !t.done && t.text === step.text)) continue; // ticked, renamed or gone since the survey began
     break;
   }
   if (sv.i >= sv.steps.length) {
@@ -538,11 +537,16 @@ async function onSurveyCallback(compact: string, i: number, code: string, chat: 
     writeDay(withMark(readDay(date), step.habit, mark));
     await edit(`${step.q} — ${HABIT_ANSWERS[step.hk].find((a) => a.code === code)!.text}`);
   } else if (step.kind === "task") {
+    if (code !== "y" && code !== "n") return; // a stale prayer button («l») or anything else: nothing is answered
+    let found = true;
     if (code === "y") {
+      // Tasks are matched by text: tick the first open one, so two identical tasks take one «да» each.
       const day = readDay(date);
-      writeDay({ ...day, tasks: day.tasks.map((t) => (t.text === step.text ? { ...t, done: true } : t)) });
+      const at = day.tasks.findIndex((t) => !t.done && t.text === step.text);
+      found = at >= 0;
+      if (found) writeDay({ ...day, tasks: day.tasks.map((t, j) => (j === at ? { ...t, done: true } : t)) });
     }
-    await edit(`${step.q} — ${code === "y" ? "да" : "нет"}`);
+    await edit(`${step.q} — ${!found ? "не нашёл в списке" : code === "y" ? "да" : "нет"}`);
   }
   await nextSurveyQuestion();
 }
@@ -1191,7 +1195,7 @@ async function poll() {
           if (u.callback_query) await onCallback(u.callback_query);
         } catch (e) {
           if (e instanceof ClosedDay) {
-            await say(`День ${e.date} уже закрыт — в закрытый день бот не пишет. Поправить можно на главном экране приложения.`).catch(() => {});
+            await say(`День ${e.date} закрыт прежней версией приложения: бот в него не пишет. Сними \`closed: true\` в файле дня или скажи Claude.`).catch(() => {});
             if (u.callback_query) await tg("answerCallbackQuery", { callback_query_id: u.callback_query.id }).catch(() => {});
             continue;
           }
