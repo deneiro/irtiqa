@@ -168,7 +168,7 @@ table.d-vs { width: 100%; border-collapse: collapse; font-size: 13px; font-varia
 .d-vs td.thin { color: var(--d-smoke); }
 .d-vs tr.cov td { color: var(--d-honey); }
 .d-gridwrap { overflow-x: auto; }
-table.d-grid { width: 100%; min-width: 520px; border-collapse: collapse; }
+table.d-grid { width: 100%; min-width: 480px; border-collapse: collapse; }
 .d-grid th { padding: 0 0 10px; text-align: center; font: 500 10px var(--d-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--d-smoke); }
 .d-grid th.today { color: var(--d-sun); }
 .d-grid td { padding: 6px 0; border-top: 1px solid var(--d-hair); text-align: center; }
