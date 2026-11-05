@@ -10,6 +10,8 @@
   position: relative; isolation: isolate; min-height: 100%; padding: 22px 32px 88px;
   background: var(--d-night); color: var(--d-moon); font: 14px/1.55 var(--d-sans); -webkit-font-smoothing: antialiased;
 }
+/* The shell caps every child of .main at 1080px (styles.css); the mockup's page is 1260px. */
+.main > .dash { max-width: 1260px; }
 .dash::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 560px; z-index: -1; pointer-events: none;
   background: radial-gradient(900px 420px at 80% -12%, rgba(231, 194, 122, 0.10), transparent 62%), radial-gradient(700px 320px at 6% -14%, rgba(168, 157, 255, 0.06), transparent 60%); }
 .dash a { color: var(--d-iris); text-decoration: none; }
@@ -119,7 +121,7 @@
 .d-act .bar { width: 3px; height: 100%; min-height: 34px; border-radius: 3px; opacity: .85; }
 .d-act .t { font-size: 14.5px; font-weight: 500; color: var(--d-moon); }
 .d-act .th { margin-top: 2px; font: 400 10.5px var(--d-mono); letter-spacing: .05em; color: var(--d-smoke); }
-.d-act .now { margin-top: 5px; font-size: 13px; color: var(--d-ash); }
+.d-act .now { margin-top: 5px; font-size: 13px; color: var(--d-ash); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
 /* state */
 .d-seg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--d-hair); border-radius: 99px; background: rgba(237, 231, 218, .04); }

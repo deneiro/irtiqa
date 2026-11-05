@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { activities, cell, dateRange, defaultTab, focusFor, goalView, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
+import { activities, cell, dateRange, defaultTab, focusFor, goalView, plainStep, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
 import { parseGoalLine, parseGoals } from "./goals";
 import { buildLife } from "./life";
 import type { MdFile } from "./types";
@@ -181,6 +181,19 @@ test("focusFor falls back to the previous period and marks it stale", () => {
 test("waiting reads the list under «## Ждёт», links as text", () => {
   const life = buildLife([{ rel: "life/now.md", mtime: 0, content: "---\ntype: now\n---\n## Ждёт тебя\n- Снять [[Ролик|ролик]]\n- Позвонить\n\n## Последнее\n- не это\n" }]);
   assert.deepEqual(waiting(life), ["Снять ролик", "Позвонить"]);
+});
+
+test("plainStep: a «## Сейчас» line in plain words; «— ты» goes, «— Claude» stays", () => {
+  assert.equal(plainStep("2030-01-05 Первый шаг"), "Первый шаг"); // the leading date
+  assert.equal(plainStep("2030-01-05 · Первый шаг"), "Первый шаг"); // …and a separator after it
+  assert.equal(plainStep("Открыть [[Страница|страницу]] и [[Другая]]"), "Открыть страницу и Другая"); // wikilink: alias, else target
+  assert.equal(plainStep("Прочитать [текст](https://example.com/a_(b)) до конца"), "Прочитать текст до конца"); // markdown link, parentheses in the url
+  assert.equal(plainStep("Запустить `build` и `test`"), "Запустить build и test"); // backticks
+  assert.equal(plainStep("Первый шаг — ты"), "Первый шаг"); // the reader is the owner
+  assert.equal(plainStep("Первый шаг — Claude"), "Первый шаг — Claude"); // who does it stays
+  assert.equal(plainStep("Первый шаг — ты и Claude"), "Первый шаг — ты и Claude");
+  assert.equal(plainStep("Срок 2030-01-05 близко, ты знаешь"), "Срок 2030-01-05 близко, ты знаешь"); // a date or «ты» inside the line stays
+  assert.equal(plainStep("2030-01-05 Открыть [[Страница|страницу]], [текст](https://example.com) и `код` — ты"), "Открыть страницу, текст и код"); // all at once
 });
 
 test("yesterdayView names the marks and the evening thoughts", () => {

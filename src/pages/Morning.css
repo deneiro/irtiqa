@@ -1,4 +1,5 @@
 /* «Главный»: one screen, two columns — habits (yesterday · wins) left, the projects he is doing now right. */
+/* .num, .grid, .today and .qhead moved to styles.css: other screens use those class names (Task 7, fix round 1). The rules below match nothing outside this page. */
 .morning .title { margin: 2px 0 var(--s4); }
 
 /* ---- yesterday ---- */
@@ -44,7 +45,6 @@
 .wins.fresh .num .v { animation: pop 500ms var(--ease); }
 @keyframes pop { 0% { transform: scale(0.92); opacity: 0.4; } 60% { transform: scale(1.04); } 100% { transform: none; opacity: 1; } }
 .numbers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s3); }
-.num { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: var(--s3) var(--s4); box-shadow: var(--shadow-1); min-width: 0; }
 .num .v { font-family: var(--font-mono); font-size: 30px; font-weight: 500; line-height: 1.1; color: var(--ink); letter-spacing: -0.02em; display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
 .num .tr { font-size: 12px; }
 .num .tr.up { color: var(--success); }
@@ -58,7 +58,6 @@
 .gridcard { padding: var(--s3) 20px; }
 .gridwrap { display: grid; grid-template-columns: 1fr 240px; gap: var(--s5); align-items: start; }
 @media (max-width: 1000px) { .gridwrap { grid-template-columns: 1fr; } }
-.grid { display: grid; grid-template-columns: 92px repeat(7, 1fr); gap: 6px 6px; align-items: center; }
 .grid .gh { font-size: var(--fs-xs); color: var(--faint); text-align: center; }
 .grid .gl { font-size: var(--fs-sm); color: var(--ink-2); }
 .grid .gc { height: 26px; border-radius: 6px; background: var(--raised); position: relative; overflow: hidden; }
@@ -74,12 +73,10 @@
 .held b.zero { color: var(--faint); }
 
 /* ---- today ---- */
-.today { margin-top: var(--s6); }
 .today > .eyebrow { margin-bottom: var(--s3); }
 .today .needs { margin: 0 0 var(--s3); }
 .qcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--s3); }
 .qcard { padding: var(--s3) var(--s4); border-left: 3px solid var(--c); }
-.qhead { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s2); }
 .qhead .qt { font-weight: 600; color: var(--ink); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .qhead .qt:hover { text-decoration: underline; }
 .qhead .n { margin-left: auto; font-size: var(--fs-sm); color: var(--muted); }

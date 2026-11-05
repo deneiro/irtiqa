@@ -157,6 +157,19 @@ export function weightPace(life: Life, today: string, target: number, by: string
 export const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
 export const plainLinks = (s: string) => s.replace(/\[\[(?:[^\]|]+\|)?([^\]]+)\]\]/g, "$1");
 
+/**
+ * A «## Сейчас» line as the activity list shows it, in plain words: no leading date (nor the separator after it), wikilinks
+ * and `[text](url)` reduced to their text, no backticks, no owner « — ты» (the reader is the owner). « — Claude» stays: it says who does the step.
+ */
+export function plainStep(s: string): string {
+  return plainLinks(s).trim()
+    .replace(/^\d{4}-\d{2}-\d{2}\s+(?:[·—–:]\s+)?/, "")
+    .replace(/\[([^\]]*)\]\((?:[^()]|\([^()]*\))*\)/g, "$1")
+    .replace(/`/g, "")
+    .replace(/\s+—\s+ты\s*$/i, "")
+    .trim();
+}
+
 export const PRAYER_ORDER = ["Фаджр", "Зухр", "Жума", "Аср", "Магриб", "Иша", "Витр"];
 const KIND_RANK: Record<Habit["kind"], number> = { prayer: 0, bad: 1, good: 2 };
 

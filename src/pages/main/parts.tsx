@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { startRun } from "../../lib/claude";
 import { useRuns } from "../../lib/claudeRuns";
-import { daysBetween, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
+import { daysBetween, plainStep, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
 import { themeColor, themeRu } from "../../lib/themes";
 import { useDayToday } from "../../lib/useDayToday";
 import { useStore } from "../../store";
@@ -89,17 +89,20 @@ export function ActivityList({ acts }: { acts: ActivityView[] }) {
   const moving = acts.filter((a) => a.state === "moving").length;
   return (
     <Card title="Деятельности" right={`${moving} движутся · ${acts.length - moving} стоят`}>
-      {acts.map((a) => (
-        <Link key={a.quest.rel} to={`/quest/${encodeURIComponent(a.quest.rel)}`} className="d-act">
-          <span className="bar" style={{ background: themeColor(a.quest.theme) }} />
-          <div>
-            <div className="t">{a.quest.title}</div>
-            <div className="th">{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</div>
-            {a.now && <div className="now">{a.now}</div>}
-          </div>
-          {actStatus(a)}
-        </Link>
-      ))}
+      {acts.map((a) => {
+        const step = a.now ? plainStep(a.now) : "";
+        return (
+          <Link key={a.quest.rel} to={`/quest/${encodeURIComponent(a.quest.rel)}`} className="d-act">
+            <span className="bar" style={{ background: themeColor(a.quest.theme) }} />
+            <div>
+              <div className="t">{a.quest.title}</div>
+              <div className="th">{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</div>
+              {step && <div className="now">{step}</div>}
+            </div>
+            {actStatus(a)}
+          </Link>
+        );
+      })}
     </Card>
   );
 }
