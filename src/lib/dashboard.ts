@@ -271,7 +271,7 @@ export function ladder(life: Life, today: string): Rung[] {
     const goals = (f?.goals ?? []).map((g) => goalView(g, life, today)).map((g) => (chips ? g : { ...g, chip: undefined }));
     return { label, key: f ? key : undefined, goals, tasks: { done: f?.tasks.filter((t) => t.done).length ?? 0, total: f?.tasks.length ?? 0 } };
   };
-  return [rung("5 лет", five?.[0], false), rung("Год", year), rung("Месяц", monthKey(today)), rung("Неделя", isoWeekKey(today))];
+  return [rung("Пять лет", five?.[0], false), rung("Год", year), rung("Месяц", monthKey(today)), rung("Неделя", isoWeekKey(today))];
 }
 
 export interface Signal { level: "red" | "gold"; title: string; fact: string; source: string }

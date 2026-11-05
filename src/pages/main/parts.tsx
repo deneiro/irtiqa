@@ -134,7 +134,7 @@ export function GoalRow({ g }: { g: GoalView }) {
     : g.chip === "ontrack" ? <Status tone="sage">идёт</Status>
     : g.chip === "nodata" ? <Status tone="smoke">нет данных</Status> : null;
   const meta = [g.line.measure && `мера: ${g.line.measure}`, g.now && `сейчас: ${g.now}`, g.line.due && `срок ${short(g.line.due)}`].filter(Boolean).join(" · ");
-  return <div className="d-goal"><div className="gt">{g.line.title}</div>{(meta || chip) && <div className="gm">{meta && <span>{meta}</span>}{chip}</div>}</div>;
+  return <div className="d-goal"><div className="gt">{plainStep(g.line.title)}</div>{(meta || chip) && <div className="gm">{meta && <span>{meta}</span>}{chip}</div>}</div>;
 }
 
 export type PrayerMark = "done" | "late" | "failed" | "none";

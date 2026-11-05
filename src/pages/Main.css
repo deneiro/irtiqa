@@ -193,7 +193,7 @@ table.d-grid { width: 100%; min-width: 480px; border-collapse: collapse; }
 .d-day:first-child { margin-top: 0; }
 
 /* month — the ascent */
-.d-stairs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; }
+.d-stairs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; }
 .d-step { padding: 18px 18px 6px; border-top: 1px solid var(--d-hair-2); border-left: 1px solid var(--d-hair-2); }
 .d-step:first-child { margin-top: 96px; border-left: 0; }
 .d-step:nth-child(2) { margin-top: 64px; }

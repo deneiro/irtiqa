@@ -12,6 +12,11 @@ const STATE: Record<ActState | "none", [string, Tone]> = {
   overdue: ["срок прошёл", "ember"], empty: ["записей нет", "honey"], idle: ["стоит", "honey"], moving: ["движется", "sage"], none: ["нет деятельности", "smoke"],
 };
 const MONTH = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+/** The key of a goals file as the small label of its step: the week number («45»), the month in lower case («ноябрь»), a year as it is. */
+const rungKey = (key: string) =>
+  /^\d{4}-W\d{2}$/.test(key) ? String(Number(key.slice(-2)))
+    : /^\d{4}-\d{2}$/.test(key) ? (MONTH[Number(key.slice(5)) - 1] ?? key).toLowerCase()
+    : key;
 /** One coloured part of a day column — typed, so `.map` does not widen it to `(string | number)[]`. */
 const seg = (v: number, c: string): [number, string] => [v, c];
 
@@ -49,7 +54,7 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
         <div className="d-stairs">
           {[...rungs].reverse().map((r) => (
             <div key={r.label} className="d-step">
-              <h3><b>{r.label}</b><span className="d-kick">{r.key ?? "файла нет"}</span></h3>
+              <h3><b>{r.label}</b><span className="d-kick">{r.key ? rungKey(r.key) : "файла нет"}</span></h3>
               {r.goals.map((g, i) => <GoalRow key={i} g={g} />)}
               {r.key && !r.goals.length && !r.tasks.total && <p className="d-faint">целей нет</p>}
               {r.tasks.total > 0 && <div className="d-goal"><div className="gt">Задачи</div><div className="gm"><Status tone={r.tasks.done === r.tasks.total ? "sage" : "honey"}>{r.tasks.done} из {r.tasks.total}</Status></div></div>}
