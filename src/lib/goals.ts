@@ -35,7 +35,11 @@ export function parseGoals(key: string, content: string): GoalsFile {
   const body = "\n" + content.replace(/^---[\s\S]*?\n---\n?/, "");
   const strip = (l: string) =>
     l.replace(/^\s*-\s*(\[[ xX]\]\s*)?/, "")
-      .replace(/\s*→\s*\[\[[^\]]*\]\][^.]*\.?$/, "") // the pointer to the period above
+      // The pointer to the period above. A reached goal's `✓ date` written after it (spec v3: it ends the line) stays.
+      .replace(/\s*→\s*\[\[[^\]]*\]\]([^.]*)\.?$/, (_m, tail: string) => {
+        const done = tail.match(/✓\s*\d{4}-\d{2}-\d{2}/)?.[0];
+        return done ? ` ${done}` : "";
+      })
       .replace(/\s*—\s*шаг\s+(в\s+\[\[[^\]]*\]\]|там же)\s*$/, "") // the pointer to the quest
       .trim();
   const goals = section(body, "Цели").split("\n").filter((l) => /^\s*-\s+/.test(l)).map(strip).filter(Boolean);

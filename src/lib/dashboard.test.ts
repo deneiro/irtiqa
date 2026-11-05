@@ -23,3 +23,18 @@ test("parseGoalLine leaves no separator behind where the pointer was cut", () =>
     ["Цель", "раз", "3"], ["Другая", "шт", undefined], ["Третья", undefined, undefined],
   ]);
 });
+
+test("a reached goal keeps its ✓ date whether it stands after the pointer or before it", () => {
+  const f = parseGoals("2030-11", [
+    "## Цели",
+    "- **Первая** · мера: раз · сейчас: 3 · → [[2030]] ✓ 2030-01-05",
+    "- **Вторая** · мера: шт · → [[2030]] (выше) ✓ 2030-01-05",
+    "- **Третья** · мера: раз · ✓ 2030-01-05 · → [[2030]]",
+    "",
+  ].join("\n"));
+  const lines = f.goals.map(parseGoalLine);
+  assert.deepEqual(lines.map((g) => g.doneOn), ["2030-01-05", "2030-01-05", "2030-01-05"]);
+  assert.deepEqual(lines.map((g) => g.title), ["Первая", "Вторая", "Третья"]);
+  // the mark is a part of its own: it does not leak into the field before it
+  assert.deepEqual(lines.map((g) => [g.measure, g.now]), [["раз", "3"], ["шт", undefined], ["раз", undefined]]);
+});
