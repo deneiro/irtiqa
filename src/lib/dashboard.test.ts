@@ -227,4 +227,18 @@ test("spheres: eight themes, the worst activity state, none without activities",
   assert.equal(sp.length, 8);
   assert.equal(sp.find((s) => s.theme === "Business & career")!.state, "overdue");
   assert.equal(sp.find((s) => s.theme === "Personal growth")!.state, "none");
+  // two marked days in the 30; no weight, and no meal rows in the last 7 days
+  assert.equal(sp.find((s) => s.theme === "Spirituality & Religion")!.fact, "намаз за 30 дней: 1 вовремя, 1 поздно, 0 пропущено, 0 без отметки");
+  assert.equal(sp.find((s) => s.theme === "Health & sport")!.fact, "веса нет · записей еды нет");
+});
+
+test("spheres: the prayer and meal facts say how much was recorded", () => {
+  const fact = (files: MdFile[], theme: string) => spheres(buildLife(files), [], "2030-01-10").find((s) => s.theme === theme)!.fact;
+  // a due prayer with no mark on a marked day is «без отметки», not «пропущено»
+  assert.equal(fact([...HABITS, ...DAYS, day("2030-01-03", { habits_done: "[Прогулка]" })], "Spirituality & Religion"), "намаз за 30 дней: 1 вовремя, 1 поздно, 0 пропущено, 1 без отметки");
+  // no marked day in the window: no counts, not zeros
+  assert.equal(fact(HABITS, "Spirituality & Religion"), "намаз за 30 дней: нет отметок");
+  // the weight is current through today; the meals say on how many of the 7 days they were written
+  const meal = "## Еда\n| Время | Что | Заметка |\n|---|---|---|\n| 22:15 | чай |  |\n";
+  assert.equal(fact([...HABITS, day("2030-01-05", { weight: "80" }, meal), day("2030-01-10", { weight: "79" })], "Health & sport"), "вес 79 кг (2030-01-10) · еда после 21:00 за неделю: 1 (записи за 1 из 7 дн.)");
 });

@@ -412,14 +412,15 @@ export function spheres(life: Life, circle: CircleItem[], today: string): Sphere
   const m30 = windowStats(life, addDays(today, -30), yesterday);
   const w7 = windowStats(life, addDays(today, -7), yesterday);
   const month = windowStats(life, `${today.slice(0, 7)}-01`, yesterday);
-  const w = weightNow(life, yesterday);
+  const w = weightNow(life, today); // through today, as goalView reads it
+  const pr = m30.prayer;
   const debt = life.debts.filter((d) => d.direction === DEBT_I_OWE && !d.closed).reduce((a, d) => a + debtLeft(d), 0);
   const quiet = (theme: string) => quietPeople(circle.filter((c) => c.page.theme === theme), 1)[0];
   const lastEvent = life.events.find((e) => e.date <= today); // newest first
   const fact: Record<string, string> = {
     "Business & career": month.money.days ? `доход за месяц: ${fmt(month.money.earned)} ₸` : "доход за месяц не записан",
-    "Spirituality & Religion": `намаз за 30 дней: ${m30.prayer.done} вовремя, ${m30.prayer.late} поздно, ${m30.prayer.failed} пропущено`,
-    "Health & sport": `${w ? `вес ${w.last.value}` : "веса нет"} · еда после 21:00 за неделю: ${w7.lateMeals}`,
+    "Spirituality & Religion": pr.due ? `намаз за 30 дней: ${pr.done} вовремя, ${pr.late} поздно, ${pr.failed} пропущено, ${pr.unmarked} без отметки` : "намаз за 30 дней: нет отметок",
+    "Health & sport": `${w ? `вес ${w.last.value} кг (${w.last.date})` : "веса нет"} · ${w7.mealDays ? `еда после 21:00 за неделю: ${w7.lateMeals} (записи за ${w7.mealDays} из 7 дн.)` : "записей еды нет"}`,
     "Finance & money": debt ? `долги: ${fmt(debt)} ₸` : "долгов нет",
     "Memories & Fun": lastEvent ? `последнее событие: ${lastEvent.title}, ${lastEvent.date}` : "событий нет",
   };
