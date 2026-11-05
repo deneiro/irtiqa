@@ -85,7 +85,7 @@ node "$HOME/Library/Application Support/irtiqa-bot/bot.mjs" --morning 2026-10-12
 
 Первый запуск создаёт `~/Library/Application Support/irtiqa-bot/config.json`:
 токен от @BotFather, путь к vault, координаты, `fajrAngle`, `afterFajrMin`,
-`eveningDigest`. Первый `/start` в чате делает этот чат владельцем. Лог —
+`eveningAskAt`. Первый `/start` в чате делает этот чат владельцем. Лог —
 `bot.log` рядом с конфигом. Бот работает, пока Mac не спит; проспанное утро
 досылается в течение шести часов. После правки кода — снова
 `./bot/install.sh`.
