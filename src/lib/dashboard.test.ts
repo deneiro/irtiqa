@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { activities, dateRange, defaultTab, focusFor, goalView, signals, waiting, weekOf, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
+import { activities, cell, dateRange, defaultTab, focusFor, goalView, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
 import { parseGoalLine, parseGoals } from "./goals";
 import { buildLife } from "./life";
 import type { MdFile } from "./types";
@@ -187,4 +187,44 @@ test("yesterdayView names the marks and the evening thoughts", () => {
   const y = yesterdayView(buildLife([...HABITS, ...DAYS]), "2030-01-02");
   assert.deepEqual(y.prayer, { done: ["Фаджр"], late: [], failed: [] });
   assert.deepEqual([y.falls, y.goodDone, y.goodMissed, y.reflections], [[], ["Выпить 2 литра воды"], ["Прогулка"], ["Благодарен: семье"]]);
+});
+
+test("cell: skip by weekday, future, pending today, held and fall for bad habits", () => {
+  const life = buildLife([...HABITS, ...DAYS]);
+  const h = (t: string) => life.habits.find((x) => x.title === t)!;
+  assert.equal(cell(life, h("Жума"), "2030-01-01", "2030-01-03"), "skip");
+  assert.equal(cell(life, h("Фаджр"), "2030-01-05", "2030-01-03"), "future");
+  assert.equal(cell(life, h("Фаджр"), "2030-01-03", "2030-01-03"), "pending");
+  assert.equal(cell(life, h("Сладкое"), "2030-01-01", "2030-01-03"), "held");
+  assert.equal(cell(life, h("Сладкое"), "2030-01-02", "2030-01-03"), "fall");
+  assert.equal(cell(life, h("Фаджр"), "2030-01-02", "2030-01-03"), "late");
+  assert.equal(cell(life, h("Фаджр"), "2029-12-30", "2030-01-03"), "nofile");
+  assert.equal(cell(life, h("Фаджр"), "2029-12-31", "2030-01-03"), "unmarked");
+});
+
+test("weekCompare: a Monday shows the week that ended; other days the week up to yesterday", () => {
+  const life = buildLife([...HABITS, ...DAYS]);
+  const mon = weekCompare(life, "2030-01-07");
+  assert.deepEqual([mon.from, mon.to, mon.cur.to, mon.prev.from, mon.prev.to], ["2029-12-31", "2030-01-06", "2030-01-06", "2029-12-24", "2029-12-30"]);
+  assert.equal(mon.cur.recorded, 2);
+  const thu = weekCompare(life, "2030-01-03");
+  assert.deepEqual([thu.cur.from, thu.cur.to], ["2029-12-31", "2030-01-02"]);
+});
+
+test("series: one point per day, stats only where a file is", () => {
+  const pts = series(buildLife([...HABITS, ...DAYS]), "2029-12-30", "2030-01-02");
+  assert.deepEqual(pts.map((p) => [p.date, p.stats?.recorded ?? null]), [["2029-12-30", null], ["2029-12-31", 0], ["2030-01-01", 1], ["2030-01-02", 1]]);
+});
+
+test("weekStory gathers done and the evening thoughts", () => {
+  const st = weekStory(buildLife([...HABITS, ...DAYS]), "2029-12-31", "2030-01-06");
+  assert.deepEqual(st.done, [{ date: "2029-12-31", items: ["без отметок"] }]);
+  assert.deepEqual(st.thoughts, [{ date: "2030-01-01", line: "Благодарен: семье" }]);
+});
+
+test("spheres: eight themes, the worst activity state, none without activities", () => {
+  const sp = spheres(buildLife([...HABITS, ...DAYS, ...ACTS]), [], "2030-01-10");
+  assert.equal(sp.length, 8);
+  assert.equal(sp.find((s) => s.theme === "Business & career")!.state, "overdue");
+  assert.equal(sp.find((s) => s.theme === "Personal growth")!.state, "none");
 });

@@ -4,9 +4,11 @@
  * too (`--dashboard`). Nothing here names a habit, a person or a sum: the
  * repository is public, everything comes from the vault files.
  */
+import type { CircleItem } from "./circle";
 import { addDays, plural, weekdayIndex } from "./dates";
 import { isoWeekKey, monthKey, parseGoalLine, parseGoals, type GoalLine, type GoalsFile } from "./goals";
-import { habitDue, isLateMeal, markOf, nowStep, type Day, type Habit, type Life, type Quest } from "./life";
+import { DEBT_I_OWE, debtLeft, habitDue, isLateMeal, markOf, nowStep, type Day, type Habit, type Life, type Quest } from "./life";
+import { THEMES } from "./themes";
 import { heldOut } from "./wins";
 
 export type Tab = "day" | "week" | "month";
@@ -353,4 +355,86 @@ export function yesterdayView(life: Life, today: string): Yesterday {
     goodMissed: titles("good", (m) => m === "failed"),
     reflections: reflections(d),
   };
+}
+
+export type Cell = "done" | "late" | "failed" | "held" | "fall" | "unmarked" | "skip" | "nofile" | "pending" | "future";
+
+/** One square of the week grid. Today waits for the 21:00 survey; a bad habit is held or a fall. */
+export function cell(life: Life, h: Habit, date: string, today: string): Cell {
+  if (date > today) return "future";
+  if (!habitDue(h, date)) return "skip";
+  const d = life.days.get(date);
+  const m = d ? markOf(d, h.title) : undefined;
+  if (!m) return date === today ? "pending" : d ? "unmarked" : "nofile";
+  if (m === "skipped") return "skip";
+  if (h.kind === "bad") return m === "failed" ? "fall" : "held";
+  return m;
+}
+
+export interface WeekCompare { from: string; to: string; cur: Stats; prev: Stats; curWeight: Weight | undefined; prevWeight: Weight | undefined }
+
+/** The week on screen — on a Monday the one that just ended — up to yesterday, against the full week before it. */
+export function weekCompare(life: Life, today: string): WeekCompare {
+  const yesterday = addDays(today, -1);
+  const wk = weekOf(weekdayIndex(today) === 1 ? yesterday : today);
+  const to = wk.to < yesterday ? wk.to : yesterday;
+  const pw = weekOf(addDays(wk.from, -1));
+  const lastIn = (from: string, upTo: string) => weightSeries(life, upTo).filter((w) => w.date >= from).pop();
+  return { from: wk.from, to: wk.to, cur: windowStats(life, wk.from, to), prev: windowStats(life, pw.from, pw.to), curWeight: lastIn(wk.from, to), prevWeight: lastIn(pw.from, pw.to) };
+}
+
+export interface Story { done: { date: string; items: string[] }[]; events: { date: string; title: string }[]; thoughts: { date: string; line: string }[] }
+
+export function weekStory(life: Life, from: string, to: string): Story {
+  const ds = dateRange(from, to);
+  return {
+    done: ds.map((date) => ({ date, items: (life.days.get(date)?.done ?? []).map(plainLinks) })).filter((x) => x.items.length),
+    events: life.events.filter((e) => e.date >= from && e.date <= to).map((e) => ({ date: e.date, title: e.title })).reverse(),
+    thoughts: ds.flatMap((date) => reflections(life.days.get(date)).map((line) => ({ date, line }))),
+  };
+}
+
+export interface DayPoint { date: string; stats: Stats | undefined; weight: number | undefined }
+
+export function series(life: Life, from: string, to: string): DayPoint[] {
+  return dateRange(from, to).map((date) => {
+    const d = life.days.get(date);
+    return { date, stats: d ? windowStats(life, date, date) : undefined, weight: d?.weight };
+  });
+}
+
+export interface Sphere { theme: string; ru: string; color: string; acts: ActivityView[]; state: ActState | "none"; fact: string }
+
+/** The eight themes: their activities, the worst state among them, and one number each (spec v3 «Сферы»). */
+export function spheres(life: Life, circle: CircleItem[], today: string): Sphere[] {
+  const yesterday = addDays(today, -1);
+  const acts = activities(life, today);
+  const m30 = windowStats(life, addDays(today, -30), yesterday);
+  const w7 = windowStats(life, addDays(today, -7), yesterday);
+  const month = windowStats(life, `${today.slice(0, 7)}-01`, yesterday);
+  const w = weightNow(life, yesterday);
+  const debt = life.debts.filter((d) => d.direction === DEBT_I_OWE && !d.closed).reduce((a, d) => a + debtLeft(d), 0);
+  const quiet = (theme: string) => quietPeople(circle.filter((c) => c.page.theme === theme), 1)[0];
+  const lastEvent = life.events.find((e) => e.date <= today); // newest first
+  const fact: Record<string, string> = {
+    "Business & career": month.money.days ? `доход за месяц: ${fmt(month.money.earned)} ₸` : "доход за месяц не записан",
+    "Spirituality & Religion": `намаз за 30 дней: ${m30.prayer.done} вовремя, ${m30.prayer.late} поздно, ${m30.prayer.failed} пропущено`,
+    "Health & sport": `${w ? `вес ${w.last.value}` : "веса нет"} · еда после 21:00 за неделю: ${w7.lateMeals}`,
+    "Finance & money": debt ? `долги: ${fmt(debt)} ₸` : "долгов нет",
+    "Memories & Fun": lastEvent ? `последнее событие: ${lastEvent.title}, ${lastEvent.date}` : "событий нет",
+  };
+  for (const t of ["Family & relationship", "Social & friends"]) {
+    const q = quiet(t);
+    fact[t] = q ? `${q.name}: ${q.sinceContact} дн без контакта` : "контактов не отмечено";
+  }
+  return THEMES.map((t) => {
+    const mine = acts.filter((a) => a.quest.theme === t.name);
+    const state = mine.length ? mine.reduce<ActState>((worst, a) => (ACT_RANK[a.state] < ACT_RANK[worst] ? a.state : worst), "moving") : "none";
+    return { theme: t.name, ru: t.ru, color: t.color, acts: mine, state, fact: fact[t.name] ?? "" };
+  });
+}
+
+/** Close people (closeness ≥ 7) by the days since the last marked contact. */
+export function quietPeople(circle: CircleItem[], n = 6): CircleItem[] {
+  return circle.filter((c) => (c.closeness ?? 0) >= 7 && c.sinceContact !== undefined).sort((a, b) => b.sinceContact! - a.sinceContact!).slice(0, n);
 }
