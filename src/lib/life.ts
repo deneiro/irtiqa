@@ -323,6 +323,8 @@ export interface Life {
   library: string | null;
   /** Raw text of `life/calendar.md`; parsed by lib/calendar.ts. */
   calendar: string | null;
+  /** Raw text of `life/now.md`; «Главный» reads the waiting list from it (spec v3). */
+  now: string | null;
   audits: Audit[];
   /** `life/goals/<период>.md` by period key (`2026-W42`, `2026-10`); parsed by lib/goals.ts. */
   goals: Map<string, string>;
@@ -335,6 +337,7 @@ export const ACCOUNTS_REL = "life/finance/accounts.md";
 export const SUBS_REL = "life/finance/subscriptions.md";
 export const DEBTS_REL = "life/finance/debts.md";
 export const HEALTH_REL = "life/health.md";
+export const NOW_REL = "life/now.md";
 export const TALKS_REL = "life/talks.md";
 export const JOBS_REL = "life/jobs.md";
 export const WISHES_REL = "life/wishes.md";
@@ -1278,6 +1281,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   let wishes: string | null = null;
   let library: string | null = null;
   let calendar: string | null = null;
+  let now: string | null = null;
   const audits: Audit[] = [];
   const goals = new Map<string, string>();
   for (const f of files) {
@@ -1295,6 +1299,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
     else if (f.rel === WISHES_REL) wishes = f.content;
     else if (f.rel === LIBRARY_REL) library = f.content;
     else if (f.rel === CALENDAR_FILE) calendar = f.content;
+    else if (f.rel === NOW_REL) now = f.content;
     else if (f.rel.startsWith(AUDIT_DIR + "/")) audits.push(parseAudit(f));
     else if (f.rel.startsWith(GOALS_DIR + "/")) goals.set(f.rel.slice(GOALS_DIR.length + 1).replace(/\.md$/i, ""), f.content);
   }
@@ -1304,7 +1309,7 @@ export function buildLife(files: MdFile[], media: string[] = []): Life {
   skills.sort((a, b) => b.level - a.level || a.title.localeCompare(b.title));
   audits.sort((a, b) => b.date.localeCompare(a.date));
   debts = applyInstalments(debts, days);
-  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, audits, goals };
+  return { events, skills, habits, quests, days, accounts, subscriptions, debts, health, talks, jobs, wishes, library, calendar, now, audits, goals };
 }
 
 /** Order inside a part of the day list: evening, morning, lunch, then the whole day. */
