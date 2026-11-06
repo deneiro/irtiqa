@@ -1,5 +1,4 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
@@ -8,13 +7,13 @@ import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
 import { CATEGORIES, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, type Category } from "../lib/people";
-import { safeFilename } from "../lib/life";
+import AddPersonSheet from "./person/AddPersonSheet";
 
 type Sort = "name" | "contact" | "birthday";
 
 export default function PeoplePage() {
   const v = useVault();
-  const { life, saveText, reload } = useStore();
+  const { life } = useStore();
   const { t, themeLabel } = useT();
   const today = todayStr();
   const [q, setQ] = useState("");
@@ -26,42 +25,7 @@ export default function PeoplePage() {
   });
   const [cats, setCats] = useState<Set<Category>>(new Set());
   const [near, setNear] = useState<string>("");
-  const nav = useNavigate();
   const [adding, setAdding] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  /** 4.1: every person page lives in `wiki/People/`; `theme:` names the primary relationship, so any theme can be chosen. */
-  const peopleThemes = useMemo(() => THEMES.map((t) => t.name), []);
-  const [form, setForm] = useState({ name: "", theme: "", connection: "", how: "" });
-  // Most new people are friends; the form starts there.
-  const formTheme = form.theme || (peopleThemes.includes("Social & friends") ? "Social & friends" : peopleThemes[0]) || THEMES[1].name;
-
-  const addPerson = async () => {
-    const name = form.name.trim();
-    if (!name || busy) return;
-    setBusy(true);
-    try {
-      const file = safeFilename(name);
-      if (!file) throw new Error("Такое имя не годится для файла");
-      const rel = `wiki/People/${file}.md`; // 4.1: one folder for all people
-      if (v.pages.some((p) => p.rel.toLowerCase() === rel.toLowerCase())) throw new Error("Такой человек уже есть");
-      const q = (x: string) => (/[:#"'[\]{}]/.test(x) ? JSON.stringify(x) : x);
-      const text = [
-        "---", `title: ${q(name)}`, "type: person", `theme: ${formTheme}`,
-        `connection: ${q(form.connection.trim() || "знакомый")}`,
-        `how_we_met: ${q(form.how.trim() || "—")}`,
-        `created: ${today}`, `updated: ${today}`, "aliases: []", "tags: []", "---", "",
-        `# ${name}`, "", "## Об отношениях", "", "", 
-      ].join("\n");
-      await saveText(rel, text);
-      setForm({ name: "", theme: form.theme, connection: "", how: "" });
-      setAdding(false);
-      setErr(null);
-      await reload();
-      nav(`/page/${encodeURIComponent(rel)}`);
-    } catch (e) { setErr(String(e)); } finally { setBusy(false); }
-  };
 
   const people = useMemo(
     () =>
@@ -116,22 +80,9 @@ export default function PeoplePage() {
       )}
 
       <div className="row wrap" style={{ margin: "16px 0 0", gap: 8 }}>
-        {adding ? (
-          <form className="addrow person" onSubmit={(e) => { e.preventDefault(); void addPerson(); }} style={{ width: "100%" }}>
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder="Имя, как в vault" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <select className="text" value={formTheme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
-              {peopleThemes.map((t) => <option key={t} value={t}>{themeLabel(t)}</option>)}
-            </select>
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="связь: друг, брат, коллега" value={form.connection} onChange={(e) => setForm({ ...form, connection: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="как познакомились" value={form.how} onChange={(e) => setForm({ ...form, how: e.target.value })} />
-            <button className="btn primary" type="submit" disabled={!form.name.trim() || busy}>создать</button>
-            <button className="btn ghost" type="button" onClick={() => setAdding(false)}>отмена</button>
-          </form>
-        ) : (
-          <button className="btn primary" onClick={() => setAdding(true)}>+ человек</button>
-        )}
+        <button className="btn primary" onClick={() => setAdding(true)}>+ Добавить человека</button>
       </div>
-      {err && <div className="small err-text" style={{ marginTop: 6 }}>{err}</div>}
+      <AddPersonSheet open={adding} onClose={() => setAdding(false)} />
 
       <div className="row wrap" style={{ margin: "12px 0", gap: 8 }}>
         <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder={t("filter")} value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 240 }} />

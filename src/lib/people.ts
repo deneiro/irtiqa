@@ -237,10 +237,25 @@ function yamlText(v: string): string {
  * something else than text is quoted. Body: `# title`, `## Об отношениях` with
  * one line, `## Changes` with one line. The keys that belong to the app and to
  * the owner (`last_contact`, `closeness`, `radicals`, `category`, `lives`,
- * `work`, `related`, the contact fields) are never written.
+ * `work`, `related`, the contact fields) are never written by the bot.
+ * - `app`: the page of the app's «+ Добавить человека» (spec v5): `category`
+ *   and `closeness` are written when he chose them there, and the body is
+ *   `# title` and an empty `## Об отношениях`, as the app always wrote it.
  */
-export function personPage(p: { title: string; theme: string; connection: string; howWeMet: string; date: string }): string {
+export function personPage(p: { title: string; theme: string; connection: string; howWeMet: string; date: string; app?: { category?: string; closeness?: number } }): string {
   const line = (s: string) => s.replace(/\s+/g, " ").trim() || "—";
+  const own = [
+    ...(p.app?.category ? [`category: ${yamlText(p.app.category)}`] : []),
+    ...(p.app?.closeness ? [`closeness: "${p.app.closeness}"`] : []),
+  ];
+  const body = p.app ? [""] : [
+    `Добавлен через бота ${p.date}.`,
+    "",
+    "## Changes",
+    "",
+    `- ${p.date} — страница создана через бота`,
+    "",
+  ];
   return [
     "---",
     `title: ${yamlText(p.title)}`,
@@ -248,6 +263,7 @@ export function personPage(p: { title: string; theme: string; connection: string
     `theme: ${p.theme}`,
     `connection: ${yamlText(line(p.connection))}`,
     `how_we_met: ${yamlText(line(p.howWeMet))}`,
+    ...own,
     `created: ${p.date}`,
     `updated: ${p.date}`,
     "aliases: []",
@@ -258,11 +274,32 @@ export function personPage(p: { title: string; theme: string; connection: string
     "",
     "## Об отношениях",
     "",
-    `Добавлен через бота ${p.date}.`,
-    "",
-    "## Changes",
-    "",
-    `- ${p.date} — страница создана через бота`,
-    "",
+    ...body,
   ].join("\n");
+}
+
+// ---------- a new person page in the app («+ Добавить человека») ----------
+
+/** «Кем приходится» in «+ Добавить человека»: the eight kinds of tie; an author is not one. */
+export const PERSON_CATEGORIES = CATEGORIES.filter((c) => c !== "автор");
+
+export interface NewPerson { name: string; category?: string; closeness?: number; how: string; theme: string }
+
+/**
+ * «+ Добавить человека» (spec v5): the app's checks around the bot's
+ * `personPage` — the name as `safeTitle`, the file `personRel`; `connection:`
+ * is the chosen category or «знакомый», `how_we_met:` is «—» when skipped,
+ * `category:` and `closeness:` only when he chose them. Throws when the name
+ * makes no file name, is longer than a name, or the person is already there
+ * (`rels`: the pages of the vault).
+ */
+export function newPersonPage(p: NewPerson, today: string, rels: string[]): { rel: string; content: string } {
+  const title = safeTitle(p.name);
+  if (!title) throw new Error("Такое имя не годится для файла");
+  if (title.length > NAME_MAX) throw new Error(`Имя — не длиннее ${NAME_MAX} знаков`);
+  const rel = personRel(title);
+  if (rels.some((r) => nameKey(r) === nameKey(rel))) throw new Error("Такой человек уже есть");
+  const category = PERSON_CATEGORIES.find((c) => c === p.category);
+  const closeness = p.closeness !== undefined && Number.isInteger(p.closeness) && p.closeness >= 1 && p.closeness <= 10 ? p.closeness : undefined;
+  return { rel, content: personPage({ title, theme: p.theme, connection: category ?? "знакомый", howWeMet: p.how, date: today, app: { category, closeness } }) };
 }

@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { themeColor } from "../lib/themes";
 import { pageUrl, sourceTarget, themeUrl } from "../lib/vault";
@@ -9,6 +9,8 @@ import Markdown from "../components/Markdown";
 import { TagChips } from "../components/Bits";
 import ResourceActions from "../components/ResourceActions";
 import PersonActions from "../components/PersonActions";
+import PersonPage from "./person/Person";
+import { isAuthor } from "../lib/people";
 import ToolActions from "../components/ToolActions";
 import { isToolPage, toTool } from "../lib/tools";
 import { splitSections } from "../lib/overview";
@@ -19,9 +21,13 @@ export default function PageView() {
   const v = useVault();
   const { root } = useStore();
   const { t, zone, themeLabel } = useT();
+  const [params] = useSearchParams();
   const page = v.byRel.get(decodeURIComponent(rel));
 
   if (!page) return <div className="empty">{t("page_gone")} <Link to="/">{t("go_home")}</Link>.</div>;
+  // spec v5: a person is a dashboard of the tie; `?full=1` is the whole page as it was. A template or an author is not a tie.
+  const person = page.zone === "person" && page.type !== "template" && !page.file.startsWith("_") && !isAuthor(page);
+  if (person && params.get("full") !== "1") return <PersonPage page={page} />;
 
   const color = themeColor(page.theme);
   // "Projects / <Name>" in the path is a place, not a label: make it lead somewhere.
@@ -70,6 +76,7 @@ export default function PageView() {
           {page.sourceUrl && (
             <button className="btn" onClick={() => void openExternal(page.sourceUrl!)} title={page.sourceUrl}>{t("btn_source")}</button>
           )}
+          {person && <Link className="btn" to={pageUrl(page)}>к странице человека</Link>}
           <button className="btn" onClick={() => void openExternal(obsidianUrl)}>{t("btn_obsidian")}</button>
           <button className="btn ghost" onClick={() => void revealInFinder(`${root}/${page.rel}`)}>{t("btn_finder")}</button>
         </div>

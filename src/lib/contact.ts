@@ -8,6 +8,7 @@ import { setFrontmatterKeys } from "./frontmatter";
 import { eventDir, personName, serializeEvent, type LifeEvent } from "./events";
 import { MEETING_TITLE } from "./circle";
 import { parseFrontmatter } from "./vault";
+import { MEMORY_THEME, TITLE_MAX, eventTitle, whoLink, type PageWho } from "./memory";
 
 export interface FileEdit { rel: string; content: string }
 export interface PersonFile { rel: string; file: string; raw: string }
@@ -58,4 +59,35 @@ export function memoryContactEdits(people: PersonFile[], date: string, today: st
     edits.push(...contactEdits(p, [], date, false, undefined, today));
   }
   return edits;
+}
+
+/** What «Создать воспоминание?» holds (spec v5). `people` are the others who were there, linked as the bot links them (`whoLink`). */
+export interface MemoryForm { title: string; place: string; people: string[]; body: string; theme: string }
+
+/**
+ * «Виделись» → «Создать воспоминание?» (spec v5): the event of a memory with
+ * the person, written as the event form writes one, the person always first
+ * among its people; the title follows the bot's rule (`eventTitle`), the theme
+ * is «Досуг» unless he picks another. The memory is the meeting, so no
+ * «Встреча» is written, and `last_contact` is the button's own edit
+ * (`contactEdits`). Throws when that day already has an event of that name, or
+ * the name makes no folder or is too long.
+ */
+export function memoryEdits(person: PageWho, form: MemoryForm, date: string, events: LifeEvent[]): FileEdit {
+  const t = eventTitle(form.title);
+  if (!t.ok) throw new Error(t.why === "long" ? `Что было — не длиннее ${TITLE_MAX} знаков` : "Что было — нужно название");
+  const title = t.title;
+  const dir = eventDir(date, title);
+  const key = (d: string) => d.normalize("NFC").toLowerCase();
+  if (events.some((e) => key(e.dir) === key(dir))) throw new Error("Событие с таким названием в этот день уже есть");
+  const people = [whoLink(person)];
+  const seen = new Set([person.file.toLowerCase()]);
+  for (const raw of form.people) {
+    const k = personName(raw).toLowerCase();
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    people.push(raw.trim());
+  }
+  const content = serializeEvent({ title, date, theme: form.theme || MEMORY_THEME, place: form.place.replace(/\s+/g, " ").trim(), people, tags: [], body: form.body });
+  return { rel: `${dir}/event.md`, content };
 }

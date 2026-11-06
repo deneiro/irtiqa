@@ -87,7 +87,7 @@ const BULLET = /^(?:[-*]|\d+[.)])\s+(.*)$/;
 const baseHeading = (h: string) => { const i = h.indexOf(" — "); return (i >= 0 ? h.slice(0, i) : h).trim(); };
 
 /** Top-level bullets, each with its indented continuation lines; the other text lines apart. */
-function bullets(md: string): { items: string[]; rest: string[] } {
+export function bullets(md: string): { items: string[]; rest: string[] } {
   const items: string[] = [], rest: string[] = [];
   let open = false;
   for (const line of md.split(/\r?\n/)) {
@@ -108,7 +108,8 @@ export function phraseOf(text: string): ColumnItem {
   return { md: m[1].trim(), note: m[2].trim() };
 }
 
-function columnPart(md: string, suffix: string): ColumnPart {
+/** A column of phrases: the bullets, and the other lines as its pale caption. */
+export function columnPart(md: string, suffix: string): ColumnPart {
   const { items, rest } = bullets(md);
   const part: ColumnPart = { suffix, items: items.map(phraseOf) };
   if (rest.length) part.caption = rest.join(" ");
