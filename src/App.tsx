@@ -18,6 +18,7 @@ import QuestPage from "./pages/Quest";
 import SessionNote from "./components/SessionNote";
 import { useSubscriptionCharges } from "./lib/useSubscriptionCharges";
 import ThemePage from "./pages/Theme";
+import ThemePartPage from "./pages/ThemePart";
 import PageView from "./pages/Page";
 import FeedPage from "./pages/Feed";
 import TrendsPage from "./pages/Trends";
@@ -84,6 +85,7 @@ function Shell() {
           <Route path="/event/:rel" element={<EventPage />} />
           <Route path="/quest/:rel" element={<QuestPage />} />
           <Route path="/theme/:name" element={<ThemePage />} />
+          <Route path="/theme/:name/:key" element={<ThemePartPage />} />
           <Route path="/page/:rel" element={<PageView />} />
           <Route path="/log" element={<FeedPage />} />
           <Route path="/charts" element={<TrendsPage />} />

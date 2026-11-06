@@ -532,52 +532,13 @@ textarea.text { width: 100%; height: auto; min-height: 180px; padding: var(--s2)
 .cfield { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); font-weight: 500; color: var(--muted); }
 .cfield input { text-transform: none; letter-spacing: 0; }
 
-/* ---------- theme page (schema 3.1) ---------- */
-.theme-head { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; margin-bottom: 20px; }
-.theme-head .lede p { margin: 0; }
-.theme-kpis { display: flex; gap: 18px; align-items: flex-end; flex: none; flex-wrap: wrap; justify-content: flex-end; }
+/* ---------- shared by the quest screen and the theme's full screens (the v4 theme page has src/pages/theme/Theme.css) ---------- */
 .kpi { display: flex; flex-direction: column; align-items: flex-end; }
 .kpi b { font-size: 24px; font-weight: 500; font-family: var(--font-mono); color: var(--c, var(--accent-text)); line-height: 1; font-variant-numeric: tabular-nums; }
 .kpi span { font-size: var(--fs-xs); color: var(--muted); margin-top: 6px; }
 .tblock { margin-top: 22px; }
-/* Состояние темы: одна колонка во всю ширину. Три узких столбца длинных
-   русских абзацев читать было нельзя. */
-.state-stack { display: flex; flex-direction: column; gap: 10px; }
-.state-block { border-left: 3px solid var(--c, var(--accent-hover)); padding: 14px 20px; }
-.state-block > summary { cursor: pointer; display: flex; align-items: center; gap: 10px; list-style: none; }
-.state-block > summary::-webkit-details-marker { display: none; }
-.state-block > summary::before { content: "▸"; color: var(--faint); font-size: 11px; transition: transform .12s; }
-.state-block[open] > summary::before { transform: rotate(90deg); }
-.state-block .stitle { font-size: var(--fs-body); color: var(--ink); font-weight: 600; }
-.state-block .n { font-family: var(--font-mono); font-size: 11px; color: var(--faint); }
-.state-block[open] > summary { margin-bottom: 10px; }
-.state-block .md { font-size: 14px; line-height: 1.65; max-width: 90ch; }
-.state-block .md ul { padding-left: 0; list-style: none; }
-.state-block .md li { margin: 0 0 10px; padding-left: 14px; position: relative; }
-.state-block .md li::before { content: ""; position: absolute; left: 0; top: 9px; width: 4px; height: 4px; border-radius: 50%; background: var(--hair-2); }
-.state-block .md li strong:first-child { color: var(--ink); }
-.state-part + .state-part { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--hair); }
-.state-part .eyebrow { margin-bottom: 4px; }
-.notes { margin-top: 12px; }
-
-/* «Сейчас»: живые квесты и привычки темы во всю ширину, а не в углу карточки. */
+/* `.now` also marks the current job's bar in the career section (CareerSection: `hbar job now`): it stays. */
 .now { margin-bottom: 14px; }
-.nowhead { display: flex; align-items: center; gap: var(--s3); font-size: var(--fs-body); font-weight: 600; color: var(--ink); margin-bottom: var(--s2); }
-.nowhead a { font-size: var(--fs-sm); font-weight: 400; color: var(--accent-text); text-decoration: none; }
-.habit-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; margin-top: 8px; }
-.hchip { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 2px 10px; padding: 10px 12px; transition: background 120ms var(--ease), border-color 120ms var(--ease); border-radius: var(--r); background: var(--surface); border: 1px solid var(--hair); color: var(--ink-2); text-decoration: none; text-align: left; font: inherit; cursor: pointer; }
-.hchip:hover:not(:disabled) { border-color: var(--hair-2); background: var(--raised); }
-.hchip:disabled { cursor: default; opacity: 0.5; }
-.hchip i { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
-.hchip .hname { font-size: 13px; color: var(--ink); }
-.hchip .hsub { grid-column: 2; font-size: 11px; color: var(--faint); }
-.hchip.done i { background: var(--success); }
-.hchip.done .hsub { color: var(--success); }
-.hchip.failed i { background: var(--danger); }
-.hchip.failed .hsub { color: var(--danger); }
-.hchip.due i { background: var(--gold); }
-.hchip.due .hsub { color: var(--gold); }
-.hchip.off { opacity: 0.6; }
 .pitem .rmark { width: 18px; flex: none; color: var(--success); font-family: var(--font-mono); }
 .pitem.read-n .rmark { color: var(--faint); }
 .pitem.read-y .ptitle { color: var(--muted); }
@@ -649,7 +610,6 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .spark { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
 .spark i { flex: 1; background: var(--c); opacity: 0.55; border-radius: 2px 2px 0 0; min-height: 2px; }
 .spark i:last-child { opacity: 1; }
-.theme-kpis a.kpi { text-decoration: none; }
 
 /* ---------- back bar, foldable folders, claude ops ---------- */
 .backbar { position: sticky; top: 0; z-index: 5; margin: -8px 0 var(--s2); padding-bottom: 6px; background: linear-gradient(var(--bg) 65%, transparent); }
@@ -735,6 +695,9 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .qcheck:hover:not(:disabled) { border-color: var(--c, var(--accent)); }
 .qstep.done .qcheck { background: var(--c, var(--accent)); border-color: var(--c, var(--accent)); }
 .qstep.done .qstext { color: var(--faint); text-decoration: line-through; }
+/* A «[-]» step (spec v4): struck through like a done one, its box a pale dash that does not click. */
+.qstep.dropped .qstext { color: var(--faint); text-decoration: line-through; }
+.qstep.dropped .qcheck { color: var(--faint); cursor: default; }
 .qstext { color: var(--ink); }
 .qstep.next .qstext { font-weight: 500; }
 .qnext { margin-left: 8px; font-size: 11px; padding: 1px 6px; border-radius: 8px; background: color-mix(in srgb, var(--c, var(--accent)) 18%, transparent); color: var(--c, var(--accent)); }
@@ -850,7 +813,6 @@ a.chip { text-decoration: none; }
 .hbar .jdate { white-space: nowrap; }
 .crow.wish.done .cname { color: var(--success); }
 .crow.wish.doing .cname { color: var(--gold); }
-.ymonth { margin-top: 6px; }
 
 /* ---------- calendar ---------- */
 .main > .calpage { max-width: 1180px; }

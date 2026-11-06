@@ -135,6 +135,10 @@ export function QuranSection() {
   );
 }
 
+/** A name written as `[[Страница]]` in the table links to its own page (spec v4 «99 имён»); the cell shows the plain name. */
+const nameLink = (translit: string) => translit.match(/^\[\[([^\]|#]+)\]\]$/)?.[1].trim();
+const plainName = (translit: string) => nameLink(translit) ?? translit;
+
 /** The 99 names: pick one, live with it two or three days, mark it learned. */
 export function NamesSection() {
   const v = useVault();
@@ -176,7 +180,7 @@ export function NamesSection() {
               const d = dayOf(x.learning!, today);
               return (
                 <button key={x.n} className={`chip learning ${d >= 3 ? "ripe" : ""}`} onClick={() => setSel(x.n)} title={d >= 3 ? "пора отметить выученным" : ""}>
-                  {x.translit} <span className="mono faint">{d}-й день</span>
+                  {plainName(x.translit)} <span className="mono faint">{d}-й день</span>
                 </button>
               );
             })}
@@ -186,7 +190,7 @@ export function NamesSection() {
           {names.map((x) => (
             <button key={x.n} className={`nameitem ${x.state} ${sel === x.n ? "sel" : ""}`} onClick={() => setSel(sel === x.n ? null : x.n)}>
               <span className="mono faint">{x.n}</span>
-              <span className="tr">{x.translit}</span>
+              <span className="tr">{plainName(x.translit)}</span>
               <span className="mean">{x.meaning}</span>
             </button>
           ))}
@@ -195,7 +199,11 @@ export function NamesSection() {
           <div className="memo-panel">
             <div>
               <span className="ar big">{cur.arabic}</span>
-              <b style={{ marginLeft: 10 }}>{cur.translit}</b>
+              {(() => {
+                const to = nameLink(cur.translit);
+                const page = to ? v.resolve(to) : undefined;
+                return page ? <Link to={pageUrl(page)} style={{ marginLeft: 10, fontWeight: 600 }}>{plainName(cur.translit)} →</Link> : <b style={{ marginLeft: 10 }}>{plainName(cur.translit)}</b>;
+              })()}
               <div className="small faint">
                 {cur.meaning}
                 {cur.state === "learning" && ` · учу ${dayOf(cur.learning!, today)}-й день`}

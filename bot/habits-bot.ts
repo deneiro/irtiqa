@@ -41,11 +41,16 @@ import { contactEdits } from "../src/lib/contact";
 import type { Page } from "../src/lib/types";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { buildLife } from "../src/lib/life";
-import { buildPage } from "../src/lib/vault";
+import { buildPage, buildVault } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
 import { SHYMKENT, dayOf, fajrOn } from "../src/lib/maghrib";
 import { goalsFor } from "../src/lib/goals";
-import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats } from "../src/lib/dashboard";
+import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats, type Cell } from "../src/lib/dashboard";
+import { ORGAN_KEYS, isSectionKey, themeSections, themeView } from "../src/lib/overview";
+import { numberTile } from "../src/lib/themeNumbers";
+import { boardCards } from "../src/lib/themeBoard";
+import { THEMES } from "../src/lib/themes";
+import { attentionShares, dayFiles } from "../src/lib/themeDays";
 import { heldOut, winNumbers } from "../src/lib/wins";
 import { parseHealth } from "../src/lib/health";
 
@@ -1222,6 +1227,34 @@ if (process.argv.includes("--dashboard")) {
     activities: activities(life, date).map((a) => `${a.state} ${a.idle ?? "-"} ${a.week} ${a.quest.title}`),
     week: { cur: brief(wc.cur), prev: brief(wc.prev) },
   }, null, 1));
+  process.exit(0);
+}
+
+// `node bot.mjs --themes [YYYY-MM-DD]` prints what each theme page shows that day and exits — the spec v4 check against the mockup.
+if (process.argv.includes("--themes")) {
+  const date = process.argv.find((a) => /^\d{4}-\d{2}-\d{2}$/.test(a)) ?? toDateStr(new Date());
+  const life = readLife();
+  const vault = buildVault({ root: cfg.vault, pages: walkMd(join(cfg.vault, "wiki")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 })), life: [], raw: [], log: "", claude_md: "", media: [] });
+  // One letter a bead, as the mockup's strips: h held or done · f fall or miss · u no mark · n no day file · s not due · t future
+  const bead: Record<Cell, string> = { done: "h", late: "h", held: "h", failed: "f", fall: "f", unmarked: "u", pending: "u", nofile: "n", skip: "s", future: "t" };
+  // The focus wheel: days and shares over 30, 20 and 10 days ending yesterday, and the day files of the 30.
+  const y = addDays(date, -1);
+  const wheel = Object.fromEntries([30, 20, 10].map((n) => [`d${n}`, attentionShares(life, addDays(y, -(n - 1)), y).filter((s) => s.days).map((s) => `${THEMES.find((t) => t.name === s.theme)!.ru} ${s.days} · ${s.share} %`)]));
+  console.log(JSON.stringify({ wheel: { ...wheel, files: dayFiles(life, addDays(y, -29), y) } }));
+  console.log(JSON.stringify(THEMES.map((t) => {
+    const overview = vault.pages.find((p) => p.theme === t.name && p.file === "_Overview" && p.segments.length === 1);
+    const view = themeView(overview);
+    const ctx = { life, vault, theme: t.name, today: date };
+    return {
+      theme: t.ru,
+      tiles: view.numbers.flatMap((g) => g.lines.map((l) => numberTile(l, ctx))).map((x) =>
+        `${x.label} · ${x.value}${x.unit ? ` ${x.unit}` : ""} · ${x.note}${x.chip ? ` [${x.chip}]` : ""}${x.beads ? ` | ${x.beads.map((c) => bead[c]).join("")}` : ""}`),
+      columns: [view.past, view.stand, view.next].map((parts) => parts.reduce((a, p) => a + p.items.length, 0)).join(" / "),
+      radar: view.radar.length,
+      board: boardCards(life, t.name, date).map((c) => `${c.stage} · ${c.view.quest.title} · ${c.steps.done} из ${c.steps.total} · делаю ${c.doing.length} · не делаю ${c.notDoing.length} · сделано ${c.done.length} · не сделано ${c.open.length}`),
+      sections: themeSections(overview).map((s) => `${s}: ${!isSectionKey(s) ? (view.sections.some((x) => x.heading === s) ? "раздел" : "РАЗДЕЛА НЕТ") : ORGAN_KEYS.includes(s) ? "орган" : "кнопка"}`),
+    };
+  }), null, 1));
   process.exit(0);
 }
 

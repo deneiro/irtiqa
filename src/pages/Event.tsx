@@ -9,6 +9,7 @@ import { deleteFile, writeBinary } from "../lib/fs";
 import { IMAGE_RE, personName, serializeEvent, type LifeEvent } from "../lib/events";
 import { isAuthor } from "../lib/people";
 import { normEnd, normalizeTime } from "../lib/calendar";
+import { eventTheme } from "../lib/themeDays";
 
 function fmtDate(d: string): string {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return d;
@@ -104,7 +105,7 @@ export default function EventPage() {
   const removeEvent = async () => {
     if (!ev || !(await confirmAction(`Удалить событие «${ev.title}» со всеми фотографиями?`))) return;
     setBusy(true);
-    try { await deleteFile(root, ev.dir); await reload(); nav(`/theme/${encodeURIComponent(ev.theme ?? "Memories & Fun")}`); } catch (e) { setErr(String(e)); setBusy(false); }
+    try { await deleteFile(root, ev.dir); await reload(); nav(`/theme/${encodeURIComponent(eventTheme(ev))}`); } catch (e) { setErr(String(e)); setBusy(false); }
   };
 
   if (!life) return null;

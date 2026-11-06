@@ -7,7 +7,7 @@
  */
 import type { Page } from "./types";
 import type { Life } from "./life";
-import { questJournal, questSteps, nextStep, subscriptionsDue } from "./life";
+import { questJournal, questSteps, nextStep, stepTally, subscriptionsDue } from "./life";
 import { blockOn, parseCalendar } from "./calendar";
 import { staleMentions } from "./stale";
 import { parseHealth, daysUntil } from "./health";
@@ -124,8 +124,8 @@ export function attention(life: Life, people: Page[], today: string, overviews: 
   for (const q of life.quests.filter((x) => x.status === "active")) {
     const steps = questSteps(q.body);
     const next = nextStep(steps);
-    const done = steps.filter((s) => s.done).length;
-    const stepInfo = steps.length ? `, шаги ${done}/${steps.length}${next ? ` — дальше: ${next.text.replace(/\s+—\s+\S+$/, "")}` : ""}` : "";
+    const { done, total } = stepTally(steps);
+    const stepInfo = total ? `, шаги ${done}/${total}${next ? ` — дальше: ${next.text.replace(/\s+—\s+\S+$/, "")}` : ""}` : "";
     const to = `/quest/${encodeURIComponent(q.rel)}`;
     const dueLeft = q.due ? daysUntil(q.due, today) : undefined;
     if (dueLeft !== undefined && dueLeft < 0) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
-import { nextStep, questMinutes, questSteps, questXp, serializeQuest, withQuestSteps, type Quest } from "../lib/life";
+import { nextStep, questMinutes, questSteps, questXp, serializeQuest, stepTally, withQuestSteps, type Quest } from "../lib/life";
 import SourceLink from "./SourceLink";
 import { todayStr } from "../lib/dates";
 
@@ -74,7 +74,7 @@ function NextSteps({ quests }: { quests: Quest[] }) {
               </div>
               <div className="sub">
                 {step ? <Link to={`/quest/${encodeURIComponent(q.rel)}`}>{q.title}</Link> : (q.theme ? themeLabel(q.theme) : "без темы")}
-                {steps.length > 0 && <> · {steps.filter((x) => x.done).length}/{steps.length}</>}
+                {stepTally(steps).total > 0 && <> · {stepTally(steps).done}/{stepTally(steps).total}</>}
                 {q.due ? <span className={overdue ? "overdue" : ""}> · до {q.due.slice(5)}</span> : ""}
               </div>
             </div>
@@ -131,7 +131,7 @@ function FullRows({ quests, onClose, move }: { quests: Quest[]; onClose?: (q: Qu
                 {q.theme ? themeLabel(q.theme) : "без темы"}
                 {q.project ? ` · ${q.project}` : ""}
                 {q.due ? <span className={overdue ? "overdue" : ""}> · до {q.due}</span> : ""}
-                {steps.length > 0 && <> · шаги {steps.filter((x) => x.done).length}/{steps.length}</>}
+                {stepTally(steps).total > 0 && <> · шаги {stepTally(steps).done}/{stepTally(steps).total}</>}
                 {q.source ? <> · <SourceLink source={q.source} /></> : null}
               </div>
               {next && <div className="qnextline">дальше: {next.text}</div>}
