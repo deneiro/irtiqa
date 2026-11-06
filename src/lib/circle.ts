@@ -102,6 +102,26 @@ export function buildCircle(people: Page[], events: LifeEvent[], today: string):
     a.name.localeCompare(b.name, "ru"));
 }
 
+/**
+ * The later of `last_contact` and the last meeting in an event; undefined when neither exists.
+ * Not the «latest touch» of themeNumbers.ts, which counts a talk too.
+ */
+export function lastContactOrMeeting(i: CircleItem): string | undefined {
+  return [i.lastContact, i.lastMeet].filter((d): d is string => !!d).sort().pop();
+}
+
+/**
+ * Whoever was in contact or met last comes first (the order «С кем?» offers in
+ * the bot); people with no contact and no meeting follow, the closer ones first.
+ * The overdue-first order of `buildCircle` answers another question: whom to write to.
+ */
+export function byLastContactOrMeeting(items: CircleItem[]): CircleItem[] {
+  return [...items].sort((a, b) =>
+    (lastContactOrMeeting(b) ?? "").localeCompare(lastContactOrMeeting(a) ?? "") ||
+    (b.closeness ?? 0) - (a.closeness ?? 0) ||
+    a.name.localeCompare(b.name, "ru"));
+}
+
 export interface TriggerStat {
   key: string;
   label: string;

@@ -3,7 +3,7 @@
  * frontmatter keys on a person page and nothing else (vault CLAUDE.md, `## life/`).
  */
 import type { Page } from "./types";
-import type { Debt } from "./life";
+import { safeFilename, type Debt } from "./life";
 
 export const CONTACT_KEYS = ["phone", "telegram", "whatsapp", "instagram", "email", "birthday", "last_contact"] as const;
 export type ContactKey = (typeof CONTACT_KEYS)[number];
@@ -165,4 +165,104 @@ export function relatedFrom(page: Page, pages: Page[]): { page: Page; role: stri
     for (const r of relationsOf(p)) if (names.has(r.name.toLowerCase())) out.push({ page: p, role: r.role });
   }
   return out;
+}
+
+// ---------- a new person page (the Telegram bot's «👤 Человек») ----------
+
+/** Since schema 4.1 every person page lives in one folder; `theme:` names the tie. */
+export const PEOPLE_DIR = "wiki/People";
+
+export const personRel = (title: string) => `${PEOPLE_DIR}/${title}.md`;
+
+/** A name longer than this is a sentence, not a name. */
+export const NAME_MAX = 60;
+
+/**
+ * A page title that is also a file name: what the vault forbids in a name
+ * (`\ / : * ? " < > | # [ ] ^`) is dropped, spaces are single, and no leading
+ * `.` or `_` (a hidden or a special file). Empty when nothing is left.
+ */
+export function safeTitle(name: string): string {
+  return safeFilename(name).replace(/\s+/g, " ").replace(/^[._\s]+/, "").trim();
+}
+
+/** What the bot offers for «Кто он тебе?»: the words on the buttons and the theme each one means. «другое» is Social & friends too. */
+export const PERSON_THEMES: { code: string; label: string; theme: string }[] = [
+  { code: "friends", label: "друзья", theme: "Social & friends" },
+  { code: "family", label: "семья", theme: "Family & relationship" },
+  { code: "business", label: "бизнес", theme: "Business & career" },
+  { code: "faith", label: "духовность", theme: "Spirituality & Religion" },
+  { code: "other", label: "другое", theme: "Social & friends" },
+];
+
+/**
+ * The form in which two spellings of one name are compared: Unicode NFC (a
+ * macOS file name may be decomposed), lower case, «ё» as «е», single spaces,
+ * trimmed. Two names are the same name when their keys are equal; the key of a
+ * blank string is "".
+ */
+export function nameKey(s: string): string {
+  return s.normalize("NFC").toLowerCase().replace(/ё/g, "е").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * The person page a name means, or undefined. Names are compared by `nameKey`.
+ * A page whose title or file name is the name wins over a page that has it
+ * only as an alias; the first such page in `pages` is returned. A blank name
+ * matches nothing. Pass the person pages (`zone === "person"`); nothing is
+ * created here.
+ */
+export function findPerson<T extends Pick<Page, "title" | "file" | "aliases">>(pages: T[], name: string): T | undefined {
+  const k = nameKey(name);
+  if (!k) return undefined;
+  return pages.find((p) => nameKey(p.title) === k || nameKey(p.file) === k) ?? pages.find((p) => p.aliases.some((a) => nameKey(a) === k));
+}
+
+/** A frontmatter value on one line; anything YAML could read as something else than text is quoted. */
+function yamlText(v: string): string {
+  return /[:#"'\[\]{}\\]|^[-?&*!|>%@`,.+~\d]|^(true|false|null|yes|no|on|off)$/i.test(v) ? JSON.stringify(v) : v;
+}
+
+/**
+ * The markdown of a new person page, to be saved as `personRel(title)`.
+ * - `title`: the page title and, by the vault's rule, the file name; pass it
+ *   through `safeTitle` first.
+ * - `theme`: one of the eight theme names, verbatim (see `PERSON_THEMES`).
+ * - `connection`, `howWeMet`: one line each, as typed; a blank one is written
+ *   as «—» (the app's own blank for `how_we_met`) and nothing is guessed.
+ * - `date`: today, `YYYY-MM-DD`; it is `created`, `updated` and the date in the
+ *   two lines of the body.
+ * Frontmatter: `title`, `type: person`, `theme`, `connection`, `how_we_met`,
+ * `created`, `updated`, `aliases: []`, `tags: []`; a value YAML could read as
+ * something else than text is quoted. Body: `# title`, `## Об отношениях` with
+ * one line, `## Changes` with one line. The keys that belong to the app and to
+ * the owner (`last_contact`, `closeness`, `radicals`, `category`, `lives`,
+ * `work`, `related`, the contact fields) are never written.
+ */
+export function personPage(p: { title: string; theme: string; connection: string; howWeMet: string; date: string }): string {
+  const line = (s: string) => s.replace(/\s+/g, " ").trim() || "—";
+  return [
+    "---",
+    `title: ${yamlText(p.title)}`,
+    "type: person",
+    `theme: ${p.theme}`,
+    `connection: ${yamlText(line(p.connection))}`,
+    `how_we_met: ${yamlText(line(p.howWeMet))}`,
+    `created: ${p.date}`,
+    `updated: ${p.date}`,
+    "aliases: []",
+    "tags: []",
+    "---",
+    "",
+    `# ${p.title}`,
+    "",
+    "## Об отношениях",
+    "",
+    `Добавлен через бота ${p.date}.`,
+    "",
+    "## Changes",
+    "",
+    `- ${p.date} — страница создана через бота`,
+    "",
+  ].join("\n");
 }

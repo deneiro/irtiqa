@@ -37,6 +37,29 @@ export function eventDir(date: string, title: string): string {
   return `${EVENT_DIR}/${date} ${safeFilename(title)}`.replace(/\s+$/, "");
 }
 
+/** `eventDir` for a folder that does not exist yet: one that is taken becomes «… (2)», «… (3)». */
+export function uniqueEventDir(date: string, title: string, taken: (dir: string) => boolean): string {
+  const base = eventDir(date, title);
+  if (!taken(base)) return base;
+  for (let n = 2; n < 1000; n++) {
+    const dir = `${base} (${n})`;
+    if (!taken(dir)) return dir;
+  }
+  throw new Error(`no free folder for ${base}`);
+}
+
+/** File names by the numbers in them, so `photo-2.jpg` comes before `photo-10.jpg`; the rest as plain text order. */
+export function byNumberedName(a: string, b: string): number {
+  const x = a.split(/(\d+)/);
+  const y = b.split(/(\d+)/);
+  for (let i = 0; i < Math.min(x.length, y.length); i++) {
+    if (x[i] === y[i]) continue;
+    if (i % 2) return Number(x[i]) - Number(y[i]) || x[i].length - y[i].length;
+    return x[i] < y[i] ? -1 : 1;
+  }
+  return x.length - y.length;
+}
+
 export function parseEvent(f: MdFile, media: string[]): LifeEvent {
   const { fm, body } = parseFrontmatter(f.content);
   const dir = f.rel.slice(0, f.rel.lastIndexOf("/"));
@@ -54,7 +77,7 @@ export function parseEvent(f: MdFile, media: string[]): LifeEvent {
     people: asList(fm.people),
     tags: asList(fm.tags),
     body: body.replace(/^\s*# [^\n]*\n/, "").trim(),
-    photos: media.filter((m) => m.startsWith(dir + "/") && IMAGE_RE.test(m)).sort(),
+    photos: media.filter((m) => m.startsWith(dir + "/") && IMAGE_RE.test(m)).sort(byNumberedName),
   };
 }
 

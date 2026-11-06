@@ -16,8 +16,16 @@
  * What stays from v1, on demand only: `/today` and `/yesterday` show the
  * habit keyboard (three groups: намаз · удержался · привычки; a prayer has
  * ✓ · ⏰ поздно · ✗), «🍽 Еда» and «💸 Деньги» write a row into the day file,
- * «🤝 Контакт» logs a contact, `/checkin` asks mood, stress and work,
- * `/weight` a weight (also asked on Sunday mornings).
+ * `/checkin` asks mood, stress and work, `/weight` a weight (also asked on
+ * Sunday mornings). `/contact` still logs a contact alone; its button is gone.
+ *
+ * Two buttons write into the vault outside the day file (2026-11-06), one
+ * question per message: «📸 Воспоминание» — what happened, with whom, a few
+ * words, photos — saves an event folder with its photos and puts the event's
+ * day in `last_contact` of everyone who was there (it replaced «🤝 Контакт»: a
+ * meeting is a contact); «👤 Человек» — name, which part of life, who they are,
+ * how they met — adds a page to `wiki/People/`. The text of both files is built
+ * in lib/memory.ts and lib/people.ts.
  *
  * The day is a calendar day since 2026-10-12 (`dayOf` in lib/maghrib.ts keeps
  * the maghrib rule for the files of 2026-09-22 … 2026-10-11 only).
@@ -37,7 +45,14 @@ import {
   type Day, type DayMark, type Habit, type HabitKind, type Meal, type Quest, type Tx,
 } from "../src/lib/life";
 import { buildCircle } from "../src/lib/circle";
-import { contactEdits } from "../src/lib/contact";
+import { contactEdits, memoryContactEdits, type PersonFile } from "../src/lib/contact";
+import { uniqueEventDir } from "../src/lib/events";
+import {
+  DONE_WORDS, NOBODY_WORDS, NO_PHOTO_WORDS, SKIP_WORDS, TITLE_MAX, addTyped, eventTitle, memoryEventText, memoryPool, memorySummary,
+  parseDateInput, photoName, photoPick, toggleWho, whoList,
+  type DocumentInfo, type PageWho, type PhotoPick, type PhotoSize, type Who,
+} from "../src/lib/memory";
+import { NAME_MAX, PERSON_THEMES, findPerson, nameKey, personPage, personRel, safeTitle } from "../src/lib/people";
 import type { Page } from "../src/lib/types";
 import { addDays, formatDayTitle, toDateStr } from "../src/lib/dates";
 import { buildLife } from "../src/lib/life";
@@ -49,7 +64,7 @@ import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats
 import { ORGAN_KEYS, isSectionKey, themeSections, themeView } from "../src/lib/overview";
 import { numberTile } from "../src/lib/themeNumbers";
 import { boardCards } from "../src/lib/themeBoard";
-import { THEMES } from "../src/lib/themes";
+import { THEMES, themeRu } from "../src/lib/themes";
 import { attentionShares, dayFiles } from "../src/lib/themeDays";
 import { heldOut, winNumbers } from "../src/lib/wins";
 import { parseHealth } from "../src/lib/health";
@@ -568,6 +583,7 @@ function setPlan(p: State["plan"]) {
 async function startPlan(date: string) {
   if (!cfg.chatId || readDay(date).closed) return;
   setPlan({ date });
+  awaiting = null; // an answer meant for the plan must not be taken by a question left open, a memory's title for one
   const compact = date.replaceAll("-", "");
   await say("🗓 Что сегодня в планах?\nОдно сообщение — одна задача.", {
     reply_markup: { inline_keyboard: [[{ text: "✓ Всё на сегодня", callback_data: `pl:${compact}:0:end` }]] },
@@ -644,7 +660,7 @@ async function onCheckinCallback(kind: string, compact: string, code: string, ex
     pendingWork = { date, quest: quest.title, minutes };
     ask("work", 12 * 3600_000);
     await edit(`«${quest.title}», ${minutes} мин.`);
-    await say("Что сделано? Одной строкой — это ляжет в журнал квеста.", { reply_markup: { force_reply: true, input_field_placeholder: "что сделано" } });
+    await say("Что сделано? Одной строкой — это ляжет в журнал квеста.", { reply_markup: { ...REPLY_KEYBOARD, input_field_placeholder: "что сделано" } });
     return;
   }
   if (kind === "pl") { await sendContactList(msg); return; }
@@ -683,7 +699,7 @@ async function askWeight(date: string) {
   if (!cfg.chatId) return;
   ask("weight", 12 * 3600_000);
   pendingWeightDate = date;
-  await say("⚖️ Вес сегодня? Число, например 90.5.", { reply_markup: { force_reply: true, input_field_placeholder: "90.5" } });
+  await say("⚖️ Вес сегодня? Число, например 90.5.", { reply_markup: { ...REPLY_KEYBOARD, input_field_placeholder: "90.5" } });
 }
 let pendingWeightDate: string | null = null;
 
@@ -693,15 +709,19 @@ async function onWeight(text: string) {
   if (n === undefined || n < 30 || n > 300) { ask("weight", 12 * 3600_000); await say("Не понял вес. Напиши число, например 90.5."); return; }
   writeDay({ ...readDay(date), weight: n });
   pendingWeightDate = null;
-  await say(`⚖️ Записал: ${n} кг (${formatDayTitle(date).toLowerCase()}).`);
+  await say(`⚖️ Записал: ${n} кг (${formatDayTitle(date).toLowerCase()}).`, { reply_markup: REPLY_KEYBOARD });
 }
 
 // ---------- contacts ----------
 
+/** Every event of the vault: the circle reads its meetings from them. */
+function readEvents() {
+  return buildLife(walkMd(join(cfg.vault, "life", "events")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 }))).events;
+}
+
 /** The close circle (7+), most overdue first — the people a contact should be logged for. */
 function contactPeople() {
-  const life = buildLife(walkMd(join(cfg.vault, "life", "events")).map((p) => ({ rel: rel(p), content: readFileSync(p, "utf8"), mtime: 0 })));
-  return buildCircle(peoplePages(), life.events, logicalDate(new Date())).filter((i) => (i.closeness ?? 0) >= 7).slice(0, 14);
+  return buildCircle(peoplePages(), readEvents(), logicalDate(new Date())).filter((i) => (i.closeness ?? 0) >= 7).slice(0, 14);
 }
 
 async function sendContactList(editMsg?: number) {
@@ -712,12 +732,25 @@ async function sendContactList(editMsg?: number) {
   else await say(text, { reply_markup: { inline_keyboard: keyboard } });
 }
 
-/** Atomic write of one vault file the bot owns: life/, or a person page's contact keys. */
+/**
+ * Atomic write of one vault file the bot owns: life/, or a person page — its
+ * contact keys, or a whole new page from «👤 Человек». Person pages are in
+ * `wiki/People/` since schema 4.1; the old `wiki/<Тема>/People/` still passes.
+ */
 function writeRel(r: string, content: string) {
-  if (!r.startsWith("life/") && !/^wiki\/[^/]+\/People\/[^_/][^/]*\.md$/.test(r)) throw new Error(`bot may not write ${r}`);
+  if (!r.startsWith("life/") && !/^wiki\/(?:[^/]+\/)?People\/[^_/][^/]*\.md$/.test(r)) throw new Error(`bot may not write ${r}`);
   const p = join(cfg.vault, r);
   mkdirSync(p.slice(0, p.lastIndexOf("/")), { recursive: true });
   writeFileSync(p + ".bot-tmp", content);
+  renameSync(p + ".bot-tmp", p);
+}
+
+/** Atomic write of a photo into an event folder; nothing else binary is the bot's. */
+function writeBinary(r: string, data: Buffer) {
+  if (!/^life\/events\/[^/]+\/[^/]+$/.test(r)) throw new Error(`bot may not write ${r}`);
+  const p = join(cfg.vault, r);
+  mkdirSync(p.slice(0, p.lastIndexOf("/")), { recursive: true });
+  writeFileSync(p + ".bot-tmp", data);
   renameSync(p + ".bot-tmp", p);
 }
 
@@ -725,12 +758,17 @@ function writeRel(r: string, content: string) {
 
 const FOOD_BUTTON = "🍽 Еда";
 const HABITS_BUTTON = "📋 Вчера";
-const CONTACT_BUTTON = "🤝 Контакт";
 const MONEY_BUTTON = "💸 Деньги";
+const MEMORY_BUTTON = "📸 Воспоминание";
+const PERSON_BUTTON = "👤 Человек";
+/** Not on the keyboard since 2026-11-06 («📸 Воспоминание» took its place); a keyboard left on the phone still sends it, and `/contact` still answers. */
+const CONTACT_BUTTON = "🤝 Контакт";
 const WAIT_MS = 15 * 60000;
+/** The memory and person flows wait twenty minutes for the next answer: long enough to pick photos, short enough that a forgotten flow does not take the next message. */
+const FLOW_MS = 20 * 60000;
 
 /** What the next plain message answers. Kept in memory: a restart just forgets the question. */
-type AwaitKind = "food" | "money" | "category" | "work" | "weight" | "survey";
+type AwaitKind = "food" | "money" | "category" | "work" | "weight" | "survey" | "memory" | "person";
 let awaiting: { kind: AwaitKind; at: number; ttl?: number } | null = null;
 
 /** «13:30 плов — тяжело» → time, what, note. No time means now. */
@@ -815,6 +853,357 @@ function pairs(buttons: Button[]): Button[][] {
   const rows: Button[][] = [];
   for (let i = 0; i < buttons.length; i += 2) rows.push(buttons.slice(i, i + 2));
   return rows;
+}
+
+// ---------- «📸 Воспоминание» and «👤 Человек» (Eldar, 2026-11-06) ----------
+//
+// One question per message, in his order. The drafts live in memory like
+// `pendingTx`: a restart just forgets the question. While a flow is open
+// (`awaiting` is "memory" or "person", twenty minutes from the last answer) every
+// message goes to it, and the inline buttons carry the prefixes `mem:` and
+// `psn:` (`mem:0:p:<key>` toggles a person). A button that belongs to a question
+// already gone says so instead of acting. No question of the bot uses
+// `force_reply`, which hides the keyboard (see REPLY_KEYBOARD); the closing
+// message of each flow carries the keyboard too.
+
+type MemoryStep = "date" | "title" | "who" | "text" | "photo";
+interface MemoryDraft {
+  step: MemoryStep;
+  date: string;
+  title: string;
+  people: Who[];
+  /** The buttons of «С кем?»: the circle, most recently touched first; a typed name that has a page is added. */
+  pool: PageWho[];
+  text: string;
+  /** `life/events/<folder>`, fixed when the first photo or the save needs it. */
+  dir?: string;
+  photos: number;
+  /** The message holding the open question's buttons; a tap on any other one is stale. */
+  prompt?: number;
+}
+let memory: MemoryDraft | null = null;
+
+interface PersonDraft {
+  step: "name" | "theme" | "connection" | "met";
+  name: string;
+  theme: string;
+  connection: string;
+  prompt?: number;
+}
+let person: PersonDraft | null = null;
+
+// Words typed instead of a button (DONE_WORDS, NO_PHOTO_WORDS, NOBODY_WORDS, SKIP_WORDS) are in lib/memory.ts.
+
+/** A flow is open while its answer is awaited, within its time. */
+function flowOpen(kind: "memory" | "person"): boolean {
+  return awaiting?.kind === kind && Date.now() - awaiting.at <= (awaiting.ttl ?? WAIT_MS);
+}
+
+/** Rewrite a question after it was answered, with new buttons or none — a gone button cannot be tapped later. */
+async function editPrompt(msg: number | undefined, text: string, keyboard: Button[][] = []) {
+  if (msg) await tg("editMessageText", { chat_id: cfg.chatId, message_id: msg, text, reply_markup: { inline_keyboard: keyboard } }).catch(() => {}); // "message is not modified" when nothing changed
+}
+
+const staleQuestion = (chat: number, msg: number) =>
+  tg("editMessageText", { chat_id: chat, message_id: msg, text: "Этот вопрос уже прошёл.", reply_markup: { inline_keyboard: [] } }).catch(() => {});
+
+/** A file Telegram holds, by its id: `getFile`, then the download. Bots may take files up to 20 MB. */
+async function downloadFile(fileId: string): Promise<Buffer> {
+  const f = await tg<{ file_path?: string }>("getFile", { file_id: fileId });
+  if (!f.file_path) throw new Error("getFile: no file_path");
+  const r = await fetch(`https://api.telegram.org/file/bot${cfg.token}/${f.file_path}`);
+  if (!r.ok) throw new Error(`download: HTTP ${r.status}`);
+  const bytes = Buffer.from(await r.arrayBuffer());
+  if (!bytes.length) throw new Error("download: empty file");
+  return bytes;
+}
+
+// ----- memory -----
+
+const MEMORY_HINT: Record<MemoryStep, string> = {
+  date: "день — «вчера» или ГГГГ-ММ-ДД",
+  title: "название события",
+  who: "с кем — кнопки или имя",
+  text: "описание или «пропустить»",
+  photo: "фото или «готово»",
+};
+
+const photoKeyboard: Button[][] = [[{ text: "✓ готово", callback_data: "mem:0:done" }, { text: "без фото", callback_data: "mem:0:nophoto" }]];
+
+function whoKeyboard(d: MemoryDraft): Button[][] {
+  const chosen = (r: string) => d.people.some((w) => w.rel === r);
+  return [
+    ...pairs(d.pool.map((p) => ({ text: `${chosen(p.rel) ? "✓ " : ""}${p.name}`, callback_data: `mem:0:p:${key(p.rel)}` }))),
+    [{ text: "ни с кем", callback_data: "mem:0:nobody" }, { text: "✓ готово", callback_data: "mem:0:ok" }],
+  ];
+}
+
+const whoText = (d: MemoryDraft) =>
+  `👥 С кем? Нажимай на имена, можно несколько; кого нет в списке — напиши имя.${d.people.length ? `\nВыбрано: ${whoList(d.people)}` : ""}`;
+
+async function startMemory() {
+  const d: MemoryDraft = { step: "title", date: logicalDate(new Date()), title: "", people: [], pool: [], text: "", photos: 0 };
+  memory = d;
+  person = null;
+  ask("memory", FLOW_MS);
+  await askTitle(d);
+}
+
+/** Today is the default day; «другой день» is offered while it is still today. */
+async function askTitle(d: MemoryDraft) {
+  d.step = "title";
+  const today = logicalDate(new Date());
+  const other = d.date !== today;
+  d.prompt = await say(
+    `📸 Что за событие?${other ? ` (${formatDayTitle(d.date).toLowerCase()})` : ""}`,
+    other ? {} : { reply_markup: { inline_keyboard: [[{ text: "📅 другой день", callback_data: "mem:0:day" }]] } },
+  );
+}
+
+async function askWho(d: MemoryDraft) {
+  d.step = "who";
+  d.pool = memoryPool(buildCircle(peoplePages(), readEvents(), logicalDate(new Date())));
+  d.prompt = await say(whoText(d), { reply_markup: { inline_keyboard: whoKeyboard(d) } });
+}
+
+async function finishWho(d: MemoryDraft) {
+  await editPrompt(d.prompt, `👥 С кем? — ${d.people.length ? whoList(d.people) : "ни с кем"}`);
+  d.step = "text";
+  d.prompt = await say("✍️ Опиши, как это было. Одним сообщением.", { reply_markup: { inline_keyboard: [[{ text: "⏭ пропустить", callback_data: "mem:0:skip" }]] } });
+}
+
+async function finishText(d: MemoryDraft) {
+  await editPrompt(d.prompt, `✍️ Описание — ${d.text ? "записано" : "пропущено"}`);
+  d.step = "photo";
+  d.prompt = await say("📷 Фото? Присылай по одному или альбомом, потом «готово».", { reply_markup: { inline_keyboard: photoKeyboard } });
+}
+
+/**
+ * `event.md` of the draft, in its folder. It is written with the first photo
+ * too, so a photo is never left in a folder that holds no event.
+ */
+function saveMemoryEvent(d: MemoryDraft) {
+  d.dir ??= uniqueEventDir(d.date, d.title, (dir) => existsSync(join(cfg.vault, dir)));
+  writeRel(`${d.dir}/event.md`, memoryEventText(d));
+}
+
+async function onMemoryPhoto(d: MemoryDraft, pick: PhotoPick | "unsupported") {
+  if (pick === "unsupported") { await say("Такой формат приложение не покажет. Нужен JPG, PNG, WebP или HEIC."); return; }
+  try {
+    const bytes = await downloadFile(pick.fileId);
+    d.dir ??= uniqueEventDir(d.date, d.title, (dir) => existsSync(join(cfg.vault, dir)));
+    writeBinary(`${d.dir}/${photoName(d.photos + 1, pick.ext)}`, bytes);
+    d.photos++;
+  } catch (e) {
+    console.error(new Date().toISOString(), "memory photo", e instanceof Error ? e.message : e);
+    await say("Не смог забрать это фото (бот берёт файлы до 20 МБ). Пришли другое или нажми «готово».");
+    return;
+  }
+  if (d.photos === 1) {
+    try { saveMemoryEvent(d); } catch (e) { console.error(new Date().toISOString(), "memory event", e instanceof Error ? e.message : e); } // tried again when it is finished
+  }
+  await editPrompt(d.prompt, `📷 Фото: ${d.photos}. Ещё — или «готово».`, photoKeyboard);
+}
+
+/** Save the event, mark the contact on the page of each person who has one, and say so. */
+async function finishMemory(d: MemoryDraft) {
+  try {
+    saveMemoryEvent(d);
+  } catch (e) {
+    console.error(new Date().toISOString(), "memory event", e instanceof Error ? e.message : e);
+    await say("Не смог записать событие. Нажми «готово» ещё раз.");
+    return;
+  }
+  memory = null;
+  awaiting = null;
+  const today = logicalDate(new Date());
+  const failed: string[] = [];
+  for (const w of d.people) {
+    if (!w.rel) continue;
+    try {
+      const raw = readFileSync(join(cfg.vault, w.rel), "utf8");
+      const files: PersonFile[] = [{ rel: w.rel, file: w.file, raw }];
+      for (const e of memoryContactEdits(files, d.date, today)) writeRel(e.rel, e.content);
+    } catch (e) {
+      console.error(new Date().toISOString(), "memory contact", w.rel, e instanceof Error ? e.message : e);
+      failed.push(w.name);
+    }
+  }
+  await editPrompt(d.prompt, `📷 Фото: ${d.photos}`);
+  const unmatched = d.people.filter((w) => !w.rel).map((w) => w.name);
+  await say(
+    [
+      memorySummary(d),
+      unmatched.length ? `Без страницы: ${unmatched.join(", ")} — контакт им не отмечен («${PERSON_BUTTON}» заводит страницу).` : "",
+      failed.length ? `⚠️ Контакт не отметил: ${failed.join(", ")}.` : "",
+    ].filter(Boolean).join("\n"),
+    { reply_markup: REPLY_KEYBOARD },
+  );
+}
+
+/** A message while the memory flow is open: the answer to the question asked, or a photo. */
+async function onMemoryMessage(m: Message, text: string) {
+  const d = memory;
+  if (!d) { awaiting = null; return; }
+  ask("memory", FLOW_MS); // every answer keeps the flow open for another twenty minutes
+  const pick = photoPick(m);
+  if (d.step === "photo") {
+    if (pick) await onMemoryPhoto(d, pick);
+    else if (DONE_WORDS.test(text) || NO_PHOTO_WORDS.test(text)) await finishMemory(d);
+    else await say(m.photo || m.document ? "Это не фото. Пришли картинку или нажми «готово»." : "Пришли фото или нажми «готово».");
+    return;
+  }
+  if (pick || !text) { await say(`Фото — на последнем шаге. Сейчас жду: ${MEMORY_HINT[d.step]}.`); return; }
+  if (d.step === "date") {
+    const r = parseDateInput(text, logicalDate(new Date()));
+    if (!r.ok) {
+      await say(r.why === "future" ? "Это ещё впереди: воспоминание — о том, что уже было. Какой день?" : "Не понял день. Напиши ГГГГ-ММ-ДД, ДД.ММ или «вчера».");
+      return;
+    }
+    d.date = r.date;
+    await askTitle(d);
+  } else if (d.step === "title") {
+    const t = eventTitle(text);
+    if (!t.ok) {
+      await say(t.why === "long" ? `Длинновато для названия (до ${TITLE_MAX} знаков). Коротко — подробности дальше.` : "Из этого не выйдет название. Напиши словами.");
+      return;
+    }
+    d.title = t.title;
+    await editPrompt(d.prompt, `📸 Что за событие? — ${d.title}`);
+    await askWho(d);
+  } else if (d.step === "who") {
+    if (NOBODY_WORDS.test(text)) { d.people = []; await finishWho(d); return; }
+    if (DONE_WORDS.test(text)) { await finishWho(d); return; }
+    const r = addTyped(d.people, peoplePages(), text);
+    d.people = r.people;
+    for (const w of r.added) if (w.rel && !d.pool.some((p) => p.rel === w.rel)) d.pool.push(w);
+    if (r.rejected.length) await say(`Не принял как имя: «${r.rejected.join("», «")}». Имена — коротко, через запятую.`);
+    if (r.added.length) {
+      await say(`＋ ${whoList(r.added)}`);
+      await editPrompt(d.prompt, whoText(d), whoKeyboard(d));
+    } else if (!r.rejected.length) await say("Они уже выбраны.");
+  } else if (d.step === "text") {
+    d.text = SKIP_WORDS.test(text) ? "" : text;
+    await finishText(d);
+  }
+}
+
+async function onMemoryCallback(code: string, hkey: string, chat: number, msg: number) {
+  const d = memory;
+  if (!d || !flowOpen("memory") || d.prompt !== msg) { await staleQuestion(chat, msg); return; }
+  ask("memory", FLOW_MS);
+  if (code === "day" && d.step === "title") {
+    d.step = "date";
+    await editPrompt(d.prompt, "📸 Что за событие? — другой день");
+    d.prompt = await say("📅 Какой день? ГГГГ-ММ-ДД, ДД.ММ или «вчера».");
+  } else if (code === "p" && d.step === "who") {
+    const p = d.pool.find((x) => key(x.rel) === hkey);
+    if (!p) return;
+    d.people = toggleWho(d.people, p);
+    await editPrompt(d.prompt, whoText(d), whoKeyboard(d));
+  } else if ((code === "nobody" || code === "ok") && d.step === "who") {
+    if (code === "nobody") d.people = [];
+    await finishWho(d);
+  } else if (code === "skip" && d.step === "text") {
+    d.text = "";
+    await finishText(d);
+  } else if ((code === "done" || code === "nophoto") && d.step === "photo") {
+    await finishMemory(d);
+  }
+}
+
+// ----- person -----
+
+const personSkip: Button[][] = [[{ text: "⏭ пропустить", callback_data: "psn:0:skip" }]];
+
+async function startPerson() {
+  person = { step: "name", name: "", theme: "", connection: "" };
+  memory = null;
+  ask("person", FLOW_MS);
+  await say("👤 Как зовут?");
+}
+
+async function askConnection(d: PersonDraft) {
+  d.step = "connection";
+  d.prompt = await say("Кем приходится? Одной фразой.", { reply_markup: { inline_keyboard: personSkip } });
+}
+
+async function askMet(d: PersonDraft) {
+  d.step = "met";
+  d.prompt = await say("Как познакомились?", { reply_markup: { inline_keyboard: personSkip } });
+}
+
+async function pickTheme(d: PersonDraft, t: { label: string; theme: string }) {
+  d.theme = t.theme;
+  await editPrompt(d.prompt, `Кто он тебе? — ${t.label}`);
+  await askConnection(d);
+}
+
+/** Write the page. A name that already has one is never overwritten. */
+async function finishPerson(d: PersonDraft, howWeMet: string) {
+  const rel = personRel(d.name);
+  person = null;
+  awaiting = null;
+  try {
+    if (existsSync(join(cfg.vault, rel))) { await say(`Уже есть: ${d.name}`, { reply_markup: REPLY_KEYBOARD }); return; }
+    writeRel(rel, personPage({ title: d.name, theme: d.theme, connection: d.connection, howWeMet, date: logicalDate(new Date()) }));
+  } catch (e) {
+    console.error(new Date().toISOString(), "person page", e instanceof Error ? e.message : e);
+    await say("Не смог записать страницу.", { reply_markup: REPLY_KEYBOARD });
+    return;
+  }
+  await say(`👤 Добавлен: ${d.name} · ${themeRu(d.theme)}`, { reply_markup: REPLY_KEYBOARD });
+}
+
+async function onPersonMessage(text: string) {
+  const d = person;
+  if (!d) { awaiting = null; return; }
+  ask("person", FLOW_MS);
+  if (d.step === "name") {
+    const typed = text.replace(/\s+/g, " ").trim();
+    const name = safeTitle(typed);
+    if (!name) { await say("Из этого не выйдет имя. Напиши словами."); return; }
+    if (name.length > NAME_MAX) { await say(`Длинновато для имени (до ${NAME_MAX} знаков).`); return; }
+    const pages = peoplePages();
+    const have = findPerson(pages, typed) ?? findPerson(pages, name);
+    if (have || existsSync(join(cfg.vault, personRel(name)))) {
+      person = null;
+      awaiting = null;
+      await say(`Уже есть: ${have?.title ?? name}`, { reply_markup: REPLY_KEYBOARD });
+      return;
+    }
+    d.name = name;
+    d.step = "theme";
+    d.prompt = await say("Кто он тебе?", { reply_markup: { inline_keyboard: pairs(PERSON_THEMES.map((t) => ({ text: t.label, callback_data: `psn:0:${t.code}` }))) } });
+  } else if (d.step === "theme") {
+    const t = PERSON_THEMES.find((x) => nameKey(x.label) === nameKey(text));
+    if (t) await pickTheme(d, t);
+    else await say("Тут ответ кнопкой 👇");
+  } else if (d.step === "connection") {
+    d.connection = SKIP_WORDS.test(text) ? "" : text;
+    await editPrompt(d.prompt, `Кем приходится? — ${d.connection || "пропущено"}`);
+    await askMet(d);
+  } else {
+    const how = SKIP_WORDS.test(text) ? "" : text;
+    await editPrompt(d.prompt, `Как познакомились? — ${how || "пропущено"}`);
+    await finishPerson(d, how);
+  }
+}
+
+async function onPersonCallback(code: string, chat: number, msg: number) {
+  const d = person;
+  if (!d || !flowOpen("person") || d.prompt !== msg) { await staleQuestion(chat, msg); return; }
+  ask("person", FLOW_MS);
+  const t = PERSON_THEMES.find((x) => x.code === code);
+  if (t && d.step === "theme") await pickTheme(d, t);
+  else if (code === "skip" && d.step === "connection") {
+    d.connection = "";
+    await editPrompt(d.prompt, "Кем приходится? — пропущено");
+    await askMet(d);
+  } else if (code === "skip" && d.step === "met") {
+    await editPrompt(d.prompt, "Как познакомились? — пропущено");
+    await finishPerson(d, "");
+  }
 }
 
 // ---------- Telegram ----------
@@ -913,6 +1302,7 @@ async function onCallback(q: CallbackQuery) {
 
   if (kind === "pl") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
+    if (compact === "0") { await sendContactList(q.message.message_id); return; } // «← назад» in the /contact list shares the prefix; the plan's button carries a date
     await tg("editMessageReplyMarkup", { chat_id: q.message.chat.id, message_id: q.message.message_id, reply_markup: { inline_keyboard: [] } }).catch(() => {});
     if (state.plan?.date === date) await endPlan();
     return;
@@ -921,6 +1311,14 @@ async function onCallback(q: CallbackQuery) {
   if (kind === "sv") {
     await tg("answerCallbackQuery", { callback_query_id: q.id });
     await onSurveyCallback(compact ?? "", Number(code), hkey ?? "", q.message.chat.id, q.message.message_id);
+    return;
+  }
+
+  // «📸 Воспоминание» (mem) and «👤 Человек» (psn): handled before the last branch, which reads any other kind as a habit mark.
+  if (kind === "mem" || kind === "psn") {
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    if (kind === "mem") await onMemoryCallback(code ?? "", hkey ?? "", q.message.chat.id, q.message.message_id);
+    else await onPersonCallback(code ?? "", q.message.chat.id, q.message.message_id);
     return;
   }
 
@@ -940,7 +1338,7 @@ async function onCallback(q: CallbackQuery) {
     if (kind === "c") {
       if (code === "new") {
         ask("category");
-        await say("Как назвать категорию?", { reply_markup: { force_reply: true, input_field_placeholder: "категория" } });
+        await say("Как назвать категорию?", { reply_markup: { ...REPLY_KEYBOARD, input_field_placeholder: "категория" } });
         return;
       }
       pendingTx.category = code === "none" ? "" : pendingTx.cats[Number(code)] ?? "";
@@ -995,16 +1393,24 @@ async function onCallback(q: CallbackQuery) {
   await edit("d");
 }
 
-interface Message { chat: { id: number }; from?: { id: number }; text?: string; date?: number }
+interface Message { chat: { id: number }; from?: { id: number }; text?: string; date?: number; photo?: PhotoSize[]; document?: DocumentInfo }
 
+/**
+ * The buttons at the bottom of the chat. Never `force_reply` (2026-11-06): it
+ * replaces this keyboard, and the buttons are gone until the next message that
+ * carries it. A question that waits for typed text sends this keyboard with its
+ * placeholder, `{ ...REPLY_KEYBOARD, input_field_placeholder: "…" }`, and the
+ * answer is taken through `awaiting`, not through reply_to_message.
+ */
 const REPLY_KEYBOARD = {
-  keyboard: [[{ text: FOOD_BUTTON }, { text: MONEY_BUTTON }], [{ text: HABITS_BUTTON }, { text: CONTACT_BUTTON }]],
+  keyboard: [[{ text: FOOD_BUTTON }, { text: MONEY_BUTTON }], [{ text: MEMORY_BUTTON }, { text: PERSON_BUTTON }], [{ text: HABITS_BUTTON }]],
   resize_keyboard: true,
   is_persistent: true,
 };
 
-async function say(text: string, extra: Record<string, unknown> = {}) {
-  await tg("sendMessage", { chat_id: cfg.chatId, text, ...extra });
+/** Send to the owner's chat; the id of the sent message, for a question whose buttons are edited later. */
+async function say(text: string, extra: Record<string, unknown> = {}): Promise<number> {
+  return (await tg<{ message_id: number }>("sendMessage", { chat_id: cfg.chatId, text, ...extra })).message_id;
 }
 
 function ask(kind: AwaitKind, ttl?: number) {
@@ -1028,7 +1434,8 @@ async function onMessage(m: Message) {
         "Утром — «что сегодня в планах?»: каждое сообщение — одна задача дня, «✓ Всё» или «всё» — закончить. /plan — спросить снова.",
         "",
         `${HABITS_BUTTON} или /yesterday — отметить вчера разом. /today — сегодня.`,
-        `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход. ${CONTACT_BUTTON} — виделся или созвонился.`,
+        `${FOOD_BUTTON} — что съел. ${MONEY_BUTTON} — расход или доход.`,
+        `${MEMORY_BUTTON} — событие с людьми и фото; тем, кто был, это же контакт. ${PERSON_BUTTON} — новая страница человека. /contact — только отметить контакт.`,
         `Вечером${/^\d{2}:\d{2}$/.test(cfg.eveningAskAt) ? ` в ${cfg.eveningAskAt}` : ""} — вопросы по одному: вес, еда, деньги, настроение, стресс, каждый намаз (да · поздно · нет), каждая привычка (да · нет), что сделал, каждая задача дня (да · нет), чем недоволен, что изменил бы, что хотел и не смог, чему благодарен. Без ответа следующий вопрос не приходит; если Mac спал в это время — спросит, когда проснётся. /evening — продолжить или начать опрос, /summary — итог дня.`,
         "/checkin — настроение, стресс, над чем работал. /weight — вес. /need — что требует тебя. /morning — утренняя сводка.",
       ].join("\n"),
@@ -1038,7 +1445,12 @@ async function onMessage(m: Message) {
   }
   if (text.startsWith("/checkin")) { awaiting = null; await sendCheckin(today); return; }
   if (text.startsWith("/weight")) { await askWeight(logicalDate(new Date())); return; }
-  if (text.startsWith("/contact") || text === CONTACT_BUTTON) { awaiting = null; await sendContactList(); return; }
+  if (text.startsWith("/contact") || text === CONTACT_BUTTON) {
+    awaiting = null;
+    if (text === CONTACT_BUTTON) await say("Кнопки обновились 👇", { reply_markup: REPLY_KEYBOARD }); // the keyboard that sent it is the old one
+    await sendContactList();
+    return;
+  }
   if (text.startsWith("/need")) { awaiting = null; await sendNeeds(today, false); return; }
   if (text.startsWith("/morning")) { awaiting = null; await sendMorning(today); return; }
   if (text.startsWith("/plan")) { awaiting = null; await startPlan(today); return; }
@@ -1052,16 +1464,26 @@ async function onMessage(m: Message) {
   if (text.startsWith("/today")) { awaiting = null; await sendDigest(today, "📋 Сегодня"); return; }
   if (text.startsWith("/food") || text === FOOD_BUTTON) {
     ask("food");
-    await say("Что съел? Например: «плов», «13:30 плов» или «плов — тяжело после».", { reply_markup: { force_reply: true, input_field_placeholder: "что съел" } });
+    await say("Что съел? Например: «плов», «13:30 плов» или «плов — тяжело после».", { reply_markup: { ...REPLY_KEYBOARD, input_field_placeholder: "что съел" } });
     return;
   }
   if (text.startsWith("/money") || text === MONEY_BUTTON) {
     ask("money");
     pendingTx = null;
-    await say("Сумма и за что. Расход: «2500 такси». Доход: «+50000 зарплата».", { reply_markup: { force_reply: true, input_field_placeholder: "2500 такси" } });
+    await say("Сумма и за что. Расход: «2500 такси». Доход: «+50000 зарплата».", { reply_markup: { ...REPLY_KEYBOARD, input_field_placeholder: "2500 такси" } });
     return;
   }
+  if (text.startsWith("/memory") || text === MEMORY_BUTTON) { await startMemory(); return; }
+  if (text.startsWith("/person") || text === PERSON_BUTTON) { await startPerson(); return; }
   if (text.startsWith("/")) return;
+  // An open flow takes every message after its buttons: text, and photos, which carry none.
+  if (flowOpen("memory")) { await onMemoryMessage(m, text); return; }
+  if (flowOpen("person")) { await onPersonMessage(text); return; }
+  if (!text) {
+    // A photo, a sticker, a voice note outside a flow: it must not become an answer to the survey.
+    await say(`Кроме текста я беру только фото — в «${MEMORY_BUTTON}». Нажми кнопку внизу.`, { reply_markup: REPLY_KEYBOARD });
+    return;
+  }
   const sv = state.survey;
   if ((!awaiting || awaiting.kind === "survey") && sv && typed(sv.steps[sv.i])) {
     awaiting = null;
@@ -1080,7 +1502,7 @@ async function onMessage(m: Message) {
   if (!awaiting && sv) { await say("Тут ответ кнопкой 👇"); await askCurrent(); return; }
   if (!awaiting || Date.now() - awaiting.at > (awaiting.ttl ?? WAIT_MS)) {
     awaiting = null;
-    await say(`Нажми кнопку внизу: «${FOOD_BUTTON}» или «${MONEY_BUTTON}». Всё остальное — скажи Claude.`, { reply_markup: REPLY_KEYBOARD });
+    await say(`Нажми кнопку внизу: «${FOOD_BUTTON}», «${MONEY_BUTTON}», «${MEMORY_BUTTON}» или «${PERSON_BUTTON}». Всё остальное — скажи Claude.`, { reply_markup: REPLY_KEYBOARD });
     return;
   }
   const kind = awaiting.kind;
