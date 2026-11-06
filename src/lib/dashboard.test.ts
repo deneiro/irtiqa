@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { buildPrompt } from "./claude";
-import { activities, cell, dateRange, defaultTab, fmt, focusFor, goalView, plainStep, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
+import { actName, activities, cell, dateRange, dayMonthList, defaultTab, fmt, focusFor, goalTarget, goalView, offWeekday, plainStep, questUrl, runs, series, signals, spheres, waiting, weekCompare, weekOf, weekStory, weightNow, weightPace, windowStats, yesterdayView } from "./dashboard";
 import { addDays, weekdayIndex } from "./dates";
 import { focusWeekKey, isoWeekKey, parseGoalLine, parseGoals } from "./goals";
 import { buildLife } from "./life";
@@ -94,6 +94,7 @@ test("windowStats counts by title, skips archived habits and days without marks"
   assert.deepEqual(s.money, { spent: 1000, earned: 0, days: 1 });
   assert.deepEqual(s.tasks, { done: 1, total: 2, days: 1 });
   assert.equal(s.lateMeals, 1);
+  assert.deepEqual(s.lateDates, ["2030-01-01"]);
   assert.equal(s.mealDays, 1);
 });
 
@@ -376,4 +377,126 @@ test("parseGoals reads «1)» numbering and an unsigned focus; focusFor marks it
   const life = buildLife([goalsFile("2030-W02", "period: week", body)]);
   assert.deepEqual(focusFor(life, "2030-W03", "2030-W02"), { key: "2030-W03", lines: ["Первое", "Второе"], on: undefined, stale: true });
   assert.equal(focusFor(life, "2030-W02", "2030-W01").stale, false);
+});
+
+// ---- audit 2026-11-06: «Главный» ----
+
+test("signals: each kind opens what it is about", () => {
+  const life = buildLife([
+    ...HABITS, ...DAYS, ...ACTS,
+    goalsFile("2030-W01", "period: week", "## Цели\n- **Оплаты** · мера: оплаты · сейчас: 0 · срок: 2030-01-04\n"),
+    goalsFile("2030-01", "period: month", "## Цели\n- **Оплаты месяца** · мера: оплаты · сейчас: 0 · срок: 2030-01-04\n"),
+  ]);
+  const s = signals(life, "2030-01-03");
+  assert.deepEqual(s.map((x) => x.to), [
+    "/?tab=month", // no activity moves «Оплаты месяца»: the tab that shows the month's file
+    "/theme/Health%20%26%20sport/nutrition", // late meals: the food of 14 days, each day under its date
+    "/habits",
+    questUrl("life/activities/А движется.md"), // the first the «Не движутся» fact names
+  ]);
+  // an activity's own date opens that activity
+  const soon = buildLife([act("Ж срок", "каждый день", "## Сейчас\n- шаг\n", { due: "2030-01-05" })]);
+  assert.equal(signals(soon, "2030-01-03")[0].to, questUrl("life/activities/Ж срок.md"));
+});
+
+test("goalTarget: the activity whose goal names the file and the goal, then one named in the goal, else the goals tab", () => {
+  const goal = (text: string) => goalView(text, buildLife([]), "2030-01-03").line;
+  const acts = activities(buildLife([
+    act("Уроки", "каждый день", "", { project: "Проект В" }),
+    act("Реклама", "каждый день", "", { goal: '"[[2030-01]] · 10 оплат"' }),
+    act("Сайт", "каждый день", "", { goal: '"[[2030]] · 10 оплат"' }),
+  ]), "2030-01-03");
+  const url = (file: string) => questUrl(`life/activities/${file}.md`);
+  // 1. `goal:` names this file and the goal's measure (or title) — even when another activity is named in the title
+  assert.equal(goalTarget("2030-01", goal("**Первые деньги с Проект В** · мера: 10 оплат · срок: 2030-01-04"), acts), url("Реклама"));
+  // …as whole words: a part of a word is not a name
+  assert.equal(goalTarget("2030-01", goal("**Другое** · мера: опл · срок: 2030-01-04"), acts), "/?tab=month");
+  // …the same words under another file's link do not count
+  assert.equal(goalTarget("2030-W01", goal("**Первые деньги с Проект В** · мера: 10 оплат · срок: 2030-01-04"), acts), url("Уроки"));
+  // 2. the project (or the title) stands in the goal's title, in any case, as a word of its own
+  assert.equal(goalTarget("2030-01", goal("**Первые деньги с проект в** · мера: оплаты · срок: 2030-01-04"), acts), url("Уроки"));
+  assert.equal(goalTarget("2030-01", goal("**Сайт запущен** · мера: да · срок: 2030-01-04"), acts), url("Сайт"));
+  assert.equal(goalTarget("2030-01", goal("**Проект Вега** · мера: шт · срок: 2030-01-04"), acts), "/?tab=month");
+  // 3. nothing moves it: the tab that shows the file
+  assert.equal(goalTarget("2030-W01", goal("**Другое** · мера: шт · срок: 2030-01-04"), acts), "/?tab=week");
+  assert.equal(goalTarget("2030", goal("**Другое** · мера: шт · срок: 2030-01-04"), acts), "/?tab=month");
+});
+
+test("signals: late meals name their days, each once; a day with two counts twice", () => {
+  const meals = (...times: string[]) => `## Еда\n| Время | Что | Заметка |\n|---|---|---|\n${times.map((t) => `| ${t} | еда |  |`).join("\n")}\n`;
+  const life = buildLife([
+    day("2030-01-03", {}, meals("21:10", "22:40")), day("2030-01-04", {}, meals("13:00")), day("2030-01-05", {}, meals("21:30")),
+    day("2030-01-08", {}, meals("23:00")), // today: not in the 7 days before it
+  ]);
+  const [sig] = signals(life, "2030-01-08");
+  assert.equal(sig.title, "Еда после 21:00 — 3 раза за 7 дней");
+  assert.equal(sig.fact, "3 и 5 января · записи еды за 3 дня");
+});
+
+test("dayMonthList: the month once per run, «и» before the last", () => {
+  assert.equal(dayMonthList([]), "");
+  assert.equal(dayMonthList(["2030-01-02"]), "2 января");
+  assert.equal(dayMonthList(["2030-01-03", "2030-01-05"]), "3 и 5 января");
+  assert.equal(dayMonthList(["2029-12-30", "2029-12-31", "2030-01-02"]), "30, 31 декабря и 2 января");
+});
+
+test("actName: the project names the activity, the title goes under it; without a project nothing changes", () => {
+  const life = buildLife([
+    act("Уроки для Проект В", "каждый день", "", { project: "Проект В" }),
+    act("Проект Г", "каждый день", "", { project: "[[Проект Г]]" }),
+    act("Своё", "каждый день", ""),
+  ]);
+  const by = (title: string) => actName(life.quests.find((q) => q.title === title)!);
+  assert.deepEqual(by("Уроки для Проект В"), { name: "Проект В", sub: "Уроки для Проект В" });
+  assert.deepEqual(by("Проект Г"), { name: "Проект Г", sub: undefined }); // the same words twice say nothing more
+  assert.deepEqual(by("Своё"), { name: "Своё", sub: undefined });
+  // the signals list activities by that name too
+  const s = signals(buildLife([act("Уроки для Проект В", "каждый день", "", { project: "Проект В", due: "2030-01-04" })]), "2030-01-03");
+  assert.deepEqual(s.map((x) => x.title), ["Срок завтра — Проект В", "Не движутся 1 из 1 деятельности"]);
+  assert.equal(s[1].fact, "записей нет: Проект В");
+});
+
+test("offWeekday: a habit of some weekdays is off on the others; daily and weekly never are", () => {
+  // 2030-01-07 is a Monday, 2030-01-08 a Tuesday
+  const life = buildLife([habit("Привычка Б", "good", { freq: "[пн, чт]" }), habit("Привычка В", "good"), habit("Привычка Г", "good", { freq: "weekly" })]);
+  const h = (t: string) => life.habits.find((x) => x.title === t)!;
+  assert.equal(offWeekday(h("Привычка Б"), "2030-01-07"), false);
+  assert.equal(offWeekday(h("Привычка Б"), "2030-01-08"), true);
+  assert.equal(offWeekday(h("Привычка В"), "2030-01-08"), false);
+  assert.equal(offWeekday(h("Привычка Г"), "2030-01-08"), false);
+});
+
+test("runs: days in a row with a value make one line; a day without breaks it, and is never 0", () => {
+  assert.deepEqual(runs([5, undefined, 3, 4, undefined, undefined, 6]), [[[0, 5]], [[2, 3], [3, 4]], [[6, 6]]]);
+  assert.deepEqual(runs([undefined, undefined]), []);
+  assert.deepEqual(runs([1, 1]), [[[0, 1], [1, 1]]]);
+});
+
+test("goalTarget: several activities on one goal — the one named in the goal's title, else the name rule, else the tab", () => {
+  const goal = (text: string) => goalView(text, buildLife([]), "2030-01-03").line;
+  const share = { goal: '"[[2030]] · 10 оплат в месяц"' };
+  const acts = activities(buildLife([
+    act("Уроки", "каждый день", "", { ...share, project: "Проект В" }),
+    act("Реклама", "каждый день", "", share),
+    act("Сайт", "каждый день", "", share),
+  ]), "2030-01-03");
+  const url = (file: string) => questUrl(`life/activities/${file}.md`);
+  assert.equal(goalTarget("2030", goal("**10 оплат в месяц с Проект В** · мера: оплаты · срок: 2030-01-04"), acts), url("Уроки"));
+  // none of the three is named: no pick among them, and nothing else is named either — the tab
+  assert.equal(goalTarget("2030", goal("**10 оплат в месяц** · мера: оплаты · срок: 2030-01-04"), acts), "/?tab=month");
+  // one alone on the goal is taken as before
+  const one = activities(buildLife([act("Реклама", "каждый день", "", share), act("Уроки", "каждый день", "", { project: "Проект В" })]), "2030-01-03");
+  assert.equal(goalTarget("2030", goal("**10 оплат в месяц с Проект В** · мера: оплаты · срок: 2030-01-04"), one), url("Реклама"));
+});
+
+test("activities sort by the shown name; two of one project are named once in the fact", () => {
+  const life = buildLife([
+    act("Я первая", "каждый день", "", { project: "Проект Б" }),
+    act("А вторая", "каждый день", "", { project: "Проект В" }),
+    act("Б третья", "каждый день", "", { project: "Проект В" }),
+  ]);
+  assert.deepEqual(activities(life, "2030-01-03").map((a) => a.quest.title), ["Я первая", "А вторая", "Б третья"]);
+  const stuck = signals(life, "2030-01-03").find((x) => x.title.startsWith("Не движутся"))!;
+  assert.equal(stuck.title, "Не движутся 3 из 3 деятельностей");
+  assert.equal(stuck.fact, "записей нет: Проект Б, Проект В");
 });

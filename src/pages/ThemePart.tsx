@@ -10,7 +10,7 @@ import { addDays, plural } from "../lib/dates";
 import { LATE_MEAL_HOUR, isLateMeal } from "../lib/life";
 import { extractPractices } from "../lib/practices";
 import { contactsOf, daysSinceContact } from "../lib/people";
-import { isSectionKey, themeSections } from "../lib/overview";
+import { findSection, isSectionKey, splitSections, themeSections } from "../lib/overview";
 import { SECTION_LABELS, themePages } from "../lib/themePages";
 import { eventTheme } from "../lib/themeDays";
 import EventForm from "../components/EventForm";
@@ -28,6 +28,7 @@ import LibrarySection from "../components/LibrarySection";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
 import { useDayToday } from "../lib/useDayToday";
+import { HeadingScreen, ProjectsScreen, SummaryScreen, WikiScreen } from "./theme/screens";
 import "./theme/Theme.css";
 
 /** A named subfolder folds away; the theme's own root pages stay in view. */
@@ -69,7 +70,12 @@ export default function ThemePartPage() {
   const today = useDayToday();
   const overview = useMemo(() => v.pages.find((p) => p.theme === theme && p.file === "_Overview" && p.segments.length === 1), [v, theme]);
   const sections = useMemo(() => themeSections(overview), [overview]);
-  const pages = useMemo(() => themePages(v, life, theme, sections), [v, life, theme, sections]);
+  const pages = useMemo(() => themePages(v, life, theme, today), [v, life, theme, today]);
+  // a `sections:` string that is not a key names one of the overview's `##` sections: its full screen is cards
+  const heading = useMemo(() => {
+    if (isSectionKey(part) || !overview || !sections.some((x) => x.toLowerCase() === part.toLowerCase())) return undefined;
+    return findSection(splitSections(overview.body).sections, part);
+  }, [overview, sections, part]);
 
   if (!meta) return <div className="empty">{t("unknown_theme", { t: theme })}</div>;
   if (part === "finance") return <Navigate to="/finance" replace />;
@@ -180,18 +186,7 @@ export default function ThemePartPage() {
             {pages.resources.length === 0 && <div className="empty">Ресурсов пока нет.</div>}
           </section>
         );
-      case "wiki":
-        return (
-          <section className="tblock">
-            <h2 className="section">Своя база знаний <span className="n">{pages.wikiPages.length}</span></h2>
-            {groupBySub(pages.wikiPages, 2).map(([sub, ps]) => (
-              <Folder key={sub} name={sub} count={ps.length}>
-                <PageList pages={[...ps].sort((a, b) => a.title.localeCompare(b.title))} />
-              </Folder>
-            ))}
-            {pages.wikiPages.length === 0 && <div className="empty">Wiki пока пуст: сюда попадёт то, что ты синтезируешь сам.</div>}
-          </section>
-        );
+      case "wiki": return <WikiScreen pages={pages.wikiAll} />;
       case "people":
         return (
           <section className="tblock">
@@ -211,21 +206,7 @@ export default function ThemePartPage() {
             {pages.people.length === 0 && <div className="empty">Людей в этой теме нет.</div>}
           </section>
         );
-      case "projects":
-        return (
-          <section className="tblock">
-            <h2 className="section">Проекты <span className="n">{pages.projects.length}</span></h2>
-            <div className="people-grid">
-              {pages.projects.map((pr) => (
-                <Link key={pr.name} to={pr.overview ? pageUrl(pr.overview) : `/search?q=${encodeURIComponent(pr.name)}`} className="card person-card">
-                  <b>{pr.name}</b>
-                  <span className="small muted">{pr.pages.length} страниц{pr.quests ? ` · ${pr.quests} активных деятельностей` : ""}</span>
-                  <span className="small faint">обновлён {relDate(pr.updated)}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        );
+      case "projects": return <ProjectsScreen title="Проекты" cards={pages.projects} />;
       case "profile":
         return pages.profile ? (
           <section className="tblock">
@@ -244,25 +225,17 @@ export default function ThemePartPage() {
         );
       case "template":
         return pages.template ? <section className="tblock small"><Link to={pageUrl(pages.template)} className="muted">📋 {pages.template.title}</Link></section> : null;
-      case "summary":
-        return pages.summary ? (
-          <section className="tblock">
-            <Link to={pageUrl(pages.summary)} className="card profile-card">
-              <b>{pages.summary.title}</b>
-              <span className="small muted">сводка по всем проектам · обновлена {relDate(pages.summary.updated)}</span>
-            </Link>
-          </section>
-        ) : null;
+      case "summary": return <SummaryScreen page={pages.summary} projects={pages.projects} />;
       case "focus":
         return <div className="empty">У колеса фокуса нет полного экрана — оно целиком на странице темы.</div>;
       default:
-        return <div className="empty">В теме нет раздела «{part}».</div>;
+        return heading ? <HeadingScreen title={heading.heading} md={heading.md} /> : <div className="empty">В теме нет раздела «{part}».</div>;
     }
   };
 
   return (
     <div style={{ ["--c" as string]: meta.color }}>
-      <Link className="t-back" to={themeUrl(theme)}>← {themeLabel(theme)}{isSectionKey(part) ? ` · ${SECTION_LABELS[part]}` : ""}</Link>
+      <Link className="t-back" to={themeUrl(theme)}>← {themeLabel(theme)}{isSectionKey(part) ? ` · ${SECTION_LABELS[part]}` : heading ? ` · ${heading.heading}` : ""}</Link>
       {body()}
     </div>
   );

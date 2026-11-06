@@ -1,6 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import { addDays, plural, weekdayIndex, WEEKDAYS_RU } from "../../lib/dates";
-import { activities, cell, dateRange, fmt, focusFor, goalView, habitRows, plainLinks, weekCompare, weekStory, type Cell, type Stats, type WeekCompare, type Weight } from "../../lib/dashboard";
+import { actName, activities, cell, dateRange, fmt, focusFor, goalView, habitRows, offWeekday, plainLinks, weekCompare, weekStory, type Cell, type Stats, type WeekCompare, type Weight } from "../../lib/dashboard";
 import { focusWeekKey, isoWeekKey, parseGoals } from "../../lib/goals";
 import type { Life } from "../../lib/life";
 import { themeColor } from "../../lib/themes";
@@ -62,7 +62,13 @@ export default function Week({ life, today }: { life: Life; today: string }) {
                       {rows.filter((h) => h.kind === kind).map((h) => (
                         <tr key={h.rel}>
                           <td>{h.title}</td>
-                          {dates.map((d) => { const v = cell(life, h, d, today); return <td key={d}><span className={`d-gd ${v}`} title={TITLE[v]} /></td>; })}
+                          {/* a habit of some weekdays: a circle on each of its own days (an empty one before it began), the other cells empty — the column stays */}
+                          {dates.map((d) => {
+                            const v = cell(life, h, d, today);
+                            if (v === "skip" && offWeekday(h, d)) return <td key={d} />;
+                            const shown: Cell = v === "skip" && Array.isArray(h.freq) ? "nofile" : v;
+                            return <td key={d}><span className={`d-gd ${shown}`} title={shown === v ? TITLE[v] : "привычки ещё не было"} /></td>;
+                          })}
                         </tr>
                       ))}
                     </Group>
@@ -80,7 +86,7 @@ export default function Week({ life, today }: { life: Life; today: string }) {
           <Card title="Что сдвинулось" right="записи за 7 дней">
             {acts.map((a) => (
               <div key={a.quest.rel} className="d-mv">
-                <span>{a.quest.title}</span>
+                <span>{actName(a.quest).name}</span>
                 <span className="track"><span className="fill" style={{ width: `${(a.week / max) * 100}%`, background: themeColor(a.quest.theme) }} /></span>
                 <span className="d-num">{a.week || "—"}</span>
               </div>

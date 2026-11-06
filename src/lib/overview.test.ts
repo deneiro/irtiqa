@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isSectionKey, parseNumberLine, phraseOf, radarCard, sectionCards, sectionTable, themeSections, themeView } from "./overview";
+import { cardOf, isSectionKey, parseNumberLine, phraseOf, radarCard, sectionCards, sectionGroups, sectionTable, themeSections, themeView } from "./overview";
 import { buildPage } from "./vault";
 
 const overview = (fm: string, body: string) => buildPage("wiki/Personal growth/_Overview.md", `---\ntitle: Тема\ntype: overview\ntheme: Personal growth\n${fm}\n---\n# Тема\n\n${body}`, 0);
@@ -133,4 +133,54 @@ test("sectionTable reads the first table, a \\| inside a wikilink stays in its c
   assert.deepEqual(sectionCards("- **Слушание** — «слышу, потом совет»\n- Взгляд без заголовка\nабзац"), [
     { title: "Слушание", text: "«слышу, потом совет»" }, { text: "Взгляд без заголовка" },
   ]);
+});
+
+test("cardOf: the bold start, else the text before the first « — » outside a link or a «quote», is the title", () => {
+  assert.deepEqual(cardOf("**Слушать** — «сначала слышу, потом говорю»"), { title: "Слушать", text: "«сначала слышу, потом говорю»" });
+  assert.deepEqual(cardOf("«Мысль — внутри кавычек» — пояснение *май 2030*"), { title: "«Мысль — внутри кавычек»", text: "пояснение", note: "май 2030" });
+  assert.deepEqual(cardOf("«Только цитата — целиком»"), { title: "«Только цитата — целиком»" });
+  assert.deepEqual(cardOf("[[Страница — хвост|Страница]] — описание"), { title: "[[Страница — хвост|Страница]]", text: "описание" });
+  assert.deepEqual(cardOf("~~Пункт А~~ — заменён другим"), { title: "Пункт А", text: "заменён другим", struck: true });
+});
+
+test("sectionGroups: ### makes groups, bullets and table rows are cards, a paragraph is a pale note", () => {
+  const md = [
+    "Его слова, май 2030.",
+    "",
+    "- **Первое** — описание",
+    "- Второе",
+    "",
+    "### Группа",
+    "*Курсивная строка.*",
+    "",
+    "| Что | Было | Есть |",
+    "|---|---|---|",
+    "| Пункт | раньше *1 янв* | сейчас |",
+    "| Пусто | | только это |",
+    "",
+    "1. Нумерованный — тоже карточка",
+  ].join("\n");
+  assert.deepEqual(sectionGroups(md), [
+    { notes: ["Его слова, май 2030."], cards: [{ title: "Первое", text: "описание" }, { title: "Второе" }] },
+    {
+      title: "Группа", notes: ["Курсивная строка."],
+      cards: [
+        { title: "Нумерованный", text: "тоже карточка" },
+        { title: "Пункт", fields: [{ label: "Было", md: "раньше", note: "1 янв" }, { label: "Есть", md: "сейчас" }] },
+        { title: "Пусто", fields: [{ label: "Есть", md: "только это" }] },
+      ],
+    },
+  ]);
+  assert.deepEqual(sectionGroups(""), []);
+});
+
+test("sectionGroups: a hard-wrapped paragraph is one note; a blank line or a bullet starts the next", () => {
+  const md = "Первая строка абзаца,\nвторая строка того же.\n\nДругой абзац.\n- Пункт\nПосле пункта.";
+  assert.deepEqual(sectionGroups(md), [{ notes: ["Первая строка абзаца, вторая строка того же.", "Другой абзац.", "После пункта."], cards: [{ title: "Пункт" }] }]);
+});
+
+test("parseNumberLine: only links join with « + »; a « + » inside «quotes» or next to a word is not a cut", () => {
+  assert.deepEqual(parseNumberLine("- Цель — цель «Работа + учёба»"), { label: "Цель", source: "цель «Работа + учёба»" });
+  assert.deepEqual(parseNumberLine("- Смесь — [[Привычка А]] + намаз"), { label: "Смесь", source: "[[Привычка А]] + намаз" });
+  assert.deepEqual(parseNumberLine("- Обе — [[Привычка А]] + [[Привычка Б]]")?.parts, ["[[Привычка А]]", "[[Привычка Б]]"]);
 });

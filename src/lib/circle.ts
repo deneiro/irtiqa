@@ -269,6 +269,12 @@ export function coMet(page: Page, people: Page[], events: LifeEvent[], min = 2):
   return [...count.values()].filter((c) => c.n >= min).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "ru"));
 }
 
+/** The tag on the page of someone he lives with: he sees them every day, so they are never «давно без связи». */
+export const HOUSEHOLD_TAG = "household";
+export function atHome(page: Page): boolean {
+  return page.tags.some((t) => t.toLowerCase() === HOUSEHOLD_TAG);
+}
+
 export const MEETING_TITLE = "Встреча";
 
 /**

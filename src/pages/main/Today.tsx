@@ -4,16 +4,19 @@ import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, signals, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
 import { isoWeekKey } from "../../lib/goals";
 import { habitDue, type Life } from "../../lib/life";
-import { ActivityList, Card, DayArc, Dots, Hero, SignalRow, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
+import { ActivityList, Card, DayArc, Dots, Hero, SignalRow, SignalTitle, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 const days = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}`;
 const list = (xs: [string, number][]) => xs.map(([t, n]) => `${t} ${n}`).join(" · ");
 const streakTone = (d: number): Tone => (d >= 30 ? "sage" : d >= 7 ? "honey" : "ember");
+/** The windows of «Состояние», in days; the one before is as long. */
+const WINDOWS = [3, 7, 14] as const;
+type Win = (typeof WINDOWS)[number];
 
-/** «Сегодня»: the date, the one thing that burns and yesterday's prayers on the day's arc; then the rest of the focus, the activities, the state of 7 or 10 days, yesterday and what waits. */
+/** «Сегодня»: the date, the one thing that burns and yesterday's prayers on the day's arc; then the rest of the focus, the activities and what waits; the state of 3, 7 or 14 days and yesterday beside them. */
 export default function Today({ life, today }: { life: Life; today: string }) {
-  const [win, setWin] = useState<7 | 10>(7);
+  const [win, setWin] = useState<Win>(7);
   const yesterday = addDays(today, -1);
   const s = useMemo(() => windowStats(life, addDays(yesterday, -(win - 1)), yesterday), [life, yesterday, win]);
   const prev = useMemo(() => windowStats(life, addDays(yesterday, -(2 * win - 1)), addDays(yesterday, -win)), [life, yesterday, win]);
@@ -31,14 +34,14 @@ export default function Today({ life, today }: { life: Life; today: string }) {
       <Hero kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} />}>
         <div className="d-lead">
           <div className={`d-kick ${first?.level ?? ""}`}><i />Главное сегодня</div>
-          <div className="t">{first ? first.title : "Ничего не горит."}</div>
+          <div className="t">{first ? <SignalTitle s={first} /> : "Ничего не горит."}</div>
           {first?.fact && <div className="f">{first.fact}</div>}
         </div>
       </Hero>
       <div className="d-cols">
         <div className="d-stack">
           <Card title="Ещё горит" right="по правилам, без Claude">
-            {rest.length ? rest.map((x) => <SignalRow key={x.title} s={x} />) : <p className="d-faint">Больше ничего.</p>}
+            {rest.length ? <div className="d-sigs">{rest.map((x) => <SignalRow key={x.title} s={x} />)}</div> : <p className="d-faint">Больше ничего.</p>}
             <div className="d-sub"><span className="d-kick">Задачи на сегодня</span><span className="n">{tasks.filter((t) => t.done).length} / {tasks.length}</span><span className="d-right">из утреннего вопроса бота</span></div>
             {tasks.length ? <ul className="d-tasks">{tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}>{plainLinks(t.text)}</li>)}</ul> : <p className="d-faint">Задач нет — бот спросит утром.</p>}
             {focus.lines[0] && (
@@ -50,20 +53,20 @@ export default function Today({ life, today }: { life: Life; today: string }) {
             )}
           </Card>
           <ActivityList acts={acts} />
+          <Card title="Ждёт тебя" right="из now.md">
+            {wait.length ? <ul className="d-plain">{wait.map((w, i) => <li key={i}>{w}</li>)}</ul> : <p className="d-faint">пока ничего</p>}
+          </Card>
         </div>
         <div className="d-stack">
           <StateCard life={life} today={today} s={s} prev={prev} win={win} setWin={setWin} tasksToday={tasks.length} />
           <YesterdayCard y={y} />
-          <Card title="Ждёт тебя" right="из now.md">
-            {wait.length ? <ul className="d-plain">{wait.map((w, i) => <li key={i}>{w}</li>)}</ul> : <p className="d-faint">пока ничего</p>}
-          </Card>
         </div>
       </div>
     </>
   );
 }
 
-function StateCard({ life, today, s, prev, win, setWin, tasksToday }: { life: Life; today: string; s: Stats; prev: Stats; win: 7 | 10; setWin: (w: 7 | 10) => void; tasksToday: number }) {
+function StateCard({ life, today, s, prev, win, setWin, tasksToday }: { life: Life; today: string; s: Stats; prev: Stats; win: Win; setWin: (w: Win) => void; tasksToday: number }) {
   const half = Math.ceil(win / 2);
   const comparable = s.recorded >= half && prev.recorded >= half;
   /** ▲ / ▼ against the window before, only when both have records on half the days. */
@@ -81,7 +84,7 @@ function StateCard({ life, today, s, prev, win, setWin, tasksToday }: { life: Li
   const blank = (k: string, foot: string) => <Tile k={k} v="—" foot={foot} thin />;
   const noRecords = `нет записей за ${days(s.length)}`;
   return (
-    <Card title="Состояние" right={<span className="d-seg">{([7, 10] as const).map((n) => <button key={n} className={n === win ? "on" : ""} aria-pressed={n === win} onClick={() => setWin(n)}>{n} дней</button>)}</span>}>
+    <Card title="Состояние" right={<span className="d-seg">{WINDOWS.map((n) => <button key={n} className={n === win ? "on" : ""} aria-pressed={n === win} onClick={() => setWin(n)}>{days(n)}</button>)}</span>}>
       <div className="d-cover"><Dots flags={s.coverage} dates={dateRange(s.from, s.to)} />записи за {days(s.recorded)} из {s.length} · {short(s.from)} – {short(s.to)}</div>
       <div className="d-tiles">
         {noMarks ? blank("Намаз", noRecords) : marked === 0 ? blank("Намаз", p.due ? `${p.unmarked} без отметки из ${p.due}` : "нет отметок") : <Tile k="Намаз" hint={arrow(share(s), share(prev), true)} tone={!p.due ? undefined : p.unmarked / p.due > 0.25 ? "honey" : "sage"} v={p.done} of={`/ ${marked}`} sub={`вовремя · ${p.late} поздно · ${p.failed} пропущено`} foot={p.unmarked ? `${p.unmarked} без отметки из ${p.due}` : undefined} />}

@@ -9,9 +9,9 @@ import { addDays } from "../lib/dates";
 import { isSectionKey, themeSections, themeView, type SectionKey } from "../lib/overview";
 import { numberTile, shortDate } from "../lib/themeNumbers";
 import { boardCards } from "../lib/themeBoard";
-import { SECTION_LABELS, themePages, type ThemePages } from "../lib/themePages";
+import { SECTION_LABELS, halalGroups, themePages, type ThemePages } from "../lib/themePages";
 import { staleMentions } from "../lib/stale";
-import { buildCircle } from "../lib/circle";
+import { influenceGroups } from "../lib/influence";
 import { measures } from "../lib/health";
 import { parseJobs } from "../lib/jobs";
 import { parseLibrary } from "../lib/library";
@@ -35,7 +35,11 @@ function pageButton(key: SectionKey, theme: string, p: ThemePages, life: Life, v
       const names = raw ? parseNames(raw) : [];
       return names.length ? { ...b, value: String(names.filter((n) => n.state === "done").length), of: `/ ${names.length}` } : b;
     }
-    case "halal": return { ...b, sub: "страница vault", to: p.halal ? pageUrl(p.halal) : b.to };
+    case "halal": {
+      const gs = p.halal ? halalGroups(p.halal.body) : [];
+      const n = gs.reduce((a, g) => a + g.cards.length, 0);
+      return n ? { ...b, value: String(n), sub: gs.map((g) => `${g.heading.toLowerCase()} ${g.cards.length}`).join(" · ") } : b;
+    }
     case "resource": {
       const unread = p.resources.filter((r) => !r.fm.read).length;
       return { ...b, value: String(p.resources.length), sub: unread && unread < p.resources.length ? `не прочитано ${unread}` : undefined };
@@ -45,7 +49,7 @@ function pageButton(key: SectionKey, theme: string, p: ThemePages, life: Life, v
     case "projects": return { ...b, value: String(p.projects.length) };
     case "tools": return { ...b, value: String(p.tools.length) };
     case "profile": return { ...b, sub: p.profile?.updated ? `обновлён ${shortDate(p.profile.updated)}` : undefined, to: "/profile" };
-    case "summary": return { ...b, sub: p.summary?.updated ? `обновлена ${shortDate(p.summary.updated)}` : undefined, to: p.summary ? pageUrl(p.summary) : b.to };
+    case "summary": return { ...b, sub: p.summary?.updated ? `обновлена ${shortDate(p.summary.updated)}` : undefined };
     case "template": return { ...b, sub: "шаблон страницы человека", to: p.template ? pageUrl(p.template) : b.to };
     case "body": return { ...b, value: String(measures(life.days).length), sub: "замеров" };
     case "self": {
@@ -54,7 +58,8 @@ function pageButton(key: SectionKey, theme: string, p: ThemePages, life: Life, v
     }
     case "influence": {
       const people = vault.pages.filter((x) => x.zone === "person" && x.type !== "template" && !x.file.startsWith("_"));
-      return { ...b, value: String(buildCircle(people, life.events, today).filter((i) => i.triggers.length).length), sub: "с триггерами" };
+      const g = influenceGroups(people, life.habits);
+      return { ...b, value: String(g.up.length + g.down.length), sub: `↑ ${g.up.length} · ↓ ${g.down.length}` };
     }
     case "career": return { ...b, value: String(parseJobs(life.jobs ?? "", today).length), sub: "работ" };
     case "library": return { ...b, value: String(parseLibrary(life.library ?? "").length) };
@@ -80,7 +85,7 @@ export default function ThemePage() {
   const overview = useMemo(() => vault.pages.find((p) => p.theme === theme && p.file === "_Overview" && p.segments.length === 1), [vault, theme]);
   const view = useMemo(() => themeView(overview), [overview]);
   const sections = useMemo(() => themeSections(overview), [overview]);
-  const pages = useMemo(() => themePages(vault, life, theme, sections), [vault, life, theme, sections]);
+  const pages = useMemo(() => themePages(vault, life, theme, today), [vault, life, theme, today]);
   const tiles = useMemo(() => (life ? view.numbers.map((g) => g.lines.map((l) => numberTile(l, { life, vault, theme, today }))) : []), [life, vault, theme, today, view]);
   const cards = useMemo(() => (life ? boardCards(life, theme, today) : []), [life, theme, today]);
   // Lines of the overview (not its «Changes») that still talk about activities already closed.

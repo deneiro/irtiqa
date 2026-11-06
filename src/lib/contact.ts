@@ -5,8 +5,8 @@
  * screen and the Telegram bot record a contact the same way.
  */
 import { setFrontmatterKeys } from "./frontmatter";
-import { eventDir, personName, serializeEvent, type LifeEvent } from "./events";
-import { MEETING_TITLE } from "./circle";
+import { eventDir, personName, serializeEvent, uniqueEventDir, type LifeEvent } from "./events";
+import { MEETING_TITLE, isMeetingRecord } from "./circle";
 import { parseFrontmatter } from "./vault";
 import { MEMORY_THEME, TITLE_MAX, eventTitle, whoLink, type PageWho } from "./memory";
 
@@ -25,14 +25,18 @@ export function contactEdits(
   const edits: FileEdit[] = [{ rel: person.rel, content: setFrontmatterKeys(person.raw, { last_contact: date, updated: stamp }) }];
   if (!met) return edits;
   const link = `[[${person.file}]]`;
-  const existing = events.find((e) => e.date === date && e.title === MEETING_TITLE);
+  // Only the day's own record (title and tag): a memory he named «Встреча» is another event and keeps its people.
+  const existing = events.find((e) => e.date === date && isMeetingRecord(e));
   if (existing) {
     if (!existing.people.some((p) => personName(p).toLowerCase() === person.file.toLowerCase())) {
       edits.push({ rel: existing.rel, content: serializeEvent({ ...existing, people: [...existing.people, link] }) });
     }
   } else {
+    const key = (d: string) => d.normalize("NFC").toLowerCase();
+    const taken = new Set(events.map((e) => key(e.dir)));
+    const dir = uniqueEventDir(date, MEETING_TITLE, (d) => taken.has(key(d))); // never over a memory's folder
     edits.push({
-      rel: `${eventDir(date, MEETING_TITLE)}/event.md`,
+      rel: `${dir}/event.md`,
       content: serializeEvent({
         title: MEETING_TITLE, date, theme, place: "", people: [link], tags: ["встреча"],
         body: "Кого видел сегодня. Приложение дописывает сюда людей кнопкой «виделись»; текст и фото можно добавить самому.",

@@ -8,6 +8,8 @@ import { setFrontmatterKeys } from "../lib/frontmatter";
 import { rawPageText } from "../lib/rawpage";
 import { NAMES_PAGE, dayOf, isSuraHabit, parseNames, suraHabitTitle, suraPatch, suras, withNameState, type MemoState } from "../lib/quran";
 import { HABIT_DIR, safeFilename, serializeHabit } from "../lib/life";
+import { HALAL_PAGE, halalGroups } from "../lib/themePages";
+import { Inline } from "../pages/theme/parts";
 
 const LABEL: Record<MemoState, string> = { none: "не начато", learning: "учу", done: "выучено" };
 
@@ -221,20 +223,42 @@ export function NamesSection() {
   );
 }
 
-/** The halal/haram reference, surfaced as a card rather than buried in Wiki. */
+/** Past these lengths the title or the description is cut to three lines (each clamped on its own); a click opens the rest. */
+const HALAL_LONG = { title: 80, text: 100 };
+
+/**
+ * Халяль · Харам · Макрух (Eldar, 2026-11-06: «каждый пункт… название, заголовок, и потом описание… источники не
+ * нужны»): three groups, each with its colour, a card a bullet — the title and the description, never the source
+ * (`halalGroups`). A long card opens in place on a click; nothing leaves the screen.
+ */
 export function HalalSection() {
   const v = useVault();
-  const page = useMemo(() => v.pages.find((p) => p.file === "Халяль и харам"), [v]);
-  if (!page) return null;
-  const heads = page.body.split(/\r?\n/).filter((l) => l.startsWith("## ")).map((l) => l.slice(3));
+  const page = useMemo(() => v.pages.find((p) => p.file === HALAL_PAGE), [v]);
+  const groups = useMemo(() => (page ? halalGroups(page.body) : []), [page]);
+  const [open, setOpen] = useState<Set<string>>(new Set());
+  if (!page || !groups.length) return <div className="empty">Страницы «{HALAL_PAGE}» с разделами Халяль, Харам, Макрух нет.</div>;
+  const toggle = (id: string) => setOpen((o) => { const n = new Set(o); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   return (
-    <section className="tblock">
-      <h2 className="section">Халяль и харам</h2>
-      <Link to={pageUrl(page)} className="card profile-card">
-        <b>Ханафитский мазхаб: что дозволено, что запрещено, что спорно</b>
-        <span className="small muted">{heads.join(" · ")}</span>
-        <span className="small faint">Конспект, не фетва. Спорное помечено «уточнить у алима».</span>
-      </Link>
+    <section className="tblock t-hl">
+      <h2 className="section">Халяль · Харам · Макрух</h2>
+      <p className="t-hl-lead">Конспект, не фетва: свой случай — с имамом.</p>
+      {groups.map((g) => (
+        <div key={g.kind} className={`t-hl-group t-hl-${g.kind}`}>
+          <h3><i />{g.heading}<span className="n">{g.cards.length}</span></h3>
+          <div className="t-hl-grid">
+            {g.cards.map((c, i) => {
+              const id = `${g.kind}-${i}`;
+              const long = c.title.length > HALAL_LONG.title || (c.text?.length ?? 0) > HALAL_LONG.text;
+              const isOpen = open.has(id);
+              const cls = `t-hl-card${long ? " t-hl-long" : ""}${isOpen ? " t-hl-open" : ""}`;
+              const body = <><b><Inline md={c.title} /></b>{c.text && <span><Inline md={c.text} /></span>}{long && <em>{isOpen ? "свернуть" : "ещё"}</em>}</>;
+              return long
+                ? <div key={id} className={cls} role="button" tabIndex={0} aria-expanded={isOpen} onClick={() => toggle(id)} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(id); } }}>{body}</div>
+                : <div key={id} className={cls}>{body}</div>;
+            })}
+          </div>
+        </div>
+      ))}
     </section>
   );
 }

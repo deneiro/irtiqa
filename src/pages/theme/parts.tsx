@@ -61,7 +61,7 @@ export function Beads({ cells, from }: { cells: Cell[]; from: string }) {
 export function TileView({ tile, from, vow }: { tile: Tile; from: string; vow: boolean }) {
   const cls = ["t-nt", tile.value === "—" ? "t-nt-none" : "", tile.warn ? "t-nt-warn" : "", tile.unknown ? "t-nt-unknown" : ""].filter(Boolean).join(" ");
   const chip = tile.chip === "hot" ? <Status tone="ember">горит</Status> : tile.chip === "behind" ? <Status tone="honey">отстаёт</Status> : null;
-  const value = <div className="t-nt-v">{tile.value}{tile.unit && <small>{tile.unit}</small>}</div>;
+  const value = <><div className="t-nt-v">{tile.value}{tile.unit && <small>{tile.unit}</small>}</div>{tile.sub && <div className="t-nt-s">{tile.sub}</div>}</>;
   // A group of series tiles only (the mockup's vows) has the long label under the number; any other tile has it on top.
   if (vow) {
     return (
