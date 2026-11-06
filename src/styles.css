@@ -685,7 +685,6 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 @media (max-width: 1100px) { .addrow.person { grid-template-columns: 1fr 1fr; } }
 
 /* ---------- quest page & session note ---------- */
-.qhead { display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
 /* Steps inside a quest: one project, small quests inside. */
 .qprogress { height: 4px; border-radius: 2px; background: var(--hair); overflow: hidden; margin-bottom: 10px; }
 .qprogress i { display: block; height: 100%; background: var(--c, var(--accent)); }
@@ -701,13 +700,8 @@ a.frow:hover, .frow:hover { background: var(--raised); color: var(--ink); }
 .qstext { color: var(--ink); }
 .qstep.next .qstext { font-weight: 500; }
 .qnext { margin-left: 8px; font-size: 11px; padding: 1px 6px; border-radius: 8px; background: color-mix(in srgb, var(--c, var(--accent)) 18%, transparent); color: var(--c, var(--accent)); }
-.qsdetail { white-space: pre-wrap; margin-top: 4px; }
 .qnextline { font-size: 12px; color: var(--ink-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn.big { font-size: 14px; padding: 10px 18px; }
-.qfields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-@media (max-width: 900px) { .qfields { grid-template-columns: 1fr; } }
-.qentry { display: grid; grid-template-columns: 82px 62px 1fr; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--hair); font-size: 13.5px; align-items: baseline; }
-.qentry:last-child { border-bottom: 0; }
 .qlist .name a { color: inherit; text-decoration: none; }
 .qlist .name a:hover { color: var(--accent-text); }
 .quest.nstep .name { font-weight: 400; line-height: 1.35; }
@@ -876,9 +870,8 @@ a.chip { text-decoration: none; }
 table.tbl.lib td:first-child { min-width: 160px; }
 table.tbl.lib .num { text-align: right; white-space: nowrap; width: 1%; }
 
-/* Rules several screens render with: .num (Library cells), .grid (every grid cols-N), .today (Calendar), .qhead (Quest header).
-   Keep this block last: it overrides the .grid and .qhead rules above. */
+/* Rules several screens render with: .num (Library cells), .grid (every grid cols-N), .today (Calendar).
+   Keep this block last: it overrides the .grid rules above. */
 .num { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: var(--s3) var(--s4); box-shadow: var(--shadow-1); min-width: 0; }
 .grid { display: grid; grid-template-columns: 92px repeat(7, 1fr); gap: 6px 6px; align-items: center; }
 .today { margin-top: var(--s6); }
-.qhead { display: flex; align-items: center; gap: 8px; margin-bottom: var(--s2); }

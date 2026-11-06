@@ -129,6 +129,37 @@ test("настроение: the mean of the window's answers; today does not cou
   assert.deepEqual(brief(tile("- Настроение — настроение", ctxOf([]))), { value: "—", unit: undefined, note: "ответов 0 из 30" });
 });
 
+test("стресс: the mean of the window's answers, as настроение; today does not count yet", () => {
+  const files = [day("2030-01-10", { stress: "3" }), day("2030-01-20", { stress: "6", mood: "8" }), day("2030-02-01", { stress: "9" })];
+  assert.deepEqual(brief(tile("- Стресс — стресс", ctxOf(files))), { value: "4.5", unit: "из 10", note: "ответов 2 из 30" });
+  assert.deepEqual(brief(tile("- Стресс — стресс", ctxOf([day("2030-01-10", { mood: "6" })]))), { value: "—", unit: undefined, note: "ответов 0 из 30" });
+});
+
+// 2030-01-02 is a Wednesday: the window has Mondays 7, 14, 21, 28 and Thursdays 3, 10, 17, 24, 31.
+const PAIR = [habit("Привычка Пн", "good", { freq: "[пн]" }), habit("Привычка Чт", "good", { freq: "[чт]" })];
+
+test("[[А]] + [[Б]]: one tile — the union of the due days, a day done when any is done, beads over the union", () => {
+  const files = [...PAIR, day("2030-01-14", { habits_done: "[Привычка Пн]" }), day("2030-01-24", { habits_late: "[Привычка Чт]" }), day("2030-01-17", { habits_failed: "[Привычка Чт]" })];
+  const t = tile("- Обе — [[Привычка Пн]] + [[Привычка Чт]]", ctxOf(files));
+  assert.deepEqual(brief(t), { value: "2", unit: "из 9", note: "за 30 дней" });
+  // Jan 2 … 31: Thu 3, Mon 7, Thu 10, Mon 14 done, Thu 17 failed, Thu 24 late — the rest due without a file
+  assert.equal(beads(t), "snsss" + "nssn" + "sss" + "hss" + "fsss" + "nss" + "hsss" + "nss" + "n");
+  // the same habits one by one: each tile counts only its own day
+  assert.deepEqual(brief(tile("- Пн — [[Привычка Пн]]", ctxOf(files))), { value: "1", unit: "из 4", note: "за 30 дней" });
+});
+
+test("[[А]] + [[Б]]: a bad habit does not join; an unknown part is «не понял»; the line keeps its parts", () => {
+  const ctx = ctxOf([...PAIR, habit("Плохая", "bad")]);
+  assert.deepEqual(brief(tile("- Смесь — [[Привычка Пн]] + [[Плохая]]", ctx)), { value: "—", unit: undefined, note: "хорошую и плохую привычку в одну плитку не сложить" });
+  assert.equal(tile("- Две — [[Плохая]] + [[Плохая]]", ctx).note, "плохие привычки не складываются: по одной на плитку");
+  assert.equal(tile("- Нет — [[Привычка Пн]] + [[Нет такой]]", ctx).note, "не понял: [[Привычка Пн]] + [[Нет такой]]");
+  assert.equal(tile("- Нет — [[Привычка Пн]] + намаз", ctx).unknown, true);
+  // a goal whose words hold « + » is still a goal
+  assert.equal(tile("- Цель — цель «Нет + такой»", ctx).note, "цели «Нет + такой» нет в файлах недели, месяца и года");
+  assert.deepEqual(parseNumberLine("- Обе — [[Привычка Пн]] + [[Привычка Чт]] · цель 8"), { label: "Обе", source: "[[Привычка Пн]] + [[Привычка Чт]]", target: "8", parts: ["[[Привычка Пн]]", "[[Привычка Чт]]"] });
+  assert.deepEqual(parseNumberLine("- Одна — [[Привычка + плюс]]"), { label: "Одна", source: "[[Привычка + плюс]]" }); // a « + » inside a link is its title
+});
+
 const ATTENTION = [
   habit("Чтение", "good"),
   habit("Фаджр", "prayer", { theme: "Spirituality & Religion" }),
@@ -140,16 +171,21 @@ const ATTENTION = [
   md("life/events/2030-01-14 Игра/event.md", { title: "Игра", type: "event", date: "2030-01-14", theme: "Health & sport" }),
 ];
 
-test("внимание: the share of the first three themes; a tie keeps the THEMES order", () => {
-  // Рост 3, Духовность 2, Здоровье 1, Бизнес 1 — seven days: 43 + 29 + 14
-  assert.deepEqual(brief(tile("- Внимание — внимание", ctxOf(ATTENTION))), { value: "86", unit: "%", note: "рост, духовность, здоровье · остальные — 14 %" });
+test("внимание: one number — the biggest theme's share — and that theme's name in plain sight; a tie names both", () => {
+  // Рост 3, Духовность 2, Здоровье 1, Бизнес 1 — seven days: Рост 43 %
+  const t = tile("- Внимание — внимание", ctxOf(ATTENTION));
+  assert.deepEqual({ ...brief(t), sub: t.sub }, { value: "43", unit: "%", note: "3 дня из 30 · доля среди тем", sub: "Рост" });
+  const tie = tile("- Внимание — внимание", ctxOf([...ATTENTION, day("2030-01-20", { habits_done: "[Фаджр]" })]));
+  assert.deepEqual([tie.value, tie.sub], ["38", "Духовность и Рост"]); // 3 and 3 of 8: THEMES order
   assert.deepEqual(brief(tile("- Внимание — внимание", ctxOf([]))), { value: "—", unit: undefined, note: "дней с вниманием нет" });
 });
 
-test("тема: the theme's days of the 30 and the last of them", () => {
-  assert.deepEqual(brief(tile("- Рост — тема", ctxOf(ATTENTION))), { value: "3", unit: "дня из 30", note: "последнее — 15 января" });
-  assert.deepEqual(brief(tile("- Финансы — тема", ctxOf(ATTENTION, [], "Finance & money"))), { value: "0", unit: "дней из 30", note: "внимания ещё не было" });
-  assert.deepEqual(brief(tile("- Рост — тема", ctxOf([]))), { value: "—", unit: undefined, note: "внимания ещё не было" });
+test("тема: the theme's days of the 30, what such a day is, and the last of them", () => {
+  const what = "дни, когда по теме было что-то: привычка, дело, событие";
+  assert.deepEqual(brief(tile("- Рост — тема", ctxOf(ATTENTION))), { value: "3", unit: "дня из 30", note: `${what} · последнее — 15 января` });
+  assert.deepEqual(brief(tile("- Бизнес — тема", ctxOf(ATTENTION, [], "Business & career"))), { value: "1", unit: "день из 30", note: `${what} · последнее — 11 января` }); // an activity's journal line
+  assert.deepEqual(brief(tile("- Финансы — тема", ctxOf(ATTENTION, [], "Finance & money"))), { value: "0", unit: "дней из 30", note: `${what} · таких ещё не было` });
+  assert.deepEqual(brief(tile("- Рост — тема", ctxOf([]))), { value: "—", unit: undefined, note: `${what} · таких ещё не было` });
 });
 
 test("a source the code does not know is «—» with «не понял: …»", () => {
@@ -229,6 +265,9 @@ test("близкие: close people (7+) silent past their rhythm; the longest si
   assert.deepEqual(brief(tile("- Давно без связи — близкие", ctxOf([], pages, "Social & friends"))), { value: "2", unit: "из 3", note: "Человек Д · контакт не отмечен" });
   assert.deepEqual(brief(tile("- Давно без связи — близкие", ctxOf([], pages.slice(0, 2), "Social & friends"))), { value: "1", unit: "из 2", note: "Человек В · 31 дн" });
   assert.equal(tile("- Давно без связи — близкие", ctxOf([], [], "Social & friends")).value, "—");
+  // someone he lives with is seen every day: never on this list
+  const home = [...pages, person("Человек Ж", { closeness: "10", last_contact: "2029-06-01", tags: "[family, household]" })];
+  assert.deepEqual(brief(tile("- Давно без связи — близкие", ctxOf([], home, "Social & friends"))), { value: "2", unit: "из 3", note: "Человек Д · контакт не отмечен" });
 });
 
 test("встречи: events with people this month, the last one; события: the theme's events this month", () => {

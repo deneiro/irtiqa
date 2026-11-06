@@ -51,6 +51,11 @@ export function splitSections(body: string): { intro: string; sections: Overview
   return { intro: parts[0].trim(), sections };
 }
 
+/** The `##` section a `sections:` string names: the heading as written, else the same heading in any case. */
+export function findSection(sections: OverviewSection[], name: string): OverviewSection | undefined {
+  return sections.find((s) => s.heading === name) ?? sections.find((s) => s.heading.toLowerCase() === name.toLowerCase());
+}
+
 /** Suffix after " — " (Семья / Отношения), or "" for the plain heading. */
 export function sectionSuffix(heading: string): string {
   const i = heading.indexOf(" — ");
@@ -59,8 +64,11 @@ export function sectionSuffix(heading: string): string {
 
 // ---------- the v4 skeleton ----------
 
-/** `- Подпись — источник · цель N`: the label in his words, the source the code reads, an optional target. */
-export interface NumberLine { label: string; source: string; target?: string }
+/**
+ * `- Подпись — источник · цель N`: the label in his words, the source the code reads, an optional target.
+ * `parts`: a source of several habits joined by « + » (`[[A]] + [[B]]`), each part as written.
+ */
+export interface NumberLine { label: string; source: string; target?: string; parts?: string[] }
 /** `### Заголовок` inside `## Цифры`, the first paragraph under it (usually a quote) and its lines. */
 export interface NumberGroup { title?: string; caption?: string; lines: NumberLine[] }
 /** One phrase of a column; a trailing `*курсив*` is its pale note. */
@@ -86,19 +94,22 @@ const BULLET = /^(?:[-*]|\d+[.)])\s+(.*)$/;
 /** The heading without its « — suffix». */
 const baseHeading = (h: string) => { const i = h.indexOf(" — "); return (i >= 0 ? h.slice(0, i) : h).trim(); };
 
-/** Top-level bullets, each with its indented continuation lines; the other text lines apart. */
-export function bullets(md: string): { items: string[]; rest: string[] } {
-  const items: string[] = [], rest: string[] = [];
-  let open = false;
+/** Top-level bullets, each with its indented continuation lines; the other text lines apart, and the same lines joined into paragraphs (a blank line or a bullet ends one). */
+export function bullets(md: string): { items: string[]; rest: string[]; paras: string[] } {
+  const items: string[] = [], rest: string[] = [], paras: string[] = [];
+  let open = false, para = false;
   for (const line of md.split(/\r?\n/)) {
     const m = line.match(BULLET);
-    if (m) { items.push(m[1].trim()); open = true; continue; }
-    if (!line.trim()) { open = false; continue; }
+    if (m) { items.push(m[1].trim()); open = true; para = false; continue; }
+    if (!line.trim()) { open = false; para = false; continue; }
     if (open && /^\s+\S/.test(line)) { items[items.length - 1] += " " + line.trim(); continue; }
     open = false;
     rest.push(line.trim());
+    if (para) paras[paras.length - 1] += " " + line.trim();
+    else paras.push(line.trim());
+    para = true;
   }
-  return { items, rest };
+  return { items, rest, paras };
 }
 
 /** A phrase with its pale note: a trailing `*курсив*` (not `**жирный**`) becomes the note. */
@@ -119,6 +130,21 @@ export function columnPart(md: string, suffix: string): ColumnPart {
 /** A `[[link]]` is one unit: a « — » or « · » inside it belongs to its title. Same length, so offsets carry over. A `[` inside ends the match, so an unclosed `[[` cannot swallow a later link. */
 const mask = (s: string) => s.replace(/\[\[[^\[\]]*\]\]/g, (m) => "\u0000".repeat(m.length));
 
+/** A `«цитата»` is one unit too: a « — », «: » or « + » inside his words does not cut. Same length, as `mask`. */
+export const maskQuotes = (s: string) => mask(s).replace(/«[^«»]*»/g, (m) => "\u0000".repeat(m.length));
+
+/** `text` cut at every match of `sep` on its masked copy: a separator inside a link (or what `hide` hides) is not one. */
+function cutOutside(text: string, sep: RegExp, hide: (s: string) => string = mask): string[] {
+  const cuts: string[] = [];
+  let from = 0;
+  for (const m of hide(text).matchAll(sep)) {
+    cuts.push(text.slice(from, m.index));
+    from = m.index + m[0].length;
+  }
+  cuts.push(text.slice(from));
+  return cuts;
+}
+
 export function parseNumberLine(line: string): NumberLine | undefined {
   const m = line.match(/^\s*[-*]\s+(.+?)\s*$/);
   if (!m) return undefined;
@@ -127,18 +153,14 @@ export function parseNumberLine(line: string): NumberLine | undefined {
   if (at < 0) return { label: text.trim(), source: "" };
   // the « · » cuts are found on the masked copy and made at the same offsets in the text (backticks dropped, as before)
   const tail = text.slice(at + 3).replace(/`/g, "");
-  const hidden = mask(tail);
-  const cuts: string[] = [];
-  let from = 0;
-  for (const sep of hidden.matchAll(/\s+·\s+/g)) {
-    cuts.push(tail.slice(from, sep.index));
-    from = sep.index + sep[0].length;
-  }
-  cuts.push(tail.slice(from));
-  const [source, ...mods] = cuts.map((s) => s.trim());
+  const [source, ...mods] = cutOutside(tail, /\s+·\s+/g).map((s) => s.trim());
   const target = mods.find((x) => /^цель\s+/i.test(x))?.replace(/^цель\s+/i, "").trim();
   const out: NumberLine = { label: text.slice(0, at).trim(), source };
   if (target) out.target = target;
+  // «Подпись — [[А]] + [[Б]]» (Eldar, 2026-11-06): several habits make one tile
+  // only links join: «цель «А + Б»» stays a goal, «[[А]] + намаз» stays one (unknown) source
+  const parts = cutOutside(source, /\s+\+\s+/g, maskQuotes).map((s) => s.trim());
+  if (parts.length > 1 && parts.every((x) => /^\[\[[^\[\]]+\]\]$/.test(x))) out.parts = parts;
   return out;
 }
 
@@ -219,4 +241,63 @@ export function sectionTable(md: string): { head: string[]; rows: string[][] } |
 /** The bullets of a section as cards: a bold start is the card's title. */
 export function sectionCards(md: string): { title?: string; text: string }[] {
   return bullets(md).items.map((t) => boldLead(t)).map((c) => (c.title ? c : { text: c.text }));
+}
+
+// ---------- an overview section as cards (Eldar, 2026-11-06: «визуально user-friendly», not a markdown file) ----------
+
+
+/** One card: its title, the description, a pale note (`*курсив*` at the end), `struck` for a `~~title~~`; a table row has its cells as labelled lines. */
+export interface SectionCard { title: string; text?: string; note?: string; struck?: boolean; fields?: { label: string; md: string; note?: string }[] }
+/** A `###` sub-heading of the section (none for the part above the first one), its pale lines and its cards. */
+export interface CardGroup { title?: string; notes: string[]; cards: SectionCard[] }
+
+/** A bullet as a card: the bold start is the title, else the text before the first « — » outside a link or a quote; the rest is the description. */
+export function cardOf(text: string): SectionCard {
+  const { md, note } = phraseOf(text.trim());
+  const bold = md.match(/^\*\*(.+?)\*\*[\s.:—–-]*(.*)$/);
+  let title = md, rest = "";
+  if (bold) { title = bold[1].trim().replace(/[.:]$/, ""); rest = bold[2].trim(); }
+  else {
+    const at = maskQuotes(md).indexOf(" — ");
+    if (at > 0) { title = md.slice(0, at).trim(); rest = md.slice(at + 3).trim(); }
+  }
+  const card: SectionCard = { title };
+  const struck = title.match(/^~~(.+)~~$/);
+  if (struck) { card.title = struck[1].trim(); card.struck = true; }
+  if (rest) card.text = rest;
+  if (note) card.note = note;
+  return card;
+}
+
+/** A line wholly in `*курсив*` (not bold) loses its stars: it is a pale note anyway. */
+const unItalic = (s: string) => s.match(/^\*([^*].*[^*]|[^*])\*$/)?.[1].trim() ?? s;
+
+/**
+ * An overview `##` section as groups of cards: a `###` starts a group; every top-level bullet is a card (`cardOf`);
+ * a table row is a card titled by its first cell, the other cells under their column names; a paragraph is a pale note.
+ */
+export function sectionGroups(md: string): CardGroup[] {
+  const parts = ("\n" + md).split(/\n###[ \t]+([^\n]*)/);
+  const raw: { title?: string; body: string }[] = [{ body: parts[0] }];
+  for (let i = 1; i < parts.length; i += 2) raw.push({ title: parts[i].trim(), body: parts[i + 1] ?? "" });
+  const out: CardGroup[] = [];
+  for (const g of raw) {
+    const table = sectionTable(g.body);
+    const prose = g.body.split(/\r?\n/).filter((l) => !l.trim().startsWith("|")).join("\n");
+    const { items, paras } = bullets(prose);
+    const cards = items.map(cardOf);
+    if (table) {
+      for (const row of table.rows) {
+        if (!row[0]) continue;
+        const fields = table.head.slice(1).map((label, j) => ({ label, ...phraseOf(row[j + 1] ?? "") })).filter((f) => f.md.trim());
+        cards.push({ ...cardOf(row[0]), fields });
+      }
+    }
+    const notes = paras.map(unItalic);
+    if (!cards.length && !notes.length && !g.title) continue;
+    const group: CardGroup = { notes, cards };
+    if (g.title) group.title = g.title;
+    out.push(group);
+  }
+  return out;
 }

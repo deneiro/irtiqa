@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { memoryEdits } from "./contact";
+import { contactEdits, memoryEdits } from "./contact";
 import { MEMORY_THEME } from "./memory";
 import { parseEvent } from "./events";
 import { buildLife } from "./life";
@@ -50,4 +50,19 @@ test("newPersonPage: nothing chosen is «знакомый» and «—»; an auth
   assert.throws(() => newPersonPage({ name: "человек е", how: "", theme: "Social & friends" }, TODAY, ["wiki/People/Человек Е.md"]), /уже есть/);
   assert.throws(() => newPersonPage({ name: "?*", how: "", theme: "Social & friends" }, TODAY, []), /не годится/);
   assert.throws(() => newPersonPage({ name: "Имя ".repeat(20), how: "", theme: "Social & friends" }, TODAY, []), /не длиннее/);
+});
+
+test("contactEdits: «виделись» without a memory never joins a memory named «Встреча» nor writes over its folder", () => {
+  const memory = "---\ntitle: Встреча\ntype: event\ndate: 2030-02-01\npeople: [\"[[Человек Б]]\"]\n---\n\nПара слов.\n";
+  const evs = buildLife([{ rel: "life/events/2030-02-01 Встреча/event.md", mtime: 0, content: memory }]).events;
+  const page = { rel: A.rel, file: A.file, raw: "---\ntitle: Человек А\ntype: person\n---\n" };
+  const edits = contactEdits(page, evs, TODAY, true);
+  assert.deepEqual(edits.map((e) => e.rel), [A.rel, "life/events/2030-02-01 Встреча (2)/event.md"]);
+  const rec = parseEvent({ rel: edits[1].rel, content: edits[1].content, mtime: 0 }, []);
+  assert.deepEqual({ title: rec.title, people: rec.people, tags: rec.tags }, { title: "Встреча", people: ["[[Человек А]]"], tags: ["встреча"] });
+  // the record of that day, once written, is the one the next «виделись» joins
+  const both = buildLife([{ rel: "life/events/2030-02-01 Встреча/event.md", mtime: 0, content: memory }, { rel: edits[1].rel, mtime: 0, content: edits[1].content }]).events;
+  const next = contactEdits({ rel: "wiki/People/Человек В.md", file: "Человек В", raw: "---\ntitle: Человек В\n---\n" }, both, TODAY, true);
+  assert.equal(next[1].rel, edits[1].rel);
+  assert.deepEqual(parseEvent({ rel: next[1].rel, content: next[1].content, mtime: 0 }, []).people, ["[[Человек А]]", "[[Человек В]]"]);
 });

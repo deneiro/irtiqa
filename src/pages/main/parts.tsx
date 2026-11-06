@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { startRun } from "../../lib/claude";
 import { useRuns } from "../../lib/claudeRuns";
-import { daysBetween, plainStep, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
+import { actName, dayMonth, daysBetween, plainStep, questUrl, runs, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
 import { themeColor, themeRu } from "../../lib/themes";
 import { useDayToday } from "../../lib/useDayToday";
 import { useStore } from "../../store";
@@ -12,11 +12,10 @@ export type Tone = "sage" | "honey" | "ember" | "smoke";
 export const HEX = { sun: "#E7C27A", sage: "#86C9A4", honey: "#E2AB5E", ember: "#E26A61", iris: "#A89DFF", moon: "#EDE7DA", ash: "#A19D93", smoke: "#6F6D6A", hair: "rgba(237,231,218,0.10)", well: "rgba(237,231,218,0.05)" };
 
 const MON = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
-const MON_GEN = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
 /** «4 ноя». */
 export const short = (date: string) => `${Number(date.slice(8, 10))} ${MON[Number(date.slice(5, 7)) - 1]}`;
-/** «4 ноября». */
-export const dayMonth = (date: string) => `${Number(date.slice(8, 10))} ${MON_GEN[Number(date.slice(5, 7)) - 1]}`;
+/** «4 ноября» — kept in lib/dashboard.ts, where the signals say their dates in the same words. */
+export { dayMonth };
 export const signed = (x: number) => `${x > 0 ? "+" : x < 0 ? "−" : "±"}${Math.abs(Math.round(x * 10) / 10)}`;
 
 /** A status as a dot and a few words — the one way the dashboard says good, attention, bad. */
@@ -61,17 +60,24 @@ export function Tile({ k, v, of, sub, foot, tone, thin, hint }: { k: string; v: 
   );
 }
 
+/** The title of a signal; with a route, a link to what it is about, marked by a small «→». */
+export function SignalTitle({ s }: { s: Signal }) {
+  return s.to ? <Link to={s.to} className="d-go">{s.title}<span className="go" aria-hidden="true">→</span></Link> : <>{s.title}</>;
+}
+
+/** A signal of «Ещё горит»: with a route the whole row is the link, so it can be clicked anywhere and reached by Tab. */
 export function SignalRow({ s }: { s: Signal }) {
-  return (
-    <div className={`d-sig ${s.level}`}>
+  const inner = (
+    <>
       <i />
       <div>
-        <div className="t">{s.title}</div>
+        <div className="t">{s.title}{s.to && <span className="go" aria-hidden="true">→</span>}</div>
         {s.fact && <div className="f">{s.fact}</div>}
         <div className="src">{s.source}</div>
       </div>
-    </div>
+    </>
   );
+  return s.to ? <Link to={s.to} className={`d-sig d-go ${s.level}`}>{inner}</Link> : <div className={`d-sig ${s.level}`}>{inner}</div>;
 }
 
 export function Dots({ flags, dates }: { flags: boolean[]; dates: string[] }) {
@@ -92,11 +98,13 @@ export function ActivityList({ acts }: { acts: ActivityView[] }) {
       {!acts.length && <p className="d-faint">деятельностей нет</p>}
       {acts.map((a) => {
         const step = a.now ? plainStep(a.now) : "";
+        const { name, sub } = actName(a.quest);
         return (
-          <Link key={a.quest.rel} to={`/quest/${encodeURIComponent(a.quest.rel)}`} className="d-act">
+          <Link key={a.quest.rel} to={questUrl(a.quest.rel)} className="d-act">
             <span className="bar" style={{ background: themeColor(a.quest.theme) }} />
             <div>
-              <div className="t">{a.quest.title}</div>
+              <div className="t">{name}</div>
+              {sub && <div className="sub">{sub}</div>}
               <div className="th">{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</div>
               {step && <div className="d-now">{step}</div>}
             </div>
@@ -227,16 +235,30 @@ export function Columns({ days, max, height = 44 }: { days: { key: string; title
   );
 }
 
-/** Mood (filled) and stress (ring), 1–10, as points over the days. */
-export function Points({ days, height = 46 }: { days: { key: string; mood?: number; stress?: number }[]; height?: number }) {
-  const step = CW / Math.max(1, days.length), y = (v: number) => height - ((v - 1) / 9) * height;
+/** The two colours of the mood and stress chart, for the chart and its legend. */
+export const MOOD_COLOR = HEX.iris, STRESS_COLOR = HEX.honey;
+
+/**
+ * Mood and stress, 1–10 on one scale, as two lines over the days: a dot on each day with an answer, a line only between
+ * answers on days in a row. A day with no answer breaks the line; nothing is drawn at 0 for it.
+ */
+export function MoodLines({ days, height = 64 }: { days: { key: string; title: string; mood?: number; stress?: number }[]; height?: number }) {
+  const step = CW / Math.max(1, days.length), x = (i: number) => i * step + step / 2, y = (v: number) => height - ((v - 1) / 9) * height;
+  const series = [
+    { word: "настроение", color: MOOD_COLOR, vals: days.map((d) => d.mood) },
+    { word: "стресс", color: STRESS_COLOR, vals: days.map((d) => d.stress) },
+  ];
   return (
-    <svg viewBox={`0 -4 ${CW} ${height + 8}`} className="d-svg">
-      <line x1={0} x2={CW} y1={y(5)} y2={y(5)} stroke={HEX.hair} strokeDasharray="2 5" />
-      {days.map((d, i) => (
-        <g key={d.key}>
-          {d.mood !== undefined && <circle cx={i * step + step / 2} cy={y(d.mood)} r={3.6} fill={HEX.iris}><title>{`настроение ${d.mood}`}</title></circle>}
-          {d.stress !== undefined && <circle cx={i * step + step / 2} cy={y(d.stress)} r={3.6} fill="none" stroke={HEX.honey} strokeWidth={1.4}><title>{`стресс ${d.stress}`}</title></circle>}
+    <svg viewBox={`0 -6 ${CW} ${height + 12}`} className="d-svg">
+      {[1, 5, 10].map((v) => <line key={v} x1={0} x2={CW} y1={y(v)} y2={y(v)} stroke={HEX.hair} strokeDasharray={v === 5 ? "2 5" : undefined} strokeOpacity={v === 5 ? 1 : 0.5} />)}
+      <text x={CW + 6} y={y(10) + 3}>10</text>
+      <text x={CW + 6} y={y(1) + 3}>1</text>
+      {series.map((s) => (
+        <g key={s.word}>
+          {runs(s.vals).filter((r) => r.length > 1).map((r) => (
+            <path key={r[0][0]} d={r.map(([i, v], j) => `${j ? "L" : "M"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join("")} stroke={s.color} strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" fill="none" />
+          ))}
+          {s.vals.map((v, i) => (v === undefined ? null : <circle key={days[i].key} cx={x(i)} cy={y(v)} r={2.6} fill={s.color}><title>{`${days[i].title}: ${s.word} ${v}`}</title></circle>))}
         </g>
       ))}
     </svg>

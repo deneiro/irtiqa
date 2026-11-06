@@ -1,0 +1,63 @@
+/* The activity page (audit 2026-11-06): «Сейчас» first and largest, the steps, the journal, and a side column with
+   one block of parameters. The app's own tokens and the page's colour --c (the theme's). Every class starts with
+   `q-`; the step rows keep the shared .qstep/.qcheck/.qprogress of styles.css. */
+.q-page { container: q-page / inline-size; }
+.q-lead { max-width: 76ch; margin-top: 2px; color: var(--ink-2); font-size: var(--fs-lead); line-height: 1.55; }
+.q-lead p { margin: 0 0 6px; }
+.q-lead.q-clamp .q-lead-text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.q-lead.q-clamp .q-lead-text p { display: inline; }
+.q-lead.q-clamp .q-lead-text p + p::before { content: " "; }
+.q-link, .q-fold { padding: 0; border: 0; background: none; cursor: pointer; font: 500 var(--fs-sm) var(--font-ui); color: var(--accent-text); }
+.q-link:hover, .q-fold:hover { text-decoration: underline; text-underline-offset: 3px; }
+.q-head { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+
+.q-cols { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 22px; align-items: start; margin-top: 20px; }
+@container q-page (max-width: 820px) { .q-cols { grid-template-columns: minmax(0, 1fr); } }
+.q-main { min-width: 0; }
+.q-label { font: 500 var(--fs-xs) var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+/* «Сейчас»: the one next step, the biggest thing on the page */
+.q-now { padding: 18px 22px 20px; border: 1px solid color-mix(in srgb, var(--c) 30%, var(--hair)); border-left: 3px solid var(--c); border-radius: var(--r-lg); background: color-mix(in srgb, var(--c) 7%, var(--surface)); }
+.q-now .q-label { color: var(--c); }
+.q-now p { margin: 10px 0 0; font: 400 21px/1.4 var(--font-read); color: var(--ink); overflow-wrap: anywhere; }
+.q-now p small { display: block; margin-top: 6px; font: 400 var(--fs-sm) var(--font-ui); color: var(--faint); }
+.q-now p.q-none { font: 400 var(--fs-body) var(--font-ui); color: var(--faint); }
+.q-now.q-clamp .q-now-text { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-top: 10px; }
+.q-now.q-clamp .q-now-text p { display: inline; margin: 0; }
+.q-now.q-clamp .q-now-text p + p::before { content: " "; }
+.q-now .q-link { margin-top: 8px; }
+.q-none { font-size: var(--fs-ui); color: var(--faint); }
+
+.q-block { margin-top: 26px; }
+.q-h { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; font: 500 var(--fs-h3) var(--font-ui); color: var(--ink); }
+.q-h span { font: 400 var(--fs-sm) var(--font-mono); color: var(--faint); }
+.q-tag { margin-left: 8px; font: 400 var(--fs-xs) var(--font-mono); color: var(--faint); text-decoration: none; display: inline-block; }
+.q-detail { margin-top: 4px; font-size: var(--fs-sm); line-height: 1.5; color: var(--muted); overflow-wrap: anywhere; }
+.q-fold { display: block; margin: 10px 0 4px; color: var(--muted); }
+.q-fold:hover { color: var(--ink); }
+
+/* the journal: date · what was done */
+.q-entry { display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--hair); font-size: 13.5px; line-height: 1.5; align-items: baseline; overflow-wrap: anywhere; }
+.q-entry:last-of-type { border-bottom: 0; }
+.q-date { font: 400 var(--fs-sm) var(--font-mono); color: var(--faint); white-space: nowrap; }
+.q-min { margin-right: 8px; font: 400 var(--fs-sm) var(--font-mono); color: var(--c, var(--accent-text)); }
+
+.q-extra { margin-top: 14px; border: 1px solid var(--hair); border-radius: var(--r-lg); background: var(--surface); padding: 10px 16px; }
+.q-extra summary { cursor: pointer; font: 500 var(--fs-ui) var(--font-ui); color: var(--ink-2); }
+.q-extra[open] summary { margin-bottom: 8px; }
+
+/* the side column: one compact block */
+.q-side { position: sticky; top: 16px; min-width: 0; }
+.q-params { display: grid; gap: 12px; }
+.q-kv { display: grid; gap: 8px; }
+.q-kv > label, .q-kv > div { display: grid; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 10px; font-size: var(--fs-ui); }
+.q-kv > label > span, .q-kv > div > span { font-size: var(--fs-sm); color: var(--muted); }
+.q-kv select.text { width: 100%; min-width: 0; }
+.q-kv b { font-weight: 500; color: var(--ink); overflow-wrap: anywhere; }
+.q-kv b small { display: block; margin-top: 2px; font-weight: 400; font-size: var(--fs-sm); color: var(--faint); }
+.q-rel { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding-top: 10px; border-top: 1px solid var(--hair); font-size: var(--fs-ui); }
+.q-rel > span { font: 500 var(--fs-xs) var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.q-ended { font-size: var(--fs-ui); color: var(--ink-2); }
+.q-ending { display: grid; gap: 8px; }
+.q-ending input.text { width: 100%; }
+.q-acts { display: flex; align-items: center; gap: 8px; padding-top: 10px; border-top: 1px solid var(--hair); }

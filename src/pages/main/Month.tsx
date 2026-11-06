@@ -1,12 +1,12 @@
 import { useMemo, type ReactNode } from "react";
 import { buildCircle } from "../../lib/circle";
 import { addDays, plural } from "../../lib/dates";
-import { focusFor, ladder, quietPeople, series, spheres, weightGoal, weightSeries, type ActState } from "../../lib/dashboard";
+import { actName, focusFor, ladder, quietPeople, series, spheres, weightGoal, weightSeries, type ActState } from "../../lib/dashboard";
 import { monthKey } from "../../lib/goals";
 import type { Life } from "../../lib/life";
 import { themeRu } from "../../lib/themes";
 import type { Vault } from "../../lib/types";
-import { Card, ClaudeBlock, Columns, CoverageDots, Glance, GoalRow, HEX, Hero, Points, Status, WeightLine, short, type Tone } from "./parts";
+import { Card, ClaudeBlock, Columns, CoverageDots, Glance, GoalRow, HEX, Hero, MOOD_COLOR, MoodLines, STRESS_COLOR, Status, WeightLine, short, type Tone } from "./parts";
 
 const STATE: Record<ActState | "none", [string, Tone]> = {
   overdue: ["срок прошёл", "ember"], empty: ["записей нет", "honey"], idle: ["стоит", "honey"], moving: ["движется", "sage"], none: ["нет деятельности", "smoke"],
@@ -85,8 +85,8 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
                 return { key: p.date, title: g?.total ? `${short(p.date)}: ${g.done} из ${g.total}` : short(p.date), parts: g?.total ? [seg(g.done / g.total, HEX.sage), seg(1 - g.done / g.total, HEX.well)] : [] };
               })} />
             </Chart>
-            <Chart title="Настроение и стресс" hint={`● настроение · ○ стресс · ${moodDays} ${plural(moodDays, "день", "дня", "дней")} с ответом`}>
-              <Points days={pts.map((p) => ({ key: p.date, mood: p.stats?.mood.avg, stress: p.stats?.stress.avg }))} />
+            <Chart title="Настроение и стресс" hint={<><span className="d-key"><i style={{ background: MOOD_COLOR }} />настроение</span><span className="d-key"><i style={{ background: STRESS_COLOR }} />стресс</span>1–10 · {moodDays} {plural(moodDays, "день", "дня", "дней")} с ответом</>}>
+              <MoodLines days={pts.map((p) => ({ key: p.date, title: short(p.date), mood: p.stats?.mood.avg, stress: p.stats?.stress.avg }))} />
             </Chart>
             <Chart title="Вес" hint={goal ? `цель ${goal.target} кг к ${short(goal.by)} · пунктир — нужный темп` : "цели по весу нет"}>
               <WeightLine points={weights} goal={goal} today={today} />
@@ -98,18 +98,18 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
             <div className="d-spheres">
               {spheres(life, circle, today).map((s) => (
                 <div key={s.theme} className="d-sphere">
-                  <div className="sh"><span className="d-dot" style={{ background: s.color }} />{s.ru}<Status tone={STATE[s.state][1]}>{STATE[s.state][0]}</Status></div>
-                  <div className="sb">{s.acts.length > 0 && <b>{s.acts.map((a) => a.quest.title).join(", ")}{s.fact ? " · " : ""}</b>}{s.fact}</div>
+                  <div className="sh"><span className="d-dot" style={{ background: s.color }} /><span className="nm">{s.ru}</span><Status tone={STATE[s.state][1]}>{STATE[s.state][0]}</Status></div>
+                  <div className="sb">{s.acts.length > 0 && <b>{[...new Set(s.acts.map((a) => actName(a.quest).name))].join(", ")}{s.fact ? " · " : ""}</b>}{s.fact}</div>
                 </div>
               ))}
             </div>
           </Card>
-          <Card title="Давно без связи" right="близкие, по отметкам «Контакт»">
+          <Card title="Давно без связи" right="близкие · кроме тех, с кем живёшь">
             {quiet.length ? (
               <div className="d-people">
                 {quiet.map((c) => <div key={c.page.rel}><span>{c.name}</span><span className="th">{themeRu(c.page.theme)}</span><span className="d">{c.sinceContact}<small> дн</small></span></div>)}
               </div>
-            ) : <p className="d-faint">Отметок «Контакт» у близких нет.</p>}
+            ) : <p className="d-faint">Все близкие на связи.</p>}
           </Card>
         </div>
       </div>
@@ -117,6 +117,6 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
   );
 }
 
-function Chart({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+function Chart({ title, hint, children }: { title: string; hint: ReactNode; children: ReactNode }) {
   return <div className="d-chart"><div className="ct">{title}<span>{hint}</span></div>{children}</div>;
 }

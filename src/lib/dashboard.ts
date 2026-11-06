@@ -6,8 +6,8 @@
  * names in this file are the generic set of prayers in `PRAYER_ORDER`, kept in
  * the order of a day.
  */
-import type { CircleItem } from "./circle";
-import { addDays, plural, weekdayIndex } from "./dates";
+import { atHome, type CircleItem } from "./circle";
+import { addDays, plural, weekdayIndex, WEEKDAYS_EN, WEEKDAYS_RU } from "./dates";
 import { isoWeekKey, monthKey, parseGoalLine, parseGoals, type GoalLine, type GoalsFile } from "./goals";
 import { DEBT_I_OWE, debtLeft, habitDue, isLateMeal, markOf, nowStep, type Day, type Habit, type Life, type Quest } from "./life";
 import { THEMES } from "./themes";
@@ -55,6 +55,8 @@ export interface Stats {
   money: { spent: number; earned: number; days: number };
   tasks: { done: number; total: number; days: number };
   lateMeals: number;
+  /** The days with a meal after 21:00, oldest first, each once. */
+  lateDates: string[];
   mealDays: number;
 }
 
@@ -75,6 +77,7 @@ export function windowStats(life: Life, from: string, to: string): Stats {
   const fallsBy = new Map<string, number>(), missedBy = new Map<string, number>();
   const mood: number[] = [], stress: number[] = [], coverage: boolean[] = [];
   const money = { spent: 0, earned: 0, days: 0 }, tasks = { done: 0, total: 0, days: 0 };
+  const lateDates: string[] = [];
   let falls = 0, held = 0, goodDone = 0, lateMeals = 0, mealDays = 0;
   for (const date of range) {
     const d = life.days.get(date);
@@ -102,7 +105,12 @@ export function windowStats(life: Life, from: string, to: string): Stats {
       for (const t of d.txs) if (t.amount < 0) money.spent -= t.amount; else money.earned += t.amount;
     }
     if (d.tasks.length) { tasks.days++; tasks.total += d.tasks.length; tasks.done += d.tasks.filter((t) => t.done).length; }
-    if (d.meals.length) { mealDays++; lateMeals += d.meals.filter(isLateMeal).length; }
+    if (d.meals.length) {
+      mealDays++;
+      const late = d.meals.filter(isLateMeal).length;
+      lateMeals += late;
+      if (late) lateDates.push(date);
+    }
   }
   const missed = ranked(missedBy);
   return {
@@ -110,7 +118,7 @@ export function windowStats(life: Life, from: string, to: string): Stats {
     prayer, falls, held, fallsBy: ranked(fallsBy),
     good: { done: goodDone, total: goodDone + missed.reduce((a, [, n]) => a + n, 0), missedBy: missed },
     mood: { avg: avg(mood), n: mood.length }, stress: { avg: avg(stress), n: stress.length },
-    money, tasks, lateMeals, mealDays,
+    money, tasks, lateMeals, lateDates, mealDays,
   };
 }
 
@@ -158,6 +166,16 @@ export function weightPace(life: Life, today: string, target: number, by: string
 
 export const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU").replace(/ /g, " ");
 export const plainLinks = (s: string) => s.replace(/\[\[(?:[^\]|]+\|)?([^\]]+)\]\]/g, "$1");
+
+const MON_GEN = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля", "августа", "сентября", "октября", "ноября", "декабря"];
+/** «4 ноября». */
+export const dayMonth = (date: string) => `${Number(date.slice(8, 10))} ${MON_GEN[Number(date.slice(5, 7)) - 1]}`;
+
+/** Dates, oldest first, in the words of `dayMonth` with the month said once per run: «3 и 5 ноября», «30, 31 октября и 2 ноября». */
+export function dayMonthList(dates: string[]): string {
+  const words = dates.map((d, i) => (dates[i + 1]?.slice(0, 7) === d.slice(0, 7) ? String(Number(d.slice(8, 10))) : dayMonth(d)));
+  return words.length < 2 ? words.join("") : `${words.slice(0, -1).join(", ")} и ${words[words.length - 1]}`;
+}
 
 /**
  * A «## Сейчас» line as the activity list shows it, in plain words: no leading date (nor the separator after it), wikilinks
@@ -217,9 +235,22 @@ export function activityView(q: Quest, days: Map<string, Day>, today: string): A
   return { quest: q, state, last, idle, week: ds.filter((d) => d >= addDays(today, -6)).length, now: nowStep(q.body) };
 }
 
+/**
+ * The name the dashboard shows an activity by: its `project:` when it has one, with the title as the small line under
+ * it (none when the two are the same); without a project, the title alone.
+ */
+export function actName(q: Quest): { name: string; sub: string | undefined } {
+  const project = q.project ? plainLinks(q.project).trim() : "";
+  if (!project) return { name: q.title, sub: undefined };
+  return { name: project, sub: q.title.toLowerCase() === project.toLowerCase() ? undefined : q.title };
+}
+
+/** The activity page. */
+export const questUrl = (rel: string) => `/quest/${encodeURIComponent(rel)}`;
+
 export function activities(life: Life, today: string): ActivityView[] {
   return life.quests.filter((q) => q.status === "active").map((q) => activityView(q, life.days, today))
-    .sort((a, b) => ACT_RANK[a.state] - ACT_RANK[b.state] || a.quest.title.localeCompare(b.quest.title, "ru"));
+    .sort((a, b) => ACT_RANK[a.state] - ACT_RANK[b.state] || actName(a.quest).name.localeCompare(actName(b.quest).name, "ru") || a.quest.title.localeCompare(b.quest.title, "ru"));
 }
 
 export type GoalChip = "hot" | "done" | "behind" | "ontrack" | "nodata";
@@ -283,7 +314,43 @@ export function ladder(life: Life, today: string): Rung[] {
   return [rung("Пять лет", five?.[0], false), rung("Год", year), rung("Месяц", monthKey(today)), rung("Неделя", isoWeekKey(today))];
 }
 
-export interface Signal { level: "red" | "gold"; title: string; fact: string; source: string }
+export interface Signal {
+  level: "red" | "gold";
+  title: string;
+  fact: string;
+  source: string;
+  /** The route that shows what the signal is about. */
+  to?: string;
+}
+
+/** Where the signals lead besides an activity: the 14 days of food (the day page shows only today) and the habits. */
+export const NUTRITION_URL = `/theme/${encodeURIComponent("Health & sport")}/nutrition`;
+export const HABITS_URL = "/habits";
+
+const norm = (s: string) => plainLinks(s).toLowerCase().replace(/\s+/g, " ").trim(); // \s takes the no-break spaces of «2 000 000» too
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** `name` stands in `text` as a word of its own, in any case: «Проект В» in «Деньги с Проект В», not in «Проект Вега». */
+// No lookbehind: an older WebKit throws on `(?<!…)`; the letter before is matched instead.
+const namedIn = (name: string, text: string) => !!name && new RegExp(`(?:^|[^\\p{L}\\p{N}])${escapeRe(name)}(?![\\p{L}\\p{N}])`, "iu").test(text);
+
+/**
+ * Where the signal of a dated goal leads: the activity that moves it — first one whose `goal:` names this goals file
+ * and the goal's title or measure (of several, the one also named in the goal's title; none of them named — no pick),
+ * then one whose title or `project:` stands in the goal's title — else the tab of «Главный» that shows the goals file
+ * (the app has no page for `life/`). `acts` are the active ones, in screen order.
+ */
+export function goalTarget(key: string, goal: GoalLine, acts: ActivityView[]): string {
+  const said = [norm(goal.title), norm(goal.measure ?? "")].filter(Boolean);
+  const named = ({ quest: q }: ActivityView) => namedIn(q.title, goal.title) || (!!q.project && namedIn(plainLinks(q.project).trim(), goal.title));
+  const byGoal = acts.filter(({ quest: q }) => {
+    const link = (q.goal ?? "").match(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/);
+    if (!link || link[1].trim().split("/").pop() !== key) return false;
+    const note = norm((q.goal ?? "").replace(link[0], "").replace(/^[\s·—–:-]+/, ""));
+    return !!note && said.some((t) => namedIn(t, note) || namedIn(note, t)); // whole words: a measure «шт» is not in «штук»
+  });
+  const hit = (byGoal.length === 1 ? byGoal[0] : byGoal.find(named)) ?? acts.find(named);
+  return hit ? questUrl(hit.quest.rel) : /-W\d{2}$/.test(key) ? "/?tab=week" : "/?tab=month";
+}
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const nDays = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}`;
@@ -299,33 +366,39 @@ export function signals(life: Life, today: string): Signal[] {
   // (the cascade); two goals on one date inside one file are two goals. Nearest date first.
   const seen = new Set<string>();
   const dated: { due: string; signal: Signal }[] = [];
+  const acts = activities(life, today);
   for (const key of [monthKey(today), isoWeekKey(today), today.slice(0, 4)]) {
     const c = life.goals.get(key);
     const here: string[] = [];
     for (const g of c ? parseGoals(key, c).goals.map((t) => goalView(t, life, today)) : []) {
       if (g.chip !== "hot" || !g.line.due || seen.has(g.line.due)) continue;
       here.push(g.line.due);
-      dated.push({ due: g.line.due, signal: { level: "red", title: `${cap(dueWords(g.line.due, today))} — ${g.line.title}`, fact: [`сейчас: ${g.now ?? "—"}`, g.line.measure ? `мера: ${g.line.measure}` : ""].filter(Boolean).join(" · "), source: `цели ${key}` } });
+      dated.push({ due: g.line.due, signal: { level: "red", title: `${cap(dueWords(g.line.due, today))} — ${g.line.title}`, fact: [`сейчас: ${g.now ?? "—"}`, g.line.measure ? `мера: ${g.line.measure}` : ""].filter(Boolean).join(" · "), source: `цели ${key}`, to: goalTarget(key, g.line, acts) } });
     }
     here.forEach((d) => seen.add(d));
   }
   out.push(...dated.sort((a, b) => a.due.localeCompare(b.due)).map((x) => x.signal));
-  const acts = activities(life, today);
+  const name = (a: ActivityView) => actName(a.quest).name;
   for (const a of acts) {
     const due = a.quest.due;
-    if (due && due >= today && due <= addDays(today, 3)) out.push({ level: "red", title: `${cap(dueWords(due, today))} — ${a.quest.title}`, fact: a.now ? plainStep(a.now) : "", source: "деятельность" });
+    if (due && due >= today && due <= addDays(today, 3)) out.push({ level: "red", title: `${cap(dueWords(due, today))} — ${name(a)}`, fact: a.now ? plainStep(a.now) : "", source: "деятельность", to: questUrl(a.quest.rel) });
   }
+  // The 7 days before today; a day with two late meals counts twice and is named once.
   const s = windowStats(life, addDays(today, -7), addDays(today, -1));
-  if (s.lateMeals) out.push({ level: "red", title: `Еда после 21:00 — ${s.lateMeals} ${plural(s.lateMeals, "раз", "раза", "раз")} за неделю`, fact: `записи еды за ${nDays(s.mealDays)}`, source: "файлы дней, ## Еда" });
-  if (s.good.total && s.good.done / s.good.total < 0.3) out.push({ level: "gold", title: `Полезные привычки — ${s.good.done} из ${s.good.total} за 7 дней`, fact: s.good.missedBy.map(([t, n]) => `${t} ${n}`).join(" · "), source: "вечерний опрос" });
+  if (s.lateMeals) out.push({ level: "red", title: `Еда после 21:00 — ${s.lateMeals} ${plural(s.lateMeals, "раз", "раза", "раз")} за 7 дней`, fact: `${dayMonthList(s.lateDates)} · записи еды за ${nDays(s.mealDays)}`, source: "файлы дней, ## Еда", to: NUTRITION_URL });
+  if (s.good.total && s.good.done / s.good.total < 0.3) out.push({ level: "gold", title: `Полезные привычки — ${s.good.done} из ${s.good.total} за 7 дней`, fact: s.good.missedBy.map(([t, n]) => `${t} ${n}`).join(" · "), source: "вечерний опрос", to: HABITS_URL });
   const stuck = acts.filter((a) => a.state !== "moving");
   if (stuck.length) {
+    // Two activities of one project are one name: it stands once, in the worst group.
+    const told = new Set<string>();
     const group = (st: ActState, head: string, item: (a: ActivityView) => string) => {
-      const xs = stuck.filter((a) => a.state === st);
+      const xs: ActivityView[] = [];
+      for (const a of stuck) if (a.state === st && !told.has(name(a))) { told.add(name(a)); xs.push(a); }
       return xs.length ? `${head}: ${xs.map(item).join(", ")}` : "";
     };
-    const fact = [group("overdue", "срок прошёл", (a) => a.quest.title), group("empty", "записей нет", (a) => a.quest.title), group("idle", "стоят", (a) => `${a.quest.title} ${a.idle} дн`)].filter(Boolean).join(" · ");
-    out.push({ level: "gold", title: `Не движутся ${stuck.length} из ${acts.length} ${plural(acts.length, "деятельности", "деятельностей", "деятельностей")}`, fact, source: "деятельности: журнал, шаги, сессии" });
+    const fact = [group("overdue", "срок прошёл", name), group("empty", "записей нет", name), group("idle", "стоят", (a) => `${name(a)} ${a.idle} дн`)].filter(Boolean).join(" · ");
+    // `stuck` keeps the screen order, worst first: its first is the first the fact names.
+    out.push({ level: "gold", title: `Не движутся ${stuck.length} из ${acts.length} ${plural(acts.length, "деятельности", "деятельностей", "деятельностей")}`, fact, source: "деятельности: журнал, шаги, сессии", to: questUrl(stuck[0].quest.rel) });
   }
   return out.slice(0, 4);
 }
@@ -401,6 +474,16 @@ export function cell(life: Life, h: Habit, date: string, today: string): Cell {
   return m;
 }
 
+/**
+ * A habit kept on some weekdays only (`freq: [пн, чт]`) on a day that is not one of them. The week grid leaves that
+ * cell empty — the circles on its own days say enough; a daily or weekly habit is never off.
+ */
+export function offWeekday(h: Habit, date: string): boolean {
+  if (!Array.isArray(h.freq)) return false;
+  const names = h.freq.map((x) => x.toLowerCase()), wd = weekdayIndex(date);
+  return !names.includes(WEEKDAYS_RU[wd]) && !names.includes(WEEKDAYS_EN[wd]);
+}
+
 export interface WeekCompare { from: string; to: string; cur: Stats; prev: Stats; curWeight: Weight | undefined; prevWeight: Weight | undefined }
 
 /** The week on screen — on a Monday the one that just ended — up to yesterday, against the full week before it. */
@@ -431,6 +514,17 @@ export function series(life: Life, from: string, to: string): DayPoint[] {
     const d = life.days.get(date);
     return { date, stats: d ? windowStats(life, date, date) : undefined, weight: d?.weight };
   });
+}
+
+/** The runs of days in a row that carry a value, as [index, value]: a line joins a run, a day with no value breaks it. */
+export function runs(values: (number | undefined)[]): [number, number][][] {
+  const out: [number, number][][] = [];
+  values.forEach((v, i) => {
+    if (v === undefined) return;
+    if (values[i - 1] === undefined || !out.length) out.push([]);
+    out[out.length - 1].push([i, v]);
+  });
+  return out;
 }
 
 export interface Sphere { theme: string; ru: string; color: string; acts: ActivityView[]; state: ActState | "none"; fact: string }
@@ -465,7 +559,7 @@ export function spheres(life: Life, circle: CircleItem[], today: string): Sphere
   });
 }
 
-/** Close people (closeness ≥ 7) by the days since the last marked contact. */
+/** Close people (closeness ≥ 7) by the days since the last marked contact; not those he lives with (`atHome`). */
 export function quietPeople(circle: CircleItem[], n = 6): CircleItem[] {
-  return circle.filter((c) => (c.closeness ?? 0) >= 7 && c.sinceContact !== undefined).sort((a, b) => b.sinceContact! - a.sinceContact!).slice(0, n);
+  return circle.filter((c) => (c.closeness ?? 0) >= 7 && c.sinceContact !== undefined && !atHome(c.page)).sort((a, b) => b.sinceContact! - a.sinceContact!).slice(0, n);
 }

@@ -1590,11 +1590,18 @@ async function tick() {
       saveState(state);
       const late = now.getTime() - s.at.getTime();
       if (fresh || late > (s.kind === "evening" ? EVENING_GRACE_MS : GRACE_MS)) continue;
-      if (s.kind === "plan") await startPlan(cal);
-      else if (s.kind === "morning") {
-        await sendMorning(cal);
-        if (new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(cal);
-      } else await startSurvey(cal); // an unfinished survey of the day before gives way to this one
+      try {
+        if (s.kind === "plan") await startPlan(cal);
+        else if (s.kind === "morning") {
+          await sendMorning(cal);
+          if (new Date(`${cal}T12:00:00`).getDay() === 0) await askWeight(cal);
+        } else await startSurvey(cal); // an unfinished survey of the day before gives way to this one
+      } catch (e) {
+        // Telegram never got it (the network was down): not sent, so the next tick tries again within the grace.
+        state.sent = state.sent.filter((id) => id !== s.id);
+        saveState(state);
+        throw e;
+      }
     }
   }
   const due = state.snoozes.filter((z) => z.at <= now.getTime());

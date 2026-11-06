@@ -6,7 +6,7 @@
  * not come yet); weight, measures, money and events count through today. No
  * data is «—», never 0, and the note under it says what is missing.
  */
-import { buildCircle } from "./circle";
+import { atHome, buildCircle } from "./circle";
 import { addDays, plural } from "./dates";
 import { activityView, cell, dateRange, daysBetween, fmt, goalView, weightGoal, weightSeries, windowStats, type Cell, type GoalChip } from "./dashboard";
 import { isoWeekKey, monthKey, parseGoals } from "./goals";
@@ -24,6 +24,8 @@ export interface Tile {
   label: string;
   value: string;
   unit?: string;
+  /** A line in plain sight right under the number — what it is about («Бизнес» for `внимание`). */
+  sub?: string;
   /** The one line under the number: a date, the target, or how many days have data. */
   note: string;
   /** 30 beads, oldest first, for the series tiles (a habit, `намаз`). */
@@ -119,6 +121,48 @@ function habitTile(line: NumberLine, h: Habit, ctx: TileCtx): Tile {
   return h.kind === "bad" ? badTile(line, h, ctx, silentHeld(beads, dates, h.cleanSince ?? h.created ?? "")) : goodTile(line, h, ctx, beads);
 }
 
+/** The beads of several habits as one: the best mark of the day wins, so a day is done when any of them is done. */
+const UNION_ORDER: readonly Cell[] = ["done", "late", "held", "failed", "fall", "pending", "unmarked", "nofile", "skip", "future"];
+export function unionCell(life: Life, hs: Habit[], date: string, today: string): Cell {
+  const cells = hs.map((h) => cell(life, h, date, today));
+  return UNION_ORDER.find((c) => cells.includes(c)) ?? "skip";
+}
+
+/**
+ * `[[А]] + [[Б]]` (Eldar, 2026-11-06: «просто считается за один»): several good habits as
+ * one tile — due on any of their days, done on a day when any of them is done, read as the one-habit tile reads.
+ * A bad habit does not join: its run and the count of good days are different numbers.
+ */
+function unionTile(line: NumberLine, parts: string[], ctx: TileCtx): Tile {
+  const hs: Habit[] = [];
+  for (const part of parts) {
+    const target = wikiTarget(part);
+    const h = target === undefined ? undefined : findHabit(ctx.life, target);
+    if (!h) return unknown(line);
+    hs.push(h);
+  }
+  if (hs.some((h) => h.kind === "bad")) {
+    const note = hs.every((h) => h.kind === "bad") ? "плохие привычки не складываются: по одной на плитку" : "хорошую и плохую привычку в одну плитку не сложить";
+    return { label: line.label, value: "—", note };
+  }
+  const { from, to } = tileWindow(ctx.today);
+  const dates = dateRange(from, to);
+  const beads = dates.map((d) => unionCell(ctx.life, hs, d, ctx.today));
+  const active = hs.filter((h) => h.status === "active");
+  if (!active.length) return { label: line.label, value: "—", note: "привычки не активны", beads };
+  let done = 0, due = 0;
+  for (const c of beads) {
+    if (c === "skip" || c === "future") continue;
+    due++;
+    if (c === "done" || c === "late") done++;
+  }
+  const created = active.map((h) => h.created);
+  const first = created.includes(undefined) ? undefined : (created as string[]).sort()[0];
+  const since = first && first > from ? `с ${dateWords(first, ctx.today)}` : "за 30 дней";
+  if (!due) return { label: line.label, value: "—", note: `${since} · положенных дней ещё не было`, beads };
+  return { label: line.label, value: String(done), unit: `из ${due}`, note: since, beads };
+}
+
 /** The day of the prayers as one bead: a missed prayer makes it a miss; one read on time or late makes it held. */
 export function prayerCell(life: Life, date: string, today: string): Cell {
   if (date > today) return "future";
@@ -189,29 +233,40 @@ function measureTile(key: "pushups" | "pullups") {
   };
 }
 
-/** `настроение`: the mean of the window's answers, out of 10. */
-function moodTile(line: NumberLine, ctx: TileCtx): Tile {
-  const { from, to } = tileWindow(ctx.today);
-  const s = windowStats(ctx.life, from, to);
-  const note = `ответов ${s.mood.n} из ${s.length}`;
-  return s.mood.avg === undefined ? { label: line.label, value: "—", note } : { label: line.label, value: num1(s.mood.avg), unit: "из 10", note };
+/** `настроение` and `стресс`: the mean of the window's answers, out of 10. Stress is better low; no tile marks either. */
+function meanTile(key: "mood" | "stress") {
+  return (line: NumberLine, ctx: TileCtx): Tile => {
+    const { from, to } = tileWindow(ctx.today);
+    const m = windowStats(ctx.life, from, to);
+    const note = `ответов ${m[key].n} из ${m.length}`;
+    const avg = m[key].avg;
+    return avg === undefined ? { label: line.label, value: "—", note } : { label: line.label, value: num1(avg), unit: "из 10", note };
+  };
 }
 
-/** `внимание`: the share of the first three themes of the 30 days. */
+/**
+ * `внимание`: the share of the theme that got the most of the 30 days' attention, and its name in plain sight
+ * (Eldar, 2026-11-06: «один, самый большой процент и куда оно уходит»). A tie names both. Until then the tile
+ * summed the first three shares, which read as one big number with the themes in small print.
+ */
 function attentionTile(line: NumberLine, ctx: TileCtx): Tile {
   const { from, to } = tileWindow(ctx.today);
-  const top = [...attentionShares(ctx.life, from, to)].sort((a, b) => b.days - a.days).filter((s) => s.days > 0).slice(0, 3);
-  if (!top.length) return { label: line.label, value: "—", note: "дней с вниманием нет" };
-  const sum = top.reduce((a, s) => a + s.share, 0);
-  return { label: line.label, value: String(sum), unit: "%", note: `${top.map((s) => themeRu(s.theme).toLowerCase()).join(", ")} · остальные — ${100 - sum} %` };
+  const shares = attentionShares(ctx.life, from, to).filter((s) => s.days > 0);
+  if (!shares.length) return { label: line.label, value: "—", note: "дней с вниманием нет" };
+  const most = Math.max(...shares.map((s) => s.days));
+  const top = shares.filter((s) => s.days === most);
+  return { label: line.label, value: String(top[0].share), unit: "%", sub: top.map((s) => themeRu(s.theme)).join(" и "), note: `${most} ${nDays(most)} из 30 · доля среди тем` };
 }
 
-/** `тема`: the days of the 30 this theme got attention, and the last such day. */
+/** What a day of `тема` is, in the tile's own words: themeDays counts these. */
+const THEME_DAY = "дни, когда по теме было что-то: привычка, дело, событие";
+
+/** `тема`: the days of the 30 this theme got attention (`themeDays`), what such a day is, and the last one. */
 function themeTile(line: NumberLine, ctx: TileCtx): Tile {
   const { from, to } = tileWindow(ctx.today);
   const n = themeDays(ctx.life, from, to).get(ctx.theme)?.size ?? 0;
   const last = [...(themeDays(ctx.life, "", to).get(ctx.theme) ?? [])].sort().pop();
-  const note = last ? `последнее — ${dateWords(last, ctx.today)}` : "внимания ещё не было";
+  const note = last ? `${THEME_DAY} · последнее — ${dateWords(last, ctx.today)}` : `${THEME_DAY} · таких ещё не было`;
   if (!n && !dayFiles(ctx.life, from, to)) return { label: line.label, value: "—", note };
   return { label: line.label, value: String(n), unit: `${nDays(n)} из 30`, note };
 }
@@ -292,7 +347,7 @@ export interface Quiet { page: Page; name: string; since: number | undefined; ca
  */
 export function quietClose(vault: Vault, life: Life, theme: string, today: string): Quiet[] {
   const people = peopleOf(vault, theme);
-  const items = buildCircle(people, life.events.filter((e) => e.date <= today), today).filter((i) => (i.closeness ?? 0) >= 7);
+  const items = buildCircle(people, life.events.filter((e) => e.date <= today), today).filter((i) => (i.closeness ?? 0) >= 7 && !atHome(i.page)); // those he lives with he sees every day
   return items.map((i) => {
     const t = lastTouch(i.page, people, life, today);
     const since = t ? daysBetween(t.date, today) : undefined;
@@ -352,7 +407,8 @@ const KINDS: Record<string, (line: NumberLine, ctx: TileCtx) => Tile> = {
   "вес": weightTile,
   "отжимания": measureTile("pushups"),
   "подтягивания": measureTile("pullups"),
-  "настроение": moodTile,
+  "настроение": meanTile("mood"),
+  "стресс": meanTile("stress"),
   "внимание": attentionTile,
   "тема": themeTile,
   "доход": incomeTile,
@@ -364,6 +420,7 @@ const KINDS: Record<string, (line: NumberLine, ctx: TileCtx) => Tile> = {
 };
 
 export function numberTile(line: NumberLine, ctx: TileCtx): Tile {
+  if (line.parts) return unionTile(line, line.parts, ctx);
   const src = line.source.trim();
   const link = wikiTarget(src);
   if (link !== undefined) {

@@ -1,12 +1,11 @@
 import type { ReactNode } from "react";
 import { plural } from "../../lib/dates";
 import { LATE_MEAL_HOUR, type Life } from "../../lib/life";
-import { phraseOf, sectionCards, sectionTable, type SectionKey, type ThemeView } from "../../lib/overview";
+import { findSection, phraseOf, sectionGroups, sectionTable, type SectionKey, type ThemeView } from "../../lib/overview";
 import { SKILL_STATUS } from "../../lib/skills";
 import { nutritionGlance, sportGames } from "../../lib/themeOrgans";
 import { shortDate } from "../../lib/themeNumbers";
 import type { Page, Vault } from "../../lib/types";
-import { pageUrl } from "../../lib/vault";
 import { MedicalOrgan } from "./BodyMap";
 import { FocusOrgan } from "./Focus";
 import { CircleOrgan, EventsOrgan, FinanceOrgan, HorizonOrgan, TalksOrgan, WishesOrgan } from "./organs2";
@@ -16,18 +15,24 @@ import { Inline, Organ, OrganEmpty, partUrl } from "./parts";
 export interface OrganProps { name: string; theme: string; life: Life; vault: Vault; today: string; root: string; overview: Page | undefined; view: ThemeView }
 export type OrganComponent = (p: OrganProps) => ReactNode;
 
-/** A `sections:` string that is not a key: the overview's own `## <name>` — a table as a table, a list as cards. */
+/** How many card titles the compact organ shows; the rest is behind «все →». */
+const HEADING_TITLES = 6;
+
+/**
+ * A `sections:` string that is not a key: the overview's own `## <name>` — a table as a table, a list as the titles
+ * of its first cards (`sectionGroups`); «все →» opens the section's full screen of cards, not the overview file.
+ */
 function HeadingSection(p: OrganProps) {
-  const sec = p.view.sections.find((s) => s.heading === p.name) ?? p.view.sections.find((s) => s.heading.toLowerCase() === p.name.toLowerCase());
-  const more = p.overview ? pageUrl(p.overview) : undefined;
+  const sec = findSection(p.view.sections, p.name);
+  const more = partUrl(p.theme, p.name);
   if (!sec || !sec.md.trim()) return <OrganEmpty title={p.name} more={more} />;
   const table = sectionTable(sec.md);
-  const cards = sectionCards(sec.md);
-  const titled = cards.filter((c) => c.title), plain = cards.filter((c) => !c.title);
+  const groups = sectionGroups(sec.md);
+  const cards = groups.flatMap((g) => g.cards);
   const cellOf = (text: string) => { const c = phraseOf(text); return <><Inline md={c.md} />{c.note && <span className="t-w">{c.note}</span>}</>; };
-  return (
-    <Organ title={p.name} more={more} wide={!!table}>
-      {table && (
+  if (table) {
+    return (
+      <Organ title={p.name} more={more} wide>
         <div className="t-tbl" style={{ ["--cols" as string]: Math.max(1, table.head.length - 1) }}>
           <div className="t-tbl-row t-tbl-head">{table.head.map((h, i) => <span key={i}>{i ? h : ""}</span>)}</div>
           {table.rows.map((row, i) => (
@@ -38,10 +43,16 @@ function HeadingSection(p: OrganProps) {
             </div>
           ))}
         </div>
-      )}
-      {titled.length > 0 && <div className="t-vals">{titled.map((c, i) => <div key={i} className="t-val"><b><Inline md={c.title!} /></b>{c.text && <span><Inline md={c.text} /></span>}</div>)}</div>}
-      {plain.length > 0 && <ul className="t-views">{plain.map((c, i) => <li key={i}><Inline md={c.text} /></li>)}</ul>}
-      {!table && !cards.length && <p className="t-plain"><Inline md={sec.md.replace(/\s+/g, " ")} /></p>}
+      </Organ>
+    );
+  }
+  const note = groups.flatMap((g) => g.notes)[0];
+  if (!cards.length) return <Organ title={p.name} more={more}>{note ? <p className="t-plain t-clamp"><Inline md={note} /></p> : null}</Organ>;
+  const shown = cards.slice(0, HEADING_TITLES);
+  return (
+    <Organ title={p.name} right={`${cards.length} ${plural(cards.length, "пункт", "пункта", "пунктов")}`} more={more}>
+      <div className="t-vals">{shown.map((c, i) => <div key={i} className={`t-val${c.struck ? " t-val-x" : ""}`}><b><Inline md={c.title} /></b></div>)}</div>
+      {cards.length > shown.length && <p className="t-foot">ещё {cards.length - shown.length}</p>}
     </Organ>
   );
 }
