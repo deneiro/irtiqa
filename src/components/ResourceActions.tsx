@@ -68,7 +68,7 @@ export default function ResourceActions({ page }: { page: Page }) {
   const takeQuest = () => act(async () => {
     const q = plan?.quest;
     if (!q) return;
-    await addQuest(q.title, withQuestSteps(q.description, q.steps.map((s) => ({ ...s, done: false }))));
+    await addQuest(q.title, withQuestSteps(q.description, q.steps.map((s) => ({ ...s, done: false, dropped: false }))));
   });
 
   const takeHabit = (h: PlanHabit) => act(() => addHabit(h.title, h.kind, h.freq, h.why));

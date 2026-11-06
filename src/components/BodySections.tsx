@@ -133,7 +133,7 @@ export function MedicalSection() {
   const addSymptom = () => {
     const what = sym.what.trim();
     if (!what) return;
-    void write({ ...card, symptoms: [{ date: today, what, note: sym.note.trim() }, ...card.symptoms] });
+    void write({ ...card, symptoms: [{ date: today, what, where: "", note: sym.note.trim() }, ...card.symptoms] });
     setSym({ what: "", note: "" });
   };
   const addPlan = () => {

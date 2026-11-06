@@ -11,6 +11,8 @@ import ResourceActions from "../components/ResourceActions";
 import PersonActions from "../components/PersonActions";
 import ToolActions from "../components/ToolActions";
 import { isToolPage, toTool } from "../lib/tools";
+import { splitSections } from "../lib/overview";
+import "./theme/Theme.css";
 
 export default function PageView() {
   const { rel = "" } = useParams();
@@ -35,6 +37,8 @@ export default function PageView() {
   const vaultName = root.split("/").pop() ?? "";
   const obsidianUrl = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(page.rel.replace(/\.md$/, ""))}`;
   const body = page.body.replace(/^\s*# [^\n]*\n/, (m) => (m.slice(2).trim() === page.title ? "" : m));
+  // `layout: columns` (spec v4): the page's ## sections side by side; everything else reads as before.
+  const cols = page.fm.layout === "columns" ? splitSections(body) : undefined;
 
   return (
     <div>
@@ -78,7 +82,19 @@ export default function PageView() {
       ) : null}
 
       <div className="pagecols">
-        <Markdown source={body} />
+        {cols ? (
+          <div>
+            {cols.intro && <Markdown source={cols.intro} />}
+            <div className="t-pcols">
+              {cols.sections.map((s) => (
+                <section key={s.heading} className="t-pcol">
+                  <h2>{s.heading}</h2>
+                  <Markdown source={s.md} compact />
+                </section>
+              ))}
+            </div>
+          </div>
+        ) : <Markdown source={body} />}
         <aside className="aside">
           {sources.length > 0 && (
             <div>

@@ -197,7 +197,8 @@ export interface ActivityView {
   now: string | undefined;
 }
 
-function moves(q: Quest, days: Map<string, Day>, today: string): string[] {
+/** The dates an activity moved, up to `today`: its journal lines, its ticked steps (`✓ date`), its sessions. */
+export function moves(q: Quest, days: Map<string, Day>, today: string): string[] {
   const journal = ("\n" + q.body).split(/\n## /).find((s) => s.startsWith("Журнал")) ?? "";
   const dates = [...journal.matchAll(/^- (\d{4}-\d{2}-\d{2})/gm), ...q.body.matchAll(/✓\s*(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]);
   // Days and the calendar name an activity by its file, the title may differ.

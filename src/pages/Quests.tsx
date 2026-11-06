@@ -4,7 +4,7 @@ import { useStore } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { todayStr } from "../lib/dates";
-import { QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, type Quest, type QuestStatus } from "../lib/life";
+import { QUEST_DIR, questDescription, questMinutes, questSteps, questXp, safeFilename, serializeQuest, stepTally, type Quest, type QuestStatus } from "../lib/life";
 import QuestRows from "../components/QuestRows";
 import SourceLink from "../components/SourceLink";
 
@@ -139,7 +139,7 @@ export default function QuestsPage() {
                   <div className="name">{q.title}</div>
                   <div className="sub">{q.theme ? themeLabel(q.theme) : "без темы"}{q.project ? ` · ${q.project}` : ""}{q.source ? <> · <SourceLink source={q.source} /></> : null}</div>
                   {questDescription(q.body) && <div className="small muted" style={{ marginTop: 4 }}>{questDescription(q.body)}</div>}
-                  {questSteps(q.body).length > 0 && <div className="small faint" style={{ marginTop: 4 }}>шагов внутри: {questSteps(q.body).length}</div>}
+                  {stepTally(questSteps(q.body)).total > 0 && <div className="small faint" style={{ marginTop: 4 }}>шагов внутри: {stepTally(questSteps(q.body)).total}</div>}
                 </div>
                 <span />
                 <span />

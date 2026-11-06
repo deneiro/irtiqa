@@ -15,7 +15,11 @@ export const PANCREAS_PAGE = "Панкреатит — что можно и чт
 
 export interface Visit { date: string; doctor: string; why: string; result: string }
 export interface Plan { doctor: string; by: string; why: string }
-export interface Symptom { date: string; what: string; note: string }
+/** `where` (spec v4): one word of BODY_PARTS, his; "" for a row without it — such a row has no dot on the body. */
+export interface Symptom { date: string; what: string; where: string; note: string }
+
+/** The words of the «Где» column, one anchor each on the body outline of the theme page. */
+export const BODY_PARTS: readonly string[] = ["голова", "шея", "грудь", "живот", "спина", "поясница", "плечо", "рука", "колено", "нога"];
 
 export interface HealthCard {
   height: number | undefined;
@@ -37,11 +41,11 @@ const str = (v: unknown): string | undefined => {
   return s || undefined;
 };
 
-/** Rows of one `## Заголовок` table, header and separator dropped. */
-function tableRows(content: string, heading: string): string[][] {
+/** One `## Заголовок` table: its header row and the rows under it, the separator dropped. */
+function table(content: string, heading: string): { head: string[]; rows: string[][] } {
   const lines = content.split(/\r?\n/);
   const start = lines.findIndex((l) => l.trim() === `## ${heading}`);
-  if (start < 0) return [];
+  if (start < 0) return { head: [], rows: [] };
   const out: string[][] = [];
   for (const line of lines.slice(start + 1)) {
     const t = line.trim();
@@ -51,7 +55,23 @@ function tableRows(content: string, heading: string): string[][] {
     if (cells.every((c) => /^-*$/.test(c))) continue;
     out.push(cells);
   }
-  return out.slice(1); // the header row
+  return { head: out[0] ?? [], rows: out.slice(1) };
+}
+
+const tableRows = (content: string, heading: string) => table(content, heading).rows;
+
+/** Symptoms by the names of their columns: a table written before «Где» existed reads as before, without it. */
+function symptoms(content: string): Symptom[] {
+  const { head, rows } = table(content, "Симптомы");
+  const col = (name: string) => head.findIndex((h) => h.toLowerCase() === name);
+  const at = (c: string[], i: number) => (i >= 0 ? c[i] ?? "" : "");
+  const date = col("дата"), what = col("что"), where = col("где"), note = col("заметка");
+  return rows.map((c) => ({
+    date: at(c, date >= 0 ? date : 0),
+    what: at(c, what >= 0 ? what : 1),
+    where: at(c, where),
+    note: at(c, note >= 0 ? note : where >= 0 ? 3 : 2),
+  }));
 }
 
 export function parseHealth(content: string): HealthCard {
@@ -65,14 +85,14 @@ export function parseHealth(content: string): HealthCard {
     chronic,
     visits: tableRows(content, "Визиты").map((c) => ({ date: c[0] ?? "", doctor: c[1] ?? "", why: c[2] ?? "", result: c[3] ?? "" })),
     plans: tableRows(content, "Планы").map((c) => ({ doctor: c[0] ?? "", by: c[1] ?? "", why: c[2] ?? "" })),
-    symptoms: tableRows(content, "Симптомы").map((c) => ({ date: c[0] ?? "", what: c[1] ?? "", note: c[2] ?? "" })),
+    symptoms: symptoms(content),
   };
 }
 
 const HEAD = {
   Визиты: ["| Дата | Врач | Повод | Итог |", "|---|---|---|---|"],
   Планы: ["| Врач | К дате | Зачем |", "|---|---|---|"],
-  Симптомы: ["| Дата | Что | Заметка |", "|---|---|---|"],
+  Симптомы: ["| Дата | Что | Где | Заметка |", "|---|---|---|---|"],
 };
 
 /** Rewrite the three tables, leaving the frontmatter and the prose alone. */
@@ -80,7 +100,7 @@ export function withHealth(content: string, card: HealthCard, today: string): st
   const rows: Record<keyof typeof HEAD, string[]> = {
     Визиты: [...card.visits].sort((a, b) => b.date.localeCompare(a.date)).map((v) => `| ${v.date} | ${v.doctor} | ${v.why} | ${v.result} |`),
     Планы: [...card.plans].sort((a, b) => a.by.localeCompare(b.by)).map((p) => `| ${p.doctor} | ${p.by} | ${p.why} |`),
-    Симптомы: [...card.symptoms].sort((a, b) => b.date.localeCompare(a.date)).map((s) => `| ${s.date} | ${s.what} | ${s.note} |`),
+    Симптомы: [...card.symptoms].sort((a, b) => b.date.localeCompare(a.date)).map((s) => `| ${s.date} | ${s.what} | ${s.where} | ${s.note} |`),
   };
   const lines = content.split(/\r?\n/);
   const out: string[] = [];

@@ -12,7 +12,7 @@ import SourceLink from "../components/SourceLink";
 import QuestTime from "../components/QuestTime";
 import { fmtElapsed } from "../components/QuestRows";
 import {
-  questDescription, questJournal, questOutcome, withQuestOutcome, questMinutes, questSteps, questXp, serializeQuest, withQuestDescription, withQuestSteps,
+  questDescription, questJournal, questOutcome, withQuestOutcome, questMinutes, questSteps, questXp, serializeQuest, stepTally, withQuestDescription, withQuestSteps,
   type Quest, type QuestStatus, type QuestStep,
 } from "../lib/life";
 
@@ -79,15 +79,17 @@ export default function QuestPage() {
   const ended = questOutcome(q.body);
 
   const steps = questSteps(q.body);
-  const doneSteps = steps.filter((x) => x.done).length;
+  const tally = stepTally(steps);
   const setSteps = (next: QuestStep[]) => write({ body: withQuestSteps(q.body, next) });
-  const toggleStep = (i: number) => void setSteps(steps.map((x, j) => (j === i ? { ...x, done: !x.done } : x)));
+  // A «[-]» step is read only here: it is set and lifted by his words, in the file (spec v4).
+  const toggleStep = (i: number) => { if (!steps[i].dropped) void setSteps(steps.map((x, j) => (j === i ? { ...x, done: !x.done } : x))); };
   const addStep = () => {
     const text = newStep.trim();
     if (!text) return;
-    void setSteps([...steps, { done: false, text, detail: "" }]).then(() => setNewStep(""));
+    void setSteps([...steps, { done: false, dropped: false, text, detail: "" }]).then(() => setNewStep(""));
   };
   const removeStep = async (i: number) => {
+    if (steps[i].dropped) return;
     if (!(await confirmAction(`Убрать шаг «${steps[i].text}»?`))) return;
     await setSteps(steps.filter((_, j) => j !== i));
   };
@@ -204,24 +206,24 @@ export default function QuestPage() {
 
       {q.status === "active" && <div style={{ marginTop: 16 }}><QuestTime quest={q} /></div>}
 
-      <h2 className="section">Шаги <span className="n">{steps.length ? `${doneSteps} из ${steps.length}` : 0}</span></h2>
+      <h2 className="section">Шаги <span className="n">{tally.total ? `${tally.done} из ${tally.total}` : 0}</span></h2>
       <div className="card">
-        {steps.length > 0 && (
-          <div className="qprogress" title={`${doneSteps} из ${steps.length}`}><i style={{ width: `${Math.round((doneSteps / steps.length) * 100)}%` }} /></div>
+        {tally.total > 0 && (
+          <div className="qprogress" title={`${tally.done} из ${tally.total}`}><i style={{ width: `${Math.round((tally.done / tally.total) * 100)}%` }} /></div>
         )}
         {steps.length === 0 && <div className="small muted">Шагов нет. Большой квест удобно разбить на мелкие: каждый шаг — одно действие, которое понятно, как сделать.</div>}
         {steps.map((st, i) => {
-          const isNext = !st.done && steps.findIndex((x) => !x.done) === i;
+          const isNext = !st.done && !st.dropped && steps.findIndex((x) => !x.done && !x.dropped) === i;
           return (
-            <div className={`qstep ${st.done ? "done" : ""} ${isNext ? "next" : ""}`} key={i}>
-              <button className="qcheck" disabled={busy} onClick={() => toggleStep(i)} title={st.done ? "вернуть в работу" : "отметить сделанным"}>{st.done ? "✓" : ""}</button>
+            <div className={`qstep ${st.done ? "done" : ""} ${st.dropped ? "dropped" : ""} ${isNext ? "next" : ""}`} key={i}>
+              <button className="qcheck" disabled={busy || st.dropped} onClick={() => toggleStep(i)} title={st.dropped ? "не делаю — снимается словами, в файле" : st.done ? "вернуть в работу" : "отметить сделанным"}>{st.done ? "✓" : st.dropped ? "–" : ""}</button>
               <div style={{ minWidth: 0 }}>
                 <div className="qstext" onClick={() => st.detail && setOpen(open === i ? null : i)} style={{ cursor: st.detail ? "pointer" : "default" }}>
                   {st.text}{isNext && <span className="qnext">дальше</span>}{st.detail && <span className="faint small"> {open === i ? "▾" : "▸"}</span>}
                 </div>
                 {st.detail && open === i && <div className="small muted qsdetail">{st.detail}</div>}
               </div>
-              <button className="btn small ghost" disabled={busy} onClick={() => void removeStep(i)} title="убрать шаг">×</button>
+              <button className="btn small ghost" disabled={busy || st.dropped} onClick={() => void removeStep(i)} title="убрать шаг">×</button>
             </div>
           );
         })}

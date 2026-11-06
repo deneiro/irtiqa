@@ -59,6 +59,10 @@ export interface Habit {
  */
 export type QuestStatus = "active" | "paused" | "done" | "proposed" | "passive" | "dropped";
 
+/** Spec v4 (2026-11-06): the stage of an activity in his words, written by Claude like `## Сейчас`. */
+export type QuestStage = "идёт" | "ждёт" | "стоит";
+export const QUEST_STAGES: QuestStage[] = ["идёт", "ждёт", "стоит"];
+
 export interface Quest {
   rel: string;
   title: string;
@@ -72,6 +76,12 @@ export interface Quest {
   goal?: string | undefined;
   /** 4.1: `каждый день`, `пн–пт`, `раз в неделю`. */
   cadence?: string | undefined;
+  /**
+   * Spec v4: `stage:` and `stage_note:` («ждёт ответа (2030-01-05)»). Read only: they are not in
+   * QUEST_KEYS, so both lines stay in `extraFm` and a rewrite carries them as they were — never written twice.
+   */
+  stage?: QuestStage;
+  stageNote?: string;
   body: string;
   /** Frontmatter keys the app does not model, carried through a rewrite untouched. */
   extraFm?: string[];
@@ -501,9 +511,16 @@ export function parseQuest(f: MdFile): Quest {
     source: str(fm.source),
     goal: str(fm.goal),
     cadence: str(fm.cadence),
+    stage: stageOf(str(fm.stage)),
+    stageNote: str(fm.stage_note),
     body: body.trim(),
     extraFm: foreignFrontmatter(f.content, QUEST_KEYS),
   };
+}
+
+const foldE = (s: string) => s.toLowerCase().replace(/ё/g, "е");
+function stageOf(raw: string | undefined): QuestStage | undefined {
+  return raw ? QUEST_STAGES.find((s) => foldE(s) === foldE(raw)) : undefined;
 }
 
 export function serializeQuest(q: Omit<Quest, "rel">): string {
@@ -583,6 +600,8 @@ export function questDescription(body: string): string {
  */
 export interface QuestStep {
   done: boolean;
+  /** `- [-] шаг — почему` (spec v4): consciously not done — neither done nor open; read and written back as it is. */
+  dropped: boolean;
   text: string;
   detail: string;
 }
@@ -600,8 +619,8 @@ export function questSteps(body: string): QuestStep[] {
   if (!b) return [];
   const out: QuestStep[] = [];
   for (const line of body.slice(b.from, b.to).split(/\r?\n/)) {
-    const m = line.match(/^-\s*\[( |x|X)\]\s*(.*)$/);
-    if (m) { out.push({ done: m[1] !== " ", text: m[2].trim(), detail: "" }); continue; }
+    const m = line.match(/^-\s*\[( |x|X|-)\]\s*(.*)$/);
+    if (m) { out.push({ done: m[1] === "x" || m[1] === "X", dropped: m[1] === "-", text: m[2].trim(), detail: "" }); continue; }
     const last = out[out.length - 1];
     if (last && /^\s{2,}\S/.test(line)) last.detail = (last.detail ? last.detail + "\n" : "") + line.trim();
   }
@@ -610,7 +629,7 @@ export function questSteps(body: string): QuestStep[] {
 
 function renderSteps(steps: QuestStep[]): string {
   return steps.map((s) => {
-    const head = `- [${s.done ? "x" : " "}] ${s.text.replace(/\s+/g, " ").trim()}`;
+    const head = `- [${s.dropped ? "-" : s.done ? "x" : " "}] ${s.text.replace(/\s+/g, " ").trim()}`;
     const detail = s.detail.trim() ? "\n" + s.detail.trim().split(/\r?\n/).map((l) => "  " + l.trim()).join("\n") : "";
     return head + detail;
   }).join("\n");
@@ -667,9 +686,15 @@ export function withQuestOutcome(body: string, o: QuestOutcome): string {
   return `${rest.slice(0, log).trim()}\n\n${section}\n${rest.slice(log).trim()}\n`;
 }
 
-/** The first step not yet done — what the quest is waiting on. */
+/** The first step not yet done — what the quest is waiting on. A `[-]` step is not waited on. */
 export function nextStep(steps: QuestStep[]): QuestStep | undefined {
-  return steps.find((s) => !s.done);
+  return steps.find((s) => !s.done && !s.dropped);
+}
+
+/** «N из M шагов»: a `[-]` step counts in neither. */
+export function stepTally(steps: QuestStep[]): { done: number; total: number } {
+  const live = steps.filter((s) => !s.dropped);
+  return { done: live.filter((s) => s.done).length, total: live.length };
 }
 
 export function withQuestEntry(body: string, e: QuestEntry): string {
