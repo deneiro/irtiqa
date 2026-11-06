@@ -28,8 +28,13 @@ or the vault's `CLAUDE.md`. Since v2 (2026-10-11) the app is the display; since 
 marks, meals, money, mood, stress, weight, sessions, the day's `## Задачи` — the
 morning plan and the evening ticks — `## Сделано` and the `## Журнал` lines —
 through `serializeDay`, never into a closed day), a line in an activity's journal, the day's «Встреча»
-event, and `last_contact`/`updated` on a person page (`lib/contact.ts`, the
-same edit the Circle screen makes). Nothing else.
+event (`/contact` only), an event folder with its photos under `life/events/`
+(«📸 Воспоминание»: `event.md` as the app's own event form writes it, `photo-N.jpg`
+beside it; `lib/memory.ts`), `last_contact`/`updated` on a person page
+(`lib/contact.ts`, the same edit the Circle screen makes; a memory sets
+`last_contact` to the day of the event and never moves it back) and a new person
+page in `wiki/People/` («👤 Человек»: `personPage` in `lib/people.ts`, never the
+keys the app and the owner fill in). Nothing else.
 `src/lib/fs.ts` and `write_text` in `lib.rs` enforce the
 coarse boundary; keep the fine one by hand.
 
