@@ -57,13 +57,18 @@ test("dateWords: day and month, with the year only when it is not this year's", 
 test("[[Привычка]], bad: days without a fall by the app's run; the last fall or «чисто с»; falls of the 30 days; beads", () => {
   const a = tile("- Без А — [[Привычка А]]", LIFE);
   assert.deepEqual(brief(a), { value: "11", unit: "дней", note: "последний срыв — 20 января · за 30 дней 1" });
-  assert.equal(beads(a), "nnnuuh" + "n".repeat(12) + "fhnnnuuuuunu");
+  assert.equal(beads(a), "h".repeat(18) + "f" + "h".repeat(11)); // nothing written after clean_since counts as held, a fall stays
   assert.deepEqual(brief(tile("- Без Б — [[Привычка Б]]", LIFE)), { value: "48", unit: "дней", note: "чисто с 15 декабря 2029" });
   assert.deepEqual(brief(tile("- Без Г — [[Привычка Г]]", LIFE)), { value: "1", unit: "день", note: "последний срыв — 29 января · за 30 дней 1" });
   const d = tile("- Без Д — [[Привычка Д]]", LIFE);
   assert.deepEqual([d.value, d.warn], ["0", true]); // the run broke yesterday
   // no clean_since and not one mark: nothing is known
   assert.deepEqual(brief(tile("- Без В — [[Привычка В]]", LIFE)), { value: "—", unit: undefined, note: "отметок нет" });
+});
+
+test("[[Привычка]], bad: a day with nothing written before clean_since is not counted as held", () => {
+  const t = tile("- Новая — [[Новая]]", ctxOf([habit("Новая", "bad", { clean_since: "2030-01-20" })]));
+  assert.equal(beads(t), "n".repeat(18) + "h".repeat(12));
 });
 
 test("[[Привычка]], good: done of the due days since its creation; nothing due yet is «—»", () => {
@@ -79,7 +84,7 @@ test("[[Привычка]], good: done of the due days since its creation; nothi
 test("намаз: days since the last day with a missed prayer; days marked of the run; one bead per day", () => {
   const p = tile("- Не оставлять намаз — намаз", LIFE);
   assert.deepEqual(brief(p), { value: "26", unit: "дней", note: "последний пропуск — 5 января · отмечено 2 дня из 26" });
-  assert.equal(beads(p), "nnnfhu" + "n".repeat(12) + "uunnnuuuuunh");
+  assert.equal(beads(p), "hhhfhh" + "h".repeat(24)); // a day without prayer marks holds, a missed prayer stays
   const life = buildLife([...HABITS, ...DAYS]);
   assert.equal(prayerCell(life, "2030-02-01", TODAY), "pending"); // today has no file yet
   assert.equal(prayerCell(life, "2030-02-02", TODAY), "future");
