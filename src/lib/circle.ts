@@ -7,8 +7,9 @@
  * wrote, when he last met — and counts what broke on the days they met.
  */
 import type { Page } from "./types";
-import type { Day, Habit } from "./life";
-import { markOf } from "./life";
+import { markOf, type Habit, type Life } from "./life";
+import type { Cell } from "./dashboard";
+import { addDays } from "./dates";
 import { personName, type LifeEvent } from "./events";
 import { categoryOf, closenessOf, daysSinceContact } from "./people";
 
@@ -129,6 +130,8 @@ export interface TriggerStat {
   people: CircleItem[];
   /** Days in the window when one of those people was met. */
   metDays: number;
+  /** Of those, the days that have a day file: the only ones counted. */
+  metWithFile: number;
   /** Of those, days the habit broke. */
   brokeOnMet: number;
   /** Days the habit broke without any of them around. */
@@ -136,28 +139,143 @@ export interface TriggerStat {
   otherDays: number;
 }
 
-/** What actually happens on the days he sees them. Empty until events exist. */
+/**
+ * What actually happens on the days he sees them, over the window ending yesterday (the evening survey of
+ * today has not come yet). A meeting without a day file is in neither count. Empty until events exist.
+ */
 export function triggerStats(
-  items: CircleItem[], events: LifeEvent[], days: Map<string, Day>, habits: Habit[], today: string, window = 90,
+  items: CircleItem[], life: Life, today: string, window = 90, triggers = TRIGGERS,
 ): TriggerStat[] {
-  const from = new Date(new Date(today + "T12:00:00").getTime() - window * 86400000).toISOString().slice(0, 10);
-  const recent = events.filter((e) => e.date >= from && e.date <= today);
-  const dayList = [...days.values()].filter((d) => d.date >= from && d.date <= today);
-  return TRIGGERS.map((t) => {
+  const { from, to } = meetWindow(today, window);
+  return triggers.map((t) => {
     const people = items.filter((i) => i.triggers.includes(t.key));
     const names = new Set(people.flatMap((i) => [i.name, i.page.file, ...i.page.aliases].map((s) => s.toLowerCase())));
-    const metDates = new Set(recent.filter((e) => e.people.some((p) => names.has(personName(p).toLowerCase()))).map((e) => e.date));
-    const habit = habits.find((h) => h.title.toLowerCase() === t.habit.toLowerCase());
-    let brokeOnMet = 0, brokeApart = 0, otherDays = 0;
-    if (habit) {
-      for (const d of dayList) {
-        const broke = markOf(d, habit.title) === "failed";
-        if (metDates.has(d.date)) { if (broke) brokeOnMet++; }
-        else { otherDays++; if (broke) brokeApart++; }
-      }
-    }
-    return { key: t.key, label: t.label, habit: habit?.title ?? "", people, metDays: metDates.size, brokeOnMet, brokeApart, otherDays };
+    const met = new Set(life.events.filter((e) => e.date >= from && e.date <= to && e.people.some((p) => names.has(personName(p).toLowerCase()))).map((e) => e.date));
+    const habit = t.habit ? life.habits.find((h) => h.title.toLowerCase() === t.habit.toLowerCase()) : undefined;
+    const c = habit ? countOnMeetings(life, habit, met, from, to) : undefined;
+    return {
+      key: t.key, label: t.label, habit: habit?.title ?? "", people, metDays: met.size,
+      metWithFile: c?.counted ?? 0, brokeOnMet: c?.hits ?? 0, brokeApart: c?.apartHits ?? 0, otherDays: c?.apart ?? 0,
+    };
   }).filter((s) => s.people.length > 0);
 }
 
+/** The days the meetings are counted over: `window` days ending yesterday. */
+export function meetWindow(today: string, window = 90): { from: string; to: string } {
+  const to = addDays(today, -1);
+  return { from: addDays(to, -(window - 1)), to };
+}
+
+/** The lowercased names a person goes by in events, without an alias that is another person's own name (the rule of `buildCircle`). */
+export function ownNames(page: Page, people: Page[]): string[] {
+  const self = [page.title, page.file].map((s) => s.toLowerCase());
+  const own = new Set(people.flatMap((p) => [p.title, p.file].map((x) => x.toLowerCase())));
+  return [...new Set([...self, ...page.aliases.map((s) => s.toLowerCase()).filter((a) => self.includes(a) || !own.has(a))])];
+}
+
+/** The events a person was at, newest first as `life.events` keeps them. */
+export function eventsWith(page: Page, people: Page[], events: LifeEvent[]): LifeEvent[] {
+  const names = new Set(ownNames(page, people));
+  return events.filter((e) => e.people.some((p) => names.has(personName(p).toLowerCase())));
+}
+
+/**
+ * A day as the count of meetings sees it, in the words of the beads of «Главный»: no day file, no mark, or
+ * the mark. Only the file and the mark decide (spec v5): the habit's schedule and creation do not enter.
+ */
+function dayMark(life: Life, h: Habit, date: string): Cell {
+  const d = life.days.get(date);
+  if (!d) return "nofile";
+  const m = markOf(d, h.title);
+  if (!m) return "unmarked";
+  if (m === "skipped") return "skip";
+  if (h.kind === "bad") return m === "failed" ? "fall" : "held";
+  return m;
+}
+
+/** One habit on the days of the meetings, against the other days with a day file. */
+export interface HabitCount {
+  habit: Habit;
+  /** Each meeting day of the window, oldest first, with the habit's bead that day. */
+  beads: { date: string; cell: Cell }[];
+  /** Meetings with a day file (a «пропуск» mark aside): the only ones counted. */
+  counted: number;
+  /** Of those, the days with a mark. */
+  marked: number;
+  /** Of those, the falls of a bad habit, or the days a good one was done. */
+  hits: number;
+  /** Days with a day file and no meeting; and the falls (or the days done) among them. */
+  apart: number;
+  apartHits: number;
+}
+
+export function countOnMeetings(life: Life, habit: Habit, met: Set<string>, from: string, to: string): HabitCount {
+  const hit = (c: Cell) => (habit.kind === "bad" ? c === "fall" : c === "done" || c === "late");
+  const beads = [...met].filter((d) => d >= from && d <= to).sort().map((date) => ({ date, cell: dayMark(life, habit, date) }));
+  const counted = beads.filter((b) => b.cell !== "nofile" && b.cell !== "skip");
+  let apart = 0, apartHits = 0;
+  for (const date of life.days.keys()) {
+    if (date < from || date > to || met.has(date)) continue;
+    const c = dayMark(life, habit, date);
+    if (c === "skip") continue;
+    apart++;
+    if (hit(c)) apartHits++;
+  }
+  return { habit, beads, counted: counted.length, marked: counted.filter((b) => b.cell !== "unmarked").length, hits: counted.filter((b) => hit(b.cell)).length, apart, apartHits };
+}
+
+export interface PersonInfluence {
+  /** The days he met the person in the window, oldest first: any event with them, «Встреча» too. */
+  meetings: string[];
+  /** Of those, the days that have a day file. */
+  withFile: string[];
+  /** One count a habit, in the order given. */
+  rows: HabitCount[];
+}
+
+/** The count of `triggerStats` for one person and the habits their page links to. */
+export function personInfluence(page: Page, people: Page[], life: Life, habits: Habit[], today: string, window = 90): PersonInfluence {
+  const { from, to } = meetWindow(today, window);
+  const met = new Set(eventsWith(page, people, life.events).filter((e) => e.date >= from && e.date <= to).map((e) => e.date));
+  const meetings = [...met].sort();
+  return { meetings, withFile: meetings.filter((d) => life.days.has(d)), rows: habits.map((h) => countOnMeetings(life, h, met, from, to)) };
+}
+
+/**
+ * Who was at the same events with the person most often, `min` times and more, the most first.
+ * The day's «Встреча» record is left out: it lists everyone met that day, not the ones who were together.
+ */
+export function coMet(page: Page, people: Page[], events: LifeEvent[], min = 2): { name: string; page: Page | undefined; n: number }[] {
+  const own = new Set(ownNames(page, people));
+  const pageOf = (k: string) => people.find((p) => p.title.toLowerCase() === k || p.file.toLowerCase() === k) ?? people.find((p) => p.aliases.some((a) => a.toLowerCase() === k));
+  const count = new Map<string, { name: string; page: Page | undefined; n: number }>();
+  for (const e of eventsWith(page, people, events)) {
+    if (isMeetingRecord(e)) continue;
+    const seen = new Set<string>();
+    for (const raw of e.people) {
+      const name = personName(raw);
+      const k = name.toLowerCase();
+      if (own.has(k)) continue;
+      const p = pageOf(k);
+      if (p?.rel === page.rel) continue;
+      const key = p?.rel ?? k;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const c = count.get(key) ?? { name: p?.title ?? name, page: p, n: 0 };
+      c.n++;
+      count.set(key, c);
+    }
+  }
+  return [...count.values()].filter((c) => c.n >= min).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, "ru"));
+}
+
 export const MEETING_TITLE = "Встреча";
+
+/**
+ * The day's meeting record that «виделись» keeps (`contactEdits`: the title «Встреча» and the tag «встреча»):
+ * everyone met that day, not a memory. A memory he named «Встреча» himself (the bot's «📸 Воспоминание») has
+ * no such tag and stays a memory.
+ */
+export function isMeetingRecord(e: LifeEvent): boolean {
+  return e.title === MEETING_TITLE && e.tags.some((t) => t.toLowerCase() === "встреча");
+}

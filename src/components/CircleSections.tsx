@@ -119,7 +119,7 @@ export function InfluenceSection({ theme }: { theme: string }) {
   );
   const items = useMemo(() => buildCircle(people, life?.events ?? [], today), [people, life, today]);
   const stats = useMemo(
-    () => (life ? triggerStats(items, life.events, life.days, life.habits, today) : []),
+    () => (life ? triggerStats(items, life, today) : []),
     [items, life, today],
   );
   if (!life || !stats.length) return null;
@@ -141,7 +141,8 @@ export function InfluenceSection({ theme }: { theme: string }) {
           </div>
         )}
         {stats.map((s) => {
-          const rateMet = s.metDays ? s.brokeOnMet / s.metDays : undefined;
+          // Only a meeting with a day file is counted: the others say nothing of what broke.
+          const rateMet = s.metWithFile ? s.brokeOnMet / s.metWithFile : undefined;
           const rateApart = s.otherDays ? s.brokeApart / s.otherDays : undefined;
           return (
             <div key={s.key} className="trow">
@@ -161,8 +162,10 @@ export function InfluenceSection({ theme }: { theme: string }) {
                   <span className="faint">встреч за 90 дней не отмечено</span>
                 ) : (
                   <>
-                    <div>{s.metDays} {plural(s.metDays, "встреча", "встречи", "встреч")} · срывов {s.brokeOnMet}</div>
-                    {rateMet !== undefined && rateApart !== undefined && (
+                    <div>{s.metDays} {plural(s.metDays, "встреча", "встречи", "встреч")} · с файлом дня {s.metWithFile} · срывов {s.brokeOnMet}</div>
+                    {s.metWithFile < 3 ? (
+                      <div className="faint">судить рано: записанных дней встреч меньше трёх</div>
+                    ) : rateMet !== undefined && rateApart !== undefined && (
                       <div className="faint">
                         {Math.round(rateMet * 100)}% в дни встреч против {Math.round(rateApart * 100)}% в остальные
                       </div>

@@ -259,12 +259,12 @@ function movesTile(line: NumberLine, ctx: TileCtx): Tile {
 }
 
 /** Person pages as the circle counts them: no authors, no templates. */
-function peopleOf(vault: Vault, theme?: string): Page[] {
+export function peopleOf(vault: Vault, theme?: string): Page[] {
   return vault.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p) && (!theme || p.theme === theme));
 }
 
 /** The latest touch with a person through today: `last_contact`, a talk in `life/talks.md` or an event with them. */
-function lastTouch(page: Page, people: Page[], life: Life, today: string): { date: string; how: string } | undefined {
+export function lastTouch(page: Page, people: Page[], life: Life, today: string): { date: string; how: string } | undefined {
   const item = buildCircle(people, life.events.filter((e) => e.date <= today), today).find((i) => i.page.rel === page.rel);
   const talk = lastTalk(parseTalks(life.talks ?? "").filter((t) => t.date <= today), [page.title, page.file, ...page.aliases]);
   const all = [
