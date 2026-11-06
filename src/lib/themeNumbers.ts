@@ -105,12 +105,18 @@ function goodTile(line: NumberLine, h: Habit, ctx: TileCtx, beads: Cell[]): Tile
   return { label: line.label, value: String(done), unit: `из ${due}`, note: since, beads };
 }
 
+/** A vow holds on a day with nothing written: the run already counts that day, so its bead is green too. A fall stays; days before `start` stay as they are. */
+function silentHeld(beads: Cell[], dates: string[], start: string): Cell[] {
+  return beads.map((c, i) => ((c === "unmarked" || c === "nofile") && dates[i] >= start ? "held" : c));
+}
+
 function habitTile(line: NumberLine, h: Habit, ctx: TileCtx): Tile {
   const { from, to } = tileWindow(ctx.today);
-  const beads = dateRange(from, to).map((d) => cell(ctx.life, h, d, ctx.today));
+  const dates = dateRange(from, to);
+  const beads = dates.map((d) => cell(ctx.life, h, d, ctx.today));
   // not active: no run, whatever its marks
   if (h.status !== "active") return { label: line.label, value: "—", note: "привычка не активна", beads };
-  return h.kind === "bad" ? badTile(line, h, ctx, beads) : goodTile(line, h, ctx, beads);
+  return h.kind === "bad" ? badTile(line, h, ctx, silentHeld(beads, dates, h.cleanSince ?? h.created ?? "")) : goodTile(line, h, ctx, beads);
 }
 
 /** The day of the prayers as one bead: a missed prayer makes it a miss; one read on time or late makes it held. */
@@ -130,10 +136,11 @@ function prayerTile(line: NumberLine, ctx: TileCtx): Tile {
   const { from, to } = tileWindow(today);
   const prayers = life.habits.filter((h) => h.kind === "prayer" && h.status === "active");
   if (!prayers.length) return { label: line.label, value: "—", note: "намазов среди привычек нет" };
-  const beads = dateRange(from, to).map((d) => prayerCell(life, d, today));
   const missed = [...life.days.keys()].filter((d) => d <= to && prayerCell(life, d, today) === "fall").sort();
   const last = missed[missed.length - 1];
   const first = [...prayers.map((h) => h.created).filter((c): c is string => !!c), ...life.days.keys()].sort()[0] ?? to;
+  const dates = dateRange(from, to);
+  const beads = silentHeld(dates.map((d) => prayerCell(life, d, today)), dates, first);
   const start = last ? addDays(last, 1) : first;
   const run = start <= to ? dateRange(start, to) : [];
   const marked = run.filter((d) => prayerCell(life, d, today) === "held").length;
