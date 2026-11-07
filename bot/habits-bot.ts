@@ -1210,11 +1210,17 @@ async function onPersonCallback(code: string, chat: number, msg: number) {
 
 type Button = { text: string; callback_data: string };
 
-async function tg<T = unknown>(method: string, body: Record<string, unknown>): Promise<T> {
+/**
+ * One Bot API call. Every call has a deadline: a request left open across a
+ * Mac sleep is a dead socket that the OS drops only after 20–30 minutes.
+ */
+async function tg<T = unknown>(method: string, body: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
+  const deadline = AbortSignal.timeout(method === "getUpdates" ? 65_000 : 30_000);
   const r = await fetch(`https://api.telegram.org/bot${cfg.token}/${method}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
+    signal: signal ? AbortSignal.any([signal, deadline]) : deadline,
   });
   const j = (await r.json()) as { ok: boolean; result: T; description?: string };
   if (!j.ok) throw new Error(`${method}: ${j.description}`);
@@ -1615,12 +1621,28 @@ async function tick() {
   state.sent = state.sent.filter((id) => id.slice(0, 10) >= keep);
 }
 
+/** The long poll in flight; the wake watchdog aborts it. */
+let pollAbort: AbortController | null = null;
+
+// Timers stop while the Mac sleeps, so a 5 s beat that comes late means it woke:
+// the open long poll is dead, drop it and ask Telegram again at once.
+let lastBeat = Date.now();
+setInterval(() => {
+  const now = Date.now();
+  if (now - lastBeat > 15_000) {
+    console.log(new Date().toISOString(), `woke after ${Math.round((now - lastBeat) / 1000)} s, polling again`);
+    pollAbort?.abort();
+  }
+  lastBeat = now;
+}, 5_000);
+
 async function poll() {
   for (;;) {
     try {
+      pollAbort = new AbortController();
       const updates = await tg<{ update_id: number; message?: Message; callback_query?: CallbackQuery }[]>("getUpdates", {
         offset: state.offset, timeout: 50, allowed_updates: ["message", "callback_query"],
-      });
+      }, pollAbort.signal);
       for (const u of updates) {
         state.offset = u.update_id + 1;
         saveState(state);
@@ -1637,8 +1659,10 @@ async function poll() {
         }
       }
     } catch (e) {
+      if (pollAbort?.signal.aborted) continue;
       console.error(new Date().toISOString(), "poll", e);
-      await new Promise((r) => setTimeout(r, 10_000));
+      // Short: right after a wake the network is back within seconds.
+      await new Promise((r) => setTimeout(r, 3_000));
     }
   }
 }
