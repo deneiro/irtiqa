@@ -112,7 +112,7 @@ export function NumberGroups({ groups, tiles, today }: { groups: NumberGroup[]; 
 }
 
 function Step({ kind, title, parts }: { kind: "past" | "now" | "next"; title: string; parts: ColumnPart[] }) {
-  const shown = parts.length ? parts : [{ suffix: "", items: [] }];
+  const shown = parts;
   return (
     <div className={`t-step t-${kind}`}>
       <h3>{title}</h3>
@@ -133,6 +133,7 @@ function Step({ kind, title, parts }: { kind: "past" | "now" | "next"; title: st
 
 /** «Где был · Где стою · Куда иду»: one phrase a line; in a narrow window one column in the same order. */
 export function Columns({ past, stand, next }: { past: ColumnPart[]; stand: ColumnPart[]; next: ColumnPart[] }) {
+  if (!past.length && !stand.length && !next.length) return null; // nothing picked from the bank: nothing shown, not a made-up line
   return (
     <div className="t-ascent">
       <Step kind="past" title="Где был" parts={past} />

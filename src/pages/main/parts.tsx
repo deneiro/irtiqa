@@ -4,6 +4,7 @@ import { startRun } from "../../lib/claude";
 import { useRuns } from "../../lib/claudeRuns";
 import { taskId } from "../../lib/bank";
 import { carriedFrom, stripCarry } from "../../lib/carry";
+import { PERIODS, stripPeriod, type PeriodKey } from "../../lib/periods";
 import { actName, dayMonth, daysBetween, plainLinks, plainStep, questUrl, runs, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
 import { themeColor, themeRu } from "../../lib/themes";
 import { useDayToday } from "../../lib/useDayToday";
@@ -155,7 +156,7 @@ export function GoalRow({ g }: { g: GoalView }) {
  */
 export function TaskLine({ text, today, item }: { text: string; today: string; item?: { need?: string; money?: string } }) {
   const from = carriedFrom(text);
-  const { id, rest } = taskId(stripCarry(text));
+  const { id, rest } = taskId(stripPeriod(stripCarry(text)));
   const since = from && (/W\d{2}$/.test(from) ? `с недели ${Number(from.slice(-2))}` : `с ${short(from)} · ${daysBetween(from, today) + 1}-й день`);
   return (
     <span className="d-task">
@@ -172,21 +173,29 @@ export type PrayerMark = "done" | "late" | "failed" | "none";
 const ARC_DEG: Record<string, number> = { "Фаджр": 205, "Зухр": 86, "Жума": 86, "Аср": 40, "Магриб": 0, "Иша": -28, "Витр": -55 };
 const ARC_WORD: Record<PrayerMark, string> = { done: "вовремя", late: "поздно", failed: "пропущен", none: "без отметки" };
 
-/** The signature of «Сегодня»: yesterday's prayers on the sun's path over the horizon — fajr before dawn, isha and witr after dusk. */
-export function DayArc({ prayers }: { prayers: { title: string; mark: PrayerMark }[] }) {
+/** One part of the day on the arc: how many tasks it holds and how many are done. */
+export interface ArcPeriod { key: PeriodKey; total: number; done: number }
+
+/**
+ * The signature of «Сегодня»: today's prayers on the sun's path — fajr before dawn, isha and witr after dusk —
+ * and between each two prayers a dot for every task of that part of the day (a filled one is done).
+ */
+export function DayArc({ prayers, periods = [], now }: { prayers: { title: string; mark: PrayerMark }[]; periods?: ArcPeriod[]; now?: PeriodKey }) {
   const W = 560, cx = W / 2, hy = 150, rx = 236, ry = 116;
-  const pt = (deg: number): [number, number] => { const r = (deg * Math.PI) / 180; return [cx + rx * Math.cos(r), hy - ry * Math.sin(r)]; };
-  const path = (a: number, b: number) => {
-    const n = Math.ceil(Math.abs(b - a) / 2);
-    return Array.from({ length: n + 1 }, (_, i) => { const [x, y] = pt(a + ((b - a) * i) / n); return `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`; }).join("");
+  const pt = (deg: number, k = 1): [number, number] => { const r = (deg * Math.PI) / 180; return [cx + rx * k * Math.cos(r), hy - ry * k * Math.sin(r)]; };
+  const path = (a: number, b: number, k = 1) => {
+    const n = Math.max(1, Math.ceil(Math.abs(b - a) / 2));
+    return Array.from({ length: n + 1 }, (_, i) => { const [x, y] = pt(a + ((b - a) * i) / n, k); return `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`; }).join("");
   };
   const of = (m: PrayerMark) => prayers.filter((p) => p.mark === m);
   const late = of("late"), failed = of("failed");
-  // Not a made-up «0 вовремя»: with no mark at all (no day file, or nothing answered) the caption is «—».
-  const said = of("none").length === prayers.length ? "—" : `${of("done").length} вовремя${late.length ? ` · ${late.length} поздно (${late.map((p) => p.title).join(", ")})` : ""}${failed.length ? ` · ${failed.length} пропущено` : ""}`;
+  // Not a made-up «0 вовремя»: with no mark at all (nothing answered yet) the caption says so.
+  const said = of("none").length === prayers.length ? "отметки — в 21:00" : `${of("done").length} вовремя${late.length ? ` · ${late.length} поздно (${late.map((p) => p.title).join(", ")})` : ""}${failed.length ? ` · ${failed.length} пропущено` : ""}`;
+  const tasks = periods.reduce((a, p) => a + p.total, 0);
+  const cur = PERIODS.find((p) => p.key === now);
   return (
     <div className="d-arc">
-      <svg viewBox={`-12 0 ${W + 24} 286`} role="img" aria-label="Намаз вчера по времени дня">
+      <svg viewBox={`-12 0 ${W + 24} 286`} role="img" aria-label="Намаз сегодня по времени дня и задачи по периодам">
         <defs>
           <linearGradient id="d-sunpath" x1="0" x2="1">
             <stop offset="0" stopColor="#E39A7A" stopOpacity="0.55" />
@@ -198,8 +207,17 @@ export function DayArc({ prayers }: { prayers: { title: string; mark: PrayerMark
         <path className="night" d={path(214, 180)} />
         <path className="night" d={path(0, -62)} />
         <path className="day" pathLength={1} stroke="url(#d-sunpath)" d={path(180, 0)} />
+        {cur && <path className="now" d={path(ARC_DEG[cur.from], ARC_DEG[cur.to], 0.86)} />}
         <text x={0} y={hy + 16} className="edge">рассвет</text>
         <text x={W} y={hy + 16} textAnchor="end" className="edge">закат</text>
+        {periods.map((p) => {
+          const per = PERIODS.find((x) => x.key === p.key)!;
+          const a = ARC_DEG[per.from], b = ARC_DEG[per.to];
+          return Array.from({ length: p.total }, (_, i) => {
+            const [x, y] = pt(a + ((b - a) * (i + 1)) / (p.total + 1), 0.86);
+            return <circle key={`${p.key}${i}`} cx={x.toFixed(1)} cy={y.toFixed(1)} r={4.2} className={`tk${i < p.done ? " done" : ""}`}><title>{`${per.roman} · ${per.from}–${per.to}: ${p.done} из ${p.total}`}</title></circle>;
+          });
+        })}
         {prayers.map((p, i) => {
           const [x, y] = pt(ARC_DEG[p.title] ?? 90);
           return (
@@ -216,8 +234,8 @@ export function DayArc({ prayers }: { prayers: { title: string; mark: PrayerMark
         })}
       </svg>
       <div className="cap">
-        <span>Вчера: {said}</span>
-        <span>намаз по времени дня</span>
+        <span>Сегодня: {said}</span>
+        <span>{cur ? `сейчас ${cur.roman} · ${cur.what}` : ""}{tasks ? ` · задач ${tasks}` : ""}</span>
       </div>
     </div>
   );

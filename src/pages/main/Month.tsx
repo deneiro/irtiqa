@@ -6,7 +6,8 @@ import { monthKey } from "../../lib/goals";
 import type { Life } from "../../lib/life";
 import { themeColor, themeRu } from "../../lib/themes";
 import { Link } from "react-router-dom";
-import { BANK_THEME_ORDER, progress } from "../../lib/bank";
+import { ROMAN, progress } from "../../lib/bank";
+import { monthPicks } from "../../lib/picks";
 import { useBank } from "./Levels";
 import type { Vault } from "../../lib/types";
 import { Card, ClaudeBlock, Columns, CoverageDots, Glance, HEX, Hero, MOOD_COLOR, MoodLines, STRESS_COLOR, Status, WeightLine, short, type Tone } from "./parts";
@@ -23,7 +24,7 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
   const yesterday = addDays(today, -1);
   const focus = focusFor(life, monthKey(today), monthKey(addDays(`${today.slice(0, 7)}-01`, -1)));
   const bank = useBank(life);
-  const goals = useMemo(() => [...bank].sort((a, b) => BANK_THEME_ORDER.indexOf(a.goals[0]?.id[0] ?? "") - BANK_THEME_ORDER.indexOf(b.goals[0]?.id[0] ?? "")).flatMap((f) => f.goals), [bank]);
+  const picks = useMemo(() => monthPicks(life, bank, today), [life, bank, today]);
   const pts = useMemo(() => series(life, addDays(yesterday, -29), yesterday), [life, yesterday]);
   const circle = useMemo(() => buildCircle(vault.pages.filter((p) => p.zone === "person"), life.events, today), [vault, life, today]);
   const goal = weightGoal(life, today);
@@ -50,23 +51,23 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
         ]} />
         <p className="d-foot">за 30 дней, {short(pts[0].date)} – {short(pts[pts.length - 1].date)}</p>
       </Hero>
-      <Card title="Куда двигаюсь" right={<Link to="/?tab=levels">уровни I → IV · банк заданий →</Link>} className="d-full">
+      <Card title="Куда двигаюсь · цели месяца" right={<Link to="/?tab=levels">уровни I → IV · банк заданий →</Link>} className="d-full">
         <div className="l-goals">
-          {goals.map((g) => {
-            const p = progress(g);
+          {picks.map(({ item: g }) => {
+            const p = progress(g!);
             return (
-              <Link key={g.id} className="l-goal" to={`/?tab=levels&id=${g.id}`}>
-                <span className="d-dot" style={{ background: themeColor(g.theme) }} />
-                <span className="l-id">{g.id}</span>
-                <span className="l-t">{g.title}</span>
-                <span className="l-bar"><span style={{ width: `${g.done ? 100 : p.pct}%` }} className={g.done ? "done" : ""} /></span>
-                <span className="l-n">{g.done ? "✓" : `${p.done}/${p.total}`}</span>
+              <Link key={g!.id} className="l-goal" to={`/?tab=levels&id=${g!.id}`}>
+                <span className="d-dot" style={{ background: themeColor(g!.theme) }} />
+                <span className="l-id">{g!.id}</span>
+                <span className="l-t">{g!.title}</span>
+                <span className="l-bar"><span style={{ width: `${g!.done ? 100 : p.pct}%` }} className={g!.done ? "done" : ""} /></span>
+                <span className="l-n">{g!.done ? "✓" : `${p.done}/${p.total}`}</span>
               </Link>
             );
           })}
         </div>
-        {!goals.length && <p className="d-faint">Банка заданий нет.</p>}
-        <div className="d-stairs-cap">Цели месяца и года заменены уровнями: I — цель, II — достижение, III — результат, IV — задание недели. Прогресс — по закрытым частям.</div>
+        {!picks.length && <p className="d-faint">На этот месяц результаты не выбраны. Назови Claude номера из «Уровней» — уровень {ROMAN[3]}, например D01.1.1.</p>}
+        <div className="d-stairs-cap">Цель месяца — результат уровня {ROMAN[3]}, выбранный на этот месяц; из него берутся задания недели (уровень {ROMAN[4]}). Прогресс — по сделанным заданиям.</div>
       </Card>
       <div className="d-cols">
         <div className="d-stack">

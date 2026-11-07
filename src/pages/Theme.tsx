@@ -22,6 +22,9 @@ import type { Vault } from "../lib/types";
 import { Columns, NumberGroups, PagesRow, Radar, StaleLine, glowOf, partUrl, type PageButton } from "./theme/parts";
 import { HEADING, ORGANS } from "./theme/organs";
 import Board from "./theme/Board";
+import { dayTaskLines } from "./main/Levels";
+import { themeColumns } from "../lib/picks";
+import { loadBank } from "../lib/bank";
 import "./theme/Theme.css";
 
 /** A key without an organ as a button: its name, one number, and where it leads. */
@@ -88,6 +91,9 @@ export default function ThemePage() {
   const pages = useMemo(() => themePages(vault, life, theme, today), [vault, life, theme, today]);
   const tiles = useMemo(() => (life ? view.numbers.map((g) => g.lines.map((l) => numberTile(l, { life, vault, theme, today }))) : []), [life, vault, theme, today, view]);
   const cards = useMemo(() => (life ? boardCards(life, theme, today) : []), [life, theme, today]);
+  // The three columns come from the task bank only (2026-11-08): IV done · IV of this week · III of this month.
+  const bank = useMemo(() => (life ? loadBank(life.goals, dayTaskLines(life)) : []), [life]);
+  const cols = useMemo(() => (life ? themeColumns(life, bank, theme, today) : { past: [], stand: [], next: [] }), [life, bank, theme, today]);
   // Lines of the overview (not its «Changes») that still talk about activities already closed.
   const stale = useMemo(() => {
     if (!life) return [];
@@ -111,7 +117,7 @@ export default function ThemePage() {
         {overview && <Link className="t-whole" to={pageUrl(overview)}>обзор целиком{overview.updated ? ` · ${shortDate(overview.updated)}` : ""}</Link>}
       </header>
       <NumberGroups groups={view.numbers} tiles={tiles} today={today} />
-      <Columns past={view.past} stand={view.stand} next={view.next} />
+      <Columns past={cols.past} stand={cols.stand} next={cols.next} />
       <Board cards={cards} />
       <div className="t-organs">
         {sections.map((s) => {

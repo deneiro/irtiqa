@@ -1,10 +1,10 @@
 import { useMemo, type ReactNode } from "react";
 import { addDays, plural, weekdayIndex, WEEKDAYS_RU } from "../../lib/dates";
-import { actName, activities, cell, dateRange, fmt, focusFor, goalView, habitRows, offWeekday, weekCompare, weekStory, type Cell, type Stats, type WeekCompare, type Weight } from "../../lib/dashboard";
+import { actName, activities, cell, dateRange, fmt, focusFor, habitRows, offWeekday, weekCompare, weekStory, weightSeries, type Cell, type Stats, type WeekCompare } from "../../lib/dashboard";
 import { focusWeekKey, isoWeekKey, parseGoals } from "../../lib/goals";
 import type { Life } from "../../lib/life";
 import { themeColor } from "../../lib/themes";
-import { Card, ClaudeBlock, Glance, GoalRow, Hero, TaskLine, dayMonth, short } from "./parts";
+import { Card, ClaudeBlock, Glance, Hero, TaskLine, dayMonth, short } from "./parts";
 import { findItem, taskId } from "../../lib/bank";
 import { stripCarry } from "../../lib/carry";
 import { useBank } from "./Levels";
@@ -22,6 +22,10 @@ export default function Week({ life, today }: { life: Life; today: string }) {
   const goals = file ? parseGoals(key, file) : undefined;
   const bank = useBank(life);
   const acts = useMemo(() => [...activities(life, today)].sort((a, b) => b.week - a.week), [life, today]);
+  // The week's level-IV tasks: done when ticked in the week, or when the bank counts it done (ticked in a day or the bank).
+  const wt = (goals?.tasks ?? []).map((t) => { const id = taskId(stripCarry(t.text)).id; const item = id ? findItem(bank, id) : undefined; return { text: t.text, item, done: t.done || !!item?.done }; });
+  const doneN = wt.filter((t) => t.done).length;
+  const pct = wt.length ? Math.round((doneN / wt.length) * 100) : 0;
   const story = useMemo(() => weekStory(life, wc.from, wc.cur.to), [life, wc]);
   const dates = dateRange(wc.from, wc.to);
   const rows = habitRows(life);
@@ -45,14 +49,11 @@ export default function Week({ life, today }: { life: Life; today: string }) {
       </Hero>
       <div className="d-cols">
         <div className="d-stack">
-          <Card title="Цели недели" right={`life/goals/${key}`}>
-            {!goals ? <p className="d-faint">Файла недели нет — его создаст «Попросить Claude».</p>
-              : goals.goals.length ? goals.goals.map((g, i) => <GoalRow key={i} g={goalView(g, life, today)} />)
-              : <p className="d-faint">целей на неделю нет</p>}
-            {goals && goals.tasks.length > 0 && (
+          <Card title="Задания недели · уровень IV" right={`life/goals/${key}`}>
+            {!wt.length ? <p className="d-faint">{goals ? "Заданий на неделю не выбрано." : "Файла недели нет."} До пяти из «Уровней»: назови Claude номера.</p> : (
               <>
-                <div className="d-sub"><span className="d-kick">Задачи недели</span><span className="n">{goals.tasks.filter((t) => t.done).length} / {goals.tasks.length}</span><span className="d-right">до пяти из «Уровней» · закрыл три — добираешь</span></div>
-                <ul className="d-tasks">{goals.tasks.map((t, i) => { const id = taskId(stripCarry(t.text)).id; const it = id ? findItem(bank, id) : undefined; return <li key={i} className={t.done || it?.done ? "done" : ""}><TaskLine text={t.text} today={today} item={it} /></li>; })}</ul>
+                <div className="l-prog"><span className="l-bar"><span style={{ width: `${pct}%` }} className={pct === 100 ? "full" : ""} /></span><b>{pct} %</b><span className="d-faint">{doneN} из {wt.length} · до пяти из «Уровней», закрыл три — добираешь</span></div>
+                <ul className="d-tasks">{wt.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} item={t.item} /></li>)}</ul>
               </>
             )}
           </Card>
@@ -86,7 +87,7 @@ export default function Week({ life, today }: { life: Life; today: string }) {
           </Card>
         </div>
         <div className="d-stack">
-          <VsCard wc={wc} />
+          <VsCard wc={wc} life={life} today={today} />
           <Card title="Что сдвинулось" right="записи за 7 дней">
             {acts.map((a) => (
               <div key={a.quest.rel} className="d-mv">
@@ -97,10 +98,9 @@ export default function Week({ life, today }: { life: Life; today: string }) {
             ))}
           </Card>
           <Card title="Что было">
+            {wt.some((t) => t.done) && <><div className="d-sub"><span className="d-kick">Задания недели — сделано</span></div><ul className="d-tasks">{wt.filter((t) => t.done).map((t, i) => <li key={i} className="done"><TaskLine text={t.text} today={today} /></li>)}</ul></>}
             {story.done.map((x) => <div key={x.date}><div className="d-day">{short(x.date)}</div><ul className="d-plain">{x.items.map((t, i) => <li key={i}>{t}</li>)}</ul></div>)}
-            {story.events.length > 0 && <><div className="d-sub"><span className="d-kick">События</span></div><ul className="d-plain">{story.events.map((e) => <li key={e.date + e.title}>{short(e.date)} — {e.title}</li>)}</ul></>}
-            <div className="d-sub"><span className="d-kick">Мысли о неделе</span></div>
-            {story.thoughts.length ? <ul className="d-plain">{story.thoughts.map((t, i) => <li key={i}>{short(t.date)} · {t.line}</li>)}</ul> : <p className="d-faint">Ответов на вечерние вопросы о дне за неделю нет.</p>}
+            {!story.done.length && !wt.some((t) => t.done) && <p className="d-faint">За неделю ничего не записано в «Сделано».</p>}
           </Card>
         </div>
       </div>
@@ -112,11 +112,18 @@ function Group({ label, children }: { label: string; children: ReactNode }) {
   return <><tr className="group"><td colSpan={8}><span className="d-kick">{label}</span></td></tr>{children}</>;
 }
 
-function VsCard({ wc }: { wc: WeekCompare }) {
+function VsCard({ wc, life, today }: { wc: WeekCompare; life: Life; today: string }) {
   const { cur, prev } = wc;
   const thin = prev.recorded < 4;
   const avg = (o: Stats["mood"]) => (o.avg === undefined ? "—" : `${o.avg} · ${o.n} дн`);
-  const kg = (w: Weight | undefined) => (w ? `${w.value} кг` : "—");
+  const ws = weightSeries(life, today);
+  /** The first and the last weight of a week and what changed: «92 → 90,5 кг (−1,5)». */
+  const kg = (from: string, to: string) => {
+    const w = ws.filter((x) => x.date >= from && x.date <= to);
+    if (!w.length) return "—";
+    const a = w[0].value, b = w[w.length - 1].value, d = Math.round((b - a) * 10) / 10;
+    return w.length === 1 ? `${a} кг` : `${a} → ${b} кг (${d > 0 ? "+" : d < 0 ? "−" : "±"}${Math.abs(d)})`;
+  };
   const of = (a: number, b: number) => (b ? `${a} из ${b}` : "—");
   /** A count taken from habit marks: «—» for a week with no day marked, not a made-up 0. The coverage row above it stays a number. */
   const fromMarks = (s: Stats, n: number) => (s.recorded ? n : "—");
@@ -130,7 +137,7 @@ function VsCard({ wc }: { wc: WeekCompare }) {
     ["Полезные", of(cur.good.done, cur.good.total), of(prev.good.done, prev.good.total)],
     ["Настроение", avg(cur.mood), avg(prev.mood)],
     ["Стресс", avg(cur.stress), avg(prev.stress)],
-    ["Вес", kg(wc.curWeight), kg(wc.prevWeight)],
+    ["Вес", kg(wc.from, wc.to), kg(prev.from, prev.to)],
     ["Деньги", cur.money.days ? `${fmt(cur.money.spent)} ₸` : "—", prev.money.days ? `${fmt(prev.money.spent)} ₸` : "—"],
     ["Задачи", of(cur.tasks.done, cur.tasks.total), of(prev.tasks.done, prev.tasks.total)],
     ["Еда после 21:00", cur.mealDays ? cur.lateMeals : "—", prev.mealDays ? prev.lateMeals : "—"],

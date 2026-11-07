@@ -25,7 +25,7 @@ function sun(date: string, lat: number, lon: number) {
     return Math.acos(Math.max(-1, Math.min(1, cosW))) / RAD;
   };
   const at = (j: number) => new Date((j - 2440587.5) * 86400000);
-  return { jTransit, hourAngle, at };
+  return { jTransit, hourAngle, at, dec: Math.asin(sinDec) / RAD };
 }
 
 /** Sunset on a local calendar date (YYYY-MM-DD) at lat/lon, as an instant. */
@@ -48,6 +48,29 @@ export function fajrOn(date: string, lat = getCoords().lat, lon = getCoords().lo
 export function zuhrOn(date: string, lat = getCoords().lat, lon = getCoords().lon): Date {
   const s = sun(date, lat, lon);
   return new Date(s.at(s.jTransit).getTime() + 2 * 60000);
+}
+
+/**
+ * Asr by the Hanafi madhab: an object's shadow is twice its length plus its
+ * shadow at noon (`factor` 2; 1 for the other schools).
+ */
+export function asrOn(date: string, lat = getCoords().lat, lon = getCoords().lon, factor = 2): Date {
+  const s = sun(date, lat, lon);
+  const alt = Math.atan(1 / (factor + Math.tan(Math.abs(lat - s.dec) * RAD))) / RAD;
+  return s.at(s.jTransit + s.hourAngle(alt) / 360);
+}
+
+/** Isha: the sun `angle` degrees below the horizon after sunset (15°, as fajr). */
+export function ishaOn(date: string, lat = getCoords().lat, lon = getCoords().lon, angle = 15): Date {
+  const s = sun(date, lat, lon);
+  return s.at(s.jTransit + s.hourAngle(-angle) / 360);
+}
+
+export interface PrayerTimes { fajr: Date; zuhr: Date; asr: Date; maghrib: Date; isha: Date }
+
+/** The five times of a local calendar date. */
+export function prayerTimes(date: string, lat = getCoords().lat, lon = getCoords().lon): PrayerTimes {
+  return { fajr: fajrOn(date, lat, lon), zuhr: zuhrOn(date, lat, lon), asr: asrOn(date, lat, lon), maghrib: sunset(date, lat, lon), isha: ishaOn(date, lat, lon) };
 }
 
 // ---------- the day boundary ----------
