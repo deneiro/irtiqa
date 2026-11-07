@@ -63,3 +63,22 @@ test("parseTraining reads one row a weekday", () => {
   const t = parseTraining(md);
   assert.deepEqual(t.map((x) => [x.day, x.kind, x.exercises]), [["пн", "силовая", ["отжимания", "жим лёжа"]], ["вт", "кардио", []], ["вс", "отдых", []]]);
 });
+
+test("picks: results, lines, new files, removal, week candidates", async () => {
+  const { parseBank } = await import("./bank");
+  const { bankResults, pickLine, newMonthFile, removePick, weekCandidates, weekSpan, appendTasks } = await import("./picks");
+  const b = parseBank("life/goals/Банк/Банк заданий — Тест.md", "---\ntheme: Finance & money\n---\n## F01. Цель\n### F01.1. Часть\n#### F01.1.1. Шаг\n- [ ] **F01.1.1.1** Узнать\n- [x] **F01.1.1.2** Позвонить\n### F01.2. Резерв\n- [ ] **F01.2.1** Посчитать\n");
+  const r = bankResults([b]);
+  assert.deepEqual(r[0].items.map((x) => x.id), ["F01.1.1", "F01.2"]);
+  assert.equal(pickLine(r[0].items[0]), "**F01.1.1** Шаг — [[Банк заданий — Тест]]");
+  const m = appendTasks(newMonthFile("2026-11"), [pickLine(r[0].items[0])]);
+  assert.match(m, /^to: 2026-11-30$/m);
+  assert.match(m, /^# Ноябрь 2026$/m);
+  assert.match(m, /^## Задачи\n- \[ \] \*\*F01\.1\.1\*\* Шаг — \[\[Банк заданий — Тест\]\]$/m);
+  assert.equal(removePick(m, "F01.1.1").includes("F01.1.1"), false);
+  assert.equal(removePick("- [x] **F01.1.1** Шаг\n", "F01.1.1"), "- [x] **F01.1.1** Шаг\n");
+  assert.deepEqual(weekSpan("2026-11-08"), ["2026-11-02", "2026-11-08"]);
+  assert.deepEqual(weekSpan("2026-11-09"), ["2026-11-09", "2026-11-15"]);
+  const c = weekCandidates([{ text: "", id: "F01.1.1", item: r[0].items[0], done: false }], [{ text: "", id: "F01.1.1.9", item: undefined, done: false }]);
+  assert.deepEqual(c[0].tasks.map((t) => t.id), ["F01.1.1.1"]);
+});
