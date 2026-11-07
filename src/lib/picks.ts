@@ -9,6 +9,7 @@
  * picked → the column is empty, not filled with something else.
  */
 import { findItem, progress, taskId, type BankFile, type BankItem } from "./bank";
+export { appendTasks } from "./carry";
 import { stripCarry } from "./carry";
 import { isoWeekKey, monthKey, parseGoals } from "./goals";
 import type { Life } from "./life";
@@ -55,4 +56,54 @@ export function themeColumns(life: Life, bank: BankFile[], theme: string, date: 
     stand: part(week.map((p) => ({ md: p.item!.title, note: p.item!.id }))),
     next: part(month.map((p) => ({ md: p.item!.title, note: `${p.item!.id} · ${progress(p.item!).pct} %` }))),
   };
+}
+
+// ---------- picking (Eldar, 2026-11-08) ----------
+// «Месяц»: up to three level-III results at a time; one done → pick the next. «Неделя»: up to five level-IV tasks,
+// and only from the results picked for the month — nothing picked for the month, nothing to pick for the week.
+
+export const MONTH_MAX = 3;
+export const WEEK_MAX = 5;
+
+const MONTHS = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
+
+/** A results heading: one whose children are tasks (a III, or a short II that holds its tasks directly). */
+export const isResult = (it: BankItem) => !it.task && it.children.some((c) => c.task);
+
+/** Every result of the bank, file by file, in the order of the files. */
+export function bankResults(bank: BankFile[]): { file: BankFile; items: BankItem[] }[] {
+  const walk = (xs: BankItem[], out: BankItem[] = []): BankItem[] => { for (const x of xs) { if (isResult(x)) out.push(x); walk(x.children.filter((c) => !c.task), out); } return out; };
+  return bank.map((file) => ({ file, items: walk(file.goals) })).filter((g) => g.items.length);
+}
+
+/** The line written for a pick: `**ID** title — [[Банк заданий — Тема]]`. */
+export function pickLine(it: BankItem): string {
+  const base = it.rel.split("/").pop()!.replace(/\.md$/, "");
+  return `**${it.id}** ${it.title} — [[${base}]]`;
+}
+
+export function newMonthFile(key: string): string {
+  const [y, m] = key.split("-").map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return `---\ntype: goals\nperiod: month\nfrom: ${key}-01\nto: ${key}-${String(last).padStart(2, "0")}\n---\n# ${MONTHS[m - 1]} ${y}\n\n## Цели\n\n## Задачи\n`;
+}
+
+/** Monday and Sunday of the ISO week of `date`. */
+export function weekSpan(date: string): [string, string] {
+  const d = new Date(`${date}T12:00:00`);
+  const wd = d.getDay() || 7;
+  const at = (n: number) => { const x = new Date(d); x.setDate(d.getDate() + n); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`; };
+  return [at(1 - wd), at(7 - wd)];
+}
+
+/** An open pick's line leaves `## Задачи`; a done one stays — it is history. */
+export function removePick(content: string, id: string): string {
+  const esc = id.replace(/\./g, "\\.");
+  return content.replace(new RegExp(`^\\s*-\\s+\\[ \\]\\s+\\*\\*${esc}\\*\\*.*\\n?`, "m"), "");
+}
+
+/** The tasks the week may take: the open IV tasks of the month's open picks, not yet in the week. */
+export function weekCandidates(month: Pick[], week: Pick[]): { result: BankItem; tasks: BankItem[] }[] {
+  const have = new Set(week.map((p) => p.id));
+  return month.filter((p) => p.item && !p.done).map((p) => ({ result: p.item!, tasks: p.item!.children.filter((c) => c.task && !c.done && !have.has(c.id)) }));
 }

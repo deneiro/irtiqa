@@ -4,11 +4,11 @@ import { addDays, plural } from "../../lib/dates";
 import { actName, focusFor, quietPeople, series, spheres, weightGoal, weightSeries, type ActState } from "../../lib/dashboard";
 import { monthKey } from "../../lib/goals";
 import type { Life } from "../../lib/life";
-import { themeColor, themeRu } from "../../lib/themes";
+import { themeRu } from "../../lib/themes";
 import { Link } from "react-router-dom";
-import { ROMAN, progress } from "../../lib/bank";
-import { monthPicks } from "../../lib/picks";
+import { ROMAN } from "../../lib/bank";
 import { useBank } from "./Levels";
+import { PickSlots } from "./Pick";
 import type { Vault } from "../../lib/types";
 import { Card, ClaudeBlock, Columns, CoverageDots, Glance, HEX, Hero, MOOD_COLOR, MoodLines, STRESS_COLOR, Status, WeightLine, short, type Tone } from "./parts";
 
@@ -24,7 +24,6 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
   const yesterday = addDays(today, -1);
   const focus = focusFor(life, monthKey(today), monthKey(addDays(`${today.slice(0, 7)}-01`, -1)));
   const bank = useBank(life);
-  const picks = useMemo(() => monthPicks(life, bank, today), [life, bank, today]);
   const pts = useMemo(() => series(life, addDays(yesterday, -29), yesterday), [life, yesterday]);
   const circle = useMemo(() => buildCircle(vault.pages.filter((p) => p.zone === "person"), life.events, today), [vault, life, today]);
   const goal = weightGoal(life, today);
@@ -52,22 +51,8 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
         <p className="d-foot">за 30 дней, {short(pts[0].date)} – {short(pts[pts.length - 1].date)}</p>
       </Hero>
       <Card title="Куда двигаюсь · цели месяца" right={<Link to="/?tab=levels">уровни I → IV · банк заданий →</Link>} className="d-full">
-        <div className="l-goals">
-          {picks.map(({ item: g }) => {
-            const p = progress(g!);
-            return (
-              <Link key={g!.id} className="l-goal" to={`/?tab=levels&id=${g!.id}`}>
-                <span className="d-dot" style={{ background: themeColor(g!.theme) }} />
-                <span className="l-id">{g!.id}</span>
-                <span className="l-t">{g!.title}</span>
-                <span className="l-bar"><span style={{ width: `${g!.done ? 100 : p.pct}%` }} className={g!.done ? "done" : ""} /></span>
-                <span className="l-n">{g!.done ? "✓" : `${p.done}/${p.total}`}</span>
-              </Link>
-            );
-          })}
-        </div>
-        {!picks.length && <p className="d-faint">На этот месяц результаты не выбраны. Назови Claude номера из «Уровней» — уровень {ROMAN[3]}, например D01.1.1.</p>}
-        <div className="d-stairs-cap">Цель месяца — результат уровня {ROMAN[3]}, выбранный на этот месяц; из него берутся задания недели (уровень {ROMAN[4]}). Прогресс — по сделанным заданиям.</div>
+        <PickSlots life={life} today={today} bank={bank} mode="month" />
+        <div className="d-stairs-cap">До трёх результатов уровня {ROMAN[3]} за раз: закрыл один — выбираешь следующий. Из них берутся задания недели (уровень {ROMAN[4]}).</div>
       </Card>
       <div className="d-cols">
         <div className="d-stack">

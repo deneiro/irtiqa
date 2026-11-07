@@ -8,6 +8,7 @@ import { Card, ClaudeBlock, Glance, Hero, TaskLine, dayMonth, short } from "./pa
 import { findItem, taskId } from "../../lib/bank";
 import { stripCarry } from "../../lib/carry";
 import { useBank } from "./Levels";
+import { PickSlots } from "./Pick";
 
 const TITLE: Record<Cell, string> = { done: "да", held: "удержался", late: "поздно", failed: "нет", fall: "срыв", unmarked: "без отметки", skip: "не в этот день", nofile: "файла дня нет", pending: "спросит в 21:00", future: "" };
 
@@ -50,12 +51,8 @@ export default function Week({ life, today }: { life: Life; today: string }) {
       <div className="d-cols">
         <div className="d-stack">
           <Card title="Задания недели · уровень IV" right={`life/goals/${key}`}>
-            {!wt.length ? <p className="d-faint">{goals ? "Заданий на неделю не выбрано." : "Файла недели нет."} До пяти из «Уровней»: назови Claude номера.</p> : (
-              <>
-                <div className="l-prog"><span className="l-bar"><span style={{ width: `${pct}%` }} className={pct === 100 ? "full" : ""} /></span><b>{pct} %</b><span className="d-faint">{doneN} из {wt.length} · до пяти из «Уровней», закрыл три — добираешь</span></div>
-                <ul className="d-tasks">{wt.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} item={t.item} /></li>)}</ul>
-              </>
-            )}
+            {wt.length > 0 && <div className="l-prog"><span className="l-bar"><span style={{ width: `${pct}%` }} className={pct === 100 ? "full" : ""} /></span><b>{pct} %</b><span className="d-faint">{doneN} из {wt.length} · до пяти, только из целей месяца</span></div>}
+            <PickSlots life={life} today={today} bank={bank} mode="week" />
           </Card>
           <Card title="Привычки — неделя" right="отметки из вечернего опроса">
             <div className="d-gridwrap">
