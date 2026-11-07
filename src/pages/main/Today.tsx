@@ -4,7 +4,7 @@ import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, signals, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
 import { isoWeekKey } from "../../lib/goals";
 import { habitDue, type Life } from "../../lib/life";
-import { ActivityList, Card, DayArc, Dots, Hero, SignalRow, SignalTitle, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
+import { ActivityList, TaskLine, Card, DayArc, Dots, Hero, SignalRow, SignalTitle, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 const days = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}`;
@@ -43,7 +43,7 @@ export default function Today({ life, today }: { life: Life; today: string }) {
           <Card title="Ещё горит" right="по правилам, без Claude">
             {rest.length ? <div className="d-sigs">{rest.map((x) => <SignalRow key={x.title} s={x} />)}</div> : <p className="d-faint">Больше ничего.</p>}
             <div className="d-sub"><span className="d-kick">Задачи на сегодня</span><span className="n">{tasks.filter((t) => t.done).length} / {tasks.length}</span><span className="d-right">из утреннего вопроса бота</span></div>
-            {tasks.length ? <ul className="d-tasks">{tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}>{plainLinks(t.text)}</li>)}</ul> : <p className="d-faint">Задач нет — бот спросит утром.</p>}
+            {tasks.length ? <ul className="d-tasks">{tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} /></li>)}</ul> : <p className="d-faint">Задач нет — бот спросит утром.</p>}
             {focus.lines[0] && (
               <div className="d-claude-line">
                 <div className="d-kick who">Claude · фокус недели{focus.stale ? " · это прошлый период" : ""}</div>

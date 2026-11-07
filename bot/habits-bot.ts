@@ -59,7 +59,8 @@ import { buildLife } from "../src/lib/life";
 import { buildPage, buildVault } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
 import { SHYMKENT, dayOf, fajrOn } from "../src/lib/maghrib";
-import { goalsFor } from "../src/lib/goals";
+import { goalsFor, isoWeekKey } from "../src/lib/goals";
+import { CARRY_SINCE, carryDays, carryWeeks } from "../src/lib/carry";
 import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats, type Cell } from "../src/lib/dashboard";
 import { ORGAN_KEYS, isSectionKey, themeSections, themeView } from "../src/lib/overview";
 import { numberTile } from "../src/lib/themeNumbers";
@@ -102,6 +103,8 @@ interface State {
   survey?: { date: string; i: number; steps: SurveyStep[] } | null;
   /** The open morning plan: which day the tasks go to. */
   plan?: { date: string } | null;
+  /** The last day the open tasks were moved on to (lib/carry.ts). */
+  carriedOn?: string;
 }
 
 const DEFAULTS: Omit<Config, "token" | "vault"> = {
@@ -430,7 +433,9 @@ const typed = (s: SurveyStep) => !["mood", "stress", "habit", "task"].includes(s
 
 /** The open survey, in state.json: a restart or a sleeping Mac does not lose the question. */
 function setSurvey(s: State["survey"]) {
+  const ended = state.survey && !s;
   state.survey = s;
+  if (ended) state.carriedOn = undefined; // the day held back for the survey moves on at the next tick
   saveState(state);
 }
 
@@ -571,6 +576,44 @@ async function onSurveyCallback(compact: string, i: number, code: string, chat: 
   await nextSurveyQuestion();
 }
 
+// ---------- an undone task moves on (Eldar, 2026-11-08) ----------
+
+const GOALS_DIR = "life/goals";
+
+/** Monday and Sunday of the ISO week of `date`. */
+function weekSpan(date: string): [string, string] {
+  const wd = new Date(`${date}T12:00:00`).getDay() || 7;
+  return [addDays(date, 1 - wd), addDays(date, 7 - wd)];
+}
+
+/**
+ * The open tasks of earlier days move into `date`'s file, the open tasks of
+ * earlier weeks into this week's file; the old lines stay as `- [>]`. Once a
+ * day, before the morning question and the evening survey.
+ */
+function carryOver(date: string, force = false): { days: number; weeks: number } {
+  if (!force && state.carriedOn === date) return { days: 0, weeks: 0 };
+  const dayDir = join(cfg.vault, DAY_DIR);
+  const earlier = existsSync(dayDir)
+    ? readdirSync(dayDir).map((f) => f.replace(/\.md$/, "")).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= CARRY_SINCE && d < date && d !== state.survey?.date).map(readDay)
+    : [];
+  const days = carryDays(earlier, readDay(date));
+  for (const d of days) writeDay(d);
+  const dir = join(cfg.vault, GOALS_DIR);
+  const weeks = new Map<string, string>();
+  if (existsSync(dir)) for (const f of readdirSync(dir)) if (/^\d{4}-W\d{2}\.md$/.test(f)) weeks.set(f.slice(0, -3), readFileSync(join(dir, f), "utf8"));
+  const [from, to] = weekSpan(date);
+  const out = carryWeeks(weeks, isoWeekKey(date), from, to);
+  for (const [k, c] of out) {
+    const p = join(dir, `${k}.md`);
+    writeFileSync(p + ".bot-tmp", c);
+    renameSync(p + ".bot-tmp", p);
+  }
+  state.carriedOn = date;
+  saveState(state);
+  return { days: Math.max(0, days.length - 1), weeks: Math.max(0, out.size - 1) };
+}
+
 // ---------- the morning plan: one message, one task ----------
 
 const PLAN_END = /^(вс[её]|готово|хватит|конец)[.!]?$/i;
@@ -582,6 +625,7 @@ function setPlan(p: State["plan"]) {
 
 async function startPlan(date: string) {
   if (!cfg.chatId || readDay(date).closed) return;
+  try { carryOver(date); } catch (e) { console.error("carry", e); }
   setPlan({ date });
   awaiting = null; // an answer meant for the plan must not be taken by a question left open, a memory's title for one
   const compact = date.replaceAll("-", "");
@@ -1589,6 +1633,9 @@ const EVENING_GRACE_MS = 18 * 3600_000; // a Mac asleep at 21:00 asks the day's 
 async function tick() {
   const now = new Date();
   const today = toDateStr(now);
+  if (state.carriedOn !== today && !state.survey) {
+    try { carryOver(today); } catch (e) { console.error("carry", e); } // a closed or unreadable day must not stop the bot
+  }
   for (const cal of [addDays(today, -1), today]) {
     for (const s of slotsOf(cal)) {
       if (s.at > now || state.sent.includes(s.id)) continue;
@@ -1712,6 +1759,15 @@ if (process.argv.includes("--themes")) {
       sections: themeSections(overview).map((s) => `${s}: ${!isSectionKey(s) ? (view.sections.some((x) => x.heading === s) ? "раздел" : "РАЗДЕЛА НЕТ") : ORGAN_KEYS.includes(s) ? "орган" : "кнопка"}`),
     };
   }), null, 1));
+  process.exit(0);
+}
+
+// `node bot.mjs --carry [YYYY-MM-DD]` moves the open tasks on to that day and its week now, prints what moved and exits.
+if (process.argv.includes("--carry")) {
+  const arg = process.argv[process.argv.indexOf("--carry") + 1];
+  const date = arg && /^\d{4}-\d{2}-\d{2}$/.test(arg) ? arg : toDateStr(new Date());
+  const r = carryOver(date, true);
+  console.log(`перенесено в ${date}: дней-источников ${r.days}, недель-источников ${r.weeks}`);
   process.exit(0);
 }
 

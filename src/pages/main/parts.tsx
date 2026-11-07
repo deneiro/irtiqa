@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { startRun } from "../../lib/claude";
 import { useRuns } from "../../lib/claudeRuns";
-import { actName, dayMonth, daysBetween, plainStep, questUrl, runs, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
+import { taskId } from "../../lib/bank";
+import { carriedFrom, stripCarry } from "../../lib/carry";
+import { actName, dayMonth, daysBetween, plainLinks, plainStep, questUrl, runs, type ActivityView, type Focus, type GoalView, type Signal } from "../../lib/dashboard";
 import { themeColor, themeRu } from "../../lib/themes";
 import { useDayToday } from "../../lib/useDayToday";
 import { useStore } from "../../store";
@@ -144,6 +146,25 @@ export function GoalRow({ g }: { g: GoalView }) {
     : g.chip === "nodata" ? <Status tone="smoke">нет данных</Status> : null;
   const meta = [g.line.measure && `мера: ${g.line.measure}`, g.now && `сейчас: ${g.now}`, g.line.due && `срок ${short(g.line.due)}`].filter(Boolean).join(" · ");
   return <div className="d-goal"><div className="gt">{g.line.title}</div>{(meta || chip) && <div className="gm">{meta && <span>{meta}</span>}{chip}</div>}</div>;
+}
+
+/**
+ * One task line of a day or a week: the bank ID as a chip (it opens the card on
+ * «Уровни»), where a carried task began, and for a bank task its card in one
+ * line — what is needed, how much money.
+ */
+export function TaskLine({ text, today, item }: { text: string; today: string; item?: { need?: string; money?: string } }) {
+  const from = carriedFrom(text);
+  const { id, rest } = taskId(stripCarry(text));
+  const since = from && (/W\d{2}$/.test(from) ? `с недели ${Number(from.slice(-2))}` : `с ${short(from)} · ${daysBetween(from, today) + 1}-й день`);
+  return (
+    <span className="d-task">
+      {id && <Link className="d-tid" to={`/?tab=levels&id=${encodeURIComponent(id)}`}>{id}</Link>}
+      {plainLinks(rest)}
+      {since && <span className="d-carry">↪ {since}</span>}
+      {item && (item.need || item.money) && <span className="d-tcard">{[item.need && `нужно: ${plainLinks(item.need)}`, item.money && `деньги: ${item.money}`].filter(Boolean).join(" · ")}</span>}
+    </span>
+  );
 }
 
 export type PrayerMark = "done" | "late" | "failed" | "none";

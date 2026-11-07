@@ -46,7 +46,8 @@ export function parseGoals(key: string, content: string): GoalsFile {
   const goals = section(body, "Цели").split("\n").filter((l) => /^\s*-\s+/.test(l)).map(strip).filter(Boolean);
   const tasks: GoalTask[] = [];
   for (const l of section(body, "Задачи").split("\n")) {
-    const m = l.match(/^\s*-\s*(?:\[([ xX])\]\s*)?(.+)$/);
+    const m = l.match(/^\s*-\s*(?:\[([ xX>])\]\s*)?(.+)$/);
+    if (m?.[1] === ">") continue; // moved on to the next week (lib/carry.ts): counted there, not here
     if (!m) continue;
     // A note line («Времени в календаре нет…») is not a task: it has no checkbox and no link to a quest.
     if (!m[1] && !/\[\[/.test(m[2])) continue;

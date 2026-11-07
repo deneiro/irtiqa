@@ -1,10 +1,13 @@
 import { useMemo, type ReactNode } from "react";
 import { addDays, plural, weekdayIndex, WEEKDAYS_RU } from "../../lib/dates";
-import { actName, activities, cell, dateRange, fmt, focusFor, goalView, habitRows, offWeekday, plainLinks, weekCompare, weekStory, type Cell, type Stats, type WeekCompare, type Weight } from "../../lib/dashboard";
+import { actName, activities, cell, dateRange, fmt, focusFor, goalView, habitRows, offWeekday, weekCompare, weekStory, type Cell, type Stats, type WeekCompare, type Weight } from "../../lib/dashboard";
 import { focusWeekKey, isoWeekKey, parseGoals } from "../../lib/goals";
 import type { Life } from "../../lib/life";
 import { themeColor } from "../../lib/themes";
-import { Card, ClaudeBlock, Glance, GoalRow, Hero, dayMonth, short } from "./parts";
+import { Card, ClaudeBlock, Glance, GoalRow, Hero, TaskLine, dayMonth, short } from "./parts";
+import { findItem, taskId } from "../../lib/bank";
+import { stripCarry } from "../../lib/carry";
+import { useBank } from "./Levels";
 
 const TITLE: Record<Cell, string> = { done: "да", held: "удержался", late: "поздно", failed: "нет", fall: "срыв", unmarked: "без отметки", skip: "не в этот день", nofile: "файла дня нет", pending: "спросит в 21:00", future: "" };
 
@@ -17,6 +20,7 @@ export default function Week({ life, today }: { life: Life; today: string }) {
   const key = isoWeekKey(wc.from);
   const file = life.goals.get(key);
   const goals = file ? parseGoals(key, file) : undefined;
+  const bank = useBank(life);
   const acts = useMemo(() => [...activities(life, today)].sort((a, b) => b.week - a.week), [life, today]);
   const story = useMemo(() => weekStory(life, wc.from, wc.cur.to), [life, wc]);
   const dates = dateRange(wc.from, wc.to);
@@ -47,8 +51,8 @@ export default function Week({ life, today }: { life: Life; today: string }) {
               : <p className="d-faint">целей на неделю нет</p>}
             {goals && goals.tasks.length > 0 && (
               <>
-                <div className="d-sub"><span className="d-kick">Задачи недели</span><span className="n">{goals.tasks.filter((t) => t.done).length} / {goals.tasks.length}</span></div>
-                <ul className="d-tasks">{goals.tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}>{plainLinks(t.text)}</li>)}</ul>
+                <div className="d-sub"><span className="d-kick">Задачи недели</span><span className="n">{goals.tasks.filter((t) => t.done).length} / {goals.tasks.length}</span><span className="d-right">до пяти из «Уровней» · закрыл три — добираешь</span></div>
+                <ul className="d-tasks">{goals.tasks.map((t, i) => { const id = taskId(stripCarry(t.text)).id; const it = id ? findItem(bank, id) : undefined; return <li key={i} className={t.done || it?.done ? "done" : ""}><TaskLine text={t.text} today={today} item={it} /></li>; })}</ul>
               </>
             )}
           </Card>

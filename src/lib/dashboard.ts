@@ -13,7 +13,7 @@ import { DEBT_I_OWE, debtLeft, habitDue, isLateMeal, markOf, nowStep, type Day, 
 import { THEMES } from "./themes";
 import { heldOut } from "./wins";
 
-export type Tab = "day" | "week" | "month";
+export type Tab = "day" | "week" | "month" | "levels";
 
 /** The 1st opens Месяц (even on a Sunday), a Sunday opens Неделя, any other day Сегодня. */
 export function defaultTab(today: string): Tab {
