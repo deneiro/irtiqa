@@ -1595,7 +1595,11 @@ async function tick() {
       state.sent.push(s.id);
       saveState(state);
       const late = now.getTime() - s.at.getTime();
-      if (fresh || late > (s.kind === "evening" ? EVENING_GRACE_MS : GRACE_MS)) continue;
+      // The plan question is worth asking for as long as the day lasts, up to the evening survey.
+      const stale = s.kind === "plan"
+        ? cal !== today || (/^\d{2}:\d{2}$/.test(cfg.eveningAskAt) && hm(now) >= cfg.eveningAskAt)
+        : late > (s.kind === "evening" ? EVENING_GRACE_MS : GRACE_MS);
+      if (fresh || stale) continue;
       try {
         if (s.kind === "plan") await startPlan(cal);
         else if (s.kind === "morning") {
