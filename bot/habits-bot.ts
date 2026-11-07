@@ -60,7 +60,9 @@ import { buildPage, buildVault } from "../src/lib/vault";
 import { attention } from "../src/lib/attention";
 import { SHYMKENT, dayOf, fajrOn } from "../src/lib/maghrib";
 import { goalsFor, isoWeekKey } from "../src/lib/goals";
-import { CARRY_SINCE, carryDays, carryWeeks } from "../src/lib/carry";
+import { CARRY_SINCE, carryDays, carryWeeks, openWeekTasks, stripCarry } from "../src/lib/carry";
+import { PERIODS, parsePeriod, periodOf, withPeriod, type PeriodKey } from "../src/lib/periods";
+import { taskId, tickTask } from "../src/lib/bank";
 import { PRAYER_ORDER, activities, plainLinks, signals, weekCompare, windowStats, type Cell } from "../src/lib/dashboard";
 import { ORGAN_KEYS, isSectionKey, themeSections, themeView } from "../src/lib/overview";
 import { numberTile } from "../src/lib/themeNumbers";
@@ -569,7 +571,11 @@ async function onSurveyCallback(compact: string, i: number, code: string, chat: 
       const day = readDay(date);
       const at = day.tasks.findIndex((t) => !t.done && t.text === step.text);
       found = at >= 0;
-      if (found) writeDay({ ...day, tasks: day.tasks.map((t, j) => (j === at ? { ...t, done: true } : t)) });
+      if (found) {
+        writeDay({ ...day, tasks: day.tasks.map((t, j) => (j === at ? { ...t, done: true } : t)) });
+        const id = taskId(stripCarry(step.text)).id;
+        if (id) try { tickEverywhere(id, date); } catch (e) { console.error("tick", e); }
+      }
     }
     await edit(`${step.q} — ${!found ? "не нашёл в списке" : code === "y" ? "да" : "нет"}`);
   }
@@ -629,21 +635,88 @@ async function startPlan(date: string) {
   setPlan({ date });
   awaiting = null; // an answer meant for the plan must not be taken by a question left open, a memory's title for one
   const compact = date.replaceAll("-", "");
-  await say("🗓 Что сегодня в планах?\nОдно сообщение — одна задача.", {
-    reply_markup: { inline_keyboard: [[{ text: "✓ Всё на сегодня", callback_data: `pl:${compact}:0:end` }]] },
+  const week = weekSuggestions(date);
+  await say(["🗓 Что сегодня в планах?", "Одно сообщение — одна задача, потом спрошу период.", ...(week.length ? ["", "Из заданий недели — нажми, чтобы взять:"] : [])].join("\n"), {
+    reply_markup: { inline_keyboard: [
+      ...week.map((w) => [{ text: short40(plainLinks(w.text.replace(/\*\*/g, ""))), callback_data: `pw:${compact}:${w.i}` }]),
+      [{ text: "✓ Всё на сегодня", callback_data: `pl:${compact}:0:end` }],
+    ] },
   });
+}
+
+const short40 = (t: string) => (t.length > 40 ? t.slice(0, 39) + "…" : t);
+
+/** The week file's open tasks that are not in the day yet, by their index in `## Задачи`. */
+function weekSuggestions(date: string): { i: number; text: string }[] {
+  const p = join(cfg.vault, GOALS_DIR, `${isoWeekKey(date)}.md`);
+  if (!existsSync(p)) return [];
+  const have = new Set(readDay(date).tasks.map((t) => taskId(stripCarry(t.text)).id ?? stripCarry(t.text).toLowerCase()));
+  return openWeekTasks(readFileSync(p, "utf8"))
+    .map((text, i) => ({ i, text: stripCarry(text) }))
+    .filter((w) => !have.has(taskId(w.text).id ?? w.text.toLowerCase()))
+    .slice(0, 8);
+}
+
+/** The five parts of the day as buttons; the answer sets the part on tasks `from`…`from + n - 1` of the day. */
+function periodKeyboard(compact: string, from: number, n: number): Button[][] {
+  const b = (p: (typeof PERIODS)[number]) => ({ text: `${p.roman} ${p.from}–${p.to} · ${p.what}`, callback_data: `pp:${compact}:${from}:${n}:${p.n}` });
+  return [...PERIODS.map((p) => [b(p)]), [{ text: "без периода", callback_data: `pp:${compact}:${from}:${n}:0` }]];
+}
+
+/** Write the tasks into the day and ask the part, unless every one already names it («… @зухр»). */
+async function addPlanTasks(date: string, items: string[]) {
+  const day = readDay(date);
+  const have = new Set(day.tasks.map((t) => t.text.toLowerCase()));
+  const fresh = items.map((t) => { const m = t.match(/\s@(\S+)\s*$/); const k = m && parsePeriod(m[1]); return k ? withPeriod(t.slice(0, m!.index).trim(), k) : t; }).filter((x) => x && !have.has(x.toLowerCase()));
+  if (!fresh.length) { await say("Это уже есть в списке."); return; }
+  const from = day.tasks.length;
+  const tasks = [...day.tasks, ...fresh.map((t) => ({ done: false, text: t }))];
+  writeDay({ ...day, tasks });
+  const lines = fresh.map((t, i) => `＋ ${from + i + 1}. ${plainLinks(t)}`).join("\n");
+  if (fresh.every((t) => periodOf(t))) { await say(lines); return; }
+  await say(`${lines}\nНа какой период?`, { reply_markup: { inline_keyboard: periodKeyboard(date.replaceAll("-", ""), from, fresh.length) } });
 }
 
 /** «09:00 урок — [[Engliko]]» → `- [ ] 09:00 урок — [[Engliko]]` in the day's `## Задачи`; several lines are several tasks. */
 async function onPlanTask(text: string) {
-  const p = state.plan!;
-  const day = readDay(p.date);
-  const have = new Set(day.tasks.map((t) => t.text.toLowerCase()));
-  const items = text.split(/\n+/).map((x) => x.trim().replace(/^[-•*]\s*(\[[ x]\]\s*)?/, "")).filter((x) => x && !have.has(x.toLowerCase()));
-  if (!items.length) { await say("Это уже есть в списке."); return; }
-  const tasks = [...day.tasks, ...items.map((t) => ({ done: false, text: t }))];
-  writeDay({ ...day, tasks });
-  await say(items.map((t, i) => `＋ ${tasks.length - items.length + i + 1}. ${t}`).join("\n"));
+  const items = text.split(/\n+/).map((x) => x.trim().replace(/^[-•*]\s*(\[[ x]\]\s*)?/, "")).filter(Boolean);
+  await addPlanTasks(state.plan!.date, items);
+}
+
+/** A task taken from the week's list. */
+async function onWeekPick(date: string, i: number, chat: number, msg: number) {
+  const p = join(cfg.vault, GOALS_DIR, `${isoWeekKey(date)}.md`);
+  const text = existsSync(p) ? openWeekTasks(readFileSync(p, "utf8"))[i] : undefined;
+  if (!text) { await say("Этого задания в неделе уже нет."); return; }
+  const left = weekSuggestions(date).filter((w) => w.i !== i);
+  const compact = date.replaceAll("-", "");
+  await tg("editMessageReplyMarkup", { chat_id: chat, message_id: msg, reply_markup: { inline_keyboard: [
+    ...left.map((w) => [{ text: short40(plainLinks(w.text.replace(/\*\*/g, ""))), callback_data: `pw:${compact}:${w.i}` }]),
+    [{ text: "✓ Всё на сегодня", callback_data: `pl:${compact}:0:end` }],
+  ] } }).catch(() => {});
+  await addPlanTasks(date, [stripCarry(text)]);
+}
+
+/** The part chosen for tasks `from`…`from + n - 1`; «0» leaves them without one. */
+async function onPeriodPick(date: string, from: number, n: number, pn: number, chat: number, msg: number) {
+  const p = PERIODS.find((x) => x.n === pn);
+  const day = readDay(date);
+  if (p) writeDay({ ...day, tasks: day.tasks.map((t, j) => (j >= from && j < from + n && !t.done ? { ...t, text: withPeriod(t.text, p.key as PeriodKey) } : t)) });
+  const was = day.tasks.slice(from, from + n).map((t) => plainLinks(t.text.replace(/\s·\s@\S+/, ""))).join("; ");
+  await tg("editMessageText", { chat_id: chat, message_id: msg, text: `${was}\n→ ${p ? `${p.roman} · ${p.from}–${p.to}, ${p.what}` : "без периода"}` }).catch(() => {});
+}
+
+/** A bank task done in the day: ticked in the week file and in the bank too, so it does not move on and counts in its level. */
+function tickEverywhere(id: string, date: string) {
+  const files = [join(cfg.vault, GOALS_DIR, `${isoWeekKey(date)}.md`)];
+  const bankDir = join(cfg.vault, GOALS_DIR, "Банк");
+  if (existsSync(bankDir)) for (const f of readdirSync(bankDir)) if (f.endsWith(".md")) files.push(join(bankDir, f));
+  for (const p of files) {
+    if (!existsSync(p)) continue;
+    const c = readFileSync(p, "utf8");
+    const out = tickTask(c, id, date);
+    if (out !== c) { writeFileSync(p + ".bot-tmp", out); renameSync(p + ".bot-tmp", p); }
+  }
 }
 
 async function endPlan() {
@@ -1355,6 +1428,14 @@ async function onCallback(q: CallbackQuery) {
     if (compact === "0") { await sendContactList(q.message.message_id); return; } // «← назад» in the /contact list shares the prefix; the plan's button carries a date
     await tg("editMessageReplyMarkup", { chat_id: q.message.chat.id, message_id: q.message.message_id, reply_markup: { inline_keyboard: [] } }).catch(() => {});
     if (state.plan?.date === date) await endPlan();
+    return;
+  }
+
+  if (kind === "pp" || kind === "pw") {
+    await tg("answerCallbackQuery", { callback_query_id: q.id });
+    const parts = q.data.split(":");
+    if (kind === "pw") await onWeekPick(date, Number(parts[2]), q.message.chat.id, q.message.message_id);
+    else await onPeriodPick(date, Number(parts[2]), Number(parts[3]), Number(parts[4]), q.message.chat.id, q.message.message_id);
     return;
   }
 

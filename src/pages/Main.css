@@ -65,6 +65,9 @@ main > .dash { max-width: 1260px; }
 .d-arc .pt.late .core { fill: var(--d-honey); stroke: none; }
 .d-arc .pt.late .ring { fill: none; stroke: var(--d-honey); stroke-opacity: .35; }
 .d-arc .pt.failed .core { fill: var(--d-ember); stroke: none; }
+.d-arc .tk { fill: var(--d-night); stroke: var(--d-sun); stroke-width: 1.4; }
+.d-arc .tk.done { fill: var(--d-sage); stroke: none; }
+.d-arc .now { fill: none; stroke: var(--d-sun); stroke-opacity: .28; stroke-width: 7; stroke-linecap: round; }
 .d-arc .cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 13px; color: var(--d-moon-2); }
 .d-arc .cap span:last-child { font: 400 11px var(--d-mono); color: var(--d-smoke); }
 @media (prefers-reduced-motion: no-preference) {
@@ -296,3 +299,21 @@ table.d-grid { width: 100%; min-width: 480px; border-collapse: collapse; }
 .l-close { padding: 8px 16px; border: 1px solid var(--d-sage); border-radius: 999px; background: rgba(134, 201, 164, .12); color: var(--d-sage); font: 500 13px var(--d-sans); cursor: pointer; }
 .l-close:disabled { border-color: var(--d-hair-2); background: none; color: var(--d-smoke); cursor: not-allowed; }
 @media (max-width: 980px) { .l-cols { grid-template-columns: 1fr; } .l-side { position: static; } .l-goals { grid-template-columns: 1fr; } }
+
+/* «Сегодня» since 2026-11-08: an ayah in place of «Главное», tasks by the five parts of the day, today's training */
+.d-ayah { margin-top: 26px; padding-top: 22px; border-top: 1px solid var(--d-hair); }
+.d-ayah .t { margin-top: 10px; font: 400 23px/1.35 var(--d-serif); font-variation-settings: "opsz" 40; letter-spacing: -.005em; color: var(--d-moon); }
+.d-ayah .f { margin-top: 8px; font: 400 11px var(--d-mono); letter-spacing: .08em; color: var(--d-smoke); }
+.d-ayah .f a { color: inherit; }
+.d-per { margin-top: 14px; }
+.d-per:first-of-type { margin-top: 4px; }
+.d-per-h { display: flex; align-items: baseline; gap: 10px; font: 500 10px/1.6 var(--d-mono); letter-spacing: .13em; text-transform: uppercase; color: var(--d-smoke); }
+.d-per-h b { color: var(--d-moon-2); font-weight: 500; }
+.d-per-h .n { margin-left: auto; color: var(--d-ash); }
+.d-per.now .d-per-h b { color: var(--d-sun); }
+.d-per .d-tasks { margin-top: 6px; }
+.d-train { margin-top: 6px; padding: 9px 12px; border: 1px solid var(--d-hair); border-radius: 10px; font-size: 13px; color: var(--d-moon-2); }
+.d-train b { color: var(--d-moon); font-weight: 500; }
+.d-train .ex { margin-top: 4px; color: var(--d-ash); }
+.d-refl { display: grid; gap: 4px; }
+.d-refl b { color: var(--d-moon); font-weight: 600; margin-right: 6px; }

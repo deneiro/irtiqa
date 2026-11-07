@@ -202,3 +202,12 @@ export function taskId(text: string): { id: string | undefined; rest: string } {
 
 /** The order of the themes in the pyramid, by the letter of their IDs. */
 export const BANK_THEME_ORDER = ["D", "O", "L", "Z", "F", "S", "B", "V"];
+
+/**
+ * `- [ ] **ID** …` → `- [x] **ID** … ✓ date` wherever the line is: a bank file or a week file. Idempotent;
+ * content without an open line of that ID comes back as it was.
+ */
+export function tickTask(content: string, id: string, date: string): string {
+  const esc = id.replace(/\./g, "\\.");
+  return content.replace(new RegExp(`^(\\s*-\\s+)\\[ \\](\\s+\\*\\*${esc}\\*\\*.*?)\\s*$`, "m"), `$1[x]$2 ✓ ${date}`);
+}

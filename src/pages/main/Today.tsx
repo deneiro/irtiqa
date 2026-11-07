@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { ayahOfDay } from "../../lib/ayah";
+import { PERIODS, byPeriod, periodAt, todayTimes, type PeriodKey } from "../../lib/periods";
+import { trainingFor, type Training } from "../../lib/training";
+import type { Vault } from "../../lib/types";
 import { addDays, plural, weekdayIndex } from "../../lib/dates";
-import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, signals, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
+import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
 import { isoWeekKey } from "../../lib/goals";
-import { habitDue, type Life } from "../../lib/life";
-import { ActivityList, TaskLine, Card, DayArc, Dots, Hero, SignalRow, SignalTitle, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
+import { habitDue, markOf, type Life } from "../../lib/life";
+import { ActivityList, TaskLine, Card, DayArc, Dots, Hero, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 const days = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}`;
@@ -14,36 +18,64 @@ const streakTone = (d: number): Tone => (d >= 30 ? "sage" : d >= 7 ? "honey" : "
 const WINDOWS = [3, 7, 14] as const;
 type Win = (typeof WINDOWS)[number];
 
-/** «Сегодня»: the date, the one thing that burns and yesterday's prayers on the day's arc; then the rest of the focus, the activities and what waits; the state of 3, 7 or 14 days and yesterday beside them. */
-export default function Today({ life, today }: { life: Life; today: string }) {
+/** The part of the day now, re-read every minute; none when the screen shows another date. */
+function useNowPeriod(today: string): PeriodKey | undefined {
+  const [t, setT] = useState(() => new Date());
+  useEffect(() => { const id = setInterval(() => setT(new Date()), 60_000); return () => clearInterval(id); }, []);
+  const cal = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
+  return cal === today ? periodAt(t, todayTimes(today)) : undefined;
+}
+
+/**
+ * «Сегодня» (2026-11-08): the date and an ayah of the day; today's prayers on the day's arc with a dot for every task
+ * in its part of the day; the tasks by the five parts, today's training in the part of health; the activities and what
+ * waits; the state of 3, 7 or 14 days and yesterday beside them.
+ */
+export default function Today({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
   const [win, setWin] = useState<Win>(7);
   const yesterday = addDays(today, -1);
   const s = useMemo(() => windowStats(life, addDays(yesterday, -(win - 1)), yesterday), [life, yesterday, win]);
   const prev = useMemo(() => windowStats(life, addDays(yesterday, -(2 * win - 1)), addDays(yesterday, -win)), [life, yesterday, win]);
-  const sig = useMemo(() => signals(life, today), [life, today]);
   const acts = useMemo(() => activities(life, today), [life, today]);
   const y = useMemo(() => yesterdayView(life, today), [life, today]);
+  const ayah = useMemo(() => ayahOfDay(vault, today), [vault, today]);
+  const training = useMemo(() => trainingFor(vault, today), [vault, today]);
+  const now = useNowPeriod(today);
   const focus = focusFor(life, isoWeekKey(today), isoWeekKey(addDays(today, -7)));
-  const tasks = life.days.get(today)?.tasks ?? [];
-  const mark = (t: string): PrayerMark => (y.prayer.done.includes(t) ? "done" : y.prayer.late.includes(t) ? "late" : y.prayer.failed.includes(t) ? "failed" : "none");
-  const prayers = habitRows(life).filter((h) => h.kind === "prayer" && habitDue(h, yesterday)).map((h) => ({ title: h.title, mark: mark(h.title) }));
-  const [first, ...rest] = sig;
+  const day = life.days.get(today);
+  const tasks = day?.tasks ?? [];
+  const groups = byPeriod(tasks);
+  const mark = (t: string): PrayerMark => { const m = day ? markOf(day, t) : undefined; return m === "done" ? "done" : m === "late" ? "late" : m === "failed" ? "failed" : "none"; };
+  const prayers = habitRows(life).filter((h) => h.kind === "prayer" && habitDue(h, today)).map((h) => ({ title: h.title, mark: mark(h.title) }));
+  const arc = groups.filter((g): g is { key: PeriodKey; tasks: typeof tasks } => !!g.key).map((g) => ({ key: g.key, total: g.tasks.length, done: g.tasks.filter((t) => t.done).length }));
   const wait = waiting(life);
   return (
     <>
-      <Hero kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} />}>
-        <div className="d-lead">
-          <div className={`d-kick ${first?.level ?? ""}`}><i />Главное сегодня</div>
-          <div className="t">{first ? <SignalTitle s={first} /> : "Ничего не горит."}</div>
-          {first?.fact && <div className="f">{first.fact}</div>}
-        </div>
+      <Hero kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} periods={arc} now={now} />}>
+        {ayah && (
+          <div className="d-ayah">
+            <div className="d-kick">Аят дня</div>
+            <div className="t">{ayah.text}</div>
+            <div className="f"><Link to={`/page/${encodeURIComponent(ayah.rel)}`}>{ayah.name} · {ayah.sura}:{ayah.ayah}</Link> · перевод Кулиева</div>
+          </div>
+        )}
       </Hero>
       <div className="d-cols">
         <div className="d-stack">
-          <Card title="Ещё горит" right="по правилам, без Claude">
-            {rest.length ? <div className="d-sigs">{rest.map((x) => <SignalRow key={x.title} s={x} />)}</div> : <p className="d-faint">Больше ничего.</p>}
-            <div className="d-sub"><span className="d-kick">Задачи на сегодня</span><span className="n">{tasks.filter((t) => t.done).length} / {tasks.length}</span><span className="d-right">из утреннего вопроса бота</span></div>
-            {tasks.length ? <ul className="d-tasks">{tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} /></li>)}</ul> : <p className="d-faint">Задач нет — бот спросит утром.</p>}
+          <Card title="Задачи на сегодня" right={`${tasks.filter((t) => t.done).length} / ${tasks.length} · из утреннего вопроса бота`}>
+            {!tasks.length && !training && <p className="d-faint">Задач нет — бот спросит утром.</p>}
+            {groups.map((g) => {
+              const p = PERIODS.find((x) => x.key === g.key);
+              const train = g.key === "магриб" ? training : undefined;
+              if (!g.tasks.length && !train) return null;
+              return (
+                <div key={g.key ?? "none"} className={`d-per${g.key && g.key === now ? " now" : ""}`}>
+                  <div className="d-per-h">{p ? <><b>{p.roman} · {p.from}–{p.to}</b><span>{p.what}</span></> : <b>без периода</b>}{g.tasks.length > 0 && <span className="n">{g.tasks.filter((t) => t.done).length} / {g.tasks.length}</span>}</div>
+                  {train && <TrainingLine t={train} />}
+                  {g.tasks.length > 0 && <ul className="d-tasks">{g.tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} /></li>)}</ul>}
+                </div>
+              );
+            })}
             {focus.lines[0] && (
               <div className="d-claude-line">
                 <div className="d-kick who">Claude · фокус недели{focus.stale ? " · это прошлый период" : ""}</div>
@@ -63,6 +95,16 @@ export default function Today({ life, today }: { life: Life; today: string }) {
         </div>
       </div>
     </>
+  );
+}
+
+/** Today's row of the training plan: strength with the part and its exercises, cardio, or rest. */
+function TrainingLine({ t }: { t: Training }) {
+  return (
+    <div className="d-train">
+      Сегодня <b>{t.kind || "тренировка"}</b>{t.what ? ` — ${t.what}` : ""}
+      {t.exercises.length > 0 && <div className="ex">{t.exercises.join(" · ")}</div>}
+    </div>
   );
 }
 
@@ -117,7 +159,7 @@ function YesterdayCard({ y }: { y: Yesterday }) {
           <dt>Срывы</dt><dd>{y.recorded ? y.falls.join(", ") || "нет" : "—"}</dd>
           <dt>Полезные</dt><dd>{y.recorded ? <>{y.goodDone.length ? y.goodDone.join(", ") : "ни одной"}{y.goodMissed.length > 0 && <span className="d-faint"> · не сделано: {y.goodMissed.join(", ")}</span>}</> : "—"}</dd>
           <dt>Самочувствие</dt><dd>настроение {d.mood ?? "—"} · стресс {d.stress ?? "—"} · {d.weight !== undefined ? `${d.weight} кг` : "вес —"}</dd>
-          <dt>О дне</dt><dd className={y.reflections.length ? "" : "d-faint"}>{y.reflections.length ? y.reflections.join(" · ") : "вечерние вопросы о дне без ответа"}</dd>
+          <dt>О дне</dt><dd className={y.reflections.length ? "d-refl" : "d-faint"}>{y.reflections.length ? y.reflections.map((r, i) => { const at = r.indexOf(":"); return <span key={i}><b>{at > 0 ? r.slice(0, at) : r}</b> {at > 0 ? r.slice(at + 1).trim() : ""}</span>; }) : "вечерние вопросы о дне без ответа"}</dd>
         </dl>
       )}
     </Card>
