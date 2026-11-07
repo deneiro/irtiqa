@@ -5,12 +5,14 @@ import { useStore } from "../store";
 import Today from "./main/Today";
 import Week from "./main/Week";
 import Month from "./main/Month";
+import Levels from "./main/Levels";
 import "./Main.css";
 
 const TABS: { id: Tab; label: string; hint: string }[] = [
   { id: "day", label: "Сегодня", hint: "каждое утро" },
   { id: "week", label: "Неделя", hint: "в воскресенье" },
   { id: "month", label: "Месяц", hint: "1-го и когда сбился" },
+  { id: "levels", label: "Уровни", hint: "банк заданий" },
 ];
 
 /**
@@ -24,7 +26,7 @@ export default function MainPage() {
   const { life, vault } = useStore();
   const [params, setParams] = useSearchParams();
   const asked = params.get("tab");
-  const tab: Tab = asked === "day" || asked === "week" || asked === "month" ? asked : defaultTab(today);
+  const tab: Tab = asked === "day" || asked === "week" || asked === "month" || asked === "levels" ? asked : defaultTab(today);
   return (
     <div className="dash">
       <div className="dash-top">
@@ -40,7 +42,7 @@ export default function MainPage() {
         </nav>
       </div>
       <div key={tab} className="dash-page">
-        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
+        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : tab === "levels" ? <Levels life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
       </div>
     </div>
   );

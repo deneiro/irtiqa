@@ -247,3 +247,52 @@ table.d-grid { width: 100%; min-width: 480px; border-collapse: collapse; }
   .d-step, .d-step:first-child, .d-step:nth-child(2), .d-step:nth-child(3) { margin-top: 0; border-left: 0; }
   .dash-tabs { gap: 20px; }
 }
+
+/* Task lines: the bank ID chip, where a carried task began, the card in one line (2026-11-08). */
+.d-task { display: inline; }
+.d-tid { display: inline-block; margin-right: 8px; padding: 0 6px; border: 1px solid var(--d-hair-2); border-radius: 6px; font: 500 11px/1.6 var(--d-mono); color: var(--d-sun) !important; }
+.d-carry { display: inline-block; margin-left: 8px; font: 400 11px var(--d-mono); color: var(--d-honey); }
+.d-tcard { display: block; margin-top: 2px; font-size: 12px; color: var(--d-ash); text-decoration: none; }
+
+/* «Уровни»: the pyramid I → IV, the tree on the left, the card of the selection on the right; `l-` prefix. */
+.l-cols { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr); gap: 22px; align-items: start; }
+.l-side { position: sticky; top: 16px; }
+.l-rule { max-width: 360px; color: var(--d-moon-2); font-size: 13px; }
+.l-rule p { margin: 6px 0 0; }
+.l-branch { display: grid; gap: 2px; }
+.l-branch.l1 + .l-branch.l1 { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--d-hair); }
+.l-kids { display: grid; gap: 2px; margin: 2px 0 6px 18px; padding-left: 12px; border-left: 1px solid var(--d-hair); }
+.l-row, .l-task, .l-goal { display: grid; grid-template-columns: auto minmax(0, 1fr) 90px 44px; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border: 0; border-radius: 9px; background: none; color: var(--d-moon-2); font: 400 13.5px/1.35 var(--d-sans); text-align: left; cursor: pointer; }
+.l-goal { grid-template-columns: 10px auto minmax(0, 1fr) 140px 44px; color: var(--d-moon-2) !important; text-decoration: none !important; }
+.l-row:hover, .l-task:hover, .l-goal:hover { background: var(--d-raised); }
+.l-row.on, .l-task.on { background: var(--d-raised); box-shadow: inset 2px 0 0 var(--d-sun); }
+.l-branch.l1 > .l-row { font: 500 15px var(--d-serif); color: var(--d-moon); }
+.l-branch.l2 > .l-row { font-weight: 500; }
+.l-row.closed .l-t { color: var(--d-sage); }
+.l-task { grid-template-columns: auto minmax(0, 1fr) auto; }
+.l-task.done .l-t { color: var(--d-smoke); text-decoration: line-through; }
+.l-task.done .l-id { color: var(--d-sage); }
+.l-id { font: 500 11px var(--d-mono); color: var(--d-ash); white-space: nowrap; }
+.l-n { font: 500 11.5px var(--d-mono); color: var(--d-ash); text-align: right; }
+.l-m { font: 400 11.5px var(--d-mono); color: var(--d-honey); white-space: nowrap; }
+.l-bar { position: relative; display: block; height: 5px; border-radius: 3px; background: var(--d-hair-2); overflow: hidden; }
+.l-bar > span { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--d-honey); }
+.l-bar > span.full { background: var(--d-sun); }
+.l-bar > span.done { background: var(--d-sage); }
+.l-goals { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 24px; }
+.l-goal .d-dot, .dash .d-card h2 .d-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
+.l-card .l-title { margin: 0 0 14px; font: 500 19px/1.3 var(--d-serif); color: var(--d-moon); }
+.l-up { border: 0; background: none; color: var(--d-iris); font: 500 11px var(--d-mono); cursor: pointer; }
+.l-kv { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 12px; margin: 0 0 14px; }
+.l-kv dt { font: 500 10.5px/1.9 var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-ash); }
+.l-kv dd { margin: 0; color: var(--d-moon-2); }
+.l-notes { margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; background: var(--d-well, rgba(237,231,218,.04)); font-size: 12.5px; color: var(--d-ash); }
+.l-notes p { margin: 0; }
+.l-notes p + p { margin-top: 6px; }
+.l-prog { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; margin: 0 0 14px; }
+.l-prog b { font: 500 18px var(--d-serif); color: var(--d-moon); }
+.l-prog .d-faint { grid-column: 1 / -1; font-size: 12px; }
+.l-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12.5px; }
+.l-close { padding: 8px 16px; border: 1px solid var(--d-sage); border-radius: 999px; background: rgba(134, 201, 164, .12); color: var(--d-sage); font: 500 13px var(--d-sans); cursor: pointer; }
+.l-close:disabled { border-color: var(--d-hair-2); background: none; color: var(--d-smoke); cursor: not-allowed; }
+@media (max-width: 980px) { .l-cols { grid-template-columns: 1fr; } .l-side { position: static; } .l-goals { grid-template-columns: 1fr; } }

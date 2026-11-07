@@ -1,22 +1,20 @@
 import { useMemo, type ReactNode } from "react";
 import { buildCircle } from "../../lib/circle";
 import { addDays, plural } from "../../lib/dates";
-import { actName, focusFor, ladder, quietPeople, series, spheres, weightGoal, weightSeries, type ActState } from "../../lib/dashboard";
+import { actName, focusFor, quietPeople, series, spheres, weightGoal, weightSeries, type ActState } from "../../lib/dashboard";
 import { monthKey } from "../../lib/goals";
 import type { Life } from "../../lib/life";
-import { themeRu } from "../../lib/themes";
+import { themeColor, themeRu } from "../../lib/themes";
+import { Link } from "react-router-dom";
+import { BANK_THEME_ORDER, progress } from "../../lib/bank";
+import { useBank } from "./Levels";
 import type { Vault } from "../../lib/types";
-import { Card, ClaudeBlock, Columns, CoverageDots, Glance, GoalRow, HEX, Hero, MOOD_COLOR, MoodLines, STRESS_COLOR, Status, WeightLine, short, type Tone } from "./parts";
+import { Card, ClaudeBlock, Columns, CoverageDots, Glance, HEX, Hero, MOOD_COLOR, MoodLines, STRESS_COLOR, Status, WeightLine, short, type Tone } from "./parts";
 
 const STATE: Record<ActState | "none", [string, Tone]> = {
   overdue: ["срок прошёл", "ember"], empty: ["записей нет", "honey"], idle: ["стоит", "honey"], moving: ["движется", "sage"], none: ["нет деятельности", "smoke"],
 };
 const MONTH = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
-/** The key of a goals file as the small label of its step: the week number («45»), the month in lower case («ноябрь»), a year as it is. */
-const rungKey = (key: string) =>
-  /^\d{4}-W\d{2}$/.test(key) ? String(Number(key.slice(-2)))
-    : /^\d{4}-\d{2}$/.test(key) ? (MONTH[Number(key.slice(5)) - 1] ?? key).toLowerCase()
-    : key;
 /** One coloured part of a day column — typed, so `.map` does not widen it to `(string | number)[]`. */
 const seg = (v: number, c: string): [number, string] => [v, c];
 
@@ -24,7 +22,8 @@ const seg = (v: number, c: string): [number, string] => [v, c];
 export default function Month({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
   const yesterday = addDays(today, -1);
   const focus = focusFor(life, monthKey(today), monthKey(addDays(`${today.slice(0, 7)}-01`, -1)));
-  const rungs = useMemo(() => ladder(life, today), [life, today]);
+  const bank = useBank(life);
+  const goals = useMemo(() => [...bank].sort((a, b) => BANK_THEME_ORDER.indexOf(a.goals[0]?.id[0] ?? "") - BANK_THEME_ORDER.indexOf(b.goals[0]?.id[0] ?? "")).flatMap((f) => f.goals), [bank]);
   const pts = useMemo(() => series(life, addDays(yesterday, -29), yesterday), [life, yesterday]);
   const circle = useMemo(() => buildCircle(vault.pages.filter((p) => p.zone === "person"), life.events, today), [vault, life, today]);
   const goal = weightGoal(life, today);
@@ -51,18 +50,23 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
         ]} />
         <p className="d-foot">за 30 дней, {short(pts[0].date)} – {short(pts[pts.length - 1].date)}</p>
       </Hero>
-      <Card title="Куда двигаюсь" right="восхождение: неделя → месяц → год → пять лет" className="d-full">
-        <div className="d-stairs">
-          {[...rungs].reverse().map((r) => (
-            <div key={r.label} className="d-step">
-              <h3><b>{r.label}</b><span className="d-kick">{r.key ? rungKey(r.key) : "файла нет"}</span></h3>
-              {r.goals.map((g, i) => <GoalRow key={i} g={g} />)}
-              {r.key && !r.goals.length && !r.tasks.total && <p className="d-faint">целей нет</p>}
-              {r.tasks.total > 0 && <div className="d-goal"><div className="gt">Задачи</div><div className="gm"><Status tone={r.tasks.done === r.tasks.total ? "sage" : "honey"}>{r.tasks.done} из {r.tasks.total}</Status></div></div>}
-            </div>
-          ))}
+      <Card title="Куда двигаюсь" right={<Link to="/?tab=levels">уровни I → IV · банк заданий →</Link>} className="d-full">
+        <div className="l-goals">
+          {goals.map((g) => {
+            const p = progress(g);
+            return (
+              <Link key={g.id} className="l-goal" to={`/?tab=levels&id=${g.id}`}>
+                <span className="d-dot" style={{ background: themeColor(g.theme) }} />
+                <span className="l-id">{g.id}</span>
+                <span className="l-t">{g.title}</span>
+                <span className="l-bar"><span style={{ width: `${g.done ? 100 : p.pct}%` }} className={g.done ? "done" : ""} /></span>
+                <span className="l-n">{g.done ? "✓" : `${p.done}/${p.total}`}</span>
+              </Link>
+            );
+          })}
         </div>
-        <div className="d-stairs-cap">Каждая ступень — период из life/goals/. «Горит» — срок через 3 дня или раньше; «отстаёт» — тренд веса за 21 день не доходит до цели к сроку.</div>
+        {!goals.length && <p className="d-faint">Банка заданий нет.</p>}
+        <div className="d-stairs-cap">Цели месяца и года заменены уровнями: I — цель, II — достижение, III — результат, IV — задание недели. Прогресс — по закрытым частям.</div>
       </Card>
       <div className="d-cols">
         <div className="d-stack">
