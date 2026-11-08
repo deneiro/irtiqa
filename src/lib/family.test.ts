@@ -53,3 +53,23 @@ test("groupsOf: one word, a list, or none", () => {
   assert.deepEqual(groupsOf(page("В")), []);
   assert.deepEqual(allGroups([page("А", "group: 12C\n"), page("Б", "group: [12C, Shym]\n")]), [{ name: "12C", n: 2 }, { name: "Shym", n: 1 }]);
 });
+
+test("layoutFamily: two lineages apart, children by age, a wife from the other family beside her husband as a ghost", async () => {
+  const { layoutFamily } = await import("./familyLayout");
+  const pages = [
+    page("Дед А", 'connection: дедушка (папа отца)\ncategory: родня\nrelated: ["Жена: [[Бабушка А]]", "Сын: [[Дядя Б]]", "Сын: [[Отец А]]"]\n'),
+    page("Бабушка А", "connection: бабушка (мама отца)\ncategory: родня\n"),
+    page("Дед Б", 'connection: дедушка (папа мамы)\ncategory: родня\nrelated: ["Дочь: [[Мать А]]"]\n'),
+    page("Отец А", "connection: отец\ncategory: семья\n"),
+    page("Мать А", 'connection: мать\ncategory: семья\nrelated: ["Муж: [[Отец А]]"]\n'),
+    page("Дядя Б", "connection: дядя (брат отца)\ncategory: родня\n"),
+  ];
+  const L = layoutFamily(buildFamily(pages));
+  const x = (name: string, ghost = false) => L.cards.find((c) => c.node.name === name && !!c.ghost === ghost)!.x;
+  assert.ok(x("Дед А") < x("Дед Б"), "the father's lineage is left of the mother's");
+  assert.ok(x("Дядя Б") < x("Отец А"), "the elder son first");
+  assert.ok(L.cards.some((c) => c.node.name === "Мать А" && c.ghost), "mother beside father as a ghost");
+  assert.ok(x("Мать А") > x("Дед Б") - 200, "her own card stands in her family's tree");
+  assert.ok(L.lines.some((l) => l.kind === "ghost"));
+  assert.deepEqual(L.left, []);
+});
