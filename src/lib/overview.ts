@@ -13,12 +13,12 @@ export interface OverviewSection { heading: string; md: string }
 export type SectionKey =
   | "focus" | "resource" | "wiki" | "people" | "projects" | "profile" | "tools" | "template" | "summary"
   | "finance" | "events" | "skills" | "nutrition" | "quran" | "names" | "halal" | "body" | "medical"
-  | "circle" | "influence" | "self" | "horizon" | "talks" | "career" | "wishes" | "library" | "sport";
+  | "circle" | "influence" | "self" | "horizon" | "talks" | "career" | "wishes" | "library" | "sport" | "rings" | "relatives";
 
 export const SECTION_KEYS: readonly SectionKey[] = [
   "focus", "resource", "wiki", "people", "projects", "profile", "tools", "template", "summary",
   "finance", "events", "skills", "nutrition", "quran", "names", "halal", "body", "medical",
-  "circle", "influence", "self", "horizon", "talks", "career", "wishes", "library", "sport",
+  "circle", "influence", "self", "horizon", "talks", "career", "wishes", "library", "sport", "rings", "relatives",
 ];
 
 /** Keys drawn as an organ on the theme page (spec v4 «Ключи `sections:`»); every other key is a button. */

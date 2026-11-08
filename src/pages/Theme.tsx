@@ -1,4 +1,6 @@
 import { useMemo } from "react";
+import { buildFamily } from "../lib/family";
+import { closenessOf, isAuthor } from "../lib/people";
 import { Link, useParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEME_BY_NAME } from "../lib/themes";
@@ -67,6 +69,12 @@ function pageButton(key: SectionKey, theme: string, p: ThemePages, life: Life, v
     case "career": return { ...b, value: String(parseJobs(life.jobs ?? "", today).length), sub: "работ" };
     case "library": return { ...b, value: String(parseLibrary(life.library ?? "").length) };
     case "finance": return { ...b, to: "/finance" };
+    case "rings": {
+      const ps = vault.pages.filter((x) => x.zone === "person" && x.type !== "template" && !x.file.startsWith("_") && !isAuthor(x));
+      const rated = ps.filter((x) => closenessOf(x) !== undefined).length;
+      return { ...b, value: String(rated), of: `/ ${ps.length}`, sub: "на кругах" };
+    }
+    case "relatives": { const f = buildFamily(vault.pages); return { ...b, value: String(f.rows.reduce((n, r) => n + r.length, 0) - 1), sub: f.loose.length ? `без места ${f.loose.length}` : "в дереве" }; }
     default: return b;
   }
 }

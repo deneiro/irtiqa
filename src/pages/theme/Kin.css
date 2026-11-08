@@ -1,0 +1,30 @@
+/* «Круги» and «Родственники» (2026-11-08). Prefix k-. */
+
+.k-board { position: relative; width: 100%; max-width: 980px; aspect-ratio: 1; margin: 12px auto 0; user-select: none; touch-action: none; }
+.k-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.k-ring { fill: none; stroke: var(--hair-2); stroke-width: 1; }
+.k-ring.hot { stroke: var(--accent-text); stroke-width: 2; fill: var(--accent-soft); }
+.k-n { fill: var(--faint); font: 11px var(--font-mono); text-anchor: middle; }
+.k-me { fill: var(--accent); }
+.k-me-t { fill: #fff; font: 600 15px var(--font-ui); text-anchor: middle; }
+
+.k-chip { font: 11.5px var(--font-ui); color: var(--ink); background: var(--raised); border: 1px solid var(--hair-2); border-radius: 999px; padding: 2px 8px; white-space: nowrap; max-width: 104px; overflow: hidden; text-overflow: ellipsis; cursor: grab; touch-action: none; }
+.k-chip:hover { background: var(--raised-2); border-color: var(--accent-text); }
+.k-chip.on-ring { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
+.k-chip.drag { cursor: grabbing; z-index: 5; background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 6px 20px rgb(0 0 0 / .4); }
+.k-tray { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 12px; padding: 10px; border: 1px dashed var(--hair-2); border-radius: 10px; }
+
+.k-tree-box { margin-top: 14px; overflow-x: auto; padding-bottom: 8px; }
+.k-tree-in { position: relative; width: max-content; min-width: 100%; }
+.k-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.k-lines path { fill: none; stroke: var(--muted); stroke-width: 1.5; opacity: .7; }
+.k-lines path.pair { stroke: var(--accent-text); stroke-width: 3; }
+.k-gen { position: relative; display: grid; grid-template-columns: 96px max-content; min-width: 100%; align-items: center; gap: 12px; padding: 22px 0; }
+.k-gen-n { font: 11px var(--font-mono); color: var(--faint); text-transform: uppercase; letter-spacing: .04em; }
+.k-gen-row { display: flex; flex-wrap: nowrap; gap: 14px; justify-content: safe center; }
+.k-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 84px; padding: 6px 10px; border: 1px solid var(--hair-2); border-radius: 10px; background: var(--surface); color: var(--ink); text-decoration: none; }
+.k-node:hover { border-color: var(--accent-text); }
+.k-node b { font-weight: 500; }
+.k-node span { font-size: 11px; color: var(--faint); max-width: 170px; text-align: center; }
+.k-node.me { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; min-width: 64px; }
+.k-loose { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 14px; }

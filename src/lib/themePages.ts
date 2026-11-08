@@ -20,6 +20,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   events: "События", skills: "Навыки", nutrition: "Питание", quran: "Коран", names: "99 имён", halal: "Халяль · Харам · Макрух",
   body: "Тело", medical: "Где болит", circle: "Круг", influence: "Влияние", self: "Состояние", horizon: "Горизонт",
   talks: "Разговоры", career: "Карьера", wishes: "Хочу прожить", library: "Посмотрел и прочитал", sport: "Спорт",
+  rings: "Круги", relatives: "Родственники",
 };
 
 /** The folder of a page under `Projects/`: a project is its folder (location wins, the vault's rule), never a stale `project:`. */

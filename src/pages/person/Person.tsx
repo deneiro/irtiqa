@@ -12,7 +12,7 @@ import type { Cell } from "../../lib/dashboard";
 import { fmt } from "../../lib/dashboard";
 import { eventUrl } from "../../lib/events";
 import { debtLeft, type Life } from "../../lib/life";
-import { categoryOf, closenessOf, contactsOf, debtsFor, deepLinks, relatedFrom, relationsOf, textOf } from "../../lib/people";
+import { categoryOf, closenessOf, groupsOf, contactsOf, debtsFor, deepLinks, relatedFrom, relationsOf, textOf } from "../../lib/people";
 import {
   RADICALS, countWords, influenceCount, meetingsFoot, memoriesOf, personNumbers, personView, radicalsDiff, radicalsOf, shortWhen,
   type Half, type Influence, type PersonTile, type PersonView, type RadicalsView,
@@ -353,7 +353,7 @@ export default function PersonPage({ page }: { page: Page }) {
         <Ring n={close} letter={[...page.file][0]?.toUpperCase() ?? ""} />
         <div>
           <div className="p-kick">
-            {themeRu(page.theme)}{category && ` · ${category}`}
+            {themeRu(page.theme)}{category && ` · ${category}`}{groupsOf(page).length > 0 && ` · ${groupsOf(page).join(", ")}`}
             <span>{category ? "" : " · кем приходится — не отмечено"}{close ? ` · близость ${close}` : ""}</span>
           </div>
           <h1 className="p-h1">{page.title}</h1>
