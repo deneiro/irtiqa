@@ -9,7 +9,7 @@ import { deleteSummary, planDelete, planRename, planSummary } from "../lib/renam
 import { renameFile, trashPerson } from "../lib/fs";
 import { rawPageText } from "../lib/rawpage";
 import {
-  CATEGORIES, CONTACT_KEYS, CONTACT_LABELS, ROLES, categoryOf, closenessOf, contactsOf, formatRelation, isAuthor, relationsOf, textOf,
+  CATEGORIES, CONTACT_KEYS, groupsOf, CONTACT_LABELS, ROLES, categoryOf, closenessOf, contactsOf, formatRelation, isAuthor, relationsOf, textOf,
   type Contacts, type Relation,
 } from "../lib/people";
 
@@ -17,6 +17,7 @@ interface Fields {
   title: string;
   category: string;
   closeness: string;
+  group: string;
   connection: string;
   how: string;
   lives: string;
@@ -33,6 +34,7 @@ function fieldsOf(page: Page): Fields {
     title: page.title,
     category: categoryOf(page) ?? "",
     closeness: String(closenessOf(page) ?? ""),
+    group: groupsOf(page).join(", "),
     connection: textOf(page, "connection"),
     how: textOf(page, "how_we_met"),
     lives: textOf(page, "lives"),
@@ -99,6 +101,7 @@ export default function PersonForm({ page, onClose, ref }: { page: Page; onClose
         const n = Number(fields.closeness);
         patch.closeness = Number.isFinite(n) && n > 0 && n <= 10 ? String(Math.round(n)) : null;
       }
+      if (list(fields.group).join() !== list(was.group).join()) { const g = list(fields.group); patch.group = g.length > 1 ? g : g[0] ?? null; }
       if (list(fields.aliases).join() !== list(was.aliases).join()) patch.aliases = list(fields.aliases);
       if (list(fields.tags).join() !== list(was.tags).join()) patch.tags = list(fields.tags);
       const rel = fields.related.map((r) => ({ role: r.role.trim(), name: r.name.trim() })).filter((r) => r.name);
@@ -176,6 +179,7 @@ export default function PersonForm({ page, onClose, ref }: { page: Page; onClose
           </div>
           <div className="pgrid">
             <label className="cfield"><span>кем приходится</span><input className="text" {...INPUT} placeholder="одноклассник, дядя по отцу…" value={fields.connection} onChange={(e) => set({ connection: e.target.value })} /></label>
+            <label className="cfield"><span>группа</span><input className="text" {...INPUT} placeholder="12C, Crocus, Shym… — откуда знаешь" value={fields.group} onChange={(e) => set({ group: e.target.value })} /></label>
             <label className="cfield"><span>как познакомились</span><input className="text" {...INPUT} value={fields.how} onChange={(e) => set({ how: e.target.value })} /></label>
           </div>
         </fieldset>

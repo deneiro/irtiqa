@@ -1,4 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { RingsBoard } from "./theme/Rings";
+import { FamilyTree } from "./theme/Family";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEME_BY_NAME } from "../lib/themes";
@@ -187,6 +189,8 @@ export default function ThemePartPage() {
           </section>
         );
       case "wiki": return <WikiScreen pages={pages.wikiAll} />;
+      case "rings": return <RingsBoard />;
+      case "relatives": return <FamilyTree />;
       case "people":
         return (
           <section className="tblock">

@@ -91,6 +91,23 @@ export function categoryOf(page: Page): Category | undefined {
   return undefined;
 }
 
+/**
+ * Where he knows a person from — a class (12C), a centre (Crocus), a town (Shym), a branch of the family (Куда).
+ * His word, `group:` (Eldar, 2026-11-08: «тега нету только у моей семьи и самых близких друзей»). One word or a list.
+ */
+export function groupsOf(page: Page): string[] {
+  const v = page.fm.group;
+  const xs = Array.isArray(v) ? v.map(String) : typeof v === "string" || typeof v === "number" ? String(v).split(",") : [];
+  return xs.map((s) => s.trim()).filter(Boolean);
+}
+
+/** Every group in use, the biggest first. */
+export function allGroups(pages: Page[]): { name: string; n: number }[] {
+  const m = new Map<string, number>();
+  for (const p of pages) for (const g of groupsOf(p)) m.set(g, (m.get(g) ?? 0) + 1);
+  return [...m].map(([name, n]) => ({ name, n })).sort((a, b) => b.n - a.n || a.name.localeCompare(b.name));
+}
+
 export function closenessOf(page: Page): number | undefined {
   const v = Number(page.fm.closeness);
   return Number.isFinite(v) && v > 0 && v <= 10 ? Math.round(v) : undefined;

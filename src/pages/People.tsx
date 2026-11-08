@@ -6,7 +6,7 @@ import { pageUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
-import { CATEGORIES, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, type Category } from "../lib/people";
+import { CATEGORIES, allGroups, groupsOf, categoryOf, closenessOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, type Category } from "../lib/people";
 import AddPersonSheet from "./person/AddPersonSheet";
 
 type Sort = "name" | "contact" | "birthday";
@@ -25,6 +25,7 @@ export default function PeoplePage() {
   });
   const [cats, setCats] = useState<Set<Category>>(new Set());
   const [near, setNear] = useState<string>("");
+  const [grp, setGrp] = useState<string>("");
   const [adding, setAdding] = useState(false);
 
   const people = useMemo(
@@ -55,6 +56,7 @@ export default function PeoplePage() {
           const min = Number(near);
           return close !== undefined && close >= min;
         })
+        .filter(({ p }) => !grp || (grp === "—" ? !groupsOf(p).length : groupsOf(p).includes(grp)))
         .filter(({ p }) => !theme || p.theme === theme)
         .filter(({ p, connection }) => !q || p.title.toLowerCase().includes(q.toLowerCase()) || p.aliases.some((a) => a.toLowerCase().includes(q.toLowerCase())) || connection.toLowerCase().includes(q.toLowerCase()))
         .sort((a, b) => {
@@ -62,9 +64,10 @@ export default function PeoplePage() {
           if (sort === "birthday") return (a.bday ?? 1e9) - (b.bday ?? 1e9);
           return a.p.title.localeCompare(b.p.title);
         }),
-    [v, life, q, theme, sort, today, cats, near],
+    [v, life, q, theme, sort, today, cats, near, grp],
   );
 
+  const groups = useMemo(() => allGroups(v.pages.filter((p) => p.zone === "person")), [v]);
   const soon = people.filter((x) => x.bday !== undefined && x.bday <= 30).sort((a, b) => a.bday! - b.bday!);
 
   return (
@@ -81,6 +84,8 @@ export default function PeoplePage() {
 
       <div className="row wrap" style={{ margin: "16px 0 0", gap: 8 }}>
         <button className="btn primary" onClick={() => setAdding(true)}>+ Добавить человека</button>
+        <Link className="btn" to={`/theme/${encodeURIComponent("Social & friends")}/rings`}>Круги</Link>
+        <Link className="btn" to={`/theme/${encodeURIComponent("Social & friends")}/relatives`}>Родственники</Link>
       </div>
       <AddPersonSheet open={adding} onClose={() => setAdding(false)} />
 
@@ -111,12 +116,19 @@ export default function PeoplePage() {
           <button key={n} className={`chip link ${near === n ? "on" : ""}`} onClick={() => setNear(near === n ? "" : n)}>{n === "—" ? "не указана" : n === "10" ? "10" : `${n}+`}</button>
         ))}
       </div>
+      {groups.length > 0 && (
+        <div className="row wrap filters">
+          <span className="small muted">группа:</span>
+          {groups.map((g) => <button key={g.name} className={`chip link ${grp === g.name ? "on" : ""}`} onClick={() => setGrp(grp === g.name ? "" : g.name)}>{g.name} <span className="faint">{g.n}</span></button>)}
+          <button className={`chip link ${grp === "—" ? "on" : ""}`} onClick={() => setGrp(grp === "—" ? "" : "—")}>без группы</button>
+        </div>
+      )}
       <table className="tbl">
         <thead><tr><th>{t("col_name")}</th><th>кто</th><th style={{ textAlign: "right" }}>близость</th><th>{t("col_connection")}</th><th>контакт</th><th>общались</th><th style={{ textAlign: "right" }}>долг</th></tr></thead>
         <tbody>
           {people.map(({ p, links, since, debt, connection, cat, close }) => (
             <tr key={p.rel}>
-              <td><Link to={pageUrl(p)} style={{ fontWeight: 500 }}>{p.title}</Link></td>
+              <td><Link to={pageUrl(p)} style={{ fontWeight: 500 }}>{p.title}</Link>{groupsOf(p).map((g) => <span key={g} className="chip small" style={{ marginLeft: 6 }}>{g}</span>)}</td>
               <td><span className="chip c" style={{ ["--c" as string]: themeColor(p.theme) }} title={p.theme ? themeLabel(p.theme) : ""}>{cat ?? "—"}</span></td>
               <td className="mono" style={{ textAlign: "right" }}>{close ?? ""}</td>
               <td className="muted">{connection || "—"}</td>
