@@ -36,6 +36,10 @@ export interface Family {
   edges: [string, string][];     // parent → child
   spouses: [string, string][];
   loose: Page[];                 // family or relatives whose place the words do not give
+  nodes: Map<string, FNode>;
+  rank: Map<string, number>;      // a child's place among its siblings, by age
+  husbands: Set<string>;
+  sibs: [string, string][];
 }
 
 /** `deceased: true` — someone no longer with him; the tree keeps them, the rings do not. */
@@ -165,5 +169,5 @@ export function buildFamily(pages: Page[]): Family {
     return ps.length ? Math.min(...ps) : undefined;
   });
   const loose = people.filter((p) => !nodes.has(id(p)) && (categoryOf(p) === "семья" || categoryOf(p) === "родня")).sort((a, b) => a.title.localeCompare(b.title));
-  return { rows, edges, spouses: spouses.filter(([a, b]) => nodes.has(a) && nodes.has(b)), loose };
+  return { rows, edges, spouses: spouses.filter(([a, b]) => nodes.has(a) && nodes.has(b)), loose, nodes, rank, husbands, sibs: sibs.filter(([a, b]) => nodes.has(a) && nodes.has(b)) };
 }
