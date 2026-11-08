@@ -1,14 +1,21 @@
 /* «Круги» and «Родственники» (2026-11-08). Prefix k-. */
 
-.k-board { position: relative; width: 100%; max-width: 980px; aspect-ratio: 1; margin: 12px auto 0; user-select: none; touch-action: none; }
-.k-board svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.k-ring { fill: none; stroke: var(--hair-2); stroke-width: 1; }
-.k-ring.hot { stroke: var(--accent-text); stroke-width: 2; fill: var(--accent-soft); }
-.k-n { fill: var(--faint); font: 11px var(--font-mono); text-anchor: middle; }
+.k-port { position: relative; height: min(78vh, 900px); margin-top: 12px; overflow: hidden; border: 1px solid var(--hair); border-radius: 14px; background: var(--bg-2); cursor: grab; user-select: none; touch-action: none; }
+.k-port:active { cursor: grabbing; }
+.k-layer { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.k-layer svg { position: absolute; inset: 0; }
+.k-band { fill: none; stroke: transparent; }
+.k-band.alt { stroke: color-mix(in srgb, var(--ink) 3%, transparent); }
+.k-band.hot { stroke: var(--accent-soft); }
+.k-ring { fill: none; stroke: var(--hair-2); stroke-width: 1.5; }
+.k-n { fill: var(--faint); font: 16px var(--font-mono); text-anchor: middle; }
 .k-me { fill: var(--accent); }
-.k-me-t { fill: #fff; font: 600 15px var(--font-ui); text-anchor: middle; }
+.k-me-t { fill: #fff; font: 600 20px var(--font-ui); text-anchor: middle; }
+.k-zoom { position: absolute; right: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 4px; }
+.k-zoom button { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--hair-2); background: var(--raised); color: var(--ink); font: 16px var(--font-ui); cursor: pointer; }
+.k-zoom button:hover { border-color: var(--accent-text); }
 
-.k-chip { font: 11.5px var(--font-ui); color: var(--ink); background: var(--raised); border: 1px solid var(--hair-2); border-radius: 999px; padding: 2px 8px; white-space: nowrap; max-width: 104px; overflow: hidden; text-overflow: ellipsis; cursor: grab; touch-action: none; }
+.k-chip { font: 13px var(--font-ui); color: var(--ink); background: var(--raised); border: 1px solid var(--hair-2); border-radius: 999px; padding: 3px 10px; white-space: nowrap; max-width: 120px; overflow: hidden; text-overflow: ellipsis; cursor: grab; touch-action: none; }
 .k-chip:hover { background: var(--raised-2); border-color: var(--accent-text); }
 .k-chip.on-ring { position: absolute; transform: translate(-50%, -50%); z-index: 1; }
 .k-chip.drag { cursor: grabbing; z-index: 5; background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 6px 20px rgb(0 0 0 / .4); }
