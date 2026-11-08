@@ -20,8 +20,9 @@ export function kindOf(word: string): Kind | undefined {
   if (/(внук|внучк)/.test(w)) return "grandchild";
   if (/(дяд|тет|^ага\b|^апа\b)/.test(w)) return "uncle";
   if (/племян/.test(w)) return "nephew";
-  if (/^(отец|мать|папа|мама|отчим|мачех)/.test(w)) return "parent";
-  if (/^(сын|дочь|дочка)/.test(w)) return "child";
+  if (/^(отец|мать|папа|мама|отчим|мачех|родител)/.test(w)) return "parent";
+  // «ребёнок» when the words do not say son or daughter — the tree needs no guess at that.
+  if (/^(сын|дочь|дочка|ребенок|дети)/.test(w)) return "child";
   if (/^(брат|сестр)/.test(w)) return "sibling";
   if (/^(муж|жена|супруг)/.test(w)) return "spouse";
   return undefined;
@@ -29,13 +30,16 @@ export function kindOf(word: string): Kind | undefined {
 
 const SHIFT: Record<Kind, number> = { parent: -1, child: 1, sibling: 0, cousin: 0, spouse: 0, uncle: -1, nephew: 1, grand: -2, grandchild: 2 };
 
-export interface FNode { id: string; page?: Page; name: string; gen: number; note?: string }
+export interface FNode { id: string; page?: Page; name: string; gen: number; note?: string; gone?: boolean }
 export interface Family {
   rows: FNode[][];               // by generation, oldest first, each row in drawing order
   edges: [string, string][];     // parent → child
   spouses: [string, string][];
   loose: Page[];                 // family or relatives whose place the words do not give
 }
+
+/** `deceased: true` — someone no longer with him; the tree keeps them, the rings do not. */
+export const isGone = (p: Page) => p.fm.deceased === true || String(p.fm.deceased) === "true";
 
 const isPerson = (p: Page) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p);
 
@@ -46,7 +50,7 @@ export function buildFamily(pages: Page[]): Family {
   const id = (p: Page) => p.rel;
 
   // Facts: a → b with kind (b is <kind> of a).
-  const facts: { a: string; b: string; kind: Kind; side?: string }[] = [];
+  const facts: { a: string; b: string; kind: Kind; side?: string; word?: string }[] = [];
   for (const p of people) {
     const conn = typeof p.fm.connection === "string" ? p.fm.connection : "";
     const k = kindOf(conn);
@@ -58,7 +62,7 @@ export function buildFamily(pages: Page[]): Family {
     for (const r of relationsOf(p)) {
       const other = byName.get(r.name.toLowerCase());
       const rk = kindOf(r.role);
-      if (other && rk && other !== p) facts.push({ a: id(p), b: id(other), kind: rk });
+      if (other && rk && other !== p) facts.push({ a: id(p), b: id(other), kind: rk, word: r.role.toLowerCase() });
     }
   }
 
@@ -95,9 +99,16 @@ export function buildFamily(pages: Page[]): Family {
     for (const p of parents.get(b) ?? []) addParent(a, p);
   }
 
+  // The order he named children in on the parent's page is their order by age.
+  const rank = new Map<string, number>();
+  for (const f of facts) if (f.kind === "child") { const r = facts.filter((x) => x.a === f.a && x.kind === "child").indexOf(f); if (!rank.has(f.b)) rank.set(f.b, r); }
+  rank.set(ME, -1); // he is the eldest of his parents' children
+  // An uncle stands by the parent of his side only while the tree does not know his own parents.
+  for (const k of [...near.keys()]) if (parents.get(k)?.size) near.delete(k);
+
   const nodes = new Map<string, FNode>();
   nodes.set(ME, { id: ME, name: "Я", gen: 0 });
-  for (const p of people) if (gen.has(id(p))) nodes.set(id(p), { id: id(p), page: p, name: p.title, gen: gen.get(id(p))!, note: typeof p.fm.connection === "string" ? p.fm.connection : undefined });
+  for (const p of people) if (gen.has(id(p))) nodes.set(id(p), { id: id(p), page: p, name: p.title, gen: gen.get(id(p))!, note: typeof p.fm.connection === "string" ? p.fm.connection : undefined, gone: isGone(p) });
 
   const edges: [string, string][] = [];
   for (const [c, ps] of parents) for (const p of ps) if (nodes.has(c) && nodes.has(p) && nodes.get(p)!.gen < nodes.get(c)!.gen) edges.push([p, c]);
@@ -106,39 +117,53 @@ export function buildFamily(pages: Page[]): Family {
   const gens = [...new Set([...nodes.values()].map((n) => n.gen))].sort((a, b) => a - b);
   const pos = new Map<string, number>();
   const rows: FNode[][] = [];
-  const meIdx = gens.indexOf(0);
+  // Who stands beside whom when the tree does not know a person's parents: a spouse by the partner (a wife to
+  // the right of her husband), a brother by his sibling, an uncle by the parent of his side.
+  const husbands = new Set(facts.filter((f) => f.kind === "spouse" && /^муж/.test(f.word ?? "")).map((f) => f.b).concat(facts.filter((f) => f.kind === "spouse" && /^жена/.test(f.word ?? "")).map((f) => f.a)));
+  const anchor = (n: string): { to: string; left: boolean } | undefined => {
+    if (parents.get(n)?.size) return undefined;
+    const sp = spouses.flatMap(([a, b]) => (a === n ? [b] : b === n ? [a] : [])).find((p) => parents.get(p)?.size);
+    if (sp) return { to: sp, left: false };
+    const nb = near.get(n);
+    if (nb) return { to: nb, left: !/матер|мам/.test(nodes.get(n)?.note ?? "") };
+    const sb = sibs.flatMap(([a, b]) => (a === n ? [b] : b === n ? [a] : []))[0];
+    if (sb) return { to: sb, left: false };
+    // A couple neither of whom has parents in the tree (grandparents): the wife stands right of the husband.
+    const sp2 = spouses.flatMap(([a, b]) => (a === n ? [b] : b === n ? [a] : []))[0];
+    if (!sp2 || n === ME) return undefined;
+    return husbands.has(sp2) || (!husbands.has(n) && n > sp2) ? { to: sp2, left: false } : undefined;
+  };
   const order = (row: FNode[], ref: (n: FNode) => number | undefined) => {
-    const keyed = row.filter((n) => !near.has(n.id)).map((n, i) => ({ n, k: ref(n) ?? 1000 + i }));
-    keyed.sort((a, b) => a.k - b.k || a.n.name.localeCompare(b.n.name));
+    const ids = new Set(row.map((n) => n.id));
+    const tied = row.filter((n) => { const a = anchor(n.id); return a && ids.has(a.to); });
+    const keyed = row.filter((n) => !tied.includes(n)).map((n, i) => ({ n, k: ref(n) ?? 1000 + i }));
+    keyed.sort((a, b) => a.k - b.k || (rank.get(a.n.id) ?? 99) - (rank.get(b.n.id) ?? 99) || a.n.name.localeCompare(b.n.name));
     const out = keyed.map((x) => x.n);
-    // An uncle or aunt stands by the parent of their side: the father's people on his left, the mother's on her right.
-    for (const n of row.filter((x) => near.has(x.id))) {
-      const i = out.findIndex((x) => x.id === near.get(n.id));
-      const left = !/матер|мам/.test(n.note ?? "");
-      if (i < 0) out.push(n); else out.splice(left ? i : i + 1, 0, n);
+    // Place the tied ones once their anchor is placed; a chain (a wife, then her brothers) settles in a few rounds.
+    let left = [...tied];
+    for (let round = 0; left.length && round < 6; round++) {
+      left = left.filter((n) => {
+        const a = anchor(n.id)!;
+        let i = out.findIndex((x) => x.id === a.to);
+        if (i < 0) return true;
+        if (!a.left) while (i + 1 < out.length && anchor(out[i + 1].id)?.to === a.to) i++; // after those already beside it
+        out.splice(a.left ? i : i + 1, 0, n);
+        return false;
+      });
     }
+    out.push(...left);
     out.forEach((x, i) => pos.set(x.id, i));
     return out;
   };
-  const avg = (xs: (number | undefined)[]) => { const v = xs.filter((x): x is number => x !== undefined); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : undefined; };
-  const childrenOf = (n: string) => edges.filter((e) => e[0] === n).map((e) => e[1]);
-  const partner = (n: string) => spouses.flatMap(([a, b]) => (a === n ? [b] : b === n ? [a] : []));
-  // First the oldest rows from their children (bottom-up seeds), then everyone top-down.
+  // Top-down, once: the oldest row by side — the father's people left, the mother's right; every next row under
+  // its parents, children in the order of their age, spouses and in-laws beside the one they came through.
+  const sideKey = (n: FNode) => { const c = n.note ?? ""; return /мамы|матери|по маме/.test(c) ? 10 : /отца|по отцу/.test(c) ? 0 : 5; };
   for (const g of gens) rows.push([...nodes.values()].filter((n) => n.gen === g));
-  for (let pass = 0; pass < 2; pass++) {
-    for (let i = meIdx; i >= 0; i--) rows[i] = order(rows[i], (n) => {
-      if (n.id === ME) return 0;
-      const viaKids = avg(childrenOf(n.id).map((c) => pos.get(c)));
-      return viaKids ?? avg(partner(n.id).map((p) => pos.get(p)).map((x) => (x === undefined ? undefined : x + 0.3)));
-    });
-    for (let i = 0; i < rows.length; i++) rows[i] = order(rows[i], (n) => {
-      const ps = [...(parents.get(n.id) ?? [])].filter((p) => nodes.has(p));
-      const v = avg(ps.map((p) => pos.get(p)));
-      if (v !== undefined) return v + (n.id === ME ? -0.01 : 0);
-      return avg([...partner(n.id), ...sibs.flatMap(([a, b]) => (a === n.id ? [b] : b === n.id ? [a] : []))].map((p) => pos.get(p)).map((x) => (x === undefined ? undefined : x + 0.3))) ?? pos.get(n.id);
-    });
-  }
-
+  for (let i = 0; i < rows.length; i++) rows[i] = order(rows[i], (n) => {
+    if (i === 0) return sideKey(n);
+    const ps = [...(parents.get(n.id) ?? [])].map((p) => pos.get(p)).filter((x): x is number => x !== undefined);
+    return ps.length ? Math.min(...ps) : undefined;
+  });
   const loose = people.filter((p) => !nodes.has(id(p)) && (categoryOf(p) === "семья" || categoryOf(p) === "родня")).sort((a, b) => a.title.localeCompare(b.title));
   return { rows, edges, spouses: spouses.filter(([a, b]) => nodes.has(a) && nodes.has(b)), loose };
 }

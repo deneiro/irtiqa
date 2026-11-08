@@ -5,7 +5,8 @@ import { pageUrl } from "../../lib/vault";
 import { rawPageText } from "../../lib/rawpage";
 import { setFrontmatterKeys } from "../../lib/frontmatter";
 import { todayStr } from "../../lib/dates";
-import { allGroups, closenessOf, groupsOf, isAuthor } from "../../lib/people";
+import { allGroups, categoryOf, closenessOf, groupsOf, isAuthor } from "../../lib/people";
+import { isGone } from "../../lib/family";
 import type { Page } from "../../lib/types";
 import "./Kin.css";
 
@@ -14,7 +15,8 @@ import "./Kin.css";
  * 1 the last. Names sit inside the bands, between the lines, never on them; a band that holds many people
  * gets more rows. A name dragged into another band writes `closeness:`. The board zooms with the wheel
  * (or a pinch) round the pointer and pans by dragging the empty field — there is room for any number of people.
- * Without closeness a person waits in the tray under the board and is dragged in from there.
+ * Without closeness a person waits in the column beside the board and is dragged in from there. His own family
+ * («семья») is not on the board — «они по-любому все десятки» (2026-11-08) — nor is anyone no longer with him.
  */
 const ME_R = 44;      // the centre
 const NAME = 128;     // arc one name takes on a row
@@ -58,7 +60,7 @@ export function RingsBoard() {
   const [moved, setMoved] = useState<Record<string, number>>({});
   const [group, setGroup] = useState("");
   const [err, setErr] = useState<string>();
-  const people = useMemo(() => v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)), [v]);
+  const people = useMemo(() => v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p) && categoryOf(p) !== "семья" && !isGone(p)), [v]);
   const groups = useMemo(() => allGroups(people), [people]);
   const shown = people.filter((p) => !group || (group === "—" ? !groupsOf(p).length : groupsOf(p).includes(group)));
   const close = (p: Page) => moved[p.rel] ?? closenessOf(p);
@@ -196,6 +198,7 @@ export function RingsBoard() {
         </div>
       )}
       {err && <p className="d-warn">{err}</p>}
+      <div className="k-wrap">
       <div className="k-port" ref={port} onPointerDown={panDown} onPointerMove={panMove} onPointerUp={panUp} onPointerCancel={panUp}>
         <div className="k-layer" style={{ width: SIZE, height: SIZE, transform: `translate(${view.x}px, ${view.y}px) scale(${view.s})` }}>
           <svg width={SIZE} height={SIZE} aria-hidden>
@@ -219,10 +222,11 @@ export function RingsBoard() {
       </div>
       {tray.length > 0 && (
         <div className="k-tray">
-          <span className="small muted">без круга — перетащи в кольцо:</span>
+          <span className="small muted">без круга · {tray.length} — перетащи в кольцо</span>
           {tray.filter((p) => drag?.rel !== p.rel).map((p) => chip(p, undefined))}
         </div>
       )}
+      </div>
     </section>
   );
 }

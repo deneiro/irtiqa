@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useVault } from "../../store";
 import { pageUrl } from "../../lib/vault";
 import { buildFamily, ME } from "../../lib/family";
-import { groupsOf } from "../../lib/people";
 import "./Kin.css";
 
 const GEN = ["прадеды", "деды", "родители", "ты и твоё поколение", "дети", "внуки"];
@@ -26,16 +25,25 @@ export function FamilyTree() {
       const b = root.getBoundingClientRect();
       const at = (id: string) => { const el = root.querySelector<HTMLElement>(`[data-id="${CSS.escape(id)}"]`); return el?.getBoundingClientRect(); };
       const out: { d: string; kind: "kid" | "pair" }[] = [];
-      for (const [p, c] of fam.edges) {
-        const a = at(p), z = at(c);
-        if (!a || !z) continue;
-        const x1 = a.left + a.width / 2 - b.left, y1 = a.bottom - b.top, x2 = z.left + z.width / 2 - b.left, y2 = z.top - b.top, ym = (y1 + y2) / 2;
+      // One line a child, from the middle of its parents; each family's bar at its own height so families do not merge.
+      const byChild = new Map<string, string[]>();
+      for (const [p, c] of fam.edges) byChild.set(c, [...(byChild.get(c) ?? []), p]);
+      const famIdx = new Map<string, number>();
+      for (const [c, ps] of byChild) {
+        const rs = ps.map(at).filter((r): r is DOMRect => !!r), z = at(c);
+        if (!rs.length || !z) continue;
+        const key = [...ps].sort().join("|");
+        if (!famIdx.has(key)) famIdx.set(key, famIdx.size);
+        const x1 = rs.reduce((s, r) => s + r.left + r.width / 2, 0) / rs.length - b.left;
+        const y1 = Math.max(...rs.map((r) => r.bottom)) - b.top, x2 = z.left + z.width / 2 - b.left, y2 = z.top - b.top;
+        const ym = y1 + (y2 - y1) * (0.25 + 0.12 * (famIdx.get(key)! % 5));
         out.push({ d: `M${x1},${y1} V${ym} H${x2} V${y2}`, kind: "kid" });
       }
       for (const [p, q] of fam.spouses) {
         const a = at(p), z = at(q);
         if (!a || !z) continue;
         const [l, r] = a.left < z.left ? [a, z] : [z, a];
+        if (r.left - l.right > 40) continue; // only a couple standing side by side is joined; their children's lines show the rest
         const y = l.top + l.height / 2 - b.top;
         out.push({ d: `M${l.right - b.left},${y} H${r.left - b.left}`, kind: "pair" });
       }
@@ -62,8 +70,8 @@ export function FamilyTree() {
                 <span key={n.id} data-id={n.id} className="k-node me">Я</span>
               ) : (
                 <Link key={n.id} data-id={n.id} to={pageUrl(n.page!)} className="k-node">
-                  <b>{n.name}</b>
-                  <span>{[n.note, ...groupsOf(n.page!).filter((g) => !n.note?.toLowerCase().includes(g.toLowerCase()))].filter(Boolean).join(" · ")}</span>
+                  <b>{n.name}{n.gone && <span className="k-gone" title="нет с нами"> †</span>}</b>
+                  {n.note && <span>{n.note}</span>}
                 </Link>
               ))}
             </div>
