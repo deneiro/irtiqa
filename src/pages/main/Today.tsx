@@ -104,6 +104,7 @@ function TrainingLine({ t }: { t: Training }) {
     <div className="d-train">
       Сегодня <b>{t.kind || "тренировка"}</b>{t.what ? ` — ${t.what}` : ""}
       {t.exercises.length > 0 && <div className="ex">{t.exercises.join(" · ")}</div>}
+      {/силов/i.test(t.kind) && <div className="ex"><Link to="/training?tab=p">упражнения с анимацией и карта мышц →</Link></div>}
     </div>
   );
 }

@@ -50,7 +50,7 @@ export default function SportSection() {
 
   return (
     <section className="tblock">
-      <h2 className="section">Спорт <span className="n">{thisMonth} в этом месяце · {last30} за 30 дней</span></h2>
+      <h2 className="section">Спорт <span className="n">{thisMonth} в этом месяце · {last30} за 30 дней · <Link to="/training">тренировки и карта мышц →</Link></span></h2>
       <div className="card">
         <form className="addrow sport" onSubmit={(e) => { e.preventDefault(); void add(); }}>
           <input className="text" placeholder="что: футбол, зал, пробежка" autoCorrect="off" spellCheck={false} value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} />
