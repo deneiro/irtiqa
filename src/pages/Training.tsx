@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useStore } from "../store";
 import { todayStr } from "../lib/dates";
 import {
-  TRAINING_JSON, dayOf, framesOf, hitDay, hitExercise, inProgram, loadTraining, mirror, points, programWeek,
-  type Exercise, type Hit, type Part, type TrainingData,
+  TRAINING_JSON, dayOf, framesOf, hitDay, hitExercise, inProgram, mirror, setsNow, useTraining, points, programWeek,
+  type Exercise, type Hit, type Nutrition, type Part, type TrainingData,
 } from "../lib/trainingMap";
 import "./Training.css";
 
@@ -19,17 +19,15 @@ const TABS: [Tab, string][] = [["p", "Программа"], ["m", "Мышцы"],
  */
 export default function TrainingPage() {
   const { root } = useStore();
-  const [data, setData] = useState<TrainingData | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  useEffect(() => {
-    let live = true;
-    loadTraining(root).then((d) => live && setData(d), (e) => live && setErr(String(e?.message ?? e)));
-    return () => { live = false; };
-  }, [root]);
+  return <div className="tr"><h1>Тренировки</h1><TrainingAtlas root={root} /></div>;
+}
 
-  if (err) return <div className="tr"><h1>Тренировки</h1><p className="tr-note">Не нашёл данные: {err}. Их собирает <code>node {TRAINING_JSON.replace("training.json", "build.mjs")}</code> в vault.</p></div>;
-  if (!data) return <div className="tr"><h1>Тренировки</h1><p className="tr-note">Загружаю…</p></div>;
-  return <Atlas d={data} root={root} />;
+/** The atlas with its loading and missing-file states; the theme screen embeds it too. */
+export function TrainingAtlas({ root }: { root: string }) {
+  const { data, err } = useTraining(root);
+  if (err) return <div className="tr tr-embed"><p className="tr-note">Не нашёл данные: {err}. Их собирает <code>node {TRAINING_JSON.replace("training.json", "build.mjs")}</code> в vault.</p></div>;
+  if (!data) return <div className="tr tr-embed"><p className="tr-note">Загружаю…</p></div>;
+  return <div className="tr tr-embed"><Atlas d={data} root={root} /></div>;
 }
 
 function Atlas({ d, root }: { d: TrainingData; root: string }) {
@@ -153,11 +151,21 @@ function Atlas({ d, root }: { d: TrainingData; root: string }) {
             {day.items.map(([id, s, r]) => (
               <tr key={id}>
                 <td className="t">{anim(id, true)}</td>
-                <td><button className="tr-link" onClick={() => go({ tab: "e", ex: id })}>{ex[id]?.name ?? id}</button><div className="tr-reps">{s} × {r}</div></td>
+                <td><button className="tr-link" onClick={() => go({ tab: "e", ex: id })}>{ex[id]?.name ?? id}</button><div className="tr-reps">{setsNow(s, wk)} × {r}{wk && wk <= 2 && setsNow(s, wk) !== s ? ` · с 3-й недели ${s}` : ""}</div></td>
               </tr>
             ))}
           </tbody></table>
         </article>
+        {P.ladders && P.ladders.length > 0 && (
+          <article className="tr-card">
+            <h2>Лестницы силы</h2>
+            <div className="tr-ladders">
+              {P.ladders.map((l) => (
+                <div key={l.name}><h3>{l.name}</h3><ol className="tr-cues">{l.steps.map((x, i) => <li key={i}>{x}</li>)}</ol></div>
+              ))}
+            </div>
+          </article>
+        )}
         <article className="tr-card">
           <h3>Правила</h3><ul className="tr-rules">{P.rules.map((r, i) => <li key={i}>{r}</li>)}</ul>
           <h3>Почему так</h3><ul className="tr-rules">{P.research.map((r, i) => <li key={i}>{r}</li>)}</ul>
@@ -168,8 +176,7 @@ function Atlas({ d, root }: { d: TrainingData; root: string }) {
   }
 
   return (
-    <div className="tr">
-      <h1>Тренировки</h1>
+    <>
       <div className="tr-grid">
         <aside className="tr-map" aria-label="Тело">
           <Body d={d} hit={hit} names={mu} onPick={(id) => go({ tab: "m", m: id })} />
@@ -182,7 +189,7 @@ function Atlas({ d, root }: { d: TrainingData; root: string }) {
           {view}
         </section>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -221,4 +228,37 @@ function Anim({ root, d, id, small, alt }: { root: string; d: TrainingData; id: 
   if (!f) return small ? <span className={`${cls} none`} /> : <p className="tr-note">Анимации для этого упражнения пока нет.</p>;
   if (f.kind === "gif") return <figure className={cls}><img src={f.src} alt={alt} loading="lazy" /></figure>;
   return <figure className={`${cls} two`}><span><img src={f.src[0]} alt={alt} loading="lazy" /><img src={f.src[1]} alt="" loading="lazy" /></span></figure>;
+}
+
+/** The nutrition plan: the day's numbers, four meals, what to eat and what carefully, the rules, what to ask the doctor. */
+export function NutritionPlan({ n, compact = false }: { n: Nutrition; compact?: boolean }) {
+  return (
+    <div className="tr tr-embed">
+      <article className="tr-card">
+        <p>{n.goal}</p>
+        <div className="tr-targets">
+          {n.targets.map((t) => <div key={t.k} className="tr-target"><span>{t.k}</span><b>{t.v}</b><small>{t.note}</small></div>)}
+        </div>
+      </article>
+      <article className="tr-card">
+        <h3>Четыре приёма</h3>
+        <table className="tr-table"><tbody>
+          {n.meals.map((m) => <tr key={m.t}><td className="tr-when">{m.when}</td><td><b>{m.t}</b> — {m.what}<div className="tr-reps">{m.protein}</div></td></tr>)}
+        </tbody></table>
+      </article>
+      {!compact && (
+        <>
+          <div className="tr-two">
+            <article className="tr-card"><h3>Есть</h3><div className="tr-chips">{n.yes.map((x) => <span key={x} className="tr-pill ok">{x}</span>)}</div></article>
+            <article className="tr-card"><h3>Осторожно</h3><div className="tr-chips">{n.careful.map((x) => <span key={x} className="tr-pill warn">{x}</span>)}</div></article>
+          </div>
+          <article className="tr-card">
+            <h3>Правила</h3><ul className="tr-rules">{n.rules.map((r, i) => <li key={i}>{r}</li>)}</ul>
+            <h3>Спросить врача</h3><ul className="tr-rules">{n.doctor.map((r, i) => <li key={i}>{r}</li>)}</ul>
+            <h3>Почему так</h3><ul className="tr-rules">{n.research.map((r, i) => <li key={i}>{r}</li>)}</ul>
+          </article>
+        </>
+      )}
+    </div>
+  );
 }

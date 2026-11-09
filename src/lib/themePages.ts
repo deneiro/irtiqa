@@ -19,7 +19,7 @@ export const SECTION_LABELS: Record<SectionKey, string> = {
   profile: "Профиль", tools: "Инструменты", template: "Опросник", summary: "Сводка проектов", finance: "Деньги",
   events: "События", skills: "Навыки", nutrition: "Питание", quran: "Коран", names: "99 имён", halal: "Халяль · Харам · Макрух",
   body: "Тело", medical: "Где болит", circle: "Круг", influence: "Влияние", self: "Состояние", horizon: "Горизонт",
-  talks: "Разговоры", career: "Карьера", wishes: "Хочу прожить", library: "Посмотрел и прочитал", sport: "Спорт",
+  talks: "Разговоры", career: "Карьера", wishes: "Хочу прожить", library: "Посмотрел и прочитал", sport: "Спорт", training: "Тренировки",
   rings: "Круги", relatives: "Родственники",
 };
 

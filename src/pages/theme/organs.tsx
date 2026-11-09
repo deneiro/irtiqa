@@ -10,6 +10,7 @@ import { MedicalOrgan } from "./BodyMap";
 import { FocusOrgan } from "./Focus";
 import { CircleOrgan, EventsOrgan, FinanceOrgan, HorizonOrgan, TalksOrgan, WishesOrgan } from "./organs2";
 import { Inline, Organ, OrganEmpty, partUrl } from "./parts";
+import { nextStrength, planOf, programWeek, setsNow, useTraining } from "../../lib/trainingMap";
 
 /** What every organ gets: the theme, the data, and the `sections:` string it was named by. */
 export interface OrganProps { name: string; theme: string; life: Life; vault: Vault; today: string; root: string; overview: Page | undefined; view: ThemeView }
@@ -113,14 +114,37 @@ function SportOrgan(p: OrganProps) {
   );
 }
 
+/** `training`: today's line of the week — a strength day with its exercises, or the row's words and the next strength day. */
+function TrainingOrgan(p: OrganProps) {
+  const { data } = useTraining(p.root);
+  const more = partUrl(p.theme, "training");
+  if (!data) return <OrganEmpty title="Тренировки" more={more} />;
+  const P = data.PROGRAM, pl = planOf(P, p.today), wk = programWeek(P, p.today), next = nextStrength(P, p.today);
+  const ex = new Map(data.EX.map((e) => [e.id, e.name]));
+  return (
+    <Organ title="Тренировки" right={wk ? `неделя ${wk}` : undefined} more={more}>
+      <dl className="t-kv">
+        <dt>Сегодня</dt><dd>{pl.text || "—"}</dd>
+        {pl.day && <><dt>Упражнения</dt><dd>{pl.day.items.map(([id, s, r]) => `${ex.get(id) ?? id} ${setsNow(s, wk)}×${r.split(" · ")[0]}`).join(" · ")}</dd></>}
+        {!pl.day && next && <><dt>Следующая силовая</dt><dd>{next.wd} — {next.day.name}</dd></>}
+        {P.ladders?.[0] && <><dt>{P.ladders[0].name}</dt><dd>{P.ladders[0].steps[0]}</dd></>}
+      </dl>
+    </Organ>
+  );
+}
+
 /** `nutrition`: late meals in 14 days, days in a row without one, the last record. No record in the 14 days: the first two are «—», not 0. */
 function NutritionOrgan(p: OrganProps) {
   const n = nutritionGlance(p.life, p.today);
+  const plan = useTraining(p.root).data?.NUTRITION;
   const more = partUrl(p.theme, "nutrition");
-  if (!n.days && !n.last) return <OrganEmpty title="Питание" more={more} />;
+  const target = (k: string) => plan?.targets.find((t) => t.k === k)?.v;
+  const planRow = plan && <><dt>План на день</dt><dd>{[target("Калории") && `${target("Калории")} ккал`, target("Белок") && `белок ${target("Белок")}`, target("Жир") && `жир ${target("Жир")}`, `${plan.meals.length} приёма`].filter(Boolean).join(" · ")}</dd></>;
+  if (!n.days && !n.last) return plan ? <Organ title="Питание" more={more}><dl className="t-kv">{planRow}</dl></Organ> : <OrganEmpty title="Питание" more={more} />;
   return (
     <Organ title="Питание" right="14 дней" more={more}>
       <dl className="t-kv">
+        {planRow}
         <dt>После {LATE_MEAL_HOUR}:00</dt><dd>{n.days ? <>{n.late ? `${n.late} ${plural(n.late, "раз", "раза", "раз")} за 14 дней` : "ни разу за 14 дней"} · записи за {n.days} дн</> : <>—<span className="t-w">нет записей за 14 дней</span></>}</dd>
         <dt>Подряд без</dt><dd>{n.days ? `${n.clean} дн` : "—"}</dd>
         <dt>Последняя запись</dt><dd>{n.last ? `${shortDate(n.last.date)}: ${n.last.meals.map((m) => (m.time ? `${m.what} в ${m.time}` : m.what)).join(", ")}` : "—"}</dd>
@@ -135,6 +159,7 @@ export const ORGANS: Partial<Record<SectionKey, OrganComponent>> = {
   skills: SkillsOrgan,
   medical: MedicalOrgan,
   sport: SportOrgan,
+  training: TrainingOrgan,
   nutrition: NutritionOrgan,
   circle: CircleOrgan,
   talks: TalksOrgan,

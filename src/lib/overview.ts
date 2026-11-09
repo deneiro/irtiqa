@@ -13,16 +13,16 @@ export interface OverviewSection { heading: string; md: string }
 export type SectionKey =
   | "focus" | "resource" | "wiki" | "people" | "projects" | "profile" | "tools" | "template" | "summary"
   | "finance" | "events" | "skills" | "nutrition" | "quran" | "names" | "halal" | "body" | "medical"
-  | "circle" | "influence" | "self" | "horizon" | "talks" | "career" | "wishes" | "library" | "sport" | "rings" | "relatives";
+  | "circle" | "influence" | "self" | "horizon" | "talks" | "career" | "wishes" | "library" | "sport" | "training" | "rings" | "relatives";
 
 export const SECTION_KEYS: readonly SectionKey[] = [
   "focus", "resource", "wiki", "people", "projects", "profile", "tools", "template", "summary",
   "finance", "events", "skills", "nutrition", "quran", "names", "halal", "body", "medical",
-  "circle", "influence", "self", "horizon", "talks", "career", "wishes", "library", "sport", "rings", "relatives",
+  "circle", "influence", "self", "horizon", "talks", "career", "wishes", "library", "sport", "training", "rings", "relatives",
 ];
 
 /** Keys drawn as an organ on the theme page (spec v4 «Ключи `sections:`»); every other key is a button. */
-export const ORGAN_KEYS: readonly SectionKey[] = ["focus", "skills", "medical", "sport", "nutrition", "circle", "talks", "horizon", "finance", "events", "wishes"];
+export const ORGAN_KEYS: readonly SectionKey[] = ["focus", "skills", "medical", "sport", "training", "nutrition", "circle", "talks", "horizon", "finance", "events", "wishes"];
 
 /** Spec v4 retired these: the skeleton is always there (`state`), the rest left by his words. */
 export const RETIRED_SECTIONS: readonly string[] = ["state", "year", "reverend", "habits"];
