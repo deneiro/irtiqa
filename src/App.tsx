@@ -27,6 +27,7 @@ import ProfilePage from "./pages/Profile";
 import PeoplePage from "./pages/People";
 import RawPage from "./pages/Raw";
 import SetupPage from "./pages/Setup";
+import TrainingPage from "./pages/Training";
 import { useEffect } from "react";
 import { useT } from "./lib/i18n";
 
@@ -76,6 +77,7 @@ function Shell() {
           <Route path="/day" element={<DayPage />} />
           <Route path="/vault" element={<Home />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/training" element={<TrainingPage />} />
           <Route path="/habits" element={<HabitsPage />} />
           <Route path="/quests" element={<QuestsPage />} />
           <Route path="/finance" element={<FinancePage />} />

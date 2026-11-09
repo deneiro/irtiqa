@@ -112,9 +112,11 @@ function vaultDevServer(): Plugin {
           const url = new URL(req.url ?? "/", "http://x");
           const root = url.searchParams.get("root") ?? "";
           const rel = url.searchParams.get("rel") ?? "";
-          const target = guard(root, rel);
+          // Reading, like the asset protocol (scope **), reaches any file inside the vault; writing stays guarded.
+          const target = resolve(root, rel);
+          if (!target.startsWith(resolve(root) + sep)) throw new Error(`Refusing ${rel}`);
           const ext = target.slice(target.lastIndexOf(".") + 1).toLowerCase();
-          const types: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp", heic: "image/heic", avif: "image/avif" };
+          const types: Record<string, string> = { json: "application/json", jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", gif: "image/gif", webp: "image/webp", heic: "image/heic", avif: "image/avif" };
           res.setHeader("content-type", types[ext] ?? "application/octet-stream");
           res.end(readFileSync(target));
         } catch (e) { res.statusCode = 404; res.end(String(e)); }

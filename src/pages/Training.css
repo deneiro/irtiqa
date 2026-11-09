@@ -1,0 +1,83 @@
+/* «Тренировки» — every class carries the tr- prefix (styles.css has unscoped globals). */
+.tr {
+  --tr-base: #262a36; --tr-muscle: #3d4456; --tr-absline: var(--surface);
+  --tr-p: #ff5b48; --tr-s: #f2b24e;
+  max-width: 1120px; margin: 0 auto; padding: var(--s5) var(--s5) var(--s7); display: grid; gap: var(--s4);
+}
+.tr h1 { font-size: var(--fs-h1); margin: 0; }
+.tr-grid { display: grid; grid-template-columns: minmax(280px, 380px) minmax(0, 1fr); gap: var(--s5); align-items: start; }
+.tr-map { position: sticky; top: var(--s3); background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: 12px 8px 10px; }
+.tr-map svg { display: block; width: 100%; height: auto; max-height: 74vh; }
+.tr-mu { cursor: pointer; transition: fill .18s var(--ease); }
+.tr-mu:hover { filter: brightness(1.15); }
+.tr-bl { font: 500 11px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; fill: var(--muted); }
+.tr-cap { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 6px 6px 0; }
+.tr-cap b { font-weight: 600; font-size: var(--fs-body); }
+.tr-legend { display: flex; gap: 12px; font-size: var(--fs-sm); color: var(--muted); }
+.tr-legend i, .tr-mchip i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; }
+
+.tr-panel { min-width: 0; display: grid; gap: var(--s3); }
+.tr-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--hair); }
+.tr-tabs button { font: 600 var(--fs-body) var(--font-ui); background: none; border: 0; color: var(--muted); padding: 9px 12px; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
+.tr-tabs button[aria-selected="true"] { color: var(--ink); border-color: var(--tr-p); }
+
+.tr-groups { display: grid; gap: 8px; }
+.tr-grp { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 8px; align-items: baseline; }
+.tr-grp > span, .tr-eqhead, .tr-card h3 { font: 500 var(--fs-xs) var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.tr-chips, .tr-mchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tr-chip { font: 500 var(--fs-ui) var(--font-ui); background: var(--raised); color: var(--ink-2); border: 1px solid transparent; border-radius: 999px; padding: 3px 11px; cursor: pointer; }
+.tr-chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.tr-mchip { font: 500 var(--fs-ui) var(--font-ui); background: var(--raised); color: var(--ink-2); border: 0; border-radius: var(--r); padding: 2px 9px; cursor: pointer; }
+
+.tr-card { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: var(--s4); display: grid; gap: 10px; min-width: 0; }
+.tr-card h2 { font-size: var(--fs-h2); margin: 0; }
+.tr-card h3 { margin: 4px 0 0; }
+.tr-card p { margin: 0; max-width: 66ch; color: var(--ink-2); }
+.tr-lat { color: var(--muted); font-size: var(--fs-ui); margin-top: -6px; }
+.tr-how { border-left: 3px solid var(--tr-p); padding-left: 12px; }
+.tr-note { font-size: var(--fs-ui); color: var(--muted); }
+
+.tr-list { display: grid; gap: 2px; }
+.tr-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 10px; border-radius: var(--r); cursor: pointer; background: none; border: 0; color: var(--ink); font: inherit; text-align: left; width: 100%; }
+.tr-row:hover { background: var(--raised); }
+.tr-row small { color: var(--muted); font-size: var(--fs-sm); white-space: nowrap; }
+.tr-dot { width: 10px; height: 10px; border-radius: 3px; }
+.tr-eqhead { padding: 10px 10px 2px; }
+.tr-tag { font: 500 var(--fs-xs) var(--font-mono); padding: 1px 6px; border-radius: 5px; border: 1px solid var(--hair-2); color: var(--muted); margin-left: 5px; }
+.tr-tag.prog { border-color: var(--tr-p); color: var(--tr-p); }
+.tr-tag.later { border-style: dashed; }
+.tr-cues, .tr-rules { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--ink-2); }
+
+/* animations: a gif, or two frames that take turns */
+.tr-anim { margin: 0; display: grid; justify-items: center; background: #fff; border-radius: var(--r-lg); padding: 8px; }
+.tr-anim img { width: 100%; max-width: 340px; height: auto; display: block; border-radius: 6px; }
+.tr-anim.two span { display: grid; width: 100%; max-width: 340px; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 6px; }
+.tr-anim.two span img { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: cover; max-width: none; }
+.tr-anim.two span img + img { animation: tr-flip 1.6s steps(1, end) infinite; }
+@keyframes tr-flip { 0% { opacity: 0 } 50% { opacity: 1 } }
+.tr-anim.sm { width: 60px; padding: 2px; border-radius: 8px; }
+.tr-anim.sm img, .tr-anim.sm.two span { max-width: 56px; border-radius: 6px; }
+.tr-anim.sm.none { display: block; height: 60px; background: var(--raised); }
+
+.tr-table { width: 100%; border-collapse: collapse; font-size: var(--fs-body); }
+.tr-table td { padding: 6px 4px; border-top: 1px solid var(--hair); vertical-align: middle; }
+.tr-table td.t { width: 68px; }
+.tr-link { background: none; border: 0; padding: 0; color: var(--ink); font: inherit; text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: var(--hair-2); text-underline-offset: 3px; }
+.tr-reps { font: 500 var(--fs-sm) var(--font-mono); color: var(--muted); margin-top: 2px; }
+
+.tr-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.tr-day { border: 1px solid var(--hair); border-radius: var(--r-lg); padding: 7px 5px; text-align: center; min-width: 0; background: none; color: var(--ink-2); font: inherit; }
+.tr-day b { display: block; font: 500 var(--fs-xs) var(--font-mono); text-transform: uppercase; color: var(--muted); }
+.tr-day span { font-size: var(--fs-sm); display: block; overflow-wrap: anywhere; }
+.tr-day.w { cursor: pointer; }
+.tr-day.w span { font-size: 18px; font-weight: 700; color: var(--ink); }
+.tr-day.on { background: var(--raised); }
+.tr-day.today { border-color: var(--tr-p); box-shadow: inset 0 0 0 1px var(--tr-p); }
+
+@media (max-width: 860px) {
+  .tr-grid { grid-template-columns: minmax(0, 1fr); }
+  .tr-map { z-index: 5; }
+  .tr-map svg { max-height: 34vh; margin: 0 auto; }
+  .tr-week { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .tr-mu { transition: none; } .tr-anim.two span img + img { animation: none; } }
