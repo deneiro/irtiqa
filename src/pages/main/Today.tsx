@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ayahOfDay } from "../../lib/ayah";
 import { PERIODS, byPeriod, periodAt, todayTimes, type PeriodKey } from "../../lib/periods";
 import { trainingFor, type Training } from "../../lib/training";
+import { planOf, programWeek, setsNow, useTraining, type TrainingData } from "../../lib/trainingMap";
+import { useStore } from "../../store";
 import type { Vault } from "../../lib/types";
 import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
@@ -40,6 +42,7 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
   const y = useMemo(() => yesterdayView(life, today), [life, today]);
   const ayah = useMemo(() => ayahOfDay(vault, today), [vault, today]);
   const training = useMemo(() => trainingFor(vault, today), [vault, today]);
+  const plan = useTraining(useStore().root).data;
   const now = useNowPeriod(today);
   const focus = focusFor(life, isoWeekKey(today), isoWeekKey(addDays(today, -7)));
   const day = life.days.get(today);
@@ -67,11 +70,12 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
             {groups.map((g) => {
               const p = PERIODS.find((x) => x.key === g.key);
               const train = g.key === "магриб" ? training : undefined;
-              if (!g.tasks.length && !train) return null;
+              if (!g.tasks.length && !train && !(g.key === "магриб" && plan?.NUTRITION)) return null;
               return (
                 <div key={g.key ?? "none"} className={`d-per${g.key && g.key === now ? " now" : ""}`}>
                   <div className="d-per-h">{p ? <><b>{p.roman} · {p.from}–{p.to}</b><span>{p.what}</span></> : <b>без периода</b>}{g.tasks.length > 0 && <span className="n">{g.tasks.filter((t) => t.done).length} / {g.tasks.length}</span>}</div>
-                  {train && <TrainingLine t={train} />}
+                  {train && <TrainingLine t={train} plan={plan} today={today} />}
+                  {g.key === "магриб" && plan?.NUTRITION && <FoodLine plan={plan} />}
                   {g.tasks.length > 0 && <ul className="d-tasks">{g.tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} /></li>)}</ul>}
                 </div>
               );
@@ -98,13 +102,31 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
   );
 }
 
-/** Today's row of the training plan: strength with the part and its exercises, cardio, or rest. */
-function TrainingLine({ t }: { t: Training }) {
+/** Today's row of the training plan: strength with the part and its exercises (sets × reps from the vault's program when there is one), cardio, or rest. */
+function TrainingLine({ t, plan, today }: { t: Training; plan: TrainingData | null; today: string }) {
+  const day = plan ? planOf(plan.PROGRAM, today).day : undefined;
+  const names = plan ? new Map(plan.EX.map((e) => [e.id, e.name])) : undefined;
+  const wk = plan ? programWeek(plan.PROGRAM, today) : undefined;
   return (
     <div className="d-train">
-      Сегодня <b>{t.kind || "тренировка"}</b>{t.what ? ` — ${t.what}` : ""}
-      {t.exercises.length > 0 && <div className="ex">{t.exercises.join(" · ")}</div>}
+      Сегодня <b>{t.kind || "тренировка"}</b>{t.what ? ` — ${t.what}` : ""}{day && wk ? ` · неделя ${wk}` : ""}
+      {day && names
+        ? <div className="ex">{day.items.map(([id, s, r]) => `${names.get(id) ?? id} ${setsNow(s, wk)}×${r.split(" · ")[0]}`).join(" · ")}</div>
+        : t.exercises.length > 0 && <div className="ex">{t.exercises.join(" · ")}</div>}
       {/силов/i.test(t.kind) && <div className="ex"><Link to="/training?tab=p">упражнения с анимацией и карта мышц →</Link></div>}
+    </div>
+  );
+}
+
+/** The day's food plan in one line: calories, protein, fat, the last meal. */
+function FoodLine({ plan }: { plan: TrainingData }) {
+  const n = plan.NUTRITION!;
+  const v = (k: string) => n.targets.find((x) => x.k === k)?.v;
+  const parts = [v("Калории") && `${v("Калории")} ккал`, v("Белок") && `белок ${v("Белок")}`, v("Жир") && `жир ${v("Жир")}, ≤ 30 г за раз`, v("Последняя еда") && `последняя еда ${v("Последняя еда")}`].filter(Boolean);
+  return (
+    <div className="d-train">
+      Еда: {parts.join(" · ")}
+      <div className="ex">{n.meals.map((m) => `${m.when} ${m.t.toLowerCase()}`).join(" · ")} · <Link to={`/theme/${encodeURIComponent("Health & sport")}/nutrition`}>план питания →</Link></div>
     </div>
   );
 }

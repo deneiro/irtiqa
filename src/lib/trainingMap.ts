@@ -5,6 +5,7 @@
  * `scripts/training/anim/`; the app carries no exercise text, no program and no
  * pictures of its own — only the drawing code.
  */
+import { useEffect, useState } from "react";
 import { inTauri, mediaUrl } from "./native";
 
 export const TRAINING_DIR = "scripts/training";
@@ -22,9 +23,16 @@ export interface Exercise { id: string; eq: string; name: string; p: string[]; s
 /** [exercise id, sets, reps]. */
 export type Item = [string, number | string, string];
 export interface WorkDay { k: string; name: string; focus: string; items: Item[] }
-export interface Program { source?: string; from: string; to?: string; goal: string; week: [string, string][]; days: WorkDay[]; rules: string[]; research: string[]; track: string }
+export interface Ladder { name: string; steps: string[] }
+export interface Program { source?: string; from: string; to?: string; goal: string; week: [string, string][]; days: WorkDay[]; rules: string[]; ladders?: Ladder[]; research: string[]; track: string }
+export interface Nutrition {
+  from: string; goal: string;
+  targets: { k: string; v: string; note: string }[];
+  meals: { t: string; when: string; what: string; protein: string }[];
+  yes: string[]; careful: string[]; rules: string[]; doctor: string[]; research: string[];
+}
 export interface TrainingData {
-  MUSCLES: Muscle[]; EQUIP: Equip[]; EX: Exercise[]; PROGRAM: Program;
+  MUSCLES: Muscle[]; EQUIP: Equip[]; EX: Exercise[]; PROGRAM: Program; NUTRITION?: Nutrition;
   /** id → `gl:<path>` (one gif) or `fdb:<folder>` (two frames). */
   ANIM: Record<string, string>;
   BODY: { FRONT: Part[]; BACK: Part[]; NEUTRAL: Neutral[] };
@@ -44,6 +52,41 @@ export async function loadTraining(root: string): Promise<TrainingData> {
   if (!r.ok) throw new Error(`нет файла ${TRAINING_JSON}`);
   return (await r.json()) as TrainingData;
 }
+
+const cache = new Map<string, Promise<TrainingData>>();
+
+/** The vault's training data, loaded once per vault; an error when the file is missing. */
+export function useTraining(root: string): { data: TrainingData | null; err: string | null } {
+  const [st, setSt] = useState<{ data: TrainingData | null; err: string | null }>({ data: null, err: null });
+  useEffect(() => {
+    let live = true;
+    if (!cache.has(root)) cache.set(root, loadTraining(root).catch((e) => { cache.delete(root); throw e; }));
+    cache.get(root)!.then((data) => live && setSt({ data, err: null }), (e) => live && setSt({ data: null, err: String(e?.message ?? e) }));
+    return () => { live = false; };
+  }, [root]);
+  return st;
+}
+
+/** What the week's row says for a date: a strength day, or the row's own words (walk, rest…). */
+export function planOf(p: Program, date: string): { day?: WorkDay; text: string; wd: string } {
+  const [wd, v] = p.week[mondayIndex(date)] ?? ["", ""];
+  const day = p.days.find((d) => d.k === v);
+  return { day, text: day ? day.name : v, wd };
+}
+
+/** The next strength day after a date, within a week. */
+export function nextStrength(p: Program, date: string): { wd: string; day: WorkDay } | undefined {
+  for (let i = 1; i <= 7; i++) {
+    const d = new Date(`${date}T12:00:00`); d.setDate(d.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const pl = planOf(p, iso);
+    if (pl.day) return { wd: pl.wd, day: pl.day };
+  }
+  return undefined;
+}
+
+/** Sets for the program's week: weeks 1–2 are two sets everywhere (the program's first rule). */
+export const setsNow = (sets: Item[1], week: number | undefined) => (week && week <= 2 ? Math.min(2, Number(sets) || 2) : sets);
 
 export const mirror = (p: Pt[]): Pt[] => p.map(([x, y]) => [200 - x, y]);
 export const points = (p: Pt[]) => p.map(([x, y]) => `${x},${y}`).join(" ");

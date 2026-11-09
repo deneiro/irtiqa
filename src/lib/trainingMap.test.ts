@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { dayOf, hitDay, hitExercise, inProgram, mirror, programWeek, type Exercise, type Program } from "./trainingMap";
+import { nextStrength, planOf, dayOf, hitDay, hitExercise, inProgram, mirror, programWeek, type Exercise, type Program } from "./trainingMap";
 
 const ex: Record<string, Exercise> = {
   push: { id: "push", eq: "body", name: "Push", p: ["chest"], s: ["triceps", "front_delt"], cues: [] },
@@ -27,3 +27,7 @@ test("trainingMap: today's strength day by the weekday", () => {
     assert.equal(dayOf(prog, "2026-11-11")?.k, "2");
   });
 
+test("trainingMap: a rest day names the next strength day", () => {
+  assert.equal(planOf(prog, "2026-11-10").text, "walk");
+  assert.equal(nextStrength(prog, "2026-11-10")?.wd, "ср");
+});

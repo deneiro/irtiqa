@@ -27,6 +27,8 @@ import TalksSection from "../components/TalksSection";
 import CareerSection from "../components/CareerSection";
 import WishesSection from "../components/WishesSection";
 import LibrarySection from "../components/LibrarySection";
+import { NutritionPlan, TrainingAtlas } from "./Training";
+import { useTraining } from "../lib/trainingMap";
 import { eventUrl, personName } from "../lib/events";
 import { mediaUrl } from "../lib/native";
 import { useDayToday } from "../lib/useDayToday";
@@ -73,6 +75,7 @@ export default function ThemePartPage() {
   const overview = useMemo(() => v.pages.find((p) => p.theme === theme && p.file === "_Overview" && p.segments.length === 1), [v, theme]);
   const sections = useMemo(() => themeSections(overview), [overview]);
   const pages = useMemo(() => themePages(v, life, theme, today), [v, life, theme, today]);
+  const nutritionPlan = useTraining(root).data?.NUTRITION;
   // a `sections:` string that is not a key names one of the overview's `##` sections: its full screen is cards
   const heading = useMemo(() => {
     if (isSectionKey(part) || !overview || !sections.some((x) => x.toLowerCase() === part.toLowerCase())) return undefined;
@@ -99,6 +102,7 @@ export default function ThemePartPage() {
       case "wishes": return <WishesSection />;
       case "library": return <LibrarySection />;
       case "sport": return <SportSection />;
+      case "training": return <section className="tblock"><TrainingAtlas root={root} /></section>;
       case "events": {
         const events = (life?.events ?? []).filter((e) => eventTheme(e) === theme);
         return (
@@ -137,7 +141,8 @@ export default function ThemePartPage() {
         }
         return (
           <section className="tblock">
-            <h2 className="section">Питание <span className="n">{total} {plural(total, "запись", "записи", "записей")} за 14 дней</span></h2>
+            {nutritionPlan && <><h2 className="section">План питания</h2><NutritionPlan n={nutritionPlan} /><div style={{ height: 24 }} /></>}
+            <h2 className="section">Что ел <span className="n">{total} {plural(total, "запись", "записи", "записей")} за 14 дней</span></h2>
             <p className="small muted" style={{ marginTop: -4 }}>
               {late > 0 ? <span className="hl">{late} раз ел после {LATE_MEAL_HOUR}:00.</span> : "Поздней еды за две недели нет."}
               {clean > 0 && ` Дней подряд без поздней еды: ${clean}.`}
