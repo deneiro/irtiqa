@@ -10,6 +10,7 @@ import { isGone } from "../../lib/family";
 
 const KIN = new Set(["семья", "родня"]);
 import type { Page } from "../../lib/types";
+import { Block } from "../main/Scene";
 import "./Kin.css";
 
 /**
@@ -189,18 +190,20 @@ export function RingsBoard() {
   const hover = drag ? bandAt(Math.hypot(drag.x - C, drag.y - C)) : undefined;
   const port0 = () => { const el = port.current; return el ? { w: el.clientWidth, h: el.clientHeight } : { w: 0, h: 0 }; };
   return (
-    <section className="tblock k-rings">
-      <h2 className="section">Круги <span className="n">{shown.length}</span> <Link to="/people" className="small muted">контактная книга</Link></h2>
-      <p className="small faint">В центре — ты. Первое кольцо — близость 10, последнее — 1. Перетащи имя в другое кольцо; нажатие открывает страницу. Колесо мыши — крупнее и мельче, перетаскивание пустого места — двигать.</p>
-      {groups.length > 0 && (
-        <div className="row wrap filters">
-          <span className="small muted">группа:</span>
-          <button className={`chip link ${!group ? "on" : ""}`} onClick={() => setGroup("")}>все</button>
-          {groups.map((g) => <button key={g.name} className={`chip link ${group === g.name ? "on" : ""}`} onClick={() => setGroup(group === g.name ? "" : g.name)}>{g.name} <span className="faint">{g.n}</span></button>)}
-          <button className={`chip link ${group === "—" ? "on" : ""}`} onClick={() => setGroup(group === "—" ? "" : "—")}>без группы</button>
-        </div>
-      )}
-      {err && <p className="d-warn">{err}</p>}
+    <>
+      <div className="g-play">
+        <Block title="Как это работает" right={<>{shown.length} на доске и рядом<Link className="g-more" to="/people">все люди →</Link></>}>
+          <p className="g-cap first">В центре — ты. Первое кольцо — близость 10, последнее — 1. Перетащи имя в другое кольцо — близость запишется на страницу человека; нажатие открывает страницу. Колесо мыши — крупнее и мельче, перетаскивание пустого места — двигать.</p>
+          {groups.length > 0 && (
+            <div className="g-chips wrap k-groups">
+              <button type="button" className={!group ? "on" : ""} onClick={() => setGroup("")}>все группы</button>
+              {groups.map((g) => <button type="button" key={g.name} className={group === g.name ? "on" : ""} onClick={() => setGroup(group === g.name ? "" : g.name)}>{g.name} · {g.n}</button>)}
+              <button type="button" className={group === "—" ? "on" : ""} onClick={() => setGroup(group === "—" ? "" : "—")}>без группы</button>
+            </div>
+          )}
+          {err && <p className="g-error">{err}</p>}
+        </Block>
+      </div>
       <div className="k-wrap">
       <div className="k-port" ref={port} onPointerDown={panDown} onPointerMove={panMove} onPointerUp={panUp} onPointerCancel={panUp}>
         <div className="k-layer" style={{ width: SIZE, height: SIZE, transform: `translate(${view.x}px, ${view.y}px) scale(${view.s})` }}>
@@ -225,11 +228,11 @@ export function RingsBoard() {
       </div>
       {tray.length > 0 && (
         <div className="k-tray">
-          <span className="small muted">без круга · {tray.length} — перетащи в кольцо</span>
+          <span className="k-tray-h">без круга · {tray.length}<small>перетащи в кольцо</small></span>
           {tray.filter((p) => drag?.rel !== p.rel).map((p) => chip(p, undefined))}
         </div>
       )}
       </div>
-    </section>
+    </>
   );
 }

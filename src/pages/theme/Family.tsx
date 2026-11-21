@@ -4,6 +4,7 @@ import { useVault } from "../../store";
 import { pageUrl } from "../../lib/vault";
 import { buildFamily, ME } from "../../lib/family";
 import { CARD_H, CARD_W, layoutFamily } from "../../lib/familyLayout";
+import { Block } from "../main/Scene";
 import "./Kin.css";
 
 const GEN = ["прадеды", "деды", "родители", "ты и твоё поколение", "дети", "внуки"];
@@ -80,9 +81,18 @@ export function FamilyTree() {
   const count = L.cards.filter((c) => !c.ghost).length - 1;
   const centre = () => { const el = port.current; return el ? { w: el.clientWidth, h: el.clientHeight } : { w: 0, h: 0 }; };
   return (
-    <section className="tblock k-tree">
-      <h2 className="section">Родственники <span className="n">{count}</span> <Link to="/people" className="small muted">контактная книга</Link></h2>
-      <p className="small faint">Слева — родня отца, справа — родня мамы. Колесо мыши — крупнее и мельче, перетаскивание — двигать, нажатие на карточку — открыть человека. Чтобы добавить человека в дерево — укажи на странице, кто его отец, мать или кто он тебе.</p>
+    <>
+      <div className="g-play">
+        <Block title="Как это работает" right={<>{count} в дереве<Link className="g-more" to="/people">все люди →</Link></>}>
+          <p className="g-cap first">Слева — родня отца, справа — родня мамы; каждое поколение на своём уровне. Колесо мыши — крупнее и мельче, перетаскивание — двигать, нажатие на карточку — открыть человека. Чтобы человек встал в дерево, на его странице должно быть указано, кто его отец, мать или кто он тебе.</p>
+          {fam.loose.length > 0 && (
+            <div className="k-loose">
+              <span>место в дереве не указано</span>
+              {fam.loose.map((p) => <Link key={p.rel} to={pageUrl(p)}>{p.title}{typeof p.fm.connection === "string" && p.fm.connection ? <em>{p.fm.connection}</em> : null}</Link>)}
+            </div>
+          )}
+        </Block>
+      </div>
       <div className="k-port k-tree-port" ref={port} onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={() => { pan.current = null; }}>
         <div className="k-layer" style={{ width: W, height: H, transform: `translate(${view.x}px, ${view.y}px) scale(${view.s})` }}>
           {L.gens.map((g) => (
@@ -112,12 +122,6 @@ export function FamilyTree() {
           <button title="Всё дерево" onClick={fitAll}>⤢</button>
         </div>
       </div>
-      {fam.loose.length > 0 && (
-        <div className="k-loose">
-          <span className="small muted">родня, чьё место в дереве не указано:</span>
-          {fam.loose.map((p) => <Link key={p.rel} to={pageUrl(p)} className="chip link">{p.title}{typeof p.fm.connection === "string" && p.fm.connection ? ` · ${p.fm.connection}` : ""}</Link>)}
-        </div>
-      )}
-    </section>
+    </>
   );
 }

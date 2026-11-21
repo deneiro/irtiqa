@@ -2,25 +2,23 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
-import { todayStr } from "../lib/dates";
+import { plural, todayStr } from "../lib/dates";
 import { rawPageText } from "../lib/rawpage";
 import { contactEdits } from "../lib/contact";
-import { BANDS, TRIGGERS, buildCircle, type CircleItem } from "../lib/circle";
+import { BANDS, TRIGGERS, buildCircle, tieWarmth, type CircleItem } from "../lib/circle";
 import { DIRECTION_WORDS, influenceGroups, influenceItemCount, type Direction } from "../lib/influence";
 import { countWords } from "../lib/person";
 import { isAuthor } from "../lib/people";
 import { peopleOf } from "../lib/themeNumbers";
+import { Block } from "../pages/main/Scene";
 import InfluenceSheet, { type InfluenceSheetMode } from "./InfluenceSheet";
+import { Err, Mini } from "./SectionBits";
 import "./Influence.css";
 
-const plural = (n: number, one: string, few: string, many: string) => {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-};
-
-/** Everyone in the theme, sorted by who has gone quiet longest past their cadence. */
+/**
+ * Everyone in the theme by how close they are, the longest silent first inside a band. Rebuilt 2026-11-21: a row is
+ * the name with its marks, a bar of how warm the tie still is against its rhythm, the days, and «написал» · «виделись».
+ */
 export function CircleSection({ theme }: { theme: string }) {
   const v = useVault();
   const { life, saveText, reload } = useStore();
@@ -32,10 +30,11 @@ export function CircleSection({ theme }: { theme: string }) {
     [v, theme],
   );
   const items = useMemo(() => buildCircle(people, life?.events ?? [], today), [people, life, today]);
-  if (!items.length) return null;
+  if (!items.length) return <div className="g-play"><Block title="Круг"><p className="g-faint">Людей в этой теме нет.</p></Block></div>;
 
   const overdue = items.filter((i) => (i.overdue ?? -1) > 0);
   const unrated = items.filter((i) => i.closeness === undefined);
+  const warm = items.filter((i) => (tieWarmth(i)?.pct ?? 0) >= 50);
 
   /** Writing counts as contact; meeting counts as contact and becomes an event. */
   const touch = async (it: CircleItem, met: boolean) => {
@@ -53,67 +52,55 @@ export function CircleSection({ theme }: { theme: string }) {
   const row = (it: CircleItem) => {
     const late = (it.overdue ?? -1) > 0;
     const since = it.sinceMeet !== undefined && (it.sinceContact === undefined || it.sinceMeet < it.sinceContact) ? it.sinceMeet : it.sinceContact;
+    const w = tieWarmth(it);
     return (
-      <div key={it.page.rel} className={`crow ${late ? "late" : ""}`}>
-        <div className="cwho">
-          <Link to={pageUrl(it.page)} className="cname">{it.name}</Link>
-          {it.closeness !== undefined && <span className="mono faint">{it.closeness}/10</span>}
-          {it.category && <span className="small faint">{it.category}</span>}
-          {it.triggers.map((t) => (
-            <span key={t} className="chip danger small">{TRIGGERS.find((x) => x.key === t)?.label}</span>
-          ))}
-          {it.support && <span className="chip small ok">опора</span>}
+      <div key={it.page.rel} className={`g-crow${late ? " late" : ""}`}>
+        <div className="who">
+          <Link to={pageUrl(it.page)}>{it.name}</Link>
+          {it.closeness !== undefined && <em>{it.closeness}/10</em>}
+          {it.category && <small>{it.category}</small>}
+          {it.triggers.map((t) => <span key={t} className="trig">{TRIGGERS.find((x) => x.key === t)?.label}</span>)}
+          {it.support && <span className="sup">опора</span>}
         </div>
-        <div className="cwhen small">
-          {since === undefined
-            ? <span className="faint">не отмечено</span>
-            : <span className={late ? "err-text" : "muted"}>
-                {since === 0 ? "сегодня" : `${since} ${plural(since, "день", "дня", "дней")} назад`}
-                {it.cadence !== undefined && ` · норма ${it.cadence}`}
-              </span>}
+        <i title={w ? `связь · ${w.state}` : "близость не указана — ритма нет"}><u style={{ width: `${w?.pct ?? 0}%` }} /></i>
+        <div className="when">
+          {since === undefined ? "не отмечено" : since === 0 ? "сегодня" : `${since} ${plural(since, "день", "дня", "дней")} назад`}
+          {it.cadence !== undefined && <small> · ритм {it.cadence}</small>}
         </div>
-        <div className="cact">
-          <button className="btn small" disabled={busy === it.name} onClick={() => void touch(it, false)}>написал</button>
-          <button className="btn small" disabled={busy === it.name} onClick={() => void touch(it, true)}>виделись</button>
+        <div className="acts">
+          <button type="button" className="g-btn" disabled={busy === it.name} onClick={() => void touch(it, false)}>написал</button>
+          <button type="button" className="g-btn" disabled={busy === it.name} onClick={() => void touch(it, true)}>виделись</button>
         </div>
       </div>
     );
   };
 
   return (
-    <section className="tblock">
-      <h2 className="section">
-        Круг <span className="n">{items.length} {plural(items.length, "человек", "человека", "человек")}{overdue.length ? ` · ${overdue.length} просрочено` : ""}</span>
-        <Link to="/people" className="small muted">контактная книга</Link>
-      </h2>
-      <div className="card">
-        <div className="small muted">
-          Норма зависит от близости: 10/10 — раз в неделю, 8 — раз в три недели, 5 — раз в два месяца.
-          «Написал» и «виделись» ставят сегодняшнюю дату; «виделись» ещё и записывает встречу в события.
+    <div className="g-play">
+      <Block title="Круг в числах" right={<Link className="g-more" to="/people">все люди →</Link>}>
+        <div className="g-minis four">
+          <Mini value={items.length} label={plural(items.length, "человек", "человека", "человек")} />
+          <Mini value={warm.length} label="связь тёплая" tone={warm.length ? "good" : undefined} />
+          <Mini value={overdue.length} label="срок вышел" tone={overdue.length ? "bad" : undefined} />
+          <Mini value={unrated.length} label="без оценки близости" />
         </div>
-        {BANDS.map((b) => {
-          const list = items.filter((i) => i.closeness !== undefined && i.closeness >= b.min && i.closeness <= b.max);
-          if (!list.length) return null;
-          return (
-            <div key={b.title} className="cband">
-              <div className="mrow-head">{b.title} <span className="faint">· {b.min}–{b.max}</span></div>
-              {list.map(row)}
-            </div>
-          );
-        })}
-        {unrated.length > 0 && (
-          <div className="cband">
-            <div className="mrow-head">Без оценки близости <span className="faint">· норму считать не по чему</span></div>
-            {unrated.map(row)}
-          </div>
-        )}
-        {err && <div className="small err-text">{err}</div>}
-      </div>
-    </section>
+        <p className="g-cap">Ритм зависит от близости: 10/10 — раз в неделю, 8 — раз в три недели, 5 — раз в два месяца. «Написал» и «виделись» ставят сегодняшнюю дату; «виделись» ещё и записывает встречу в события.</p>
+        <Err text={err} />
+      </Block>
+      {BANDS.map((b) => {
+        const list = items.filter((i) => i.closeness !== undefined && i.closeness >= b.min && i.closeness <= b.max);
+        if (!list.length) return null;
+        return <Block key={b.title} title={<>{b.title} · {list.length}</>} right={`близость ${b.min}–${b.max}`}>{list.map(row)}</Block>;
+      })}
+      {unrated.length > 0 && <Block title={<>Без оценки близости · {unrated.length}</>} right="ритм считать не по чему">{unrated.map(row)}</Block>}
+    </div>
   );
 }
 
-/** «Тянет вверх» and «Тянет вниз»: each influence once, with the people who have it, and its habit on the days they met. */
+/**
+ * «Тянет вверх» and «Тянет вниз»: each influence once, with the people who have it, and its habit on the days they
+ * met. Rebuilt 2026-11-21 as two columns of cards; the sheet that writes an influence is the one it always was.
+ */
 export function InfluenceSection({ theme }: { theme: string }) {
   const v = useVault();
   const { life } = useStore();
@@ -126,52 +113,39 @@ export function InfluenceSection({ theme }: { theme: string }) {
   const group = (dir: Direction) => {
     const items = groups[dir];
     return (
-      <div className={`t-inf-group t-inf-${dir}`}>
-        <div className="t-inf-head">
-          <span className="t-inf-ar" aria-hidden="true">{dir === "up" ? "↑" : "↓"}</span>
-          <h3>{DIRECTION_WORDS[dir]}</h3>
-          <span className="t-inf-n">{items.length}</span>
-          <button className="t-inf-add" type="button" onClick={() => setSheet({ kind: "new", dir })}>+ влияние</button>
-        </div>
-        {items.length ? (
-          <ul className="t-inf-list">
-            {items.map((it) => {
-              const c = influenceItemCount(it, people, life, today);
-              const w = c && c.beads.length ? countWords(c) : undefined;
-              return (
-                <li key={it.key} className="t-inf-item">
-                  <div className="t-inf-name">{it.label}{it.habit && <small>привычка</small>}</div>
-                  <div className="t-inf-who">
-                    {it.people.map((p) => (
-                      <Link key={p.page.rel} to={pageUrl(p.page)} className={`t-inf-chip${p.page.theme === theme ? "" : " t-inf-other"}`}>
-                        {p.page.title}{p.note && <small>{p.note}</small>}
-                      </Link>
-                    ))}
-                    <button className="t-inf-plus" type="button" title="добавить человека" aria-label={`Добавить человека: ${it.label}`} onClick={() => setSheet({ kind: "person", item: it })}>+</button>
-                  </div>
-                  {c && (
-                    <div className="t-inf-count">
-                      {w ? <>{w.together} · {w.apart}{c.counted < 3 && <span> · судить рано</span>}</> : "встреч за 90 дней нет"}
-                    </div>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        ) : <p className="t-inf-empty">Пока пусто: «+ влияние» запишет первое на страницу человека.</p>}
-      </div>
+      <Block className={`g-inf ${dir}`} title={<>{dir === "up" ? "↑" : "↓"} {DIRECTION_WORDS[dir]} · {items.length}</>}
+        right={<button type="button" className="g-btn" onClick={() => setSheet({ kind: "new", dir })}>+ влияние</button>}>
+        {items.map((it) => {
+          const c = influenceItemCount(it, people, life, today);
+          const w = c && c.beads.length ? countWords(c) : undefined;
+          return (
+            <div key={it.key} className="g-infcard">
+              <b>{it.label}{it.habit && <small>привычка</small>}</b>
+              <div className="who">
+                {it.people.map((p) => (
+                  <Link key={p.page.rel} to={pageUrl(p.page)} className={p.page.theme === theme ? "" : "other"}>{p.page.title}{p.note && <small>{p.note}</small>}</Link>
+                ))}
+                <button type="button" className="plus" title="добавить человека" aria-label={`Добавить человека: ${it.label}`} onClick={() => setSheet({ kind: "person", item: it })}>+</button>
+              </div>
+              {c && <p>{w ? <>{w.together} · {w.apart}{c.counted < 3 && " · судить рано"}</> : "встреч за 90 дней нет"}</p>}
+            </div>
+          );
+        })}
+        {!items.length && <p className="g-faint">Пока пусто: «+ влияние» запишет первое на страницу человека.</p>}
+      </Block>
     );
   };
 
   return (
-    <section className="tblock t-inf">
-      <h2 className="section">Влияние <span className="n">↑ {groups.up.length} · ↓ {groups.down.length}</span></h2>
-      <div className="t-inf-groups">
-        {group("up")}
-        {group("down")}
+    <>
+      <div className="g-play">
+        <div className="g-two">
+          {group("up")}
+          {group("down")}
+        </div>
+        <p className="g-cap">Привычка считается по дням встреч за 90 дней до вчера; встреча без файла дня не в счёте. Бледное имя — человек из другой темы.</p>
       </div>
-      <p className="t-inf-foot">Привычка считается по дням встреч за 90 дней до вчера; встреча без файла дня не в счёте.</p>
       <InfluenceSheet mode={sheet} people={people} habits={life.habits} onClose={() => setSheet(null)} />
-    </section>
+    </>
   );
 }
