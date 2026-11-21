@@ -33,7 +33,7 @@ export function FocusOrgan(p: OrganProps) {
   const list = THEMES.map((t, i) => ({ t, s: s30[i] })).sort((a, b) => b.s.days - a.s.days);
   return (
     <Organ title="Колесо фокуса" right={`доля внимания по темам · ${shortDate(from)} – ${shortDate(to)}`} wide>
-      <div className="t-wheel">
+      <div className="g-focus-wheel">
         <svg viewBox="0 0 400 324" role="img" aria-label={`Колесо фокуса: ${THEMES.map((t, i) => `${t.ru} ${s30[i].share} %`).join(", ")}`}>
           {THEMES.map((t, i) => {
             const mid = -90 + i * 45, a0 = mid - 22.5, a1 = mid + 22.5;
@@ -54,18 +54,18 @@ export function FocusOrgan(p: OrganProps) {
             );
           })}
         </svg>
-        <ul className="t-flist">
+        <div className="g-flist">
           {list.map(({ t, s }) => (
-            <li key={t.name} className={s.days ? "" : "t-zero"}>
-              <i className="t-fdot" style={{ background: t.color }} />
-              <span className="t-fname">{t.ru}</span>
-              <span className="t-track"><i style={{ width: `${(s.days / 30) * 100}%`, background: t.color }} /></span>
-              <span className="t-fnum">{s.share}<small> %</small><br /><small>{s.days} дн</small></span>
-            </li>
+            <div key={t.name} className={s.days ? "" : "zero"}>
+              <span style={{ color: t.color }}>{t.ru}</span>
+              <i><u style={{ width: `${(s.days / 30) * 100}%`, background: t.color }} /></i>
+              <b>{s.share}<small> %</small></b>
+              <em>{s.days} дн</em>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
-      <div className="t-foot">
+      <div className="g-cap">
         Как считали: день засчитан теме, если в нём её намаз или привычка «да» или «поздно», запись, отмеченный шаг или сессия её деятельности, её событие · удержания не в счёте · сплошное кольцо — доля за 20 дней, пунктир — за 10 · файлов дня {files} из 30
       </div>
     </Organ>

@@ -30,17 +30,17 @@ function HeadingSection(p: OrganProps) {
   const table = sectionTable(sec.md);
   const groups = sectionGroups(sec.md);
   const cards = groups.flatMap((g) => g.cards);
-  const cellOf = (text: string) => { const c = phraseOf(text); return <><Inline md={c.md} />{c.note && <span className="t-w">{c.note}</span>}</>; };
+  const cellOf = (text: string) => { const c = phraseOf(text); return <><Inline md={c.md} />{c.note && <em>{c.note}</em>}</>; };
   if (table) {
     return (
       <Organ title={p.name} more={more} wide>
-        <div className="t-tbl" style={{ ["--cols" as string]: Math.max(1, table.head.length - 1) }}>
-          <div className="t-tbl-row t-tbl-head">{table.head.map((h, i) => <span key={i}>{i ? h : ""}</span>)}</div>
+        <div className="g-tbl" style={{ ["--cols" as string]: Math.max(1, table.head.length - 1) }}>
+          <div className="hd">{table.head.map((h, i) => <span key={i}>{i ? h : ""}</span>)}</div>
           {table.rows.map((row, i) => (
-            <div key={i} className="t-tbl-row">
+            <div key={i}>
               {table.head.map((h, j) => j === 0
-                ? <span key={j} className="t-tbl-t">{row[0] ? <Inline md={row[0]} /> : ""}</span>
-                : <span key={j} className={row[j] ? "" : "t-tbl-none"}><span className="t-tbl-lab">{h}</span>{row[j] ? cellOf(row[j]) : "—"}</span>)}
+                ? <b key={j}>{row[0] ? <Inline md={row[0]} /> : ""}</b>
+                : <span key={j} className={row[j] ? "" : "none"} data-h={h}>{row[j] ? cellOf(row[j]) : "—"}</span>)}
             </div>
           ))}
         </div>
@@ -48,12 +48,12 @@ function HeadingSection(p: OrganProps) {
     );
   }
   const note = groups.flatMap((g) => g.notes)[0];
-  if (!cards.length) return <Organ title={p.name} more={more}>{note ? <p className="t-plain t-clamp"><Inline md={note} /></p> : null}</Organ>;
+  if (!cards.length) return <Organ title={p.name} more={more}>{note ? <p className="g-lead clamp"><Inline md={note} /></p> : null}</Organ>;
   const shown = cards.slice(0, HEADING_TITLES);
   return (
     <Organ title={p.name} right={`${cards.length} ${plural(cards.length, "пункт", "пункта", "пунктов")}`} more={more}>
-      <div className="t-vals">{shown.map((c, i) => <div key={i} className={`t-val${c.struck ? " t-val-x" : ""}`}><b><Inline md={c.title} /></b></div>)}</div>
-      {cards.length > shown.length && <p className="t-foot">ещё {cards.length - shown.length}</p>}
+      <div className="g-vals">{shown.map((c, i) => <div key={i} className={c.struck ? "x" : ""}><i>{i + 1}</i><b><Inline md={c.title} /></b></div>)}</div>
+      {cards.length > shown.length && <p className="g-cap">ещё {cards.length - shown.length}</p>}
     </Organ>
   );
 }
@@ -64,19 +64,19 @@ function SkillsOrgan(p: OrganProps) {
   if (!p.life.skills.length) return <OrganEmpty title="Навыки" more={more} />;
   return (
     <Organ title="Навыки" right="уровень 0–5 и статус — твои отметки" more={more} wide>
-      <div className="t-skills">
+      <div className="g-skills">
         {SKILL_STATUS.map((st) => {
-          const list = p.life.skills.filter((s) => s.status === st.key);
+          const list = p.life.skills.filter((x) => x.status === st.key);
           if (!list.length) return null;
           return (
-            <div key={st.key} className={`t-sk-row t-sk-${st.key}`}>
-              <span className="t-label">{st.label} · {list.length}</span>
-              <div className="t-chips">
-                {list.map((s) => (
-                  <span key={s.rel} className="t-chip">
-                    {s.title}
-                    {st.key !== "gap" && <span className="t-lv" aria-label={`уровень ${s.level} из 5`}>{[1, 2, 3, 4, 5].map((k) => <i key={k} className={k <= s.level ? "t-on" : ""} />)}</span>}
-                  </span>
+            <div key={st.key} className={st.key}>
+              <span>{st.label} · {list.length}</span>
+              <div>
+                {list.map((x) => (
+                  <div key={x.rel} className="sk">
+                    <b>{x.title}</b>
+                    {st.key !== "gap" && <span className="lv" aria-label={`уровень ${x.level} из 5`}>{[1, 2, 3, 4, 5].map((k) => <i key={k} className={k <= x.level ? "on" : ""} />)}</span>}
+                  </div>
                 ))}
               </div>
             </div>
@@ -95,19 +95,16 @@ function SportOrgan(p: OrganProps) {
   const more = partUrl(p.theme, "sport");
   if (!g.games.length) return <OrganEmpty title="Спорт" more={more} />;
   return (
-    <Organ title="Спорт" right="что играл · 60 дней" more={more}>
-      <div className="t-strip" role="img" aria-label={`60 дней: ${g.games.length}`}>
-        {g.days.map((d) => <i key={d.date} className={d.on ? "t-on" : ""} title={shortDate(d.date)} />)}
+    <Organ title="Спорт" right={`что играл · 60 дней · ${g.games.length}`} more={more}>
+      <div className="g-strip60" role="img" aria-label={`60 дней: ${g.games.length}`}>
+        {g.days.map((d) => <i key={d.date} className={d.on ? "on" : ""} title={shortDate(d.date)} />)}
       </div>
-      <div className="t-strip-ax">
+      <div className="g-strip-ax">
         {g.days.map((d, i) => (i === 0 || d.date.endsWith("-01")) && <span key={d.date} style={{ left: `${(i / g.days.length) * 100}%` }}>{i === 0 ? shortDate(d.date) : MON[Number(d.date.slice(5, 7)) - 1]}</span>)}
       </div>
-      <ul className="t-games">
+      <ul className="g-dated">
         {g.games.map((x, i) => (
-          <li key={i}>
-            <span className="t-games-d">{shortDate(x.date)}</span>
-            <div><b>{x.title}</b><span>{[x.from && (x.to ? `${x.from}–${x.to}` : x.from), x.people.length ? `с ${x.people.join(", ")}` : ""].filter(Boolean).join(", ") || "—"}</span></div>
-          </li>
+          <li key={i}><span>{shortDate(x.date)}</span><div><b>{x.title}</b><small>{[x.from && (x.to ? `${x.from}–${x.to}` : x.from), x.people.length ? `с ${x.people.join(", ")}` : ""].filter(Boolean).join(", ") || "—"}</small></div></li>
         ))}
       </ul>
     </Organ>
@@ -123,12 +120,10 @@ function TrainingOrgan(p: OrganProps) {
   const ex = new Map(data.EX.map((e) => [e.id, e.name]));
   return (
     <Organ title="Тренировки" right={wk ? `неделя ${wk}` : undefined} more={more}>
-      <dl className="t-kv">
-        <dt>Сегодня</dt><dd>{pl.text || "—"}</dd>
-        {pl.day && <><dt>Упражнения</dt><dd>{pl.day.items.map(([id, s, r]) => `${ex.get(id) ?? id} ${setsNow(s, wk)}×${r.split(" · ")[0]}`).join(" · ")}</dd></>}
-        {!pl.day && next && <><dt>Следующая силовая</dt><dd>{next.wd} — {next.day.name}</dd></>}
-        {P.ladders?.[0] && <><dt>{P.ladders[0].name}</dt><dd>{P.ladders[0].steps[0]}</dd></>}
-      </dl>
+      <div className="g-today-line"><em>сегодня</em><b>{pl.day ? pl.day.name : pl.text || "—"}</b></div>
+      {pl.day && <div className="g-exchips">{pl.day.items.map(([id, sets, reps]) => <span key={id}>{ex.get(id) ?? id}<small>{setsNow(sets, wk)}×{reps.split(" · ")[0]}</small></span>)}</div>}
+      {!pl.day && next && <p className="g-cap">Следующая силовая: {next.wd} — {next.day.name}.</p>}
+      {P.ladders?.[0] && <p className="g-cap"><b>{P.ladders[0].name}:</b> {P.ladders[0].steps[0]}</p>}
     </Organ>
   );
 }
@@ -139,16 +134,17 @@ function NutritionOrgan(p: OrganProps) {
   const plan = useTraining(p.root).data?.NUTRITION;
   const more = partUrl(p.theme, "nutrition");
   const target = (k: string) => plan?.targets.find((t) => t.k === k)?.v;
-  const planRow = plan && <><dt>План на день</dt><dd>{[target("Калории") && `${target("Калории")} ккал`, target("Белок") && `белок ${target("Белок")}`, target("Жир") && `жир ${target("Жир")}`, `${plan.meals.length} приёма`].filter(Boolean).join(" · ")}</dd></>;
-  if (!n.days && !n.last) return plan ? <Organ title="Питание" more={more}><dl className="t-kv">{planRow}</dl></Organ> : <OrganEmpty title="Питание" more={more} />;
+  const planLine = plan && [target("Калории") && `${target("Калории")} ккал`, target("Белок") && `белок ${target("Белок")}`, target("Жир") && `жир ${target("Жир")}`, `${plan.meals.length} приёма`].filter(Boolean).join(" · ");
+  if (!n.days && !n.last) return plan ? <Organ title="Питание" more={more}><p className="g-cap"><b>План на день:</b> {planLine}</p></Organ> : <OrganEmpty title="Питание" more={more} />;
   return (
     <Organ title="Питание" right="14 дней" more={more}>
-      <dl className="t-kv">
-        {planRow}
-        <dt>После {LATE_MEAL_HOUR}:00</dt><dd>{n.days ? <>{n.late ? `${n.late} ${plural(n.late, "раз", "раза", "раз")} за 14 дней` : "ни разу за 14 дней"} · записи за {n.days} дн</> : <>—<span className="t-w">нет записей за 14 дней</span></>}</dd>
-        <dt>Подряд без</dt><dd>{n.days ? `${n.clean} дн` : "—"}</dd>
-        <dt>Последняя запись</dt><dd>{n.last ? `${shortDate(n.last.date)}: ${n.last.meals.map((m) => (m.time ? `${m.what} в ${m.time}` : m.what)).join(", ")}` : "—"}</dd>
-      </dl>
+      <div className="g-minis">
+        <div className={n.days && n.late ? "bad" : ""}><b>{n.days ? n.late : "—"}</b><span>раз после {LATE_MEAL_HOUR}:00</span></div>
+        <div className={n.days && n.clean ? "good" : ""}><b>{n.days ? n.clean : "—"}</b><span>дней подряд без поздней еды</span></div>
+        <div><b>{n.days || "—"}</b><span>дней с записями еды</span></div>
+      </div>
+      {planLine && <p className="g-cap"><b>План на день:</b> {planLine}</p>}
+      <p className="g-cap"><b>Последняя запись:</b> {n.last ? `${shortDate(n.last.date)} — ${n.last.meals.map((m) => (m.time ? `${m.what} в ${m.time}` : m.what)).join(", ")}` : "—"}</p>
     </Organ>
   );
 }

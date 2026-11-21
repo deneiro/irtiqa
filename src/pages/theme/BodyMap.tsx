@@ -25,7 +25,7 @@ export function MedicalOrgan(p: OrganProps) {
   const placed = labels.map(({ d, at }) => { y = Math.max(at[1], y + 26); return { d, at, y }; });
   return (
     <Organ title="Где болит" right="«Где» в таблице симптомов" more={more} wide>
-      <div className="t-body">
+      <div className="g-bodymap">
         <svg viewBox="0 0 300 330" role="img" aria-label={m.dots.length ? `Где болит: ${m.dots.map((d) => d.part).join(", ")}` : "Схема тела: точек нет"}>
           <g fill="#252A37" stroke="#252A37" strokeLinecap="round">
             <circle cx={96} cy={36} r={19} stroke="none" />
@@ -50,21 +50,17 @@ export function MedicalOrgan(p: OrganProps) {
             );
           })}
         </svg>
-        <ul className="t-pains">
+        <ul className="g-pains">
           {m.rows.map((r, i) => (
-            <li key={i} className={r.part ? "" : "t-pain-none"}>
-              <i className={`t-mk ${r.part ? (r.fresh ? "t-mk-fresh" : "t-mk-old") : "t-mk-none"}`} />
-              <div>
-                <b>{r.what}</b>
-                {r.note && <span>{r.note}</span>}
-                <em>{r.date}{r.where ? ` · ${r.where}` : " · без «Где»"}</em>
-              </div>
+            <li key={i} className={r.part ? (r.fresh ? "fresh" : "old") : "none"}>
+              <i />
+              <div><b>{r.what}</b>{r.note && <span>{r.note}</span>}<em>{r.date}{r.where ? ` · ${r.where}` : " · без «Где»"}</em></div>
             </li>
           ))}
-          {!m.rows.length && <li className="t-pain-none"><i className="t-mk t-mk-none" /><div><b>Симптомов не записано</b></div></li>}
+          {!m.rows.length && <li className="none"><i /><div><b>Симптомов не записано</b></div></li>}
         </ul>
       </div>
-      <div className="t-foot">
+      <div className="g-cap">
         {m.plan ? `план: ${m.plan.doctor}${m.plan.by ? ` — к ${m.plan.by}` : " — без даты"}${m.plan.why ? ` · ${m.plan.why}` : ""}` : "планов нет"}
         {" · "}
         {m.visit ? `последний визит: ${m.visit.date} ${m.visit.doctor}${m.visit.result ? ` — ${m.visit.result}` : ""}` : "визитов нет"}
