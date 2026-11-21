@@ -429,3 +429,58 @@
 @media (prefers-reduced-motion: no-preference) {
   .g-ridge .halo { animation: g-breathe 2.8s ease-in-out infinite; }
 }
+
+/* ================= a theme page built the same way (2026-11-21) ================= */
+/* the dashboard's colours for the pages that are not inside .dash */
+.t-page, .p-page {
+  --d-night: #0B0D13; --d-dusk: #141720; --d-raised: #1F2330;
+  --d-moon: #EDE7DA; --d-moon-2: #CFC9BC; --d-ash: #A19D93; --d-smoke: #6F6D6A;
+  --d-hair: rgba(237, 231, 218, 0.07); --d-hair-2: rgba(237, 231, 218, 0.12);
+  --d-sun: #E7C27A; --d-sage: #86C9A4; --d-honey: #E2AB5E; --d-ember: #E26A61; --d-iris: #A89DFF;
+  --d-serif: "Literata Variable", "Literata", Georgia, serif;
+  --d-sans: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+  --d-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+.g-theme { margin: 6px 0 34px; }
+.g-theme .g-kick { color: var(--th, var(--d-sun)); }
+.g-theme .g-height strong { color: var(--th, var(--d-sun)); }
+.g-xp8 { left: 28px; bottom: 22px; display: grid; gap: 8px; width: min(300px, 44%); }
+.g-xp8 span { font: 400 10.5px var(--d-mono); color: var(--d-moon-2); }
+.g-xp8 span b { font-weight: 500; color: var(--d-moon); }
+.g-xp8 a { font: 400 10.5px var(--d-mono); color: var(--d-moon-2); text-decoration: none; }
+.g-xp8 a:hover { color: var(--d-moon); text-decoration: underline; text-underline-offset: 3px; }
+.g-xp8 .gb-weeks i { background: rgba(237, 231, 218, .14); }
+.g-xp8 .gb-weeks u { background: rgba(237, 231, 218, .6); }
+.g-xp8 .gb-weeks i.now u { background: var(--th, var(--d-sun)); }
+.g-side-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
+.g-play .g-side-tiles .g-tile { grid-template-columns: 28px minmax(0, 1fr); column-gap: 9px; min-height: 52px; padding: 8px 10px; }
+.g-side-tiles .g-tile .ico { width: 28px; height: 28px; font-size: 13px; }
+.g-side-tiles .g-tile b { padding-right: 24px; font-size: 12px; overflow-wrap: break-word; hyphens: auto; }
+.g-side-tiles .g-tile small { font-size: 10.5px; }
+.g-blips { display: grid; gap: 12px; margin-top: 14px; }
+.g-blips > div { padding-top: 12px; border-top: 1px solid var(--d-hair); }
+.g-blips > div:first-child { padding-top: 0; border-top: 0; }
+.g-blips em { display: block; margin-bottom: 4px; font: 500 9.5px var(--d-mono); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--th, var(--d-sun)); }
+.g-blips b { font: 500 13.5px var(--d-sans); color: var(--d-moon); }
+.g-blips p { margin: 4px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--d-ash); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+/* the three stations of the path */
+.g-path { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 28px; padding-top: 22px; }
+.g-path::before { content: ""; position: absolute; left: 7px; right: 7px; top: 6px; border-top: 2px dashed rgba(237, 231, 218, .16); }
+.g-path .st { position: relative; min-width: 0; }
+.g-path .st > i { position: absolute; left: 0; top: -22px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(237, 231, 218, .35); background: var(--d-dusk); }
+.g-path .st.past > i { background: var(--d-sage); border-color: var(--d-sage); }
+.g-path .st.now > i { background: var(--th, var(--d-sun)); border-color: var(--th, var(--d-sun)); box-shadow: 0 0 0 5px color-mix(in srgb, var(--th, var(--d-sun)) 22%, transparent); }
+.g-path h3 { margin: 4px 0 10px; font: 400 21px/1.2 var(--d-serif); color: var(--d-moon); }
+.g-path h3 small { display: block; margin-top: 3px; font: 500 10px var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-smoke); }
+.g-path .sfx { display: block; margin: 10px 0 4px; font: 500 10px var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-ash); }
+.g-path ul { margin: 0; padding: 0; list-style: none; font-size: 13.5px; line-height: 1.45; color: var(--d-moon-2); }
+.g-path li { padding: 6px 0; border-top: 1px solid var(--d-hair); }
+.g-path li:first-child { border-top: 0; }
+.g-path li em { margin-left: 8px; font: 400 10.5px var(--d-mono); font-style: normal; color: var(--d-smoke); }
+.g-path li.none { color: var(--d-smoke); }
+.g-path .st.past li { color: var(--d-ash); }
+@media (max-width: 1020px) {
+  .g-path { grid-template-columns: minmax(0, 1fr); gap: 26px; padding: 0 0 0 26px; }
+  .g-path::before { left: 6px; right: auto; top: 6px; bottom: 6px; border-top: 0; border-left: 2px dashed rgba(237, 231, 218, .16); }
+  .g-path .st > i { left: -26px; top: 8px; }
+}
