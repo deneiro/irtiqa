@@ -38,7 +38,7 @@ type WordLabel = "Сделал" | (typeof REFLECT)[number];
  * The day being marked: a local copy that answers a tap at once, every change written through the three-way merge so
  * the bot, Obsidian and Claude never lose a line. Saves go one after another; the disk wins back when nothing is in flight.
  */
-function useDayEdit(life: Life, date: string) {
+export function useDayEdit(life: Life, date: string) {
   const { saveDayMerged } = useStore();
   const disk = life.days.get(date);
   const [draft, setDraft] = useState<Day>(() => disk ?? emptyDay(date));
@@ -359,7 +359,7 @@ function AskCard({ date, ask, left, score, closed, nextPrayer, onAnswer, onLater
 
 // ---------- rows of the day ----------
 
-function HabitTile({ h, mark, run, bad = false, onClick }: { h: Habit; mark: DayMark | undefined; run: number; bad?: boolean; onClick: () => void }) {
+export function HabitTile({ h, mark, run, bad = false, onClick }: { h: Habit; mark: DayMark | undefined; run: number; bad?: boolean; onClick: () => void }) {
   const icon = askOf(h).icon;
   const state = mark === "done" ? (bad ? "чисто" : "сделал") : mark === "failed" ? (bad ? "срыв" : "не сделал") : mark === "late" ? "поздно" : mark === "skipped" ? "пропуск" : "";
   return (

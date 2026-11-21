@@ -21,14 +21,19 @@ import { parseNames, suras } from "../lib/quran";
 import { rawPageText } from "../lib/rawpage";
 import type { Life } from "../lib/life";
 import type { Vault } from "../lib/types";
-import { Columns, NumberGroups, PagesRow, Radar, StaleLine, glowOf, partUrl, type PageButton } from "./theme/parts";
+import { Inline, NumberGroups, PagesRow, Radar, StaleLine, glowOf, partUrl, type PageButton } from "./theme/parts";
 import { HEADING, ORGANS } from "./theme/organs";
 import Board from "./theme/Board";
 import { dayTaskLines } from "./main/Levels";
 import { themeColumns } from "../lib/picks";
 import { loadBank } from "../lib/bank";
 import { THEME_ART } from "../assets/play";
-import { Banner, LevelMark, WeekBars } from "../components/GameBits";
+import { WeekBars } from "../components/GameBits";
+import { HabitTile, useDayEdit } from "./main/Play";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { habitRows } from "../lib/dashboard";
+import { habitDue, markOf, streak, withMark, type DayMark } from "../lib/life";
+import type { ColumnPart } from "../lib/overview";
 import { useGame } from "../lib/useGame";
 import "./theme/Theme.css";
 
@@ -122,15 +127,24 @@ export default function ThemePage() {
   const buttons = sections.filter((s): s is SectionKey => isSectionKey(s) && !ORGANS[s]).map((k) => pageButton(k, theme, pages, life, vault, today));
   return (
     <div className="t-page" style={style}>
-      <Banner art={THEME_ART[theme]} color={meta.color} kicker="Тема" title={themeLabel(theme)}
-        aside={xp && <>
-          <LevelMark level={xp.level} caption="уровень темы" note={`всего ${xp.total}`} />
-          <div className="t-xp"><WeekBars weeks={xp.weeks} /><span>XP за 30 дней <b>{xp.last30}</b>{xp.prev30 > 0 && ` · до того ${xp.prev30}`}</span></div>
-        </>}>
-        {overview && <p className="t-ban-more"><Link className="gb-more" to={pageUrl(overview)}>обзор целиком{overview.updated ? ` · ${shortDate(overview.updated)}` : ""} →</Link></p>}
-      </Banner>
+      <div className="g-play g-theme">
+        <div className="g-top">
+          <SceneFrame art={THEME_ART[theme]}>
+            <SceneTitle kicker="тема" title={themeLabel(theme)} />
+            {xp && (
+              <div className="g-xp8">
+                <WeekBars weeks={xp.weeks} />
+                <span>XP за 8 недель · за 30 дней <b>{xp.last30}</b>{xp.prev30 > 0 && ` · до того ${xp.prev30}`}</span>
+                {overview && <Link to={pageUrl(overview)}>обзор целиком{overview.updated ? ` · ${shortDate(overview.updated)}` : ""} →</Link>}
+              </div>
+            )}
+            {xp && <SceneNumber value={xp.level.level} label="уровень темы" sub={<>{xp.level.into} / {xp.level.need} XP до следующего · всего {xp.total}</>} />}
+          </SceneFrame>
+          <TodayInTheme theme={theme} life={life} today={today} radar={view.radar} />
+        </div>
+        <Journey past={cols.past} stand={cols.stand} next={cols.next} />
+      </div>
       <NumberGroups groups={view.numbers} tiles={tiles} today={today} />
-      <Columns past={cols.past} stand={cols.stand} next={cols.next} />
       <Board cards={cards} />
       <div className="t-organs">
         {sections.map((s) => {
@@ -142,5 +156,60 @@ export default function ThemePage() {
       <PagesRow buttons={buttons} />
       <StaleLine stale={stale} />
     </div>
+  );
+}
+
+/**
+ * The card beside the scene: what of this theme is asked today — its prayers, what he holds out against, its habits —
+ * each marked by a tap, the same marks «Сегодня» writes. A theme with nothing asked today shows what is on its radar.
+ */
+function TodayInTheme({ theme, life, today, radar }: { theme: string; life: Life; today: string; radar: { kind?: string; title?: string; text?: string }[] }) {
+  const { day, edit } = useDayEdit(life, today);
+  const due = useMemo(() => habitRows(life).filter((h) => h.theme === theme && habitDue(h, today)), [life, theme, today]);
+  const days = useMemo(() => new Map(life.days).set(today, day), [life.days, today, day]);
+  const done = due.filter((h) => markOf(day, h.title) === "done").length;
+  const cycle = (title: string, order: (DayMark | undefined)[]) => edit((d) => withMark(d, title, order[(order.indexOf(markOf(d, title)) + 1) % order.length]));
+  if (!due.length) {
+    return (
+      <SideCard kicker="на радаре темы">
+        {radar.length ? (
+          <div className="g-blips">{radar.slice(0, 4).map((c, i) => <div key={i}>{c.kind && <em>{c.kind}</em>}{c.title && <b><Inline md={c.title} /></b>}{c.text && <p><Inline md={c.text} /></p>}</div>)}</div>
+        ) : <p className="g-rule">Сегодня в этой теме ничего не спрашивается, и на радаре пусто.</p>}
+      </SideCard>
+    );
+  }
+  return (
+    <SideCard kicker={`сегодня в теме · ${done} из ${due.length}`}>
+      <div className="g-tiles g-side-tiles">
+        {due.map((h) => <HabitTile key={h.title} h={h} bad={h.kind === "bad"} mark={markOf(day, h.title)} run={h.kind === "prayer" ? 0 : streak(h, days, today)} onClick={() => cycle(h.title, h.kind === "prayer" ? [undefined, "done", "late", "failed"] : [undefined, "done", "failed"])} />)}
+      </div>
+      <Link className="g-link g-side-link" to="/?tab=play">весь день на «Сегодня» →</Link>
+    </SideCard>
+  );
+}
+
+/** «Где был · Где стою · Куда иду» as three stations on one path; all three come from the task bank. */
+function Journey({ past, stand, next }: { past: ColumnPart[]; stand: ColumnPart[]; next: ColumnPart[] }) {
+  const empty = !past.length && !stand.length && !next.length;
+  const stations: [string, string, string, ColumnPart[]][] = [["past", "Где был", "задания сделаны", past], ["now", "Где стою", "задания этой недели", stand], ["next", "Куда иду", "результаты этого месяца", next]];
+  return (
+    <Block title="Путь темы" right={<>из банка заданий · <Link to="/?tab=levels">уровни →</Link></>}>
+      {empty ? <p className="g-faint">Из банка для этой темы ничего не выбрано. Результаты месяца выбираются на <Link to="/?tab=month">«Месяц»</Link>, задания недели — на <Link to="/?tab=week">«Неделя»</Link>.</p> : (
+        <div className="g-path">
+          {stations.map(([kind, title, sub, parts]) => (
+            <div key={kind} className={`st ${kind}`}>
+              <i />
+              <h3>{title}<small>{sub}</small></h3>
+              {parts.length ? parts.map((p, i) => (
+                <div key={i}>
+                  {p.suffix && <span className="sfx">{p.suffix}</span>}
+                  <ul>{p.items.length ? p.items.map((it, j) => <li key={j}><Inline md={it.md} />{it.note && <em>{it.note}</em>}</li>) : <li className="none">—</li>}</ul>
+                </div>
+              )) : <ul><li className="none">—</li></ul>}
+            </div>
+          ))}
+        </div>
+      )}
+    </Block>
   );
 }
