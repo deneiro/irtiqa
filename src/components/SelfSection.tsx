@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartTip } from "./Bits";
 import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
-import { addDays, todayStr } from "../lib/dates";
+import { addDays, plural, todayStr } from "../lib/dates";
 import { AUDIT_PARTS, auditRel, serializeAudit, sinceAudit, type AuditKey } from "../lib/audit";
+import { shortDate } from "../lib/themeNumbers";
+import { Block } from "../pages/main/Scene";
+import { Err, LineKey, Lines, Mini } from "./SectionBits";
 
-const axis = { stroke: "var(--faint)", fontSize: 11, fontFamily: "var(--font-mono)" };
 export const CRISIS_PAGE = "Когда накрывает";
+const MOOD = "var(--d-iris)", STRESS = "var(--d-honey)";
 
 /** The rule that decides when the page above is shown, stated in one place. */
 function alarmOf(mood: (number | undefined)[], stress: (number | undefined)[]): string | null {
@@ -20,7 +21,10 @@ function alarmOf(mood: (number | undefined)[], stress: (number | undefined)[]): 
   return null;
 }
 
-/** Mood, stress, the early warning, and the audit ritual. */
+/**
+ * Mood, stress, the early warning, and the audit ritual. Rebuilt 2026-11-21: the numbers, the warning as its own
+ * card when the rule fires, sixty days as two lines, and the audit as four cards with the form in their place.
+ */
 export default function SelfSection() {
   const v = useVault();
   const { life, saveText, reload } = useStore();
@@ -31,23 +35,17 @@ export default function SelfSection() {
   const today = todayStr();
 
   const days = useMemo(() => Array.from({ length: 60 }, (_, i) => addDays(today, i - 59)), [today]);
-  const data = useMemo(
-    () => days.map((d) => {
-      const day = life?.days.get(d);
-      return { day: d.slice(5), настроение: day?.mood, стресс: day?.stress };
-    }),
-    [days, life],
-  );
+  const moods = useMemo(() => days.map((d) => life?.days.get(d)?.mood), [days, life]);
+  const stresses = useMemo(() => days.map((d) => life?.days.get(d)?.stress), [days, life]);
   const profile = useMemo(() => v.pages.find((p) => p.type === "profile"), [v]);
   const crisis = useMemo(() => v.pages.find((p) => p.file === CRISIS_PAGE), [v]);
   if (!life) return null;
 
-  const moods = data.map((d) => d.настроение);
-  const stresses = data.map((d) => d.стресс);
   const rated = moods.filter((m): m is number => m !== undefined);
+  const ratedS = stresses.filter((m): m is number => m !== undefined);
   const lastMood = rated.length ? rated[rated.length - 1] : undefined;
-  const week = rated.slice(-7);
-  const avg7 = week.length ? week.reduce((a, b) => a + b, 0) / week.length : undefined;
+  const week = rated.slice(-7), weekS = ratedS.slice(-7);
+  const avg = (xs: number[]) => (xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : undefined);
   const alarm = alarmOf(moods, stresses);
   const since = sinceAudit(life.audits, today);
   const lastAudit = life.audits[0];
@@ -67,88 +65,60 @@ export default function SelfSection() {
   };
 
   return (
-    <section className="tblock">
-      <h2 className="section">Состояние <span className="n">{rated.length} {rated.length === 1 ? "оценка" : "оценок"} за 60 дней</span></h2>
-      <div className="card">
-        <div className="bodynums">
-          <div className="bnum"><b>{lastMood ?? "—"}</b><span>настроение, последняя оценка</span></div>
-          <div className="bnum"><b>{avg7 !== undefined ? Math.round(avg7 * 10) / 10 : "—"}</b><span>в среднем за неделю</span></div>
-          {radicals && (
-            <div className="bnum">
-              <b className="small mono" style={{ fontSize: 15 }}>{radicals}</b>
-              <span>радикалы{profile ? "" : ""} · <Link to={profile ? pageUrl(profile) : "/"}>профиль</Link></span>
-            </div>
-          )}
+    <div className="g-play">
+      {alarm && (
+        <section className="g-block g-alarm">
+          <h2>Раннее предупреждение</h2>
+          <b>{alarm}</b>
+          <p>Это то самое окно, в котором ты просил себе напомнить. {crisis ? <Link to={pageUrl(crisis)}>Открыть «{CRISIS_PAGE}» →</Link> : "Страница «Когда накрывает» пока не написана."}</p>
+        </section>
+      )}
+
+      <Block title="Настроение и стресс · 60 дней" right={`${rated.length} ${plural(rated.length, "оценка", "оценки", "оценок")} настроения`}>
+        <div className={`g-minis${radicals ? " four" : ""}`}>
+          <Mini value={lastMood ?? "—"} label="настроение, последняя оценка" />
+          <Mini value={avg(week) ?? "—"} label="настроение, среднее по 7 последним оценкам" />
+          <Mini value={avg(weekS) ?? "—"} label="стресс, среднее по 7 последним оценкам" tone={(avg(weekS) ?? 0) >= 7 ? "bad" : undefined} />
+          {radicals && <Mini value={<code>{radicals}</code>} label={<>радикалы · {profile ? <Link to={pageUrl(profile)}>профиль →</Link> : null}</>} />}
         </div>
-
-        {alarm && (
-          <div className="node" style={{ marginTop: 12 }}>
-            <b>{alarm}</b>
-            <div className="small muted">
-              Это то самое окно, в котором ты просил себе напомнить.{" "}
-              {crisis ? <Link to={pageUrl(crisis)}>Открыть «{CRISIS_PAGE}»</Link> : "Страница «Когда накрывает» пока не написана."}
-            </div>
-          </div>
-        )}
-
-        {rated.length >= 2 ? (
-          <div className="chart" style={{ height: 190, marginTop: 12 }}>
-            <ResponsiveContainer>
-              <LineChart data={data} margin={{ top: 8, right: 8, left: -22, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
-                <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} interval={6} />
-                <YAxis domain={[0, 10]} tick={axis} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} />
-                <Line type="monotone" dataKey="настроение" stroke="var(--accent-2)" dot connectNulls strokeWidth={2} />
-                <Line type="monotone" dataKey="стресс" stroke="var(--danger)" dot connectNulls strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        ) : (
-          <div className="small faint" style={{ marginTop: 10 }}>
-            Оценок настроения пока {rated.length}. Их спрашивает вечерний опрос бота — график соберётся сам.
-          </div>
-        )}
-
-        <div className="mrow-head">Аудит жизни</div>
-        <div className="small muted">
-          {since === undefined
-            ? "Ни одного аудита ещё не записано. Ты называл это регулярным делом, а не разовым — вот место, где он останется."
-            : `Последний аудит ${since === 0 ? "сегодня" : `${since} дн. назад`}, ${lastAudit.date}.`}
-        </div>
-        {lastAudit && !open && (
-          <div className="auditprev">
-            {AUDIT_PARTS.filter((p) => lastAudit.parts[p.key]).map((p) => (
-              <div key={p.key}>
-                <div className="eyebrow">{p.heading}</div>
-                <div className="small">{lastAudit.parts[p.key].split("\n").slice(0, 3).join(" ")}</div>
-              </div>
-            ))}
-          </div>
-        )}
-        {open ? (
+        {rated.length >= 2 || ratedS.length >= 2 ? (
           <>
+            <Lines wide lo={1} hi={10} height={170} titles={days.map((d) => shortDate(d))} series={[{ word: "настроение", color: MOOD, vals: moods }, { word: "стресс", color: STRESS, vals: stresses }]} />
+            <LineKey items={[{ word: "настроение", color: MOOD }, { word: "стресс", color: STRESS }]} />
+          </>
+        ) : <p className="g-faint">Оценок настроения пока {rated.length}. Их спрашивает вечерний опрос бота и «Сегодня» — график соберётся сам.</p>}
+      </Block>
+
+      <Block title="Аудит жизни" right={
+        <>
+          {since === undefined ? "ещё не было" : `последний ${since === 0 ? "сегодня" : `${since} дн. назад`} · ${lastAudit.date}`}
+          {!open && <button type="button" className="g-btn sun" onClick={() => setOpen(true)}>{since === 0 ? "переписать сегодняшний" : "пройти аудит"}</button>}
+        </>
+      }>
+        {open ? (
+          <form className="g-audit" onSubmit={(e) => { e.preventDefault(); void saveAudit(); }}>
             {AUDIT_PARTS.map((p) => (
-              <div key={p.key} style={{ marginTop: 10 }}>
-                <div className="eyebrow">{p.heading} <span className="faint">· {p.hint}</span></div>
-                <textarea
-                  className="text" rows={3} style={{ width: "100%" }} autoCorrect="off" spellCheck={false}
-                  value={form[p.key]} onChange={(e) => setForm({ ...form, [p.key]: e.target.value })}
-                />
+              <label key={p.key}>
+                <span>{p.heading}<small>{p.hint}</small></span>
+                <textarea className="text" rows={4} autoCorrect="off" spellCheck={false} value={form[p.key]} onChange={(e) => setForm({ ...form, [p.key]: e.target.value })} />
+              </label>
+            ))}
+            <div className="g-addrow">
+              <button type="submit" disabled={busy || !Object.values(form).some((x) => x.trim())}>Записать аудит</button>
+              <button type="button" className="g-btn" disabled={busy} onClick={() => setOpen(false)}>отмена</button>
+            </div>
+          </form>
+        ) : lastAudit ? (
+          <div className="g-fcards">
+            {AUDIT_PARTS.filter((p) => lastAudit.parts[p.key]).map((p) => (
+              <div key={p.key} className="g-fcard">
+                <dl><div><dt>{p.heading}</dt><dd>{lastAudit.parts[p.key].split("\n").slice(0, 3).join(" ")}</dd></div></dl>
               </div>
             ))}
-            <div className="measure-form">
-              <button className="btn" disabled={busy} onClick={() => void saveAudit()}>записать аудит</button>
-              <button className="btn small" disabled={busy} onClick={() => setOpen(false)}>отмена</button>
-            </div>
-          </>
-        ) : (
-          <button className="btn small" style={{ marginTop: 10 }} onClick={() => setOpen(true)}>
-            {since === 0 ? "переписать сегодняшний аудит" : "пройти аудит"}
-          </button>
-        )}
-        {err && <div className="small err-text">{err}</div>}
-      </div>
-    </section>
+          </div>
+        ) : <p className="g-faint">Ни одного аудита ещё не записано. Ты называл это регулярным делом, а не разовым — вот место, где он останется.</p>}
+        <Err text={err} />
+      </Block>
+    </div>
   );
 }

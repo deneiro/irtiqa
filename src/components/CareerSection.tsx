@@ -4,6 +4,8 @@ import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
 import { todayStr } from "../lib/dates";
 import { JOBS_REL, earnedThisMonth, jobStats, jobsHeader, monthsBetween, parseJobs, serializeJobs, type Job } from "../lib/jobs";
+import { Block } from "../pages/main/Scene";
+import { Err, Mini } from "./SectionBits";
 
 const PATH_PAGE = "Карьерный путь";
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
@@ -13,7 +15,10 @@ function months(n: number): string {
   return `${r} ${w}`;
 }
 
-/** Ten roles in three years: the pattern is the length, so the length is drawn. */
+/**
+ * Ten roles in three years: the pattern is the length, so the length is drawn. Rebuilt 2026-11-21 as one time line —
+ * every job a bar from its first month to its last on the same axis of years, the current one lit.
+ */
 export default function CareerSection() {
   const v = useVault();
   const { life, saveLedger, reload } = useStore();
@@ -27,10 +32,16 @@ export default function CareerSection() {
   const jobs = useMemo(() => (raw ? parseJobs(raw, today) : []), [raw, today]);
   const st = useMemo(() => jobStats(jobs, today), [jobs, today]);
   const page = useMemo(() => v.pages.find((p) => p.file === PATH_PAGE), [v]);
-  if (!life || !raw || !jobs.length) return null;
+  if (!life || !raw || !jobs.length) return <div className="g-play"><Block title="Работа"><p className="g-faint">Записей о работе нет: их хранит life/jobs.md.</p></Block></div>;
 
-  const max = Math.max(...jobs.map((j) => j.months));
   const earned = earnedThisMonth(life.days, today);
+  const nowMonth = today.slice(0, 7);
+  const first = jobs.reduce((a, j) => (j.start < a ? j.start : a), jobs[0].start);
+  // months from the first job's first month — 0 for that month itself, where `monthsBetween` never goes below 1
+  const gap = (m: string) => (Number(m.slice(0, 4)) - Number(first.slice(0, 4))) * 12 + Number(m.slice(5, 7)) - Number(first.slice(5, 7));
+  const span = Math.max(1, gap(nowMonth));
+  const pos = (m: string) => `${Math.max(0, Math.min(100, (gap(m) / span) * 100))}%`;
+  const years = Array.from({ length: Number(nowMonth.slice(0, 4)) - Number(first.slice(0, 4)) }, (_, i) => `${Number(first.slice(0, 4)) + i + 1}-01`);
 
   const write = async (next: Job[]) => {
     setBusy(true);
@@ -55,56 +66,52 @@ export default function CareerSection() {
   };
 
   return (
-    <section className="tblock">
-      <h2 className="section">
-        Работа <span className="n">{st.count} мест за {months(st.span)}</span>
-        {page && <Link to={pageUrl(page)} className="small muted">{PATH_PAGE}</Link>}
-      </h2>
-      <div className="card">
-        <div className="bodynums">
-          <div className="bnum">
-            <b>{st.current ? months(st.current.months) : "—"}</b>
-            <span>{st.current ? `в «${st.current.place}»` : "без текущей работы"}</span>
-          </div>
-          <div className="bnum"><b>{months(st.avgMonths)}</b><span>средняя длительность роли</span></div>
-          <div className="bnum"><b>{st.longest ? months(st.longest.months) : "—"}</b><span>самая долгая · {st.longest?.place}</span></div>
-          <div className="bnum"><b className="ok">{fmt(earned)}</b><span>получено в этом месяце</span></div>
+    <div className="g-play">
+      <Block title="В числах" right={page ? <Link className="g-more" to={pageUrl(page)}>{PATH_PAGE} →</Link> : undefined}>
+        <div className="g-minis four">
+          <Mini value={st.current ? months(st.current.months) : "—"} label={st.current ? `в «${st.current.place}»` : "без текущей работы"} tone={st.current ? "now" : undefined} />
+          <Mini value={months(st.avgMonths)} label="средняя длительность роли" />
+          <Mini value={st.longest ? months(st.longest.months) : "—"} label={`самая долгая${st.longest ? ` · ${st.longest.place}` : ""}`} />
+          <Mini value={fmt(earned)} label="получено в этом месяце, ₸" tone={earned > 0 ? "good" : undefined} />
         </div>
+      </Block>
 
-        <div className="mrow-head">Хронология</div>
-        {jobs.map((j) => (
-          <div key={j.start + j.place} className={`hbar job ${j.end ? "" : "now"}`}>
-            <span className="hname" title={j.role}>{j.place}</span>
-            <span className="htrack"><i style={{ width: `${Math.max(3, (100 * j.months) / max)}%` }} /></span>
-            <span className="mono">{j.months} мес</span>
-            <span className="small faint jdate">{j.start}{j.end ? ` → ${j.end}` : " → сейчас"}</span>
-            {!j.end && <button className="btn small" disabled={busy} onClick={() => close(j)}>закрыть</button>}
-          </div>
-        ))}
-
+      <Block title="Хронология" right={`${st.count} мест за ${months(st.span)} · полоса — от первого месяца до последнего`}>
+        <div className="g-gantt">
+          <div className="ax"><span /><i>{years.map((y) => <em key={y} style={{ left: pos(y) }}>{y.slice(0, 4)}</em>)}</i><span /></div>
+          {jobs.map((j) => (
+            <div key={j.start + j.place} className={j.end ? "" : "now"}>
+              <span title={j.role}><b>{j.place}</b>{j.role && <small>{j.role}</small>}</span>
+              <i>
+                {years.map((y) => <s key={y} style={{ left: pos(y) }} />)}
+                <u style={{ left: pos(j.start), right: `calc(100% - ${pos(j.end ?? nowMonth)})` }} title={`${j.start} → ${j.end ?? "сейчас"}`} />
+              </i>
+              <span className="r">
+                <b>{j.months} мес</b><small>{j.start}{j.end ? ` → ${j.end}` : " → сейчас"}</small>
+                {!j.end && <button type="button" className="g-btn" disabled={busy} onClick={() => close(j)}>закрыть</button>}
+              </span>
+            </div>
+          ))}
+        </div>
         {st.byChannel.length > 0 && (
-          <div className="small muted" style={{ marginTop: 10 }}>
-            Как получены: {st.byChannel.map((c) => `${c.channel} — ${c.count}`).join(", ")}.
-            {st.unknownChannel > 0 && ` Не восстановлено: ${st.unknownChannel}. Колонка «Канал» в life/jobs.md — заполни, и приложение посчитает, сколько работ пришло через людей, а сколько через резюме.`}
-          </div>
+          <p className="g-cap">
+            <b>Как получены:</b> {st.byChannel.map((c) => `${c.channel} — ${c.count}`).join(", ")}.
+            {st.unknownChannel > 0 && ` Не восстановлено: ${st.unknownChannel}. Заполни колонку «Канал» в life/jobs.md — и приложение посчитает, сколько работ пришло через людей, а сколько через резюме.`}
+          </p>
         )}
-
         {adding ? (
-          <div className="measure-form">
-            <input className="text" placeholder="ГГГГ-ММ" autoCorrect="off" spellCheck={false} value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} />
-            <input className="text" placeholder="место" autoCorrect="off" spellCheck={false} value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} />
+          <form className="g-addrow" onSubmit={(e) => { e.preventDefault(); add(); }}>
+            <input className="text short" placeholder="ГГГГ-ММ" autoCorrect="off" spellCheck={false} value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} />
+            <input className="text" autoFocus placeholder="место" autoCorrect="off" spellCheck={false} value={form.place} onChange={(e) => setForm({ ...form, place: e.target.value })} />
             <input className="text" placeholder="роль" autoCorrect="off" spellCheck={false} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} />
             <input className="text" placeholder="канал" autoCorrect="off" spellCheck={false} value={form.channel} onChange={(e) => setForm({ ...form, channel: e.target.value })} />
-            <button className="btn" disabled={busy} onClick={add}>добавить</button>
-          </div>
-        ) : (
-          <button className="btn small" style={{ marginTop: 10 }} onClick={() => setAdding(true)}>новая работа</button>
-        )}
-        <div className="small faint" style={{ marginTop: 8 }}>
-          Новая работа закрывает текущую тем же месяцем — так хронология не разъезжается.
-        </div>
-        {err && <div className="small err-text">{err}</div>}
-      </div>
-    </section>
+            <button type="submit" disabled={busy || !form.place.trim()}>Добавить</button>
+            <button type="button" className="g-btn" onClick={() => setAdding(false)}>отмена</button>
+            <small>Новая работа закрывает текущую тем же месяцем — так хронология не разъезжается.</small>
+          </form>
+        ) : <div className="g-addrow"><button type="button" className="g-btn sun" onClick={() => setAdding(true)}>+ новая работа</button></div>}
+        <Err text={err} />
+      </Block>
+    </div>
   );
 }

@@ -2,12 +2,17 @@ import { useMemo, useState } from "react";
 import { useStore } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
-import { todayStr } from "../lib/dates";
+import { plural, todayStr } from "../lib/dates";
 import { confirmAction } from "../lib/native";
 import SourceLink from "../components/SourceLink";
 import { LEVELS, SKILL_STATUS, daysSincePractice, isDrifting, serializeSkill, skillRel, type Skill, type SkillStatus } from "../lib/skills";
+import { Block } from "../pages/main/Scene";
+import { Err, Mini } from "./SectionBits";
 
-/** The skill registry: level, state, when it was last practised. */
+/**
+ * The skill registry (rebuilt 2026-11-21 the way «Сегодня» is): four numbers, then a block per status with a card a
+ * skill — the level as five bars to tap, when it was last practised, «тренировал». A card's name opens its details.
+ */
 export default function SkillsSection() {
   const { life, saveText, reload } = useStore();
   const { themeLabel } = useT();
@@ -26,6 +31,7 @@ export default function SkillsSection() {
   const have = skills.filter((s) => s.level > 0);
   const avg = have.length ? have.reduce((n, s) => n + s.level, 0) / have.length : 0;
   const drifting = skills.filter((s) => isDrifting(s, today));
+  const wanted = skills.filter((s) => s.status === "wanted").length;
 
   const write = async (s: Skill, patch: Partial<Skill>) => {
     setBusy(true);
@@ -59,19 +65,18 @@ export default function SkillsSection() {
   };
 
   return (
-    <section className="tblock">
-      <h2 className="section">
-        Навыки <span className="n">{have.length} есть · {skills.filter((s) => s.status === "wanted").length} в очереди</span>
-      </h2>
-      <p className="small muted" style={{ marginTop: -4 }}>
-        {have.length > 0 ? `Средний уровень ${avg.toFixed(1)} из 5.` : "Пока пусто."}{" "}
-        {drifting.length > 0 && <span className="hl">{drifting.length} давно не трогал: {drifting.map((s) => s.title).join(", ")}.</span>}
-      </p>
-
-      <div className="row" style={{ margin: "10px 0" }}>
-        {adding ? (
-          <form className="addrow skill" onSubmit={(e) => { e.preventDefault(); void add(); }}>
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder="Навык: арабский, слепая печать, деловое письмо…" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+    <div className="g-play">
+      <Block title="Все навыки" right={adding ? undefined : <button type="button" className="g-btn sun" onClick={() => setAdding(true)}>+ навык</button>}>
+        <div className="g-minis four">
+          <Mini value={have.length} label="навыков есть" />
+          <Mini value={have.length ? avg.toFixed(1) : "—"} label="средний уровень из 5" />
+          <Mini value={wanted} label="в очереди" tone={wanted ? "now" : undefined} />
+          <Mini value={drifting.length} label="давно не трогал" tone={drifting.length ? "bad" : undefined} />
+        </div>
+        {drifting.length > 0 && <p className="g-cap">Давно не трогал: {drifting.map((s) => s.title).join(", ")}.</p>}
+        {adding && (
+          <form className="g-addrow" onSubmit={(e) => { e.preventDefault(); void add(); }}>
+            <input className="text wide" autoCorrect="off" autoCapitalize="off" spellCheck={false} autoFocus placeholder="Навык: арабский, слепая печать, деловое письмо…" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
             <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
               {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
             </select>
@@ -81,67 +86,59 @@ export default function SkillsSection() {
             <select className="text" value={form.level} onChange={(e) => setForm({ ...form, level: Number(e.target.value) })} disabled={form.status === "wanted" || form.status === "gap"}>
               {LEVELS.map((l, i) => <option key={l} value={i}>{i}. {l}</option>)}
             </select>
-            <button className="btn primary" type="submit" disabled={!form.title.trim() || busy}>добавить</button>
-            <button className="btn ghost" type="button" onClick={() => setAdding(false)}>отмена</button>
+            <button type="submit" disabled={!form.title.trim() || busy}>Добавить</button>
+            <button className="g-btn" type="button" onClick={() => setAdding(false)}>отмена</button>
           </form>
-        ) : (
-          <button className="btn primary" onClick={() => setAdding(true)}>+ навык</button>
         )}
-      </div>
-      {err && <div className="small" style={{ color: "var(--danger)" }}>{err}</div>}
+        <Err text={err} />
+        {skills.length === 0 && <p className="g-faint">Навыков пока нет. Добавь первый: название, тема, уровень.</p>}
+      </Block>
 
       {groups.map((g) => (
-        <div className="skgroup" key={g.key}>
-          <h3>{g.label} <span className="n">{g.items.length}</span> <span className="small faint">{g.hint}</span></h3>
-          {g.items.map((s) => {
-            const since = daysSincePractice(s, today);
-            const isOpen = open === s.rel;
-            return (
-              <div className={`skill ${isDrifting(s, today) ? "drift" : ""}`} key={s.rel} style={{ ["--c" as string]: themeColor(s.theme) }}>
-                <div className="skrow">
-                  <span className="bar" />
-                  <button className="skname" onClick={() => setOpen(isOpen ? null : s.rel)} title="подробности">{s.title}</button>
-                  <span className="dots" title={`${LEVELS[s.level]} (${s.level} из 5)`}>
+        <Block key={g.key} className={`g-skgroup ${g.key}`} title={<>{g.label} · {g.items.length}</>} right={g.hint}>
+          <div className="g-skcards">
+            {g.items.map((s) => {
+              const since = daysSincePractice(s, today);
+              const isOpen = open === s.rel;
+              return (
+                <div className={`g-skcard${isDrifting(s, today) ? " drift" : ""}${isOpen ? " open" : ""}`} key={s.rel} style={{ ["--c" as string]: themeColor(s.theme) }}>
+                  <button type="button" className="nm" onClick={() => setOpen(isOpen ? null : s.rel)} title="подробности">{s.title}</button>
+                  <div className="lv" title={`${LEVELS[s.level]} (${s.level} из 5)`}>
                     {[1, 2, 3, 4, 5].map((n) => (
-                      <button key={n} className={`lv ${n <= s.level ? "on" : ""}`} disabled={busy} title={`${n}. ${LEVELS[n]}`} onClick={() => void write(s, { level: n === s.level ? n - 1 : n })} />
+                      <button type="button" key={n} className={n <= s.level ? "on" : ""} disabled={busy} title={`${n}. ${LEVELS[n]}`} aria-label={`уровень ${n}: ${LEVELS[n]}`} onClick={() => void write(s, { level: n === s.level ? n - 1 : n })} />
                     ))}
-                  </span>
-                  <span className="small muted lvl-label">{LEVELS[s.level]}</span>
-                  <span className="grow" />
-                  <span className="small faint">{since === undefined ? "" : since === 0 ? "сегодня" : `${since} дн. назад`}</span>
-                  <button className="btn small ghost" disabled={busy} onClick={() => void write(s, { lastPracticed: today, status: s.status === "rusty" || s.status === "wanted" ? "growing" : s.status })}>тренировал</button>
-                </div>
-                {isOpen && (
-                  <div className="skdetail">
-                    <div className="row wrap" style={{ gap: 8 }}>
-                      <select className="text" value={s.status} disabled={busy} onChange={(e) => void write(s, { status: e.target.value as SkillStatus })}>
-                        {SKILL_STATUS.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}
-                      </select>
-                      <select className="text" value={s.theme ?? ""} disabled={busy} onChange={(e) => void write(s, { theme: e.target.value })}>
-                        {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
-                      </select>
-                      {s.source && <SourceLink source={s.source} />}
-                      <span className="grow" />
-                      <button className="btn small ghost" disabled={busy} onClick={() => void remove(s)}>убрать</button>
-                    </div>
-                    <textarea
-                      className="text"
-                      rows={3}
-                      placeholder="Что именно умею, чем подтверждается, что дальше."
-                      defaultValue={s.body}
-                      disabled={busy}
-                      onBlur={(e) => { if (e.target.value.trim() !== s.body) void write(s, { body: e.target.value }); }}
-                      style={{ marginTop: 8, width: "100%", resize: "vertical" }}
-                    />
-                    <div className="small faint" style={{ marginTop: 4 }}>Текст сохраняется, когда уходишь из поля. Файл: {s.rel}</div>
+                    <span>{LEVELS[s.level]}</span>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+                  <div className="ft">
+                    <small>{since === undefined ? "ещё не отмечал" : since === 0 ? "сегодня" : `${since} ${plural(since, "день", "дня", "дней")} назад`}</small>
+                    <button type="button" className="g-btn" disabled={busy} onClick={() => void write(s, { lastPracticed: today, status: s.status === "rusty" || s.status === "wanted" ? "growing" : s.status })}>тренировал</button>
+                  </div>
+                  {isOpen && (
+                    <div className="more">
+                      <div className="row">
+                        <select className="text" value={s.status} disabled={busy} onChange={(e) => void write(s, { status: e.target.value as SkillStatus })}>
+                          {SKILL_STATUS.map((x) => <option key={x.key} value={x.key}>{x.label}</option>)}
+                        </select>
+                        <select className="text" value={s.theme ?? ""} disabled={busy} onChange={(e) => void write(s, { theme: e.target.value })}>
+                          {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
+                        </select>
+                        {s.source && <SourceLink source={s.source} />}
+                        <button type="button" className="g-btn ember" disabled={busy} onClick={() => void remove(s)}>убрать</button>
+                      </div>
+                      <textarea
+                        className="text" rows={3} placeholder="Что именно умею, чем подтверждается, что дальше."
+                        defaultValue={s.body} disabled={busy}
+                        onBlur={(e) => { if (e.target.value.trim() !== s.body) void write(s, { body: e.target.value }); }}
+                      />
+                      <small>Текст сохраняется, когда уходишь из поля. Файл: {s.rel}</small>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Block>
       ))}
-      {skills.length === 0 && <div className="empty">Навыков пока нет. Добавь первый: название, тема, уровень.</div>}
-    </section>
+    </div>
   );
 }
