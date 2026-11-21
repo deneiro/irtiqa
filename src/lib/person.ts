@@ -7,13 +7,13 @@
  * headings, formats and kinds of number, never a name from the vault. No data
  * is «—», never 0.
  */
-import { cadenceFor, eventsWith, isMeetingRecord, personInfluence, type HabitCount } from "./circle";
+import { cadenceOf, eventsWith, isMeetingRecord, personInfluence, type HabitCount } from "./circle";
 import { daysBetween, fmt } from "./dashboard";
 import { addDays, plural } from "./dates";
 import type { LifeEvent } from "./events";
 import { DEBT_THEY_OWE, debtLeft, type Habit, type Life } from "./life";
 import { bullets, columnPart, phraseOf, splitSections, type ColumnItem, type ColumnPart } from "./overview";
-import { closenessOf, contactsOf, daysToBirthday, debtsFor } from "./people";
+import { contactsOf, daysToBirthday, debtsFor } from "./people";
 import { dateWords, findHabit, lastTouch, shortDate } from "./themeNumbers";
 import type { Page } from "./types";
 import { asList } from "./vault";
@@ -258,12 +258,13 @@ export function shortWhen(date: string, today: string): string {
 
 const HOW: Record<string, string> = { "контакт": "последний контакт", "разговор": "последний разговор", "встреча": "последняя встреча" };
 
-/** «Связь»: days since the latest touch (`lastTouch`), against the rhythm his closeness sets (`cadenceFor`). */
+/** «Связь»: days since the latest touch (`lastTouch`), against his own `rhythm:` or the one his closeness sets (`cadenceOf`). */
 function contactTile(page: Page, people: Page[], life: Life, today: string): PersonTile {
   const label = "Связь";
-  const cadence = cadenceFor(closenessOf(page));
-  const hint = cadence ? `ритм — раз в ${cadence} ${nDays(cadence)}` : "ритма нет";
-  const noRhythm = "ритм считается по близости — её нет";
+  const { cadence, own } = cadenceOf(page);
+  const said = String(page.fm.rhythm ?? "").trim();
+  const hint = own ? (cadence ? `твой ритм — ${said}` : "не напоминать") : cadence ? `ритм — раз в ${cadence} ${nDays(cadence)}` : "ритма нет";
+  const noRhythm = own ? "в напоминаниях не участвует" : "ритм считается по близости — её нет";
   const t = lastTouch(page, people, life, today);
   if (!t) return cadence ? { label, hint, value: "—", line: "не отмечена" } : { label, hint, value: "—", line: "не отмечена", note: noRhythm };
   const n = daysBetween(t.date, today);

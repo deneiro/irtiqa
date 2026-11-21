@@ -7,7 +7,8 @@ import { pageUrl } from "../../lib/vault";
 import { mediaUrl, openExternal } from "../../lib/native";
 import { rawPageText } from "../../lib/rawpage";
 import { contactEdits } from "../../lib/contact";
-import { atHome, buildCircle, coMet, eventsWith, tieWarmth, type HabitCount } from "../../lib/circle";
+import { HOUSEHOLD_TAG, RHYTHMS, atHome, buildCircle, cadenceFor, coMet, eventsWith, rhythmDays, tieWarmth, type HabitCount } from "../../lib/circle";
+import { setFrontmatterKeys } from "../../lib/frontmatter";
 import { BANNER, THEME_ART } from "../../assets/play";
 import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "../main/Scene";
 import type { Cell } from "../../lib/dashboard";
@@ -334,7 +335,8 @@ export default function PersonPage({ page }: { page: Page }) {
   const view = useMemo(() => personView(page.body), [page]);
   const numbers = useMemo(() => (life ? personNumbers(page, people, life, today) : undefined), [page, people, life, today]);
   const style = themeStyle(page.theme);
-  const tie = useMemo(() => { const i = life ? buildCircle(people, life.events, today).find((x) => x.page.rel === page.rel) : undefined; return i && tieWarmth(i); }, [life, people, page, today]);
+  const item = useMemo(() => (life ? buildCircle(people, life.events, today).find((x) => x.page.rel === page.rel) : undefined), [life, people, page, today]);
+  const tie = item && tieWarmth(item);
   if (!life || !numbers) return <div className="p-page" style={style}><p className="p-faint">Загружаю vault…</p></div>;
 
   const contacts = contactsOf(page);
@@ -363,6 +365,20 @@ export default function PersonPage({ page }: { page: Page }) {
     if (raw === null) throw new Error("не нашёл страницу человека");
     for (const e of contactEdits({ rel: page.rel, file: page.file, raw }, life.events, today, false)) await saveText(e.rel, e.content);
   };
+  /** «Как часто видитесь»: his own `rhythm:` on the page, or none (the closeness rhythm). */
+  const rhythm = typeof page.fm.rhythm === "string" || typeof page.fm.rhythm === "number" ? String(page.fm.rhythm).trim() : "";
+  const byCloseness = cadenceFor(close);
+  const HOME = "живём вместе";
+  const setRhythm = async (v: string) => {
+    const raw = rawPageText(vault, page.rel);
+    if (raw === null) throw new Error("не нашёл страницу человека");
+    // «живём вместе» is the household tag, as the circle reads it; any other choice takes the tag off
+    const tags = (Array.isArray(page.fm.tags) ? page.fm.tags.map(String) : page.tags).filter((t) => t.toLowerCase() !== HOUSEHOLD_TAG);
+    const home = v === HOME;
+    const patch: Record<string, string | string[] | null> = { rhythm: home ? null : v || null };
+    if (home || atHome(page)) patch.tags = home ? [...tags, HOUSEHOLD_TAG] : tags;
+    await saveText(page.rel, setFrontmatterKeys(raw, patch));
+  };
   const run = async (what: () => Promise<void>) => {
     setBusy(true);
     try { await what(); setErr(null); await reload(); } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
@@ -390,8 +406,12 @@ export default function PersonPage({ page }: { page: Page }) {
             </div>
             {atHome(page)
               ? <SceneNumber value="дома" label="живёте вместе" sub="ритм связи не считается" />
+              : rhythmDays(rhythm) === null
+              ? <SceneNumber value="—" label="без напоминаний" sub="«как часто видитесь» — не считать" />
+              : tie && item?.own && tie.since === undefined
+              ? <SceneNumber value="—" label="связь · ещё не отмечена" sub={`твой ритм — ${rhythm}`} />
               : tie
-              ? <SceneNumber value={tie.pct} unit="%" label={`связь · ${tie.state}`} sub={tie.since === undefined ? `ритм — раз в ${tie.cadence} дн` : `${tie.since} дн из ${tie.cadence} — ритм близости`} />
+              ? <SceneNumber value={tie.pct} unit="%" label={`связь · ${tie.state}`} sub={tie.since === undefined ? `ритм — раз в ${tie.cadence} дн` : `${tie.since} дн из ${tie.cadence} — ${item?.own ? `твой ритм, ${rhythm}` : "ритм близости"}`} />
               : <SceneNumber value="—" label="тепло связи" sub="близость не отмечена — поставь на «Кругах»" />}
           </SceneFrame>
           <SideCard kicker={metToday ? "сегодня виделись" : wroteToday ? "сегодня на связи" : "сегодня"}>
@@ -405,6 +425,15 @@ export default function PersonPage({ page }: { page: Page }) {
                 ? links.map((l) => <button key={l.key} type="button" title={l.url} onClick={() => void openExternal(l.url)}>{l.label}</button>)
                 : <span className="g-faint">Контактов нет — добавь в «изменить», и появятся кнопки чата.</span>}
             </div>
+            <label className="g-rhythm">
+              <span>как часто видитесь</span>
+              <select className="text" value={atHome(page) ? HOME : rhythm} disabled={busy} onChange={(e) => void run(() => setRhythm(e.target.value))} title="Реже — значит, он не всплывает в «кому написать», пока не пройдёт это время">
+                <option value="">по близости{byCloseness ? ` · раз в ${byCloseness} дн` : ""}</option>
+                <option value={HOME}>живём вместе — каждый день</option>
+                {RHYTHMS.map((r) => <option key={r.value} value={r.value}>{r.value}</option>)}
+                {rhythm && !RHYTHMS.some((r) => r.value === rhythm) && <option value={rhythm}>{rhythm}</option>}
+              </select>
+            </label>
             <div className="g-side-row">
               <button className="g-link" type="button" onClick={() => (editing ? void form.current?.cancel() : setEditing(true))}>{editing ? "закрыть" : "изменить"}</button>
               <Link className="g-link" to={`${pageUrl(page)}?full=1`}>страница целиком{page.updated ? ` · ${shortWhen(page.updated, today)}` : ""} →</Link>

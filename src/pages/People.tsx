@@ -82,7 +82,7 @@ export default function PeoplePage() {
   const circle = useMemo(() => buildCircle(v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)), life?.events ?? [], today), [v, life, today]);
   const warmth = useMemo(() => circleWarmth(circle), [circle]);
   // the close ties that have gone coldest: the ones to write to first
-  const cold = useMemo(() => circle.filter((i) => (i.closeness ?? 0) >= 7 && !atHome(i.page) && (tieWarmth(i)?.pct ?? 0) === 0).slice(0, 5), [circle]);
+  const cold = useMemo(() => circle.filter((i) => (i.closeness ?? 0) >= 7 && !atHome(i.page) && i.cadence !== undefined && !(i.own && i.overdue === undefined) && (tieWarmth(i)?.pct ?? 0) === 0).slice(0, 5), [circle]);
   /** «Написал»: `last_contact` is today, as the person page writes it. */
   const wrote = async (i: CircleItem) => {
     setBusy(i.page.rel);

@@ -561,5 +561,6 @@ export function spheres(life: Life, circle: CircleItem[], today: string): Sphere
 
 /** Close people (closeness ≥ 7) by the days since the last marked contact; not those he lives with (`atHome`). */
 export function quietPeople(circle: CircleItem[], n = 6): CircleItem[] {
-  return circle.filter((c) => (c.closeness ?? 0) >= 7 && c.sinceContact !== undefined && !atHome(c.page)).sort((a, b) => b.sinceContact! - a.sinceContact!).slice(0, n);
+  // his own rhythm («раз в год») keeps a tie out until that time has passed; «не считать» keeps it out for good
+  return circle.filter((c) => (c.closeness ?? 0) >= 7 && c.sinceContact !== undefined && !atHome(c.page) && c.cadence !== undefined && !(c.own && (c.overdue ?? -1) <= 0)).sort((a, b) => b.sinceContact! - a.sinceContact!).slice(0, n);
 }

@@ -351,7 +351,7 @@ export function quietClose(vault: Vault, life: Life, theme: string, today: strin
   return items.map((i) => {
     const t = lastTouch(i.page, people, life, today);
     const since = t ? daysBetween(t.date, today) : undefined;
-    return { page: i.page, name: i.name, since, cadence: i.cadence, overdue: since === undefined || (i.cadence !== undefined && since > i.cadence) };
+    return { page: i.page, name: i.name, since, cadence: i.cadence, overdue: i.cadence !== undefined && (since === undefined ? !i.own : since > i.cadence) };
   }).sort((a, b) => (b.since ?? Infinity) - (a.since ?? Infinity) || a.name.localeCompare(b.name, "ru"));
 }
 
