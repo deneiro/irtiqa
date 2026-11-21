@@ -322,3 +322,10 @@ textarea.p-inp { min-height: 58px; resize: vertical; }
 .p-head.p-art .p-h1 { text-shadow: 0 2px 26px rgba(11, 13, 19, .6); }
 .p-head-side { display: grid; gap: 12px; justify-items: end; padding: 16px 18px; border: 1px solid rgba(237, 231, 218, .14); border-radius: 16px; background: rgba(11, 13, 19, .62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .p-head-side .gb-tie { justify-self: stretch; }
+
+/* recording a debt from the person (2026-11-22) */
+.p-debts .p-debt-add { margin: 4px 0 10px; padding-top: 0; border-top: 0; }
+.p-debts .p-dirs { display: inline-flex; gap: 4px; }
+.p-debts .p-debt-add .text.short { flex: 0 0 110px; }
+.p-debts .p-debt-add input[type="date"] { flex: 0 0 140px; color-scheme: dark; }
+.p-debts .p-saved { color: var(--d-sage, #86C9A4); }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { along, askOf, asks, campsTaken, climbSummary, dayScore, fire, heights, medals, monthDates, prayerOpen, rankOf, standing } from "./game";
+import { along, askOf, asks, campNeed, campsTaken, climbSummary, dayScore, fire, heights, medals, monthDates, prayerOpen, rankOf, standing } from "./game";
 import { buildLife, emptyDay, xpForDay, type Day } from "./life";
 import type { MdFile } from "./types";
 
@@ -94,4 +94,21 @@ test("the days of a month and the empty cells before its first Monday-week", () 
   assert.equal(feb.dates[0], "2030-02-01");
   assert.equal(feb.lead, 4); // 1 February 2030 is a Friday
   assert.equal(monthDates("2030-09").lead, 6); // a Sunday
+});
+
+test("a camp names the points it still needs and what of the day has not given its points", () => {
+  const d = day("2030-01-05", { habitsDone: ["Утро"], habitsLate: ["Вечер"], habitsFailed: ["Сладкое"], tasks: [{ done: false, text: "написать главу · @аср" }] });
+  // of = 6 + 2 + 2 + 2 + 4 = 16, got = 3 + 2 = 5 → 31 %
+  const c1 = campNeed(HABITS, d, "2030-01-05", 25);
+  assert.equal(c1.taken, true);
+  assert.equal(c1.need, 0);
+  const c2 = campNeed(HABITS, d, "2030-01-05", 50);
+  assert.equal(c2.name, "Лагерь II");
+  assert.equal(c2.taken, false);
+  assert.equal(c2.need, 3); // 7.92 → 8 points, 5 taken
+  assert.deepEqual(c2.items.map((i) => [i.label, i.pts, i.missed]), [
+    ["Вода", 2, false], ["написать главу", 2, false],
+    ["записать настроение", 1, false], ["записать стресс", 1, false], ["записать что ел", 1, false], ["записать слово о дне", 1, false],
+    ["Вечер — прочитан поздно", 1, true], ["Сладкое — без срыва", 2, true],
+  ]);
 });

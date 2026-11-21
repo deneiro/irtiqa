@@ -15,14 +15,15 @@ import { prayerTimes, type PrayerTimes } from "./maghrib";
 
 export type PeriodKey = "фаджр" | "зухр" | "аср" | "магриб" | "иша";
 
-export interface Period { key: PeriodKey; n: number; roman: string; from: string; to: string; what: string }
+/** `word` is what a chip says: the part of the day by what it is for, since bare I–V told him nothing (2026-11-22). */
+export interface Period { key: PeriodKey; n: number; roman: string; from: string; to: string; what: string; word: string }
 
 export const PERIODS: Period[] = [
-  { key: "фаджр", n: 1, roman: "I", from: "Фаджр", to: "Зухр", what: "работа и деньги" },
-  { key: "зухр", n: 2, roman: "II", from: "Зухр", to: "Аср", what: "учёба" },
-  { key: "аср", n: 3, roman: "III", from: "Аср", to: "Магриб", what: "для себя" },
-  { key: "магриб", n: 4, roman: "IV", from: "Магриб", to: "Иша", what: "здоровье" },
-  { key: "иша", n: 5, roman: "V", from: "Иша", to: "Витр", what: "остальное" },
+  { key: "фаджр", n: 1, roman: "I", from: "Фаджр", to: "Зухр", what: "работа и деньги", word: "работа" },
+  { key: "зухр", n: 2, roman: "II", from: "Зухр", to: "Аср", what: "учёба", word: "учёба" },
+  { key: "аср", n: 3, roman: "III", from: "Аср", to: "Магриб", what: "для себя", word: "для себя" },
+  { key: "магриб", n: 4, roman: "IV", from: "Магриб", to: "Иша", what: "здоровье", word: "здоровье" },
+  { key: "иша", n: 5, roman: "V", from: "Иша", to: "Витр", what: "остальное", word: "остальное" },
 ];
 
 const TOKEN = /\s·\s@(фаджр|зухр|аср|магриб|иша)(?=\s·\s|\s*$)/;

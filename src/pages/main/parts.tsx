@@ -236,7 +236,7 @@ export function DayArc({ prayers, periods = [], now }: { prayers: { title: strin
       </svg>
       <div className="cap">
         <span>Сегодня: {said}</span>
-        <span>{cur ? `сейчас ${cur.roman} · ${cur.what}` : ""}{tasks ? ` · задач ${tasks}` : ""}</span>
+        <span>{cur ? `сейчас ${cur.from} – ${cur.to}: ${cur.what}` : ""}{tasks ? ` · задач ${tasks}` : ""}</span>
       </div>
     </div>
   );

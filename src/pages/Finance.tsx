@@ -117,15 +117,15 @@ export default function FinancePage() {
 
   // ----- debts -----
   const people = useMemo(() => (vault?.pages ?? []).filter((p) => p.zone === "person").map((p) => p.title).sort(), [vault]);
-  const [debt, setDebt] = useState({ who: "", direction: DEBT_THEY_OWE, amount: "", currency: "₸", note: "" });
+  const [debt, setDebt] = useState({ who: "", direction: DEBT_I_OWE, amount: "", currency: "₸", note: "", since: today });
   const saveDebts = (rows: Debt[]) => persist(DEBTS_REL, serializeDebts(rows, today), parseDebts);
   const addDebt = () => {
     const whoRaw = debt.who.trim();
     const amount = Math.abs(parseAmount(debt.amount) ?? 0);
     if (!whoRaw || !amount) return;
     const who = people.includes(whoRaw) ? `[[${whoRaw}]]` : whoRaw;
-    void saveDebts([...debts, { who, direction: debt.direction, amount, paid: 0, currency: debt.currency, since: today, note: debt.note.trim(), closed: undefined }]);
-    setDebt({ ...debt, who: "", amount: "", note: "" });
+    void saveDebts([...debts, { who, direction: debt.direction, amount, paid: 0, currency: debt.currency, since: debt.since || today, note: debt.note.trim(), closed: undefined }]);
+    setDebt({ ...debt, who: "", amount: "", note: "", since: today });
   };
   const openDebts = debts.filter((d) => !d.closed && debtLeft(d) > 0);
   const owedToMe = openDebts.filter((d) => d.direction === DEBT_THEY_OWE).reduce((s, d) => s + debtLeft(d), 0);
@@ -199,7 +199,7 @@ export default function FinancePage() {
                 ))}
               </div>
             ) : <p className="g-rule">Долгов нет.</p>}
-            <p className="g-cap">Внести платёж или закрыть долг — в блоке «Долги» ниже.</p>
+            <p className="g-cap">Записать новый долг, внести платёж или закрыть — в блоке «Долги» ниже. Новый долг можно записать и на странице человека: плитка «Долг».</p>
           </SideCard>
         </div>
         {err && <p className="g-error" role="alert">Не удалось записать: {err}</p>}
@@ -302,6 +302,19 @@ export default function FinancePage() {
         </div>
 
         <Block title="Долги" right={<>мне <b className="pos">{fmt(owedToMe)}</b> · я <b className="neg">{fmt(iOwe)}</b> ₸</>}>
+          <form className="g-addrow g-debtnew" onSubmit={(e) => { e.preventDefault(); addDebt(); }}>
+            <span className="lbl">новый долг</span>
+            <input className="text" autoCorrect="off" spellCheck={false} placeholder="кто (из людей или текст)" list="fin-people" aria-label="Кто" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
+            <select className="text" aria-label="Кто кому должен" value={debt.direction} onChange={(e) => setDebt({ ...debt, direction: e.target.value })}>
+              <option value={DEBT_I_OWE}>{DEBT_I_OWE}</option>
+              <option value={DEBT_THEY_OWE}>{DEBT_THEY_OWE}</option>
+            </select>
+            <input className="text" autoCorrect="off" spellCheck={false} placeholder="сумма" aria-label="Сумма" value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
+            <input className="text short" autoCorrect="off" spellCheck={false} placeholder="валюта" aria-label="Валюта" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })} />
+            <input className="text" autoCorrect="off" spellCheck={false} placeholder="за что" aria-label="За что" value={debt.note} onChange={(e) => setDebt({ ...debt, note: e.target.value })} />
+            <input className="text date" type="date" aria-label="С какой даты" max={today} value={debt.since} onChange={(e) => setDebt({ ...debt, since: e.target.value })} />
+            <button type="submit" disabled={!debt.who.trim() || !debt.amount.trim()}>+ записать долг</button>
+          </form>
           {people_.map((x) => {
             const paying = pay && pay.who === x.who && pay.direction === x.direction;
             return (
@@ -326,17 +339,6 @@ export default function FinancePage() {
             );
           })}
           {!people_.length && <p className="g-faint">Открытых долгов нет.</p>}
-          <form className="g-addrow" onSubmit={(e) => { e.preventDefault(); addDebt(); }}>
-            <input className="text" autoCorrect="off" spellCheck={false} placeholder="кто (из людей или текст)" list="fin-people" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
-            <select className="text" value={debt.direction} onChange={(e) => setDebt({ ...debt, direction: e.target.value })}>
-              <option value={DEBT_THEY_OWE}>{DEBT_THEY_OWE}</option>
-              <option value={DEBT_I_OWE}>{DEBT_I_OWE}</option>
-            </select>
-            <input className="text" autoCorrect="off" spellCheck={false} placeholder="сумма" value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
-            <input className="text short" autoCorrect="off" spellCheck={false} placeholder="валюта" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })} />
-            <input className="text" autoCorrect="off" spellCheck={false} placeholder="заметка" value={debt.note} onChange={(e) => setDebt({ ...debt, note: e.target.value })} />
-            <button type="submit" disabled={!debt.who.trim() || !debt.amount.trim()}>+ долг</button>
-          </form>
           {debts.some((d) => d.closed) && (
             <details className="g-ops">
               <summary>Закрытые · {debts.filter((d) => d.closed).length}</summary>
