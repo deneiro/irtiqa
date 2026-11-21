@@ -9,6 +9,10 @@ import { findItem, taskId } from "../../lib/bank";
 import { stripCarry } from "../../lib/carry";
 import { useBank } from "./Levels";
 import { PickSlots } from "./Pick";
+import { BANNER } from "../../assets/play";
+import { Climb, ClimbNumbers, LevelMark } from "../../components/GameBits";
+import { climbSummary, heights, rankOf } from "../../lib/game";
+import { useGame } from "../../lib/useGame";
 
 const TITLE: Record<Cell, string> = { done: "да", held: "удержался", late: "поздно", failed: "нет", fall: "срыв", unmarked: "без отметки", skip: "не в этот день", nofile: "файла дня нет", pending: "спросит в 21:00", future: "" };
 
@@ -30,6 +34,8 @@ export default function Week({ life, today }: { life: Life; today: string }) {
   const story = useMemo(() => weekStory(life, wc.from, wc.cur.to), [life, wc]);
   const dates = dateRange(wc.from, wc.to);
   const rows = habitRows(life);
+  const game = useGame();
+  const climb = useMemo(() => (game ? heights(game.habits, life.days, dateRange(wc.from, wc.to), today, game.xpOf) : []), [game, life, wc, today]);
   const max = Math.max(1, ...acts.map((a) => a.week));
   const c = wc.cur;
   const none = c.recorded === 0; // no day with a mark: the counts taken from marks have nothing behind them, so «—», not a made-up 0
@@ -39,7 +45,7 @@ export default function Week({ life, today }: { life: Life; today: string }) {
   const focusTitle = focusKey === key ? "фокус недели" : sunday ? "фокус на следующую неделю" : `фокус на неделю ${Number(focusKey.slice(-2))}`;
   return (
     <>
-      <Hero top kicker={`неделя ${Number(key.slice(-2))} · ${wc.to < today ? "закончилась" : `идёт ${c.length + 1}-й день`}`} title={title}
+      <Hero top art={BANNER.week} kicker={`неделя ${Number(key.slice(-2))} · ${wc.to < today ? "закончилась" : `идёт ${c.length + 1}-й день`}`} title={title}
         side={<ClaudeBlock title={focusTitle} focus={focus} period="week" note="Claude пишет в воскресенье в 22:30." />}>
         <Glance items={[
           { v: c.recorded, of: `/ ${c.length}`, label: "дней с записями" },
@@ -48,6 +54,18 @@ export default function Week({ life, today }: { life: Life; today: string }) {
           { v: noPrayer ? "—" : c.prayer.done, of: noPrayer ? undefined : `/ ${c.prayer.due}`, label: "намазов вовремя" },
         ]} />
       </Hero>
+      {game && (
+        <Card title="Высота недели" right="день открывается нажатием" className="d-full">
+          <div className="d-game">
+            <Climb days={climb} today={today} />
+            <div className="d-game-side">
+              <ClimbNumbers s={climbSummary(climb)} flame={game.flame} />
+              <LevelMark level={game.level} caption={`уровень · ${rankOf(game.level.level)}`} />
+            </div>
+          </div>
+          <p className="d-game-cap">Высота дня — доля взятых очков: намазы, привычки, «держусь», задачи, записи. Лагеря на 25 · 50 · 75 %, вершина — 100 %.</p>
+        </Card>
+      )}
       <div className="d-cols">
         <div className="d-stack">
           <Card title="Задания недели · уровень IV" right={`life/goals/${key}`}>

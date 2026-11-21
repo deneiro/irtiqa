@@ -27,6 +27,9 @@ import Board from "./theme/Board";
 import { dayTaskLines } from "./main/Levels";
 import { themeColumns } from "../lib/picks";
 import { loadBank } from "../lib/bank";
+import { THEME_ART } from "../assets/play";
+import { Banner, LevelMark, WeekBars } from "../components/GameBits";
+import { useGame } from "../lib/useGame";
 import "./theme/Theme.css";
 
 /** A key without an organ as a button: its name, one number, and where it leads. */
@@ -92,6 +95,7 @@ export default function ThemePage() {
   const { root, life } = useStore();
   const { t, themeLabel } = useT();
   const today = useDayToday();
+  const game = useGame();
 
   const overview = useMemo(() => vault.pages.find((p) => p.theme === theme && p.file === "_Overview" && p.segments.length === 1), [vault, theme]);
   const view = useMemo(() => themeView(overview), [overview]);
@@ -114,16 +118,17 @@ export default function ThemePage() {
   if (!life) return <div className="t-page" style={style}><p className="t-faint">Загружаю vault…</p></div>;
 
   const props = { theme, life, vault, today, root, overview, view };
+  const xp = game?.themes.find((x) => x.theme === theme);
   const buttons = sections.filter((s): s is SectionKey => isSectionKey(s) && !ORGANS[s]).map((k) => pageButton(k, theme, pages, life, vault, today));
   return (
     <div className="t-page" style={style}>
-      <header className="t-head">
-        <div>
-          <div className="t-kick">Тема</div>
-          <h1 className="t-h1"><i />{themeLabel(theme)}</h1>
-        </div>
-        {overview && <Link className="t-whole" to={pageUrl(overview)}>обзор целиком{overview.updated ? ` · ${shortDate(overview.updated)}` : ""}</Link>}
-      </header>
+      <Banner art={THEME_ART[theme]} color={meta.color} kicker="Тема" title={themeLabel(theme)}
+        aside={xp && <>
+          <LevelMark level={xp.level} caption="уровень темы" note={`всего ${xp.total}`} />
+          <div className="t-xp"><WeekBars weeks={xp.weeks} /><span>XP за 30 дней <b>{xp.last30}</b>{xp.prev30 > 0 && ` · до того ${xp.prev30}`}</span></div>
+        </>}>
+        {overview && <p className="t-ban-more"><Link className="gb-more" to={pageUrl(overview)}>обзор целиком{overview.updated ? ` · ${shortDate(overview.updated)}` : ""} →</Link></p>}
+      </Banner>
       <NumberGroups groups={view.numbers} tiles={tiles} today={today} />
       <Columns past={cols.past} stand={cols.stand} next={cols.next} />
       <Board cards={cards} />
