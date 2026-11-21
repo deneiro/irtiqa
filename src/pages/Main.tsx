@@ -1,32 +1,36 @@
 import { useSearchParams } from "react-router-dom";
-import { defaultTab, type Tab } from "../lib/dashboard";
+import type { Tab } from "../lib/dashboard";
 import { useDayToday } from "../lib/useDayToday";
 import { useStore } from "../store";
 import Today from "./main/Today";
+import Play from "./main/Play";
 import Week from "./main/Week";
 import Month from "./main/Month";
 import Levels from "./main/Levels";
 import "./Main.css";
 
-const TABS: { id: Tab; label: string; hint: string }[] = [
-  { id: "day", label: "Сегодня", hint: "каждое утро" },
+type MainTab = Tab | "play";
+const TABS: { id: MainTab; label: string; hint: string }[] = [
+  { id: "play", label: "Сегодня", hint: "отметить день" },
+  { id: "day", label: "Обзор", hint: "состояние и вчера" },
   { id: "week", label: "Неделя", hint: "в воскресенье" },
   { id: "month", label: "Месяц", hint: "1-го и когда сбился" },
   { id: "levels", label: "Уровни", hint: "банк заданий" },
 ];
 
 /**
- * «Главный» (spec v3, 2026-11-05; the look is mockup v2 «Альманах на рассвете»):
- * a dashboard in three tabs, read only. Habit marks and answers come from the
- * evening bot, everything else from Claude; the tab opens by the day — the 1st
- * Месяц, a Sunday Неделя.
+ * «Главный» (spec v3, 2026-11-05; the look is mockup v2 «Альманах на рассвете»).
+ * It opens on «Сегодня» — the day as a game, where he marks everything himself
+ * (2026-11-21, his words: easy to track everything daily, with gamification).
+ * «Обзор», «Неделя», «Месяц» and «Уровни» are the read-only dashboard; the bot
+ * and Claude still write the same day file.
  */
 export default function MainPage() {
   const today = useDayToday();
   const { life, vault } = useStore();
   const [params, setParams] = useSearchParams();
   const asked = params.get("tab");
-  const tab: Tab = asked === "day" || asked === "week" || asked === "month" || asked === "levels" ? asked : defaultTab(today);
+  const tab: MainTab = asked === "day" || asked === "week" || asked === "month" || asked === "levels" ? asked : "play";
   return (
     <div className="dash">
       <div className="dash-top">
@@ -42,7 +46,7 @@ export default function MainPage() {
         </nav>
       </div>
       <div key={tab} className="dash-page">
-        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "day" ? <Today life={life} vault={vault} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : tab === "levels" ? <Levels life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
+        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "play" ? <Play life={life} vault={vault} today={today} /> : tab === "day" ? <Today life={life} vault={vault} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : tab === "levels" ? <Levels life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
       </div>
     </div>
   );

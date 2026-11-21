@@ -64,6 +64,9 @@ export default function WheelPage() {
           <table className="tbl small">
             <tbody>
               <tr><td>привычка выполнена</td><td className="mono" style={{ textAlign: "right" }}>+{XP.habitDone}</td><td className="muted">в тему привычки</td></tr>
+              <tr><td>намаз с опозданием</td><td className="mono" style={{ textAlign: "right" }}>+{XP.prayerLate}</td><td className="muted">в Духовность</td></tr>
+              <tr><td>задача дня сделана</td><td className="mono" style={{ textAlign: "right" }}>+{XP.taskDone}</td><td className="muted">в тему её части дня</td></tr>
+              <tr><td>запись дня</td><td className="mono" style={{ textAlign: "right" }}>+{XP.log}</td><td className="muted">настроение или стресс · вес или еда · деньги</td></tr>
               <tr><td>квест закрыт</td><td className="mono" style={{ textAlign: "right" }}>+{XP.questDone} + {XP.questPerHour}/час</td><td className="muted">сессии короче {XP.questMinMinutes} мин не считаются</td></tr>
               <tr><td>запись в журнале</td><td className="mono" style={{ textAlign: "right" }}>+{XP.journal}</td><td className="muted">в Личностный рост и Духовность</td></tr>
               <tr><td>страница прочитана</td><td className="mono" style={{ textAlign: "right" }}>+{XP.resourceRead}</td><td className="muted">в тему страницы, один раз</td></tr>

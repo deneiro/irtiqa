@@ -17,7 +17,8 @@ const LANG_KEY = "irtiqa.lang";
 const TIMER_KEY = "irtiqa.timer";
 const PENDING_KEY = "irtiqa.pendingSession";
 export type Lang = "en" | "ru";
-export const DEFAULT_ROOT = "/Users/eldar/Desktop/personal-obsidian"; // moved out of iCloud 2026-11-01
+/** `VITE_VAULT_ROOT=<folder> npx vite` points a dev server at a copy of the vault from its first load, so a preview never touches the real one. */
+export const DEFAULT_ROOT = (import.meta.env?.VITE_VAULT_ROOT as string | undefined) || "/Users/eldar/Desktop/personal-obsidian"; // moved out of iCloud 2026-11-01
 
 interface Store {
   root: string;
