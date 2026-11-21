@@ -4,6 +4,12 @@ import month from "./banner-month.webp";
 import levels from "./banner-levels.webp";
 import overview from "./banner-overview.webp";
 import people from "./banner-people.webp";
+import feed from "./banner-feed.webp";
+import search from "./banner-search.webp";
+import profile from "./banner-profile.webp";
+import tools from "./banner-tools.webp";
+import claude from "./banner-claude.webp";
+import library from "./banner-library.webp";
 import day from "./banner-day.webp";
 import habits from "./banner-habits.webp";
 import quests from "./banner-quests.webp";
@@ -20,7 +26,7 @@ import family from "./theme-family.webp";
 import business from "./theme-business.webp";
 import fun from "./theme-fun.webp";
 
-export const BANNER = { week, month, levels, overview, people, day, habits, quests, calendar, training, wheel, trends };
+export const BANNER = { week, month, levels, overview, people, day, habits, quests, calendar, training, wheel, trends, feed, search, profile, tools, claude, library };
 
 export const THEME_ART: Record<string, string> = {
   "Spirituality & Religion": spirit,

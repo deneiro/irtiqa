@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useVault } from "../store";
@@ -25,9 +27,8 @@ export default function ProfilePage() {
     const prev = parsed.sections[i - 1];
     const next = parsed.sections[i + 1];
     return (
-      <div>
-        <div className="eyebrow"><Link to="/profile" className="muted">Профиль</Link> / {cur.label}</div>
-        <h1 className="title">{cur.icon} {cur.heading}</h1>
+      <div className="g-page">
+        <PageHead art={BANNER.profile} kicker={<><Link to="/profile">Профиль</Link> / {cur.label}</>} title={<>{cur.icon} {cur.heading}</>} />
         <div className="row wrap" style={{ gap: 8, margin: "10px 0 18px" }}>
           {cur.live && <Link to={cur.live.to} className="btn primary">{cur.live.label} →</Link>}
           <Link to={pageUrl(profile)} className="btn ghost">открыть весь профиль как страницу</Link>
@@ -50,9 +51,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div>
-      <div className="eyebrow">{t("profile_eyebrow", { d: profile.updated ?? "—" })}</div>
-      <h1 className="title">{profile.title}</h1>
+    <div className="g-page">
+      <PageHead art={BANNER.profile} kicker={t("profile_eyebrow", { d: profile.updated ?? "—" })} title={profile.title}
+        number={{ value: parsed.sections.length, label: "разделов", sub: "каждый ведёт в свой экран" }} />
       {parsed.intro && <div className="lede"><Markdown source={parsed.intro} compact /></div>}
       <p className="small muted" style={{ marginTop: 6 }}>
         Хаб профиля: каждая карточка ведёт в раздел и в тот экран, где эта часть жизни живёт. Обновлён {relDate(profile.updated)} · <Link to={pageUrl(profile)} className="hl">как страница</Link>

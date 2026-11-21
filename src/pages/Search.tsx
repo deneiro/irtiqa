@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
@@ -34,9 +36,8 @@ export default function SearchPage() {
   }, [q, theme, kind, index, v]);
 
   return (
-    <div>
-      <div className="eyebrow">{t("search")}</div>
-      <h1 className="title">{q ? t("results_for", { q }) : t("search_vault")}</h1>
+    <div className="g-page">
+      <PageHead art={BANNER.search} kicker={t("search")} title={q ? t("results_for", { q }) : t("search_vault")} />
       <div className="row wrap" style={{ margin: "16px 0", gap: 8 }}>
         <input className="text grow" value={q} autoFocus placeholder={t("search_placeholder")} onChange={(e) => setParams({ q: e.target.value }, { replace: true })} />
         <select className="text" value={theme} onChange={(e) => setTheme(e.target.value)}>

@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
@@ -37,9 +39,9 @@ export default function RawPage() {
   const lede = t("raw_lede", { dir: "§DIR§" }).split("§DIR§");
 
   return (
-    <div>
-      <div className="eyebrow">{t("raw_eyebrow")}</div>
-      <h1 className="title">{t("raw_title")}</h1>
+    <div className="g-page">
+      <PageHead art={BANNER.library} kicker={t("raw_eyebrow")} title={t("raw_title")}
+        number={{ value: citedCount, unit: ` / ${v.raw.length}`, label: "разобрано", sub: "файлов, на которые ссылается страница" }} />
       <p className="lede">{lede[0]}<span className="mono">raw/</span>{lede[1]}</p>
       <div className="grid cols-3" style={{ margin: "20px 0" }}>
         <div className="card"><Stat n={v.raw.length} l={t("files")} /></div>

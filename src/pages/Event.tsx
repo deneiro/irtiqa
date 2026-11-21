@@ -1,3 +1,5 @@
+import { BANNER, THEME_ART } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
@@ -113,11 +115,9 @@ export default function EventPage() {
   const color = themeColor(ev.theme);
 
   return (
-    <div style={{ ["--c" as string]: color }}>
-      <div className="eyebrow">
-        {ev.theme ? <Link to={`/theme/${encodeURIComponent(ev.theme)}`} style={{ color }}>{themeLabel(ev.theme)}</Link> : "событие"} · {fmtDate(ev.date)}{ev.from ? ` · ${ev.from}${ev.to ? `–${ev.to}` : ""}` : ""}{ev.place ? ` · ${ev.place}` : ""}
-      </div>
-      <h1 className="title">{ev.title}</h1>
+    <div className="g-page" style={{ ["--c" as string]: color }}>
+      <PageHead art={(ev.theme && THEME_ART[ev.theme]) || BANNER.people} title={ev.title}
+        kicker={<>{ev.theme ? <Link to={`/theme/${encodeURIComponent(ev.theme)}`}>{themeLabel(ev.theme)}</Link> : "событие"} · {fmtDate(ev.date)}{ev.from ? ` · ${ev.from}${ev.to ? `–${ev.to}` : ""}` : ""}{ev.place ? ` · ${ev.place}` : ""}</>} />
 
       <div className="row small muted" style={{ gap: 6, marginTop: 6 }}>
         <span>время</span>
