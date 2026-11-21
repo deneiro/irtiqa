@@ -2,21 +2,21 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
-import { todayStr } from "../lib/dates";
+import { plural, todayStr } from "../lib/dates";
 import { TALKS_REL, lastTalk, parseTalks, serializeTalks } from "../lib/talks";
 import { categoryOf, daysSinceContact, daysToBirthday, isAuthor } from "../lib/people";
+import { shortDate } from "../lib/themeNumbers";
 import type { Page } from "../lib/types";
-
-const plural = (n: number, one: string, few: string, many: string) => {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return one;
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-  return many;
-};
+import { Block } from "../pages/main/Scene";
+import { Err, Mini } from "./SectionBits";
 
 /** Under one roof and barely talking — so the unit here is a conversation. */
 const CADENCE: Record<string, number> = { семья: 7, родня: 30 };
 
+/**
+ * Conversations with the theme's people. Rebuilt 2026-11-21: the numbers, everyone as a row — the longest without a
+ * talk first — with «поговорили» opening one field, the nearest birthdays, and the latest talks.
+ */
 export default function TalksSection({ theme }: { theme: string }) {
   const v = useVault();
   const { life, saveLedger, reload } = useStore();
@@ -31,7 +31,7 @@ export default function TalksSection({ theme }: { theme: string }) {
     [v, theme],
   );
   const talks = useMemo(() => parseTalks(life?.talks ?? ""), [life]);
-  if (!life || !people.length) return null;
+  if (!life || !people.length) return <div className="g-play"><Block title="Разговоры"><p className="g-faint">Людей в этой теме нет.</p></Block></div>;
 
   const namesOf = (p: Page) => [p.title, p.file, ...p.aliases];
   const rows = people
@@ -67,76 +67,59 @@ export default function TalksSection({ theme }: { theme: string }) {
   };
 
   const last30 = talks.filter((t) => daysSinceContact(t.date, today) !== undefined && daysSinceContact(t.date, today)! <= 30);
+  const silent = rows.filter((r) => r.talk === undefined).length;
+  const late = rows.filter((r) => (r.overdue ?? -1) > 0).length;
   return (
-    <section className="tblock">
-      <h2 className="section">Разговоры <span className="n">{last30.length} за 30 дней</span></h2>
-      <div className="card">
-        <div className="small muted">
-          Считается не сообщение, а разговор — тот, после которого есть что записать в «о чём».
-          Норма: с домашними раз в неделю, с роднёй раз в месяц.
+    <div className="g-play">
+      <Block title="В числах" right="считается разговор, после которого есть что записать в «о чём»">
+        <div className="g-minis">
+          <Mini value={last30.length} label="разговоров за 30 дней" tone={last30.length ? "good" : undefined} />
+          <Mini value={late} label="срок вышел · домашние раз в неделю, родня раз в месяц" tone={late ? "bad" : undefined} />
+          <Mini value={silent} label="разговор ещё не записан" />
         </div>
+        {birthdays.length > 0 && (
+          <div className="g-bdays">
+            <span>дни рождения</span>
+            {birthdays.map((b) => <Link key={b.page.rel} to={pageUrl(b.page)} className={b.days <= 14 ? "soon" : ""}>{b.page.title}<em>{b.days === 0 ? "сегодня" : `через ${b.days} ${plural(b.days, "день", "дня", "дней")}`}</em></Link>)}
+          </div>
+        )}
+      </Block>
+
+      <Block title="С кем" right="дольше всего без разговора — сверху">
         {rows.map((r) => {
-          const late = (r.overdue ?? -1) > 0 || r.since === undefined;
+          const isLate = (r.overdue ?? -1) > 0 || r.since === undefined;
+          const isOpen = open === r.page.rel;
           return (
-            <div key={r.page.rel} className={`crow ${late ? "late" : ""}`}>
-              <div className="cwho">
-                <Link to={pageUrl(r.page)} className="cname">{r.page.title}</Link>
-                <span className="small faint">{typeof r.page.fm.connection === "string" ? r.page.fm.connection : r.cat}</span>
+            <div key={r.page.rel} className={`g-trow${isLate ? " late" : ""}${isOpen ? " open" : ""}`}>
+              <div className="who">
+                <Link to={pageUrl(r.page)}>{r.page.title}</Link>
+                <small>{typeof r.page.fm.connection === "string" ? r.page.fm.connection : r.cat}</small>
               </div>
-              <div className="cwhen small">
-                {r.talk === undefined ? (
-                  <span className="err-text">разговор не записан</span>
-                ) : (
-                  <span className={late ? "err-text" : "muted"}>
-                    {r.since === 0 ? "сегодня" : `${r.since} ${plural(r.since!, "день", "дня", "дней")} назад`}
-                    {r.talk.about && <span className="faint"> · {r.talk.about}</span>}
-                  </span>
-                )}
+              <div className="when">
+                {r.talk === undefined ? "разговор не записан" : <>{r.since === 0 ? "сегодня" : `${r.since} ${plural(r.since!, "день", "дня", "дней")} назад`}{r.talk.about && <small> · {r.talk.about}</small>}</>}
               </div>
-              <div className="cact">
-                {open === r.page.rel ? (
-                  <>
-                    <input
-                      className="text" autoFocus placeholder="о чём" autoCorrect="off" spellCheck={false}
-                      value={about} onChange={(e) => setAbout(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") void save(r.page); if (e.key === "Escape") setOpen(null); }}
-                    />
-                    <button className="btn small" disabled={busy !== null} onClick={() => void save(r.page)}>записать</button>
-                  </>
-                ) : (
-                  <button className="btn small" onClick={() => { setOpen(r.page.rel); setAbout(""); }}>поговорили</button>
-                )}
-              </div>
+              {isOpen ? (
+                <form className="acts" onSubmit={(e) => { e.preventDefault(); void save(r.page); }}>
+                  <input className="text" autoFocus placeholder="о чём" autoCorrect="off" spellCheck={false} value={about} onChange={(e) => setAbout(e.target.value)} onKeyDown={(e) => { if (e.key === "Escape") setOpen(null); }} />
+                  <button type="submit" className="g-btn sun" disabled={busy !== null}>записать</button>
+                  <button type="button" className="g-btn" onClick={() => setOpen(null)}>отмена</button>
+                </form>
+              ) : (
+                <div className="acts"><button type="button" className="g-btn" onClick={() => { setOpen(r.page.rel); setAbout(""); }}>поговорили</button></div>
+              )}
             </div>
           );
         })}
-        {birthdays.length > 0 && (
-          <>
-            <div className="mrow-head">Дни рождения</div>
-            <div className="inwork">
-              {birthdays.map((b) => (
-                <span key={b.page.rel} className={`chip ${b.days <= 14 ? "learning" : ""}`}>
-                  {b.page.title} · {b.days === 0 ? "сегодня" : `через ${b.days} ${plural(b.days, "день", "дня", "дней")}`}
-                </span>
-              ))}
-            </div>
-          </>
-        )}
-        {talks.length > 0 && (
-          <>
-            <div className="mrow-head">Последние</div>
-            {talks.slice(0, 5).map((t, i) => (
-              <div key={`${t.date}${i}`} className="mrow">
-                <div style={{ minWidth: 0 }}>
-                  <span className="mono faint">{t.date}</span> <b>{t.who.replace(/\[\[|\]\]/g, "")}</b>
-                  {t.about && <span className="small faint"> · {t.about}</span>}
-                </div>
-              </div>
-            ))}
-          </>
-        )}
-        {err && <div className="small err-text">{err}</div>}
-      </div>
-    </section>
+        <Err text={err} />
+      </Block>
+
+      {talks.length > 0 && (
+        <Block title="Последние разговоры" right={`${talks.length} записано`}>
+          <ul className="g-dated">
+            {talks.slice(0, 8).map((t, i) => <li key={`${t.date}${i}`}><span>{/^\d{4}-\d{2}-\d{2}$/.test(t.date) ? shortDate(t.date) : t.date}</span><div><b>{t.who.replace(/\[\[|\]\]/g, "")}</b><small>{t.about || "—"}</small></div></li>)}
+          </ul>
+        </Block>
+      )}
+    </div>
   );
 }

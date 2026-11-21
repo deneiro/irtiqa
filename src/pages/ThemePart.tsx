@@ -14,7 +14,10 @@ import TalksSection from "../components/TalksSection";
 import WishesSection from "../components/WishesSection";
 import { addDays, plural } from "../lib/dates";
 import { lastOf, measures, parseHealth } from "../lib/health";
+import { horizonOf } from "../lib/horizon";
 import { parseJobs } from "../lib/jobs";
+import { parseNames, suras } from "../lib/quran";
+import { rawPageText } from "../lib/rawpage";
 import { parseLibrary } from "../lib/library";
 import { parseWishes } from "../lib/wishes";
 import { useT } from "../lib/i18n";
@@ -39,9 +42,8 @@ type HeadNumber = { value: ReactNode; unit?: string; label: string; sub?: ReactN
 /**
  * A theme's full screen, `/theme/:name/:key` (spec v4): one section of the theme, whole and with its own input.
  * Since 2026-11-21 every full screen opens with the theme's painting — the way back, the section's name and one
- * number — and the screens drawn in `theme/screens.tsx` are blocks in the look of «Сегодня». The sections that are
- * components of their own (`components/*Section.tsx`, the rings, the family tree) still draw themselves the old way,
- * in the palette of `.g-page`. The habit strip did not move here: habit marks come from the bot and «Сегодня».
+ * number — and every screen is drawn as blocks in the look of «Сегодня»: those of `theme/screens.tsx` here, the
+ * sections with their own input in `components/*Section.tsx`. The rings and the family tree keep their boards. The habit strip did not move here: habit marks come from the bot and «Сегодня».
  */
 export default function ThemePartPage() {
   const { name = "", key = "" } = useParams();
@@ -125,13 +127,23 @@ export default function ThemePartPage() {
         const n = parseLibrary(life?.library ?? "").length;
         return [<LibrarySection />, { value: n, label: plural(n, "название", "названия", "названий"), sub: "фильмы, сериалы, книги" }];
       }
-      // the sections below are components of their own and still draw themselves the old way
-      case "quran": return [<QuranSection />];
-      case "names": return [<NamesSection />];
+      // batch 3: memorising, halal, people and the debt horizon; the rings and the tree keep their own boards
+      case "quran": {
+        const list = suras(v);
+        return [<QuranSection />, list.length ? { value: list.filter((x) => x.state === "done").length, label: "выучено", sub: `из 114 · учу ${list.filter((x) => x.state === "learning").length}` } : undefined];
+      }
+      case "names": {
+        const raw = pages.names ? rawPageText(v, pages.names.rel) : null;
+        const names = raw ? parseNames(raw) : [];
+        return [<NamesSection />, names.length ? { value: names.filter((x) => x.state === "done").length, label: "выучено", sub: `из ${names.length} · учу ${names.filter((x) => x.state === "learning").length}` } : undefined];
+      }
       case "halal": return [<HalalSection />];
-      case "circle": return [<CircleSection theme={theme} />];
+      case "circle": return [<CircleSection theme={theme} />, { value: pages.people.length, label: plural(pages.people.length, "человек", "человека", "человек"), sub: "по близости" }];
       case "influence": return [<InfluenceSection theme={theme} />];
-      case "horizon": return [<HorizonSection />];
+      case "horizon": {
+        const h = life ? horizonOf(life.debts, life.days, life.subscriptions, today) : undefined;
+        return [<HorizonSection />, h ? { value: h.freeDate ? h.freeDate.slice(0, 7) : "—", label: "выход в ноль", sub: `долг ${Math.round(h.owed).toLocaleString("ru-RU")} ₸` } : undefined];
+      }
       case "talks": return [<TalksSection theme={theme} />];
       case "rings": return [<RingsBoard />];
       case "relatives": return [<FamilyTree />];
