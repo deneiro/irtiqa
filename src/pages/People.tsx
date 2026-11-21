@@ -206,7 +206,7 @@ export default function PeoplePage() {
 }
 
 /** One person of the circle: the letter in a ring filled to the warmth of the tie, the name, and how long since a touch. */
-function PersonCard({ i }: { i: CircleItem }) {
+export function PersonCard({ i }: { i: CircleItem }) {
   const home = atHome(i.page);
   const w = tieWarmth(i);
   const pct = home ? 100 : w?.pct ?? 0;
