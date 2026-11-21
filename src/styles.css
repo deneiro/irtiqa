@@ -99,55 +99,7 @@ button { font: inherit; color: inherit; }
 .grow { flex: 1; }
 .stack { display: flex; flex-direction: column; gap: 6px; }
 
-/* ---------- sidebar ---------- */
-.sidebar {
-  background: var(--bg-2);
-  border-right: 1px solid var(--hair);
-  display: flex;
-  flex-direction: column;
-  padding: var(--titlebar) var(--s3) var(--s3);
-  gap: 1px;
-  overflow-y: auto;
-  user-select: none;
-}
-.sidebar::-webkit-scrollbar { width: 6px; }
-.sidebar::-webkit-scrollbar-thumb { background: transparent; border: 0; }
-.sidebar:hover::-webkit-scrollbar-thumb { background: var(--hair-2); }
-.sidebar .drag { height: var(--titlebar); position: absolute; top: 0; left: 0; right: 0; }
-.sidebar .brand {
-  flex: none; display: flex; align-items: center; gap: 10px; padding: 2px 8px 14px;
-  font-family: var(--font-read); font-size: 17px; font-weight: 500; letter-spacing: -0.01em; color: var(--ink);
-}
-.sidebar .brand .dot { width: 10px; height: 10px; border-radius: 3px; background: var(--accent); transform: rotate(45deg); }
-.searchbtn {
-  flex: none; display: flex; align-items: center; gap: var(--s2); width: 100%; height: var(--ctl); text-align: left;
-  background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r);
-  padding: 0 10px; color: var(--muted); cursor: pointer; margin-bottom: var(--s3); font-size: var(--fs-ui);
-  transition: border-color 120ms var(--ease), color 120ms var(--ease);
-}
-.searchbtn:hover { border-color: var(--hair-2); color: var(--ink-2); }
-.searchbtn kbd { margin-left: auto; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--faint); border: 1px solid var(--hair-2); border-radius: 4px; padding: 0 5px; line-height: 16px; }
-.nav {
-  position: relative; flex: none; display: flex; align-items: center; gap: 10px; height: 28px; padding: 0 10px;
-  border-radius: var(--r); color: var(--muted); font-size: var(--fs-ui);
-  transition: background 120ms var(--ease), color 120ms var(--ease);
-}
-.nav:hover { background: var(--surface); color: var(--ink); }
-.nav.active { background: var(--raised); color: var(--ink); font-weight: 500; }
-.nav.active::before { content: ""; position: absolute; left: -12px; top: 6px; bottom: 6px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent-text); }
-.nav .count { margin-left: auto; font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--faint); font-weight: 400; }
-.nav.active .count { color: var(--muted); }
-.nav .bar { width: 8px; height: 8px; border-radius: 50%; background: var(--c); flex: none; }
-.sidebar .look > summary { list-style: none; cursor: pointer; }
-.sidebar .look > summary::-webkit-details-marker { display: none; }
-.sidebar .look > summary::after { content: "▸"; margin-left: 6px; }
-.sidebar .look[open] > summary::after { content: "▾"; }
-.sidebar .section { flex: none; font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0.02em; color: var(--faint); padding: 14px 10px 4px; }
-.sidebar .foot { flex: none; margin-top: auto; padding: var(--s3) 10px 0; font-size: var(--fs-xs); color: var(--faint); border-top: 1px solid var(--hair); }
-.sidebar .foot button { background: none; border: none; padding: 0; cursor: pointer; color: var(--muted); }
-.sidebar .foot button:hover { color: var(--ink); }
-.sidebar .langbtn { font-family: var(--font-mono); font-size: var(--fs-xs); padding: 2px 8px !important; border: 1px solid var(--hair) !important; border-radius: 4px; color: var(--muted); }
-.sidebar .langbtn.on { background: var(--raised); color: var(--ink); border-color: var(--hair-2) !important; }
+/* the sidebar draws itself: components/Sidebar.css */
 
 /* ---------- typography ----------
    Titles in Literata, everything that operates the app in Plex Sans. Section
@@ -790,4 +742,3 @@ table.tbl.lib .num { text-align: right; white-space: nowrap; width: 1%; }
 .today { margin-top: var(--s6); }
 
 /* a theme's level in the menu (2026-11-21) */
-.nav .lvl { margin-left: auto; padding: 0 6px; border-radius: 99px; background: color-mix(in srgb, var(--c, var(--accent)) 16%, transparent); font: 500 10px/1.7 var(--font-mono); color: var(--c, var(--muted)); }

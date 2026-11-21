@@ -452,7 +452,8 @@
 .g-xp8 .gb-weeks i { background: rgba(237, 231, 218, .14); }
 .g-xp8 .gb-weeks u { background: rgba(237, 231, 218, .6); }
 .g-xp8 .gb-weeks i.now u { background: var(--th, var(--d-sun)); }
-.g-side-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 14px; }
+/* two to a row only while a tile keeps room for its words; in a narrow card they go one to a row */
+.g-side-tiles { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin-top: 14px; }
 .g-play .g-side-tiles .g-tile { grid-template-columns: 28px minmax(0, 1fr); column-gap: 9px; min-height: 52px; padding: 8px 10px; }
 .g-side-tiles .g-tile .ico { width: 28px; height: 28px; font-size: 13px; }
 .g-side-tiles .g-tile b { padding-right: 24px; font-size: 12px; overflow-wrap: break-word; hyphens: auto; }

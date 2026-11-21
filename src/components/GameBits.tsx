@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { CAMPS, campsTaken, rankOf, type ClimbSummary, type DayHeight } from "../lib/game";
+import { CAMPS, campsTaken, type ClimbSummary, type DayHeight } from "../lib/game";
 import type { LevelProgress } from "../lib/levels";
 import type { CircleWarmth, TieWarmth } from "../lib/circle";
 import { plural } from "../lib/dates";
@@ -60,20 +60,6 @@ export function WeekBars({ weeks }: { weeks: { week: string; xp: number }[] }) {
     <div className="gb-weeks" role="img" aria-label={`XP по неделям: ${weeks.map((w) => w.xp).join(", ")}`}>
       {weeks.map((w, i) => <i key={w.week} className={i === weeks.length - 1 ? "now" : ""} title={`неделя с ${dayOf(w.week)} ${MON[Number(w.week.slice(5, 7)) - 1]} · ${w.xp} XP`}><u style={{ height: `${Math.max(w.xp ? 8 : 0, (w.xp / max) * 100)}%` }} /></i>)}
     </div>
-  );
-}
-
-/** The player in the sidebar: the level, the rank, the fire. */
-export function PlayerBadge({ level, flame }: { level: LevelProgress; flame: { days: number; today: boolean } }) {
-  return (
-    <Link to="/" className="gb-badge" title="Уровень и дни подряд — открыть «Сегодня»">
-      <b>{level.level}</b>
-      <div>
-        <span>{rankOf(level.level)}</span>
-        <i><u style={{ width: `${Math.round((level.into / level.need) * 100)}%` }} /></i>
-      </div>
-      <em className={flame.today ? "lit" : flame.days ? "on" : ""}><FlameIcon />{flame.days}</em>
-    </Link>
   );
 }
 
