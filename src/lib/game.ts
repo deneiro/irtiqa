@@ -8,6 +8,7 @@ import { addDays } from "./dates";
 import { habitDue, markOf, type Day, type Habit } from "./life";
 import { PRAYER_ORDER } from "./dashboard";
 import type { PrayerTimes } from "./maghrib";
+import { stripPeriod } from "./periods";
 
 export const POINTS = { prayer: 3, prayerLate: 2, habit: 2, task: 2, log: 1 };
 /** Heights of the camps, in percent of the day; the last is the summit. */
@@ -143,6 +144,37 @@ export function asks(habits: Habit[], d: Day | undefined, date: string, open: (p
   (d?.tasks ?? []).forEach((t, index) => { if (!t.done) out.push({ id: `t:${index}:${t.text}`, kind: "task", index, text: t.text }); });
   if (!logs.words) out.push({ id: "words", kind: "text", text: "Чему благодарен за этот день?", hint: "одна строка" });
   return out;
+}
+
+export interface CampItem { kind: PartKey; label: string; pts: number; missed: boolean }
+export interface CampNeed { camp: number; name: string; taken: boolean; need: number; items: CampItem[] }
+
+/**
+ * What a camp asks: the points still missing to reach it and every thing of the day that has not given its points yet —
+ * open ones first (they can still be taken), then the ones marked as missed. The height is rounded, as `dayScore` rounds it.
+ */
+export function campNeed(habits: Habit[], d: Day | undefined, date: string, camp: number): CampNeed {
+  const s = dayScore(habits, d, date);
+  const i = CAMPS.indexOf(camp as (typeof CAMPS)[number]);
+  const need = s.of ? Math.max(0, Math.ceil(((camp - 0.5) * s.of) / 100) - s.got) : 0;
+  const due = habits.filter((h) => habitDue(h, date));
+  const mark = (h: Habit) => (d ? markOf(d, h.title) : undefined);
+  const items: CampItem[] = [];
+  for (const h of due.filter((x) => x.kind === "prayer").sort((a, b) => prayerRank(a.title) - prayerRank(b.title))) {
+    const m = mark(h);
+    if (m === "done") continue;
+    items.push(m === "late"
+      ? { kind: "prayer", label: `${h.title} — прочитан поздно`, pts: POINTS.prayer - POINTS.prayerLate, missed: true }
+      : { kind: "prayer", label: h.title, pts: POINTS.prayer, missed: m === "failed" });
+  }
+  for (const h of due.filter((x) => x.kind === "good")) if (mark(h) !== "done") items.push({ kind: "good", label: h.title, pts: POINTS.habit, missed: mark(h) === "failed" });
+  for (const h of due.filter((x) => x.kind === "bad")) if (mark(h) !== "done") items.push({ kind: "bad", label: `${h.title} — без срыва`, pts: POINTS.habit, missed: mark(h) === "failed" });
+  for (const t of d?.tasks ?? []) if (!t.done) items.push({ kind: "task", label: stripPeriod(t.text).replace(/\[\[([^\]|]+)\|?([^\]]*)\]\]/g, (_, a: string, b: string) => b || a).trim(), pts: POINTS.task, missed: false });
+  const logs = logsOf(d);
+  const LOG_WORDS: [keyof typeof logs, string][] = [["mood", "настроение"], ["stress", "стресс"], ["food", "что ел"], ["words", "слово о дне"]];
+  for (const [k, w] of LOG_WORDS) if (!logs[k]) items.push({ kind: "log", label: `записать ${w}`, pts: POINTS.log, missed: false });
+  items.sort((a, b) => Number(a.missed) - Number(b.missed));
+  return { camp, name: CAMP_NAMES[i] ?? `${camp} %`, taken: s.pct >= camp, need, items };
 }
 
 /** A point `pct` percent of the way along a polyline, by length. */

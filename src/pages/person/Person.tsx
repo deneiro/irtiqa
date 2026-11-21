@@ -13,7 +13,7 @@ import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "../main/Sc
 import type { Cell } from "../../lib/dashboard";
 import { fmt } from "../../lib/dashboard";
 import { eventUrl } from "../../lib/events";
-import { debtLeft, type Life } from "../../lib/life";
+import { DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, debtLeft, parseAmount, parseDebts, serializeDebts, type Life } from "../../lib/life";
 import { categoryOf, closenessOf, groupsOf, contactsOf, debtsFor, deepLinks, relatedFrom, relationsOf, textOf } from "../../lib/people";
 import {
   RADICALS, countWords, influenceCount, meetingsFoot, memoriesOf, personNumbers, personView, radicalsDiff, radicalsOf, shortWhen,
@@ -64,35 +64,72 @@ function Tile({ t, onClick, open }: { t: PersonTile; onClick?: () => void; open?
   );
   const cls = `p-nt${t.value === "—" ? " p-nt-none" : ""}`;
   return onClick
-    ? <button type="button" className={cls} aria-expanded={open} title={open ? "скрыть записи долга" : "показать записи долга"} onClick={onClick}>{body}</button>
+    ? <button type="button" className={cls} aria-expanded={open} title={open ? "скрыть долги" : "долги: посмотреть или записать новый"} onClick={onClick}>{body}</button>
     : <div className={cls}>{body}</div>;
 }
 
-/** The rows of `debts.md` that name the person, as the full page has them. */
-function DebtTable({ page, life }: { page: Page; life: Life }) {
+/**
+ * The rows of `debts.md` that name the person, and a line to record a new one (2026-11-22: he could not find where a
+ * debt is added). The row goes to `debts.md` under the person's link, as the Finance screen writes it.
+ */
+function DebtTable({ page, life, today }: { page: Page; life: Life; today: string }) {
+  const { saveLedger, reload } = useStore();
   const debts = debtsFor(page, life.debts);
   const open = debts.filter((d) => !d.closed && debtLeft(d) > 0), closed = debts.filter((d) => d.closed);
+  const [dir, setDir] = useState(DEBT_I_OWE);
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [since, setSince] = useState(today);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [saved, setSaved] = useState<string | null>(null);
+  const sum = Math.abs(parseAmount(amount) ?? 0);
+  const add = async () => {
+    if (!sum) { setErr("Сумма — число, например 15000."); return; }
+    setBusy(true);
+    try {
+      const row = { who: `[[${page.file}]]`, direction: dir, amount: sum, paid: 0, currency: "₸", since: since || today, note: note.trim(), closed: undefined };
+      await saveLedger(DEBTS_REL, serializeDebts([...life.debts, row], today), parseDebts);
+      setSaved(`Записал: ${dir === DEBT_I_OWE ? "ты должен" : "тебе должны"} ${fmt(sum)} ₸${note.trim() ? ` — ${note.trim()}` : ""}.`);
+      setAmount(""); setNote(""); setErr(null);
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+  };
   return (
     <section className="p-card p-debts">
-      <h2><span>Долги</span><span className="p-r">открытых {open.length}{closed.length ? ` · закрытых ${closed.length}` : ""}</span></h2>
-      <div className="p-scroll">
-        <table className="p-tbl">
-          <thead><tr><th>с даты</th><th className="p-num">сумма</th><th className="p-num">внесено</th><th className="p-num">остаток</th><th>за что</th><th>статус</th></tr></thead>
-          <tbody>
-            {[...open, ...closed].map((d, i) => (
-              <tr key={i} className={d.closed ? "p-closed" : ""}>
-                <td className="p-num" style={{ textAlign: "left" }}>{d.since}</td>
-                <td className="p-num">{fmt(d.amount)}</td>
-                <td className="p-num">{d.paid ? fmt(d.paid) : ""}</td>
-                <td className="p-num">{d.closed ? "" : fmt(debtLeft(d))}</td>
-                <td>{d.note}</td>
-                <td>{d.closed ? `закрыт ${d.closed}` : d.direction}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="p-foot">Вносить оплату — на экране <Link to="/finance">Финансы</Link>: сумма ложится на самые старые долги.</div>
+      <h2><span>Долги</span><span className="p-r">{debts.length ? `открытых ${open.length}${closed.length ? ` · закрытых ${closed.length}` : ""}` : "записей нет"}</span></h2>
+      <form className="g-addrow p-debt-add" onSubmit={(e) => { e.preventDefault(); void add(); }}>
+        <span className="p-dirs" role="group" aria-label="Кто кому должен">
+          <button type="button" className={`g-btn${dir === DEBT_I_OWE ? " on" : ""}`} aria-pressed={dir === DEBT_I_OWE} onClick={() => setDir(DEBT_I_OWE)}>я должен</button>
+          <button type="button" className={`g-btn${dir === DEBT_THEY_OWE ? " on" : ""}`} aria-pressed={dir === DEBT_THEY_OWE} onClick={() => setDir(DEBT_THEY_OWE)}>мне должны</button>
+        </span>
+        <input className="text short" inputMode="numeric" autoCorrect="off" spellCheck={false} placeholder="сумма, ₸" aria-label="Сумма в тенге" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <input className="text" autoCorrect="off" placeholder="за что" aria-label="За что" value={note} onChange={(e) => setNote(e.target.value)} />
+        <input className="text short" type="date" aria-label="С какой даты" value={since} max={today} onChange={(e) => setSince(e.target.value)} />
+        <button type="submit" disabled={busy || !amount.trim()}>+ записать долг</button>
+      </form>
+      {err && <p className="g-error" role="alert">{err}</p>}
+      {saved && !err && <p className="p-foot p-saved" role="status">{saved}</p>}
+      {debts.length > 0 && (
+        <div className="p-scroll">
+          <table className="p-tbl">
+            <thead><tr><th>с даты</th><th className="p-num">сумма</th><th className="p-num">внесено</th><th className="p-num">остаток</th><th>за что</th><th>статус</th></tr></thead>
+            <tbody>
+              {[...open, ...closed].map((d, i) => (
+                <tr key={i} className={d.closed ? "p-closed" : ""}>
+                  <td className="p-num" style={{ textAlign: "left" }}>{d.since}</td>
+                  <td className="p-num">{fmt(d.amount)}</td>
+                  <td className="p-num">{d.paid ? fmt(d.paid) : ""}</td>
+                  <td className="p-num">{d.closed ? "" : fmt(debtLeft(d))}</td>
+                  <td>{d.note}</td>
+                  <td>{d.closed ? `закрыт ${d.closed}` : d.direction}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="p-foot">Вернул часть или всё — на экране <Link to="/finance">Финансы</Link>, блок «Долги»: сумма ложится на самые старые долги и уходит со счёта.</div>
     </section>
   );
 }
@@ -380,10 +417,10 @@ export default function PersonPage({ page }: { page: Page }) {
         <div className="p-ntiles">
           <Tile t={numbers.contact} />
           <Tile t={numbers.together} />
-          <Tile t={numbers.debt} onClick={hasDebts ? () => setDebtsOpen((o) => !o) : undefined} open={debtsOpen} />
+          <Tile t={hasDebts ? numbers.debt : { ...numbers.debt, note: "нажми — записать долг" }} onClick={() => setDebtsOpen((o) => !o)} open={debtsOpen} />
           <Tile t={numbers.birthday} />
         </div>
-        {debtsOpen && hasDebts && <DebtTable page={page} life={life} />}
+        {debtsOpen && <DebtTable page={page} life={life} today={today} />}
 
         <Block title="Было · Сейчас · Дальше" right="твоими словами со страницы человека">
           <div className="g-path">

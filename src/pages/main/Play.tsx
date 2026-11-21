@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { useStore } from "../../store";
 import type { Vault } from "../../lib/types";
 import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { dayMonth, fmt, habitRows, weightNow } from "../../lib/dashboard";
 import { isoWeekKey } from "../../lib/goals";
-import { CAMPS, CAMP_NAMES, along, askOf, asks, campsTaken, dayScore, fire, medals, prayerOpen, rankOf, standing, type Ask, type Score } from "../../lib/game";
+import { CAMPS, CAMP_NAMES, POINTS, along, askOf, asks, campNeed, campsTaken, dayScore, fire, medals, prayerOpen, rankOf, standing, type Ask, type CampNeed, type Score } from "../../lib/game";
 import { overallLevelProgress, readsOf, themeXps, xpByDay } from "../../lib/levels";
 import { emptyDay, habitDue, isLateMeal, markOf, parseAmount, spentOf, earnedOf, streak, withMark, xpForDay, type Day, type DayMark, type Habit, type Life, type XpContext } from "../../lib/life";
 import { prayerTimes, type PrayerTimes } from "../../lib/maghrib";
@@ -98,6 +99,7 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
   const habits = useMemo(() => habitRows(life), [life]);
   const days = useMemo(() => new Map(life.days).set(date, day), [life.days, date, day]);
   const score = useMemo(() => dayScore(habits, day, date), [habits, day, date]);
+  const camps = useMemo(() => CAMPS.map((c) => campNeed(habits, day, date, c)), [habits, day, date]);
   const flame = useMemo(() => fire(habits, days, today), [habits, days, today]);
   const ctx: XpContext = useMemo(() => ({ habits: life.habits, quests: life.quests, days, reads: readsOf(vault.pages) }), [life.habits, life.quests, days, vault.pages]);
   const dayXp = useMemo(() => sum(xpForDay(day, ctx)), [day, ctx]);
@@ -150,7 +152,7 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
   return (
     <div className="g-play">
       <div className="g-top">
-        <Scene pct={score.pct} period={period} party={party}>
+        <Scene pct={score.pct} period={period} party={party} camps={camps} past={!isToday}>
           <div className="g-date">
             <div className="g-kick">{WD[weekdayIndex(date)]} · неделя {Number(isoWeekKey(date).slice(-2))}{!isToday && " · не сегодня"}</div>
             <h1>{dayMonth(date)}</h1>
@@ -221,7 +223,7 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
             if (!g.tasks.length) return null;
             return (
               <div key={g.key ?? "none"} className={`g-per${g.key && g.key === period ? " now" : ""}`}>
-                <div className="g-per-h">{p ? <><b>{p.roman} · {p.from}–{p.to}</b><span>{p.what}</span></> : <b>без части дня</b>}</div>
+                <div className="g-per-h">{p ? <><b>{p.what}</b><span>{p.from} – {p.to}</span></> : <b>без части дня</b>}</div>
                 {g.tasks.map((t) => (
                   <div key={t.i} className={`g-task${t.done ? " done" : ""}`} onClick={(e) => { if (!(e.target as HTMLElement).closest("a, button")) toggleTask(t.i); }}>
                     <button className="box" onClick={() => toggleTask(t.i)} aria-pressed={t.done} aria-label={t.done ? "Снять отметку" : "Отметить сделанной"}>{t.done ? "✓" : ""}</button><TaskLine text={t.text} today={date} />
@@ -278,32 +280,97 @@ const SPARKS = Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.
  * night), the trail with its camps drawn over the ridge, and a lantern at the height taken. The picture and the trail
  * share one coordinate space, so they stay together at any size of the window.
  */
-function Scene({ pct, period, party, children }: { pct: number; period: PeriodKey | undefined; party: string | undefined; children: ReactNode }) {
+function Scene({ pct, period, party, camps, past, children }: { pct: number; period: PeriodKey | undefined; party: string | undefined; camps: CampNeed[]; past: boolean; children: ReactNode }) {
   const [lx, ly] = along(TRAIL, pct);
   const d = `M${TRAIL.map((p) => p.join(",")).join(" L")}`;
   const taken = campsTaken(pct);
+  const box = useRef<HTMLDivElement>(null);
+  // the camp under the pointer, or the one clicked (pinned until closed)
+  const [hot, setHot] = useState<{ i: number; x: number; y: number; pinned: boolean } | null>(null);
+  const show = (i: number, el: Element, pinned: boolean) => {
+    const r = el.getBoundingClientRect();
+    setHot({ i, x: r.left + r.width / 2, y: r.top, pinned });
+  };
+  // the card stands over the page (a portal, so the scene's rounded edge does not cut it); it leaves on Escape and on scroll
+  useEffect(() => {
+    if (!hot) return;
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") setHot(null); };
+    const gone = () => setHot(null);
+    window.addEventListener("keydown", key);
+    window.addEventListener("scroll", gone, true);
+    window.addEventListener("resize", gone);
+    return () => { window.removeEventListener("keydown", key); window.removeEventListener("scroll", gone, true); window.removeEventListener("resize", gone); };
+  }, [hot]);
   return (
-    <div className="g-scene">
-      <svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <div className="g-scene" ref={box} onClick={(e) => { if (hot?.pinned && !(e.target as Element).closest(".g-camp-hit")) setHot(null); }}>
+      <svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMax slice">
         <defs>
           <linearGradient id="g-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B0D13" stopOpacity="0" /><stop offset="1" stopColor="#0B0D13" stopOpacity=".85" /></linearGradient>
         </defs>
-        <image key={period ?? "past"} className="art" href={ART[period ?? "иша"]} width="1536" height="1024" preserveAspectRatio="none" />
-        <rect y="820" width="1536" height="204" fill="url(#g-mist)" />
-        <path className="trail" d={d} />
-        <path className="walked" d={d} pathLength={100} strokeDasharray={`${pct} 100`} />
+        <image key={period ?? "past"} className="art" href={ART[period ?? "иша"]} width="1536" height="1024" preserveAspectRatio="none" aria-hidden="true" />
+        <rect y="820" width="1536" height="204" fill="url(#g-mist)" aria-hidden="true" />
+        <path className="trail" d={d} aria-hidden="true" />
+        <path className="walked" d={d} pathLength={100} strokeDasharray={`${pct} 100`} aria-hidden="true" />
         {CAMPS.map((c, i) => {
           const [x, y] = along(TRAIL, c);
-          return i < CAMPS.length - 1
-            ? <path key={c} className={`camp${i < taken ? " on" : ""}`} d={`M${x - 14},${y + 2} L${x},${y - 20} L${x + 14},${y + 2} Z`} />
-            : <g key={c} className={`flag${taken === CAMPS.length ? " on" : ""}`}><line x1={x} y1={y} x2={x} y2={y - 44} /><path d={`M${x},${y - 44} L${x + 30},${y - 34} L${x},${y - 24} Z`} /></g>;
+          const on = hot?.i === i ? " hot" : "";
+          const say = `${camps[i].name}, ${c} %: ${camps[i].taken ? "взят" : `нужно ещё ${camps[i].need} ${plural(camps[i].need, "очко", "очка", "очков")}`}`;
+          return (
+            <g key={c} className="g-camp-hit" role="button" tabIndex={0} aria-label={say} aria-expanded={hot?.i === i}
+              onMouseEnter={(e) => { if (!hot?.pinned) show(i, e.currentTarget, false); }}
+              onMouseLeave={() => { if (!hot?.pinned) setHot(null); }}
+              onFocus={(e) => { if (!hot?.pinned) show(i, e.currentTarget, false); }}
+              onBlur={() => { if (!hot?.pinned) setHot(null); }}
+              onClick={(e) => { e.stopPropagation(); if (hot?.pinned && hot.i === i) setHot(null); else show(i, e.currentTarget, true); }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (hot?.pinned && hot.i === i) setHot(null); else show(i, e.currentTarget, true); } }}>
+              <circle className="hit" cx={x} cy={i < CAMPS.length - 1 ? y - 8 : y - 24} r="40" />
+              {i < CAMPS.length - 1
+                ? <path className={`camp${i < taken ? " on" : ""}${on}`} d={`M${x - 14},${y + 2} L${x},${y - 20} L${x + 14},${y + 2} Z`} />
+                : <g className={`flag${taken === CAMPS.length ? " on" : ""}${on}`}><line x1={x} y1={y} x2={x} y2={y - 44} /><path d={`M${x},${y - 44} L${x + 30},${y - 34} L${x},${y - 24} Z`} /></g>}
+            </g>
+          );
         })}
-        <g className="lantern" style={{ transform: `translate(${lx}px, ${ly}px)` }}>
+        <g className="lantern" style={{ transform: `translate(${lx}px, ${ly}px)` }} aria-hidden="true">
           <circle className="halo" r="38" /><circle className="core" r="10.5" />
           {party && SPARKS.map((s, i) => <circle key={i} className="spark" r={i % 2 ? 4.2 : 3} style={{ "--dx": `${s.dx}px`, "--dy": `${s.dy}px` } as CSSProperties} />)}
         </g>
       </svg>
       {children}
+      {hot && createPortal(<div className="g-play g-campwrap"><CampCard c={camps[hot.i]} x={hot.x} y={hot.y} past={past} pinned={hot.pinned} width={window.innerWidth} onClose={() => setHot(null)} /></div>, document.body)}
+    </div>
+  );
+}
+
+const ITEM_KIND: Record<string, string> = { prayer: "намазы", good: "привычки", bad: "держусь", task: "задачи", log: "записи" };
+
+/** What a camp asks: its height, whether it is taken, the points still missing and the things of the day that would give them. */
+function CampCard({ c, x, y, past, pinned, width, onClose }: { c: CampNeed; x: number; y: number; past: boolean; pinned: boolean; width: number; onClose: () => void }) {
+  const W = 300;
+  const left = Math.max(10, Math.min(width - W - 10, x - W / 2));
+  const open = c.items.filter((i) => !i.missed), missed = c.items.filter((i) => i.missed);
+  const pts = (n: number) => `${n} ${plural(n, "очко", "очка", "очков")}`;
+  // one row a kind: «намаз · Фаджр, Зухр, Аср · +9», so a whole day fits in the card
+  const rows = (list: typeof c.items) => (["prayer", "good", "bad", "task", "log"] as const)
+    .map((k) => ({ k, its: list.filter((i) => i.kind === k) }))
+    .filter((r) => r.its.length)
+    .map((r) => ({ k: r.k, names: r.its.map((i) => (r.k === "log" ? i.label.replace(/^записать /, "") : i.label.replace(/ — без срыва$/, ""))).join(", "), sum: r.its.reduce((x, i) => x + i.pts, 0) }));
+  return (
+    <div className="g-campcard" role="dialog" aria-label={c.name} style={y > 330 ? { left, top: y - 10, width: W, transform: "translateY(-100%)" } : { left, top: y + 48, width: W }} onClick={(e) => e.stopPropagation()}>
+      <div className="h">
+        <b>{c.name}</b><span>{c.camp} % дня</span>
+        {pinned && <button type="button" className="x" onClick={onClose} aria-label="Закрыть">×</button>}
+      </div>
+      <p className={`st${c.taken ? " ok" : ""}`}>{c.taken ? "✓ Взят" : <>Нужно ещё <b>{pts(c.need)}</b>{past ? " — так и не добрал" : ""}</>}</p>
+      {open.length > 0 && <>
+        <div className="sub">{past ? "не было сделано" : c.taken ? "ещё не дало очков" : "что даст очки"}</div>
+        <ul>{rows(open).map((r) => <li key={r.k}><em>{ITEM_KIND[r.k]}</em><span title={r.names}>{r.names}</span><b>+{r.sum}</b></li>)}</ul>
+      </>}
+      {missed.length > 0 && <>
+        <div className="sub">отмечено: пропустил, поздно или срыв</div>
+        <ul className="missed">{rows(missed).map((r) => <li key={r.k}><em>{ITEM_KIND[r.k]}</em><span title={r.names}>{r.names}</span><b>{r.sum}</b></li>)}</ul>
+      </>}
+      {!c.items.length && <p className="sub">Всё, что было на этот день, сделано.</p>}
+      <p className="legend">Треугольники — лагеря дня: 25, 50 и 75 %, флаг — вершина, 100 %. Очки: намаз вовремя {POINTS.prayer}, поздно {POINTS.prayerLate}, привычка {POINTS.habit}, задача {POINTS.task}, запись {POINTS.log}.{!pinned && " Нажми — карточка останется."}</p>
     </div>
   );
 }
@@ -378,8 +445,9 @@ function AddTask({ period, onAdd }: { period: PeriodKey | undefined; onAdd: (tex
   return (
     <form className="g-add" onSubmit={(e) => { e.preventDefault(); const t = text.trim(); if (t) { onAdd(t, key); setText(""); } }}>
       <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Новая задача — Enter" aria-label="Новая задача" />
-      <div className="g-chips" role="group" aria-label="Часть дня">
-        {PERIODS.map((p) => <button type="button" key={p.key} className={p.key === key ? "on" : ""} aria-pressed={p.key === key} title={`${p.from}–${p.to}: ${p.what}`} onClick={() => setKey(p.key === key ? undefined : p.key)}>{p.roman}</button>)}
+      <div className="g-parts-pick" role="group" aria-label="Часть дня">
+        <span title="День делится по намазам: фаджр — зухр — аср — магриб — иша">часть дня</span>
+        {PERIODS.map((p) => <button type="button" key={p.key} className={p.key === key ? "on" : ""} aria-pressed={p.key === key} title={`${p.from} – ${p.to}: ${p.what}`} onClick={() => setKey(p.key === key ? undefined : p.key)}><b>{p.word}</b><small>{p.from.toLowerCase()}</small></button>)}
       </div>
     </form>
   );
