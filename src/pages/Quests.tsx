@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { useMemo, useState } from "react";
 import { useStore } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
@@ -70,12 +73,12 @@ export default function QuestsPage() {
   if (!life) return null;
   return (
     <div>
-      <div className="eyebrow">life/activities</div>
-      <h1 className="title">Деятельности</h1>
-      <p className="lede">
-        {groups.active.length} активных{groups.passive.length ? ` · ${groups.passive.length} на паузе` : ""} · {groups.done.length} сделано · {groups.proposed.length} предложено из vault
-        {timer && <> · <span className="hl">идёт таймер: {timer.quest}</span></>}
-      </p>
+      <Banner art={BANNER.quests} kicker="деятельности · что делаю каждый день" title="Деятельности" aside={<GameAside />}>
+        <p className="gb-lede">
+          {groups.active.length} активных{groups.passive.length ? ` · ${groups.passive.length} на паузе` : ""} · {groups.done.length} сделано · {groups.proposed.length} предложено из vault
+          {timer && <> · <span className="hl">идёт таймер: {timer.quest}</span></>}
+        </p>
+      </Banner>
 
       <details className="card create" style={{ marginTop: 16 }} open={err ? true : undefined}>
         <summary>+ Новый квест</summary>

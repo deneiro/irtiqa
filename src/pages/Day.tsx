@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { useStore } from "../store";
 import { THEMES, groupByTheme, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
@@ -198,16 +201,14 @@ function DayView({ today }: { today: string }) {
 
   return (
     <div>
-      <div className="eyebrow">
-        {locked ? "День закрыт" : "Сегодня"}
-        {todayStr() !== today && ` · с магриба ${maghribOn(addDays(today, -1)).toTimeString().slice(0, 5)}`}
-      </div>
-      <h1 className="title">{formatDayTitle(today)}</h1>
-      <p className="lede">
-        {due.length ? `${draft.habitsDone.length} из ${due.length} привычек` : "Привычек на сегодня нет"}
-        {" · "}потрачено <b>{fmtMoney(spentOf(draft))}</b>
-        {" · "}XP <b>{xpTotal}</b>
-      </p>
+      <Banner art={BANNER.day} title={formatDayTitle(today)} aside={<GameAside />}
+        kicker={<>{locked ? "День закрыт" : "День · прежний экран"}{todayStr() !== today && ` · с магриба ${maghribOn(addDays(today, -1)).toTimeString().slice(0, 5)}`}</>}>
+        <p className="gb-lede">
+          {due.length ? `${draft.habitsDone.length} из ${due.length} привычек` : "Привычек на сегодня нет"}
+          {" · "}потрачено <b>{fmtMoney(spentOf(draft))}</b>
+          {" · "}XP <b>{xpTotal}</b>
+        </p>
+      </Banner>
 
       {!locked && <NeedsYou today={today} />}
 

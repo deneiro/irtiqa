@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { Link, useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
@@ -164,9 +167,8 @@ export default function CalendarPage() {
   const shownDays = WEEK_ORDER;
   return (
     <div className="calpage">
-      <div className="eyebrow">Календарь</div>
+      <Banner art={BANNER.calendar} kicker="календарь · план по часам" title={monthRange(dates[0], dates[6])} aside={<GameAside />} />
       <div className="row" style={{ alignItems: "baseline" }}>
-        <h1 className="title" style={{ marginBottom: 0 }}>{monthRange(dates[0], dates[6])}</h1>
         <span className="grow" />
         <button className="btn small" onClick={() => setWeek(addDays(week, -7))} title="прошлая неделя">‹</button>
         <button className="btn small" onClick={() => setWeek(weekStart(today))} disabled={week === weekStart(today)}>сегодня</button>

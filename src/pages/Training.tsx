@@ -1,4 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { useSearchParams } from "react-router-dom";
 import { useStore } from "../store";
 import { todayStr } from "../lib/dates";
@@ -19,7 +22,12 @@ const TABS: [Tab, string][] = [["p", "Программа"], ["m", "Мышцы"],
  */
 export default function TrainingPage() {
   const { root } = useStore();
-  return <div className="tr"><h1>Тренировки</h1><TrainingAtlas root={root} /></div>;
+  return (
+    <div className="tr">
+      <Banner art={BANNER.training} color="#45B6C6" kicker="тренировки · программа, мышцы, упражнения" title="Тренировки" aside={<GameAside theme="Health & sport" />} />
+      <TrainingAtlas root={root} />
+    </div>
+  );
 }
 
 /** The atlas with its loading and missing-file states; the theme screen embeds it too. */

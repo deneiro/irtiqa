@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import { THEME_ART } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useStore } from "../store";
 import { ChartTip } from "../components/Bits";
@@ -162,11 +165,11 @@ export default function FinancePage() {
   if (!life) return null;
   return (
     <div>
-      <div className="eyebrow">life/finance</div>
-      <h1 className="title">Финансы</h1>
-      <p className="lede">
-        на счетах <b>{fmt(total)}</b> · подписки <b>{fmt(subsMonthly)}</b> в месяц · мне должны <b>{fmt(owedToMe)}</b> · я должен <b>{fmt(iOwe)}</b>
-      </p>
+      <Banner art={THEME_ART["Finance & money"]} color="#A9BF4F" kicker="финансы · счета, подписки, долги" title="Финансы" aside={<GameAside theme="Finance & money" />}>
+        <p className="gb-lede">
+          на счетах <b>{fmt(total)}</b> · подписки <b>{fmt(subsMonthly)}</b> в месяц · мне должны <b>{fmt(owedToMe)}</b> · я должен <b>{fmt(iOwe)}</b>
+        </p>
+      </Banner>
       {err && <div className="notice err">Не удалось записать: {err}</div>}
 
       <div className="card" style={{ marginTop: 16 }}>
