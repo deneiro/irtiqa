@@ -143,18 +143,18 @@ export default function ThemePage() {
           <TodayInTheme theme={theme} life={life} today={today} radar={view.radar} />
         </div>
         <Journey past={cols.past} stand={cols.stand} next={cols.next} />
+        <StaleLine stale={stale} />
+        <NumberGroups groups={view.numbers} tiles={tiles} today={today} />
+        <Board cards={cards} />
+        <div className="g-organs">
+          {sections.map((s) => {
+            const Organ = isSectionKey(s) ? ORGANS[s] : HEADING;
+            return Organ ? <Organ key={s} name={s} {...props} /> : null;
+          })}
+        </div>
+        <Radar cards={view.radar} />
+        <PagesRow buttons={buttons} />
       </div>
-      <NumberGroups groups={view.numbers} tiles={tiles} today={today} />
-      <Board cards={cards} />
-      <div className="t-organs">
-        {sections.map((s) => {
-          const Organ = isSectionKey(s) ? ORGANS[s] : HEADING;
-          return Organ ? <Organ key={s} name={s} {...props} /> : null;
-        })}
-      </div>
-      <Radar cards={view.radar} />
-      <PagesRow buttons={buttons} />
-      <StaleLine stale={stale} />
     </div>
   );
 }
