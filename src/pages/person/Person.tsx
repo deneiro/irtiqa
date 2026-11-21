@@ -7,7 +7,9 @@ import { pageUrl } from "../../lib/vault";
 import { mediaUrl, openExternal } from "../../lib/native";
 import { rawPageText } from "../../lib/rawpage";
 import { contactEdits } from "../../lib/contact";
-import { coMet, eventsWith, type HabitCount } from "../../lib/circle";
+import { buildCircle, coMet, eventsWith, tieWarmth, type HabitCount } from "../../lib/circle";
+import { BANNER, THEME_ART } from "../../assets/play";
+import { TieMeter } from "../../components/GameBits";
 import type { Cell } from "../../lib/dashboard";
 import { fmt } from "../../lib/dashboard";
 import { eventUrl } from "../../lib/events";
@@ -310,6 +312,7 @@ export default function PersonPage({ page }: { page: Page }) {
   const view = useMemo(() => personView(page.body), [page]);
   const numbers = useMemo(() => (life ? personNumbers(page, people, life, today) : undefined), [page, people, life, today]);
   const style = themeStyle(page.theme);
+  const tie = useMemo(() => { const i = life ? buildCircle(people, life.events, today).find((x) => x.page.rel === page.rel) : undefined; return i && tieWarmth(i); }, [life, people, page, today]);
   if (!life || !numbers) return <div className="p-page" style={style}><p className="p-faint">Загружаю vault…</p></div>;
 
   const contacts = contactsOf(page);
@@ -349,7 +352,8 @@ export default function PersonPage({ page }: { page: Page }) {
         <Link className="p-crumb" to="/people">← Люди</Link>
         <button className="p-btn" type="button" onClick={() => setAdding(true)}><span className="p-plus">+</span>Добавить человека</button>
       </div>
-      <header className="p-head">
+      <header className="p-head p-art">
+        <img className="p-head-art" src={(page.theme && THEME_ART[page.theme]) || BANNER.people} alt="" />
         <Ring n={close} letter={[...page.file][0]?.toUpperCase() ?? ""} />
         <div>
           <div className="p-kick">
@@ -363,7 +367,10 @@ export default function PersonPage({ page }: { page: Page }) {
             {birthday && <span className="p-bd">ДР {birthday}</span>}
           </div>
         </div>
-        <Link className="p-whole" to={`${pageUrl(page)}?full=1`}>страница целиком{page.updated ? ` · ${shortWhen(page.updated, today)}` : ""}</Link>
+        <div className="p-head-side">
+          {tie && <TieMeter w={tie} />}
+          <Link className="p-whole" to={`${pageUrl(page)}?full=1`}>страница целиком{page.updated ? ` · ${shortWhen(page.updated, today)}` : ""}</Link>
+        </div>
       </header>
 
       <div className="p-acts">

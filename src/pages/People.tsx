@@ -13,6 +13,9 @@ import { renameFile } from "../lib/fs";
 import { rawPageText } from "../lib/rawpage";
 import type { Page } from "../lib/types";
 import AddPersonSheet from "./person/AddPersonSheet";
+import { BANNER } from "../assets/play";
+import { Banner, CircleMeter } from "../components/GameBits";
+import { buildCircle, circleWarmth } from "../lib/circle";
 
 type Sort = "name" | "contact" | "birthday";
 
@@ -71,13 +74,15 @@ export default function PeoplePage() {
     [v, life, q, sort, today, cats, grp],
   );
   const groups = useMemo(() => allGroups(v.pages.filter((p) => p.zone === "person")), [v]);
+  // the warmth of the whole circle, whatever the filters below show
+  const warmth = useMemo(() => circleWarmth(buildCircle(v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)), life?.events ?? [], today)), [v, life, today]);
   const soon = people.filter((x) => x.bday !== undefined && x.bday <= 30).sort((a, b) => a.bday! - b.bday!);
 
   return (
     <div>
-      <div className="eyebrow">{t("ent_eyebrow")}</div>
-      <h1 className="title">{t("ent_title")}</h1>
-      <p className="lede">{t("ent_lede")}</p>
+      <Banner art={BANNER.people} color="#E8785F" kicker={`круг · ${warmth.total} с отмеченной близостью`} title={t("ent_title")} aside={<CircleMeter w={warmth} />}>
+        <p className="gb-lede">Связь тёплая, пока не вышел её ритм: чем ближе человек, тем чаще. Написал или виделись — и она снова полная.</p>
+      </Banner>
 
       {soon.length > 0 && (
         <div className="notice" style={{ marginTop: 12 }}>

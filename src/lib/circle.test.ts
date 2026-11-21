@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildCircle, coMet, eventsWith, isMeetingRecord, meetWindow, ownNames, triggerStats } from "./circle";
+import { buildCircle, circleWarmth, coMet, eventsWith, isMeetingRecord, meetWindow, ownNames, tieWarmth, triggerStats } from "./circle";
 import { buildLife } from "./life";
 import type { MdFile } from "./types";
 import { buildVault } from "./vault";
@@ -68,4 +68,25 @@ test("coMet: who was at the same events most often, twice and more; «Встре
   const a = vault.pages.find((p) => p.file === "Человек А")!;
   assert.deepEqual(coMet(a, people, life.events).map((c) => [c.name, c.n, c.page?.file]), [["Человек Г", 2, "Человек Г"]]);
   assert.deepEqual(coMet(a, people, life.events, 1).map((c) => [c.name, c.n]), [["Человек Г", 2], ["Человек В", 1]]);
+});
+
+test("a tie cools from its last touch to the end of its rhythm, and the circle counts the ties still warm", () => {
+  assert.equal(tieWarmth({ cadence: undefined, overdue: undefined }), undefined);
+  assert.deepEqual(tieWarmth({ cadence: 30, overdue: undefined }), { pct: 0, state: "нет записей", since: undefined, cadence: 30 });
+  assert.deepEqual(tieWarmth({ cadence: 30, overdue: -30 }), { pct: 100, state: "тёплая", since: 0, cadence: 30 });
+  assert.deepEqual(tieWarmth({ cadence: 30, overdue: -9 })?.state, "остывает");
+  assert.deepEqual(tieWarmth({ cadence: 30, overdue: 5 }), { pct: 0, state: "остыла", since: 35, cadence: 30 });
+  const v = buildVault({
+    root: "", life: [], raw: [], log: "", claude_md: "", media: [],
+    pages: [
+      person("Первый", { closeness: "10", last_contact: "2030-01-30" }), // core, 2 days of 7
+      person("Второй", { closeness: "9", last_contact: "2029-12-01" }), // core, long past 14 days
+      person("Третий", { closeness: "5", last_contact: "2030-01-01" }), // circle, 31 of 60
+      person("Дома", { closeness: "10", tags: "[household]" }), // lives with him: left out
+      person("Без близости", { last_contact: "2030-01-30" }),
+    ],
+  });
+  const w = circleWarmth(buildCircle(v.pages, [], TODAY));
+  assert.deepEqual(w.bands.map((b) => [b.title, b.warm, b.total]), [["Ядро", 1, 2], ["Близкие", 0, 0], ["Круг", 1, 1], ["Дальние", 0, 0]]);
+  assert.deepEqual([w.warm, w.total, w.pct], [2, 3, 67]);
 });
