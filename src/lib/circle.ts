@@ -285,3 +285,31 @@ export const MEETING_TITLE = "Встреча";
 export function isMeetingRecord(e: LifeEvent): boolean {
   return e.title === MEETING_TITLE && e.tags.some((t) => t.toLowerCase() === "встреча");
 }
+
+// ---------- the warmth of a tie and of the circle (2026-11-21) ----------
+
+export type TieState = "тёплая" | "остывает" | "остыла" | "нет записей";
+export interface TieWarmth { pct: number; state: TieState; since: number | undefined; cadence: number }
+
+/**
+ * How warm a tie is: full on the day of a touch (a contact or a meeting), cooling evenly to nothing when its rhythm
+ * runs out. Undefined for a tie with no closeness, which has no rhythm to hold.
+ */
+export function tieWarmth(i: Pick<CircleItem, "cadence" | "overdue">): TieWarmth | undefined {
+  if (i.cadence === undefined) return undefined;
+  if (i.overdue === undefined) return { pct: 0, state: "нет записей", since: undefined, cadence: i.cadence };
+  const since = i.overdue + i.cadence;
+  const pct = Math.max(0, Math.min(100, Math.round(100 - (since / i.cadence) * 100)));
+  return { pct, state: pct >= 50 ? "тёплая" : pct > 0 ? "остывает" : "остыла", since, cadence: i.cadence };
+}
+
+export interface CircleWarmth { bands: { title: string; total: number; warm: number }[]; total: number; warm: number; pct: number }
+
+/** The circle by its four bands: how many ties are still within their rhythm. People he lives with and ties with no closeness are left out. */
+export function circleWarmth(items: CircleItem[]): CircleWarmth {
+  const counted = items.filter((i) => i.closeness !== undefined && !atHome(i.page));
+  const isWarm = (i: CircleItem) => (tieWarmth(i)?.pct ?? 0) > 0;
+  const bands = BANDS.map((b) => { const of = counted.filter((i) => i.closeness! >= b.min && i.closeness! <= b.max); return { title: b.title, total: of.length, warm: of.filter(isWarm).length }; });
+  const total = bands.reduce((s, b) => s + b.total, 0), warm = bands.reduce((s, b) => s + b.warm, 0);
+  return { bands, total, warm, pct: total ? Math.round((warm / total) * 100) : 0 };
+}

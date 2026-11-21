@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { CAMPS, campsTaken, rankOf, type ClimbSummary, type DayHeight } from "../lib/game";
 import type { LevelProgress } from "../lib/levels";
+import type { CircleWarmth, TieWarmth } from "../lib/circle";
 import { plural } from "../lib/dates";
 import "./GameBits.css";
 
@@ -117,6 +118,30 @@ export function MonthGrid({ days, lead, today }: { days: DayHeight[]; lead: numb
           {!h.future && h.pct >= 100 && <em aria-hidden="true">▲</em>}
         </Link>
       ))}
+    </div>
+  );
+}
+
+/** One tie: how warm it is now and how far into its rhythm. */
+export function TieMeter({ w }: { w: TieWarmth }) {
+  return (
+    <div className={`gb-tie ${w.state === "тёплая" ? "warm" : w.state === "остывает" ? "cooling" : "cold"}`}>
+      <span>связь · {w.state}</span>
+      <i><u style={{ width: `${w.pct}%` }} /></i>
+      <small>{w.since === undefined ? `ритм — раз в ${w.cadence} ${plural(w.cadence, "день", "дня", "дней")}` : `${w.since} ${plural(w.since, "день", "дня", "дней")} из ${w.cadence} — ритм близости`}</small>
+    </div>
+  );
+}
+
+/** The circle: the share of ties still within their rhythm, and the same by the four bands. */
+export function CircleMeter({ w }: { w: CircleWarmth }) {
+  return (
+    <div className="gb-circle">
+      <div className="top"><b>{w.total ? w.pct : "—"}<small>{w.total ? " %" : ""}</small></b><span>тепло круга<br />{w.warm} из {w.total} в ритме</span></div>
+      {w.bands.filter((b) => b.total > 0).map((b) => (
+        <div key={b.title} className="band"><span>{b.title}</span><i><u style={{ width: `${(b.warm / b.total) * 100}%` }} /></i><em>{b.warm} / {b.total}</em></div>
+      ))}
+      {!w.total && <small>Близость не отмечена ни у кого — её ставят на «Кругах».</small>}
     </div>
   );
 }
