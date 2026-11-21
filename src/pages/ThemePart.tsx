@@ -12,7 +12,11 @@ import SkillsSection from "../components/SkillsSection";
 import SportSection from "../components/SportSection";
 import TalksSection from "../components/TalksSection";
 import WishesSection from "../components/WishesSection";
-import { plural } from "../lib/dates";
+import { addDays, plural } from "../lib/dates";
+import { lastOf, measures, parseHealth } from "../lib/health";
+import { parseJobs } from "../lib/jobs";
+import { parseLibrary } from "../lib/library";
+import { parseWishes } from "../lib/wishes";
 import { useT } from "../lib/i18n";
 import { LATE_MEAL_HOUR } from "../lib/life";
 import { findSection, isSectionKey, splitSections, themeSections } from "../lib/overview";
@@ -87,22 +91,48 @@ export default function ThemePartPage() {
       case "template": return [<PagesScreen title="Опросник" pages={pages.template ? [pages.template] : []} relDate={relDate} empty="Шаблона опросника нет." />];
       case "training": return [<TrainingAtlas root={root} />];
       case "focus": return [one("Колесо фокуса", <p className="g-faint">У колеса фокуса нет полного экрана — оно целиком на странице темы.</p>)];
-      // the sections below are components of their own and still draw themselves
-      case "skills": return [<SkillsSection />];
+      // sections with their own input, rebuilt in the look of «Сегодня» (batch 2); each draws itself
+      case "skills": {
+        const have = (life?.skills ?? []).filter((x) => x.level > 0);
+        return [<SkillsSection />, { value: have.length, label: plural(have.length, "навык", "навыка", "навыков"), sub: have.length ? `средний уровень ${(have.reduce((n, x) => n + x.level, 0) / have.length).toFixed(1)} из 5` : undefined }];
+      }
+      case "body": {
+        const w = life ? lastOf(measures(life.days), "weight") : undefined;
+        return [<BodySection />, w?.weight !== undefined ? { value: w.weight, unit: "кг", label: "вес", sub: w.date } : undefined];
+      }
+      case "medical": {
+        const card = life?.health ? parseHealth(life.health) : undefined;
+        return [<MedicalSection />, card ? { value: card.plans.length, label: "в планах", sub: `${card.symptoms.length} ${plural(card.symptoms.length, "симптом", "симптома", "симптомов")} записано` } : undefined];
+      }
+      case "sport": {
+        const n = (life?.events ?? []).filter((e) => e.theme === "Health & sport" && e.date > addDays(today, -30) && e.date <= today).length;
+        return [<SportSection />, { value: n, label: plural(n, "раз", "раза", "раз"), sub: "за 30 дней" }];
+      }
+      case "self": {
+        // the same seven as the screen's own «в среднем за неделю»: the last seven marks of sixty days
+        const moods = Array.from({ length: 60 }, (_, i) => life?.days.get(addDays(today, i - 59))?.mood).filter((m): m is number => m !== undefined).slice(-7);
+        return [<SelfSection />, moods.length ? { value: Math.round((moods.reduce((a, b) => a + b, 0) / moods.length) * 10) / 10, label: "настроение", sub: `в среднем по ${moods.length} последним ${plural(moods.length, "оценке", "оценкам", "оценкам")}` } : undefined];
+      }
+      case "career": {
+        const n = life?.jobs ? parseJobs(life.jobs, today).length : 0;
+        return [<CareerSection />, n ? { value: n, label: plural(n, "место", "места", "мест"), sub: "работы" } : undefined];
+      }
+      case "wishes": {
+        const ws = parseWishes(life?.wishes ?? "");
+        return [<WishesSection />, ws.length ? { value: ws.filter((x) => x.state === "done").length, label: "сделано", sub: `из ${ws.length}` } : undefined];
+      }
+      case "library": {
+        const n = parseLibrary(life?.library ?? "").length;
+        return [<LibrarySection />, { value: n, label: plural(n, "название", "названия", "названий"), sub: "фильмы, сериалы, книги" }];
+      }
+      // the sections below are components of their own and still draw themselves the old way
       case "quran": return [<QuranSection />];
       case "names": return [<NamesSection />];
       case "halal": return [<HalalSection />];
-      case "body": return [<BodySection />];
-      case "medical": return [<MedicalSection />];
       case "circle": return [<CircleSection theme={theme} />];
       case "influence": return [<InfluenceSection theme={theme} />];
-      case "self": return [<SelfSection />];
       case "horizon": return [<HorizonSection />];
       case "talks": return [<TalksSection theme={theme} />];
-      case "career": return [<CareerSection />];
-      case "wishes": return [<WishesSection />];
-      case "library": return [<LibrarySection />];
-      case "sport": return [<SportSection />];
       case "rings": return [<RingsBoard />];
       case "relatives": return [<FamilyTree />];
       default: {
