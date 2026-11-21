@@ -1,6 +1,6 @@
 /* Theme pages (spec v4, 2026-11-06). Since 2026-11-21 the page itself is drawn with the `g-` classes of
    main/Play.css; what stays here is the page's frame and palette, the `Status` mark, the focus wheel's rings and the
-   full screens (`t-fs-`, `t-hl-`). Every class starts with
+   sections that still draw themselves (`t-hl-`, `t-inf-`). Every class starts with
    `t-`, the nested ones too: the globals of styles.css (.now .num .grid .card .chip .dot .empty .stack …)
    must never land here. The palette, fonts and spacing are «Главный»'s (Main.css), the theme colour is --th. */
 .t-page {
@@ -32,50 +32,7 @@ main > .t-page { max-width: 1260px; }
 .t-st.t-honey { color: var(--t-honey); }
 .t-st.t-ember { color: var(--t-ember); }
 .t-st.t-smoke { color: var(--t-smoke); }
-
-/* a full screen's way back (outside .t-page: the full screens keep the app's look) */
-a.t-back { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 8px; font: 500 11px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-a.t-back:hover { color: var(--ink); }
-
-/* full screens of the audit (2026-11-06), outside .t-page in the app's tokens: an overview section as cards,
-   the base by folders, the projects by folder (screens.tsx), Халяль · Харам · Макрух (QuranSections.tsx) */
-.t-fs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-top: 10px; }
-.t-fs-grid.t-fs-wide { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-.t-fs-card { position: relative; display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 14px 16px 14px 20px; color: var(--ink); text-decoration: none; }
-.t-fs-card::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 0 2px 2px 0; background: var(--c, var(--faint)); opacity: 0.85; }
-a.t-fs-card:hover { border-color: var(--hair-2); background: var(--raised); text-decoration: none; }
-.t-fs-t { font-family: var(--font-read); font-size: 16px; font-weight: 500; line-height: 1.3; color: var(--ink); }
-.t-fs-d { margin: 0; font-size: var(--fs-ui); line-height: 1.5; color: var(--ink-2); }
-.t-fs-n { font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--faint); }
-.t-fs-k { display: block; margin-bottom: 2px; font: 500 10px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
-.t-fs-clamp, .t-fs-now { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-.t-fs-dl { display: grid; gap: 6px; margin: 4px 0 0; }
-.t-fs-dl > div { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; align-items: baseline; }
-.t-fs-dl dt { font: 500 10px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
-.t-fs-dl dd { margin: 0; font-size: var(--fs-ui); line-height: 1.45; color: var(--ink-2); }
-.t-fs-struck .t-fs-t { text-decoration: line-through; color: var(--muted); }
-.t-fs-group + .t-fs-group { margin-top: 26px; }
-.t-fs-note { margin: 2px 0 0; max-width: 72ch; }
-.t-fs-group h3 .n, .t-fs-list h3 .n, .t-hl-group h3 .n { font: 400 11px var(--font-mono); color: var(--faint); }
-.t-fs-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
-.t-fs-sub { font: 400 11px var(--font-mono); color: var(--muted); }
-.t-fs-pill { flex: none; padding: 2px 9px; border-radius: 99px; font: 500 11px var(--font-mono); color: var(--tone); background: color-mix(in srgb, var(--tone) 13%, transparent); }
-.t-fs-sage { --tone: var(--success); }
-.t-fs-honey { --tone: var(--gold); }
-.t-fs-ember { --tone: var(--danger); }
-.t-fs-smoke { --tone: var(--faint); }
-.t-fs-proj .t-fs-n { margin-top: auto; padding-top: 4px; }
-.t-fs-stage { --tone: var(--accent-text); max-width: 60%; white-space: normal; text-align: right; }
-.t-fs-lines > div { grid-template-columns: 92px minmax(0, 1fr); }
-.t-fs-lines dd { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 3; -webkit-box-orient: vertical; font-size: var(--fs-sm); }
-.t-fs-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
-.t-fs-cn { margin-left: 2px; font: 400 11px var(--font-mono); color: var(--faint); }
-.t-fs-list { margin-top: 24px; scroll-margin-top: 16px; }
-.t-fs-list > h3 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--hair); font-family: var(--font-read); font-size: 19px; font-weight: 500; color: var(--ink); }
-.t-fs-list > h3 a { font: 400 var(--fs-sm) var(--font-ui); color: var(--accent-text); }
-.t-fs-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0 14px; }
-a.t-fs-item { display: block; overflow: hidden; padding: 6px 10px; border-left: 2px solid transparent; border-radius: 0 var(--r) var(--r) 0; font-size: 13.5px; color: var(--ink-2); text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
-a.t-fs-item:hover { border-left-color: var(--c, var(--accent-text)); background: var(--raised); color: var(--ink); }
+.t-hl-group h3 .n { font: 400 11px var(--font-mono); color: var(--faint); }
 
 /* Халяль · Харам · Макрух: three groups with their accent, a card a bullet */
 .t-hl-lead { margin: -2px 0 0; font-size: var(--fs-sm); color: var(--faint); }
