@@ -432,7 +432,7 @@
 
 /* ================= a theme page built the same way (2026-11-21) ================= */
 /* the dashboard's colours for the pages that are not inside .dash */
-.t-page, .p-page {
+.t-page, .p-page, .g-page {
   --d-night: #0B0D13; --d-dusk: #141720; --d-raised: #1F2330;
   --d-moon: #EDE7DA; --d-moon-2: #CFC9BC; --d-ash: #A19D93; --d-smoke: #6F6D6A;
   --d-hair: rgba(237, 231, 218, 0.07); --d-hair-2: rgba(237, 231, 218, 0.12);
@@ -536,3 +536,81 @@ a.g-pcard:hover { transform: translateY(-1px); border-color: rgba(237, 231, 218,
 .g-people .g-block .tbl { width: 100%; }
 .g-play .p-form { margin: 0; }
 .g-play .p-ntiles { margin: 0; }
+
+/* ================= the older screens built the same way (2026-11-21) ================= */
+.g-page { position: relative; isolation: isolate; min-height: 100%; padding: 22px 32px 88px; background: var(--d-night); color: var(--d-moon); font: 14px/1.55 var(--d-sans); -webkit-font-smoothing: antialiased; }
+main > .g-page { max-width: 1260px; }
+.g-page a { color: var(--d-iris); text-decoration: none; }
+.g-page a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.g-page button:focus-visible, .g-page a:focus-visible { outline: 2px solid var(--d-iris); outline-offset: 3px; border-radius: 4px; }
+.g-leaders { left: 28px; bottom: 22px; display: grid; gap: 5px; max-width: 46%; font-size: 13px; color: var(--d-moon); text-shadow: 0 1px 14px rgba(11, 13, 19, .7); }
+.g-leaders span { font: 500 10px var(--d-mono); letter-spacing: .13em; text-transform: uppercase; color: var(--d-sun); }
+.g-leaders > div { display: flex; align-items: center; gap: 7px; color: var(--d-moon-2); }
+.g-leaders .gb-flame { color: var(--d-honey); }
+.g-leaders b { font: 500 13px var(--d-mono); color: var(--d-moon); }
+.g-form { display: grid; gap: 8px; margin-top: 14px; }
+.g-form .two { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 8px; }
+.g-form .text { width: 100%; }
+.g-daypick { margin: 2px 0; }
+.g-form .g-line { align-items: center; margin-top: 4px; }
+.g-play .g-form .g-line button[type="submit"] { height: 36px; }
+
+/* a habit as a card */
+.g-hcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 12px; }
+.g-hcard { display: grid; gap: 10px; min-width: 0; padding: 12px 14px 12px; border: 1px solid var(--d-hair-2); border-left: 3px solid var(--c); border-radius: 14px; background: rgba(237, 231, 218, .022); transition: border-color .15s, background .15s; }
+.g-hcard.done { background: rgba(134, 201, 164, .09); }
+.g-hcard.failed { background: rgba(226, 106, 97, .06); }
+.g-hcard.idle { opacity: .72; }
+.g-play .g-hcard .hit { display: grid; grid-template-columns: 38px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 11px; align-items: center; width: 100%; }
+.g-play .g-hcard .hit:disabled { cursor: default; }
+.g-hcard .ico { grid-row: 1 / 3; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(237, 231, 218, .07); font: 500 15px var(--d-serif); color: var(--d-moon-2); transition: background .2s, transform .12s; }
+.g-play .g-hcard .hit:hover:not(:disabled) .ico { transform: scale(1.08); }
+.g-hcard.done .ico { background: var(--d-sage); color: #0B0D13; }
+.g-hcard.late .ico { background: var(--d-honey); color: #0B0D13; }
+.g-hcard.failed .ico { box-shadow: inset 0 0 0 2px var(--d-ember); }
+.g-hcard .hit b { align-self: end; font: 500 13.5px/1.25 var(--d-sans); color: var(--d-moon); overflow-wrap: anywhere; }
+.g-hcard .hit small { align-self: start; font: 400 11px var(--d-sans); color: var(--d-smoke); }
+.g-hcard.done .hit small { color: var(--d-sage); } .g-hcard.late .hit small { color: var(--d-honey); } .g-hcard.failed .hit small { color: var(--d-ember); }
+.g-hcard .beads { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 2px; }
+.g-hcard .beads i { height: 9px; border-radius: 3px; background: rgba(237, 231, 218, .07); }
+.g-hcard .beads i.h { background: var(--d-sage); } .g-hcard .beads i.l { background: var(--d-honey); } .g-hcard .beads i.f { background: var(--d-ember); }
+.g-hcard .beads i.u { background: rgba(237, 231, 218, .2); } .g-hcard .beads i.s { background: transparent; }
+.g-hcard .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font: 400 10.5px var(--d-mono); color: var(--d-smoke); }
+.g-hcard .meta em { display: flex; align-items: center; gap: 4px; font: 500 12px var(--d-mono); font-style: normal; color: var(--d-smoke); }
+.g-hcard .meta em.on { color: var(--d-honey); }
+.g-hcard p { margin: 0; font-size: 12px; line-height: 1.45; color: var(--d-ash); }
+.g-hcard .acts { display: flex; flex-wrap: wrap; gap: 4px 14px; padding-top: 8px; border-top: 1px solid var(--d-hair); }
+.g-play .g-hcard .acts button { font: 400 11px var(--d-mono); color: var(--d-smoke); }
+.g-play .g-hcard .acts button:hover { color: var(--d-moon); }
+.g-play .g-hcard .acts button:last-child { margin-left: auto; }
+.g-play .g-hcard .acts button:last-child:hover { color: var(--d-ember); }
+
+/* rules and leaders as rows */
+.g-rules { display: grid; margin-top: 10px; }
+.g-rules > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--d-hair); }
+.g-rules > div:first-child { border-top: 0; }
+.g-rules span { min-width: 0; font-size: 13px; color: var(--d-moon-2); }
+.g-rules small { display: block; font: 400 10.5px var(--d-mono); color: var(--d-smoke); }
+.g-rules b { display: flex; align-items: center; gap: 5px; flex: none; font: 500 13px var(--d-mono); color: var(--d-sun); }
+
+/* Колесо */
+.g-wheel { display: block; width: 100%; max-width: 440px; margin: 0 auto; overflow: visible; }
+.g-wheel .web { fill: none; stroke: var(--d-hair-2); stroke-width: 1; }
+.g-wheel .prev { fill: rgba(237, 231, 218, .05); stroke: var(--d-ash); stroke-width: 1.4; stroke-dasharray: 5 5; stroke-linejoin: round; }
+.g-wheel .now { fill: rgba(231, 194, 122, .18); stroke: var(--d-sun); stroke-width: 2.2; stroke-linejoin: round; }
+.g-wheel text { font: 500 11px var(--d-mono); letter-spacing: .08em; text-transform: uppercase; fill: var(--d-moon-2); }
+.g-wheel text.off { fill: var(--d-smoke); }
+.g-page a.g-mv4 { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 48px 52px; text-decoration: none; border-top: 1px solid var(--d-hair); }
+.g-page a.g-mv4:first-of-type { border-top: 0; }
+.g-mv4 em { text-align: right; font: 400 11px var(--d-mono); font-style: normal; color: var(--d-smoke); }
+.g-mv4 em.up { color: var(--d-sage); } .g-mv4 em.down { color: var(--d-ember); }
+.g-page a.g-sphere { position: relative; display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid var(--d-hair-2); border-radius: 16px; background: rgba(237, 231, 218, .025); color: inherit; text-decoration: none; transition: transform .15s, border-color .15s; }
+.g-page a.g-sphere:hover { transform: translateY(-2px); border-color: var(--c); text-decoration: none; }
+.g-sphere .gb-weeks { height: 30px; margin-top: 4px; }
+.g-sphere .gb-weeks i.now u { background: var(--c); }
+
+/* Тренды */
+.g-chart h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin: 0 0 10px; font: 500 13.5px var(--d-sans); color: var(--d-moon); }
+.g-chart h3 a, .g-chart h3 .n { font: 400 11px var(--d-mono); color: var(--d-smoke); }
+.g-chart .chart { width: 100%; }
+.g-chart .cats { display: grid; gap: 4px; }

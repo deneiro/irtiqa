@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
 import { BANNER } from "../assets/play";
-import { Banner } from "../components/GameBits";
-import GameAside from "../components/GameAside";
+import { FlameIcon } from "../components/GameBits";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { useDayEdit } from "./main/Play";
+import { askOf } from "../lib/game";
+import { PRAYER_ORDER, cell, type Cell } from "../lib/dashboard";
+import { withMark, type DayMark } from "../lib/life";
 import { useStore } from "../store";
-import { THEMES, groupByTheme, themeColor } from "../lib/themes";
+import { THEMES, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { WEEKDAYS_RU, addDays } from "../lib/dates";
 import { HABIT_DIR, HABIT_TIMES, byHabitTime, habitTimeLabel, type HabitTime, bestStreak, habitDue, habitRate, markOf, safeFilename, serializeHabit, streak, type Habit, type HabitKind, type HabitStatus } from "../lib/life";
@@ -40,15 +44,15 @@ export default function HabitsPage() {
   const [showArchived, setShowArchived] = useState(false);
 
   const habits = life?.habits ?? [];
-  const days = life?.days ?? new Map();
+  const lifeOrEmpty = useMemo(() => life ?? ({ days: new Map(), habits: [] } as unknown as NonNullable<typeof life>), [life]);
+  const { day, edit, error: dayErr } = useDayEdit(lifeOrEmpty, today);
+  const daysNow = useMemo(() => new Map(lifeOrEmpty.days).set(today, day), [lifeOrEmpty, today, day]);
   const groups = useMemo(() => ({
     proposed: habits.filter((h) => h.status === "proposed"),
     active: habits.filter((h) => h.status === "active"),
     paused: habits.filter((h) => h.status === "paused"),
     archived: habits.filter((h) => h.status === "archived"),
   }), [habits]);
-
-  const activeByTheme = useMemo(() => groupByTheme([...groups.active].sort(byHabitTime)), [groups.active]);
 
   const write = async (h: Habit, patch: Partial<Habit>) => {
     const next = { ...h, ...patch };
@@ -92,129 +96,124 @@ export default function HabitsPage() {
   const startEdit = (h: Habit) => {
     setEditing(h.rel);
     setForm({ title: h.title, theme: h.theme ?? THEMES[2].name, kind: h.kind, time: h.time ?? "", days: freqDays(h.freq), body: h.body, source: h.source ?? "" });
-    window.scrollTo(0, 0);
+    document.querySelector(".main")?.scrollTo(0, 0);
   };
 
-  const last14 = useMemo(() => Array.from({ length: 14 }, (_, i) => addDays(today, -(13 - i))), [today]);
+  const BEAD: Record<Cell, string> = { done: "h", late: "l", held: "h", failed: "f", fall: "f", unmarked: "u", pending: "u", nofile: "n", skip: "s", future: "s" };
+  const last30 = useMemo(() => Array.from({ length: 30 }, (_, i) => addDays(today, -(29 - i))), [today]);
+  const cycle = (h: Habit) => {
+    const order: (DayMark | undefined)[] = h.kind === "prayer" ? [undefined, "done", "late", "failed"] : [undefined, "done", "failed"];
+    edit((d) => withMark(d, h.title, order[(order.indexOf(markOf(d, h.title)) + 1) % order.length]));
+  };
 
-  const Row = ({ h }: { h: Habit }) => {
-    const s = streak(h, days, today);
-    const rate = habitRate(h, days, today);
+  /** One habit as a card: the tap that marks today, thirty days as beads, the run, and what can be done with it. */
+  const habitCard = (h: Habit) => {
+    const live = h.status === "active";
+    const m = live ? markOf(day, h.title) : undefined;
+    const s = streak(h, daysNow, today);
+    const rate = habitRate(h, daysNow, today);
+    const bad = h.kind === "bad";
+    const state = m === "done" ? (bad ? "чисто" : h.kind === "prayer" ? "вовремя" : "сделал") : m === "failed" ? (bad ? "срыв" : h.kind === "prayer" ? "пропустил" : "не сделал") : m === "late" ? "поздно" : "";
+    const dueToday = live && habitDue(h, today);
     return (
-      <div className="hrow">
-        <div style={{ minWidth: 0 }}>
-          <div className="name">{h.title} {h.kind === "bad" && <span className="chip">плохая</span>}</div>
-          <div className="sub">
-            {h.theme ? themeLabel(h.theme) : "без темы"} · {habitTimeLabel(h.time)} · {freqLabel(h.freq)}
-            {h.source ? <> · <SourceLink source={h.source} /></> : null}
-          </div>
-          {h.body && <div className="small muted" style={{ marginTop: 4 }}>{h.body}</div>}
+      <div key={h.rel} className={`g-hcard ${m ?? "none"}${live ? "" : " idle"}`} style={{ ["--c" as string]: themeColor(h.theme) }}>
+        <button className="hit" type="button" disabled={!dueToday} onClick={() => cycle(h)} aria-label={`${h.title}: ${state || (dueToday ? "не отмечено" : "сегодня не спрашивается")}`}>
+          <span className="ico">{askOf(h).icon ?? h.title.slice(0, 1)}</span>
+          <b>{h.title}</b>
+          <small>{state || (dueToday ? (bad ? "нажми — чисто" : "нажми — сделал") : live ? "сегодня не спрашивается" : h.status === "paused" ? "на паузе" : h.status === "proposed" ? "предложена" : "в архиве")}</small>
+        </button>
+        {live && <div className="beads" title="30 дней, слева старые">{last30.map((d) => <i key={d} className={BEAD[cell(life!, h, d, today)]} />)}</div>}
+        <div className="meta">
+          {live && <em className={s > 0 ? "on" : ""}><FlameIcon />{s}</em>}
+          {live && <span>макс {bestStreak(h, daysNow)}</span>}
+          {live && <span>{rate.due ? `${Math.round((100 * rate.done) / rate.due)} %` : "—"} за 30 дн</span>}
+          <span>{h.theme ? themeLabel(h.theme) : "без темы"} · {habitTimeLabel(h.time)} · {freqLabel(h.freq)}</span>
+          {h.source && <span><SourceLink source={h.source} /></span>}
         </div>
-        <div className="dots" title="последние 14 дней">
-          {last14.map((d) => {
-            const m = days.get(d) ? markOf(days.get(d)!, h.title) : undefined;
-            const due = habitDue(h, d);
-            return <i key={d} className={`dot ${m ?? (due ? "none" : "off")}`} />;
-          })}
-        </div>
-        <div className="hstats">
-          <span title="текущий стрик"><b>{s}</b> дн.</span>
-          <span title="лучший стрик" className="faint">макс {bestStreak(h, days)}</span>
-          <span title="за 30 дней, из отмеченных" className="faint">{rate.due ? `${Math.round((100 * rate.done) / rate.due)}%` : "—"}</span>
-          {rate.unmarked > 0 && <span title="дней без отметки за 30 дней — не считаются ни сделанными, ни сорванными" className="faint">без отметки {rate.unmarked}</span>}
-        </div>
-        <div className="hactions">
-          {h.status === "proposed" && <><button className="btn small primary" onClick={() => setStatus(h, "active")}>принять</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>отклонить</button></>}
-          {h.status === "active" && <><button className="btn small ghost" onClick={() => startEdit(h)}>править</button><button className="btn small ghost" onClick={() => setStatus(h, "paused")}>пауза</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>в архив</button></>}
-          <button className="btn small ghost" title="удалить насовсем" onClick={() => void remove(h)}>×</button>
-          {h.status === "paused" && <><button className="btn small" onClick={() => setStatus(h, "active")}>вернуть</button><button className="btn small ghost" onClick={() => setStatus(h, "archived")}>в архив</button></>}
-          {h.status === "archived" && <button className="btn small ghost" onClick={() => setStatus(h, "active")}>вернуть</button>}
+        {h.body.trim() && <p>{h.body.trim()}</p>}
+        <div className="acts">
+          {h.status === "proposed" && <><button onClick={() => setStatus(h, "active")}>принять</button><button onClick={() => setStatus(h, "archived")}>отклонить</button></>}
+          {h.status === "active" && <><button onClick={() => startEdit(h)}>править</button><button onClick={() => setStatus(h, "paused")}>пауза</button><button onClick={() => setStatus(h, "archived")}>в архив</button></>}
+          {h.status === "paused" && <><button onClick={() => setStatus(h, "active")}>вернуть</button><button onClick={() => setStatus(h, "archived")}>в архив</button></>}
+          {h.status === "archived" && <button onClick={() => setStatus(h, "active")}>вернуть</button>}
+          <button title="удалить насовсем" onClick={() => void remove(h)}>удалить</button>
         </div>
       </div>
     );
   };
 
   if (!life) return null;
+  const active = [...groups.active].sort(byHabitTime);
+  const dueToday = active.filter((h) => habitDue(h, today));
+  const doneToday = dueToday.filter((h) => markOf(day, h.title) === "done").length;
+  const leaders = active.filter((h) => h.kind !== "prayer").map((h) => ({ h, n: streak(h, daysNow, today) })).filter((x) => x.n > 0).sort((a, b) => b.n - a.n).slice(0, 3);
+  const KINDS: [HabitKind, string, string][] = [["prayer", "Намаз", "вовремя → поздно → пропустил"], ["bad", "Держусь", "чисто → срыв"], ["good", "Полезные", "сделал → не сделал"]];
   return (
-    <div>
-      <Banner art={BANNER.habits} kicker="привычки · серии" title="Привычки" aside={<GameAside />}>
-        <p className="gb-lede">{groups.active.length} активных · {groups.paused.length} на паузе · {groups.proposed.length} предложено из vault. Отмечаются на «Сегодня» или в ответах боту.</p>
-      </Banner>
-
-      <details className="card create" style={{ marginTop: 16 }} open={editing || err ? true : undefined}>
-        <summary>{editing ? `Правка: ${form.title}` : "+ Новая привычка"}</summary>
-        <form className="hform" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Название" value={form.title} disabled={!!editing} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-          <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
-            {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
-          </select>
-          <select className="text" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value as HabitKind })}>
-            <option value="good">хорошая</option>
-            <option value="bad">плохая</option>
-          </select>
-          <select className="text" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value as HabitTime | "" })}>
-            <option value="">весь день</option>
-            {HABIT_TIMES.map((t) => <option key={t} value={t}>{habitTimeLabel(t)}</option>)}
-          </select>
-          <div className="daypick">
-            {ORDER.map((d) => (
-              <label key={d} className={`dp ${form.days.includes(d) ? "on" : ""}`}>
-                <input type="checkbox" checked={form.days.includes(d)} onChange={(e) => setForm({ ...form, days: e.target.checked ? [...form.days, d] : form.days.filter((x) => x !== d) })} />
-                {d}
-              </label>
-            ))}
-            <button type="button" className="btn small ghost" onClick={() => setForm({ ...form, days: form.days.length === 7 ? [] : [...ORDER] })}>{form.days.length === 7 ? "снять" : "все"}</button>
-          </div>
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Источник, например [[Atomic Habits]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Зачем (одна строка, необязательно)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
-          <div className="row">
-            <button className="btn primary" type="submit">{editing ? "сохранить" : "+ добавить"}</button>
-            {editing && <button className="btn ghost" type="button" onClick={() => { setEditing(null); setForm(EMPTY); }}>отмена</button>}
-          </div>
-        </form>
-        {err && <div className="small" style={{ color: "var(--danger)", marginTop: 6 }}>{err}</div>}
-      </details>
-
-      {groups.proposed.length > 0 && (
-        <>
-          <h2 className="section">Предложено из vault <span className="n">{groups.proposed.length}</span></h2>
-          <p className="small muted" style={{ marginTop: -4 }}>Claude читает профиль, темы и последние дни и предлагает привычку. Запросить новую — на панели <Link to="/claude">Claude</Link>, кнопка «Привычка месяца».</p>
-          <div className="card inbox">
-            {groups.proposed.map((h) => (
-              <div key={h.rel} className="proposal">
-                <Row h={h} />
-                {h.body.trim() && <div className="why">{h.body.trim()}</div>}
+    <div className="g-page">
+      <div className="g-play">
+        <div className="g-top">
+          <SceneFrame art={BANNER.habits}>
+            <SceneTitle kicker={`привычки · ${groups.active.length} активных · ${groups.paused.length} на паузе`} title="Привычки" />
+            {leaders.length > 0 && <div className="g-leaders"><span>самые длинные серии</span>{leaders.map((x) => <div key={x.h.rel}><FlameIcon /><b>{x.n}</b>{x.h.title}</div>)}</div>}
+            <SceneNumber value={doneToday} unit={` / ${dueToday.length}`} label="сегодня" sub="карточка отмечает сегодняшний день нажатием" />
+          </SceneFrame>
+          <SideCard kicker={editing ? `правка · ${form.title}` : "новая привычка"}>
+            <form className="g-form" onSubmit={(e) => { e.preventDefault(); void submit(); }}>
+              <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Название" value={form.title} disabled={!!editing} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+              <div className="two">
+                <select className="text" value={form.theme} onChange={(e) => setForm({ ...form, theme: e.target.value })}>
+                  {THEMES.map((t) => <option key={t.name} value={t.name}>{themeLabel(t.name)}</option>)}
+                </select>
+                <select className="text" value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value as HabitKind })}>
+                  <option value="good">хорошая</option>
+                  <option value="bad">плохая</option>
+                </select>
               </div>
-            ))}
-          </div>
-        </>
-      )}
+              <select className="text" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value as HabitTime | "" })}>
+                <option value="">весь день</option>
+                {HABIT_TIMES.map((t) => <option key={t} value={t}>{habitTimeLabel(t)}</option>)}
+              </select>
+              <div className="g-chips wrap g-daypick">
+                {ORDER.map((d) => <button type="button" key={d} className={form.days.includes(d) ? "on" : ""} aria-pressed={form.days.includes(d)} onClick={() => setForm({ ...form, days: form.days.includes(d) ? form.days.filter((x) => x !== d) : [...form.days, d] })}>{d}</button>)}
+                <button type="button" onClick={() => setForm({ ...form, days: form.days.length === 7 ? [] : [...ORDER] })}>{form.days.length === 7 ? "снять" : "все"}</button>
+              </div>
+              <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Источник, например [[Atomic Habits]]" value={form.source} onChange={(e) => setForm({ ...form, source: e.target.value })} />
+              <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="Зачем (одна строка)" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} />
+              <div className="g-line">
+                <button type="submit">{editing ? "Сохранить" : "Добавить"}</button>
+                {editing && <button className="g-link" type="button" onClick={() => { setEditing(null); setForm(EMPTY); }}>отмена</button>}
+              </div>
+            </form>
+            {(err || dayErr) && <p className="g-error" role="alert">{err ?? dayErr}</p>}
+          </SideCard>
+        </div>
 
-      <h2 className="section">Активные <span className="n">{groups.active.length}</span></h2>
-      {groups.active.length ? activeByTheme.groups.map((g) => (
-        <details className="card htheme-card" key={g.theme ?? "none"} open>
-          <summary><i className="tdot" style={{ background: themeColor(g.theme) }} /> {g.theme ? themeLabel(g.theme) : "без темы"} <span className="n">{g.items.length}</span></summary>
-          {g.items.map((h) => <Row key={h.rel} h={h} />)}
-        </details>
-      )) : <div className="empty">Пока пусто. Добавь первую привычку выше.</div>}
-      {groups.active.length > 0 && activeByTheme.missing.length > 0 && <p className="small faint">Нет ни одной привычки: {activeByTheme.missing.map((t) => themeLabel(t)).join(", ")}</p>}
+        {groups.proposed.length > 0 && (
+          <Block title={`Предложено из vault · ${groups.proposed.length}`} right={<>новую предлагает <Link to="/claude">Claude</Link> — «Привычка месяца»</>}>
+            <div className="g-hcards">{groups.proposed.map(habitCard)}</div>
+          </Block>
+        )}
 
-      {groups.paused.length > 0 && (
-        <>
-          <h2 className="section">На паузе <span className="n">{groups.paused.length}</span></h2>
-          <div className="card">{groups.paused.map((h) => <Row key={h.rel} h={h} />)}</div>
-        </>
-      )}
+        {KINDS.map(([kind, title, hint]) => {
+          const rank = (t: string) => { const i = PRAYER_ORDER.indexOf(t); return i < 0 ? PRAYER_ORDER.length : i; };
+          const of = active.filter((h) => h.kind === kind).sort((x, y) => (kind === "prayer" ? rank(x.title) - rank(y.title) : 0));
+          if (!of.length) return null;
+          return (
+            <Block key={kind} title={`${title} · ${of.length}`} right={`нажатие отмечает сегодня: ${hint} · бусины — 30 дней`}>
+              <div className="g-hcards">{of.map(habitCard)}</div>
+            </Block>
+          );
+        })}
+        {!active.length && <Block title="Активные"><p className="g-faint">Пока пусто. Добавь первую привычку в карточке справа от картины.</p></Block>}
 
-      {groups.archived.length > 0 && (
-        <>
-          <h2 className="section">
-            <button className="tab" style={{ padding: 0, margin: 0, border: "none" }} onClick={() => setShowArchived(!showArchived)}>Архив {showArchived ? "▾" : "▸"}</button>
-            <span className="n">{groups.archived.length}</span>
-          </h2>
-          {showArchived && <div className="card">{groups.archived.map((h) => <Row key={h.rel} h={h} />)}</div>}
-        </>
-      )}
+        {groups.paused.length > 0 && <Block title={`На паузе · ${groups.paused.length}`}><div className="g-hcards">{groups.paused.map(habitCard)}</div></Block>}
+
+        {groups.archived.length > 0 && (
+          <Block title={`Архив · ${groups.archived.length}`} right={<button className="g-link" onClick={() => setShowArchived(!showArchived)}>{showArchived ? "свернуть" : "показать"}</button>}>
+            {showArchived ? <div className="g-hcards">{groups.archived.map(habitCard)}</div> : <p className="g-faint">Привычки, которые больше не ведутся. Отметки остаются в файлах дней.</p>}
+          </Block>
+        )}
+      </div>
     </div>
   );
 }
