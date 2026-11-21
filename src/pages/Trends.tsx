@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { BANNER } from "../assets/play";
-import { Banner } from "../components/GameBits";
-import GameAside from "../components/GameAside";
+import { FlameIcon } from "../components/GameBits";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useStore, useVault } from "../store";
@@ -12,7 +12,7 @@ import { addDays, monthOfToday } from "../lib/dates";
 import { bestStreak, habitDue, streak, workMinutesOf, xpForDay, type Day, type XpContext } from "../lib/life";
 import { useDayToday } from "../lib/useDayToday";
 
-const axis = { stroke: "var(--faint)", fontSize: 11, fontFamily: "var(--font-mono)" };
+const axis = { stroke: "#6F6D6A", fontSize: 11, fontFamily: "IBM Plex Mono, monospace" };
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
 function weekKey(date: string): string {
   const d = new Date(date + "T00:00:00Z");
@@ -73,79 +73,92 @@ export default function TrendsPage() {
   const moodData = data.daily.filter((d) => d["настроение"] !== undefined || d["стресс"] !== undefined);
 
   return (
-    <div>
-      <Banner art={BANNER.trends} kicker="за последние 30 дней" title="Тренды" aside={<GameAside />}>
-        <p className="gb-lede">
-          привычки <b>{data.due30 ? Math.round((100 * data.done30) / data.due30) : 0}%</b> · работа <b>{Math.round(data.work30 / 60)} ч</b> · прочитано <b>{data.reads30}</b> · потрачено в этом месяце <b>{fmt(data.monthSpent)}</b>
-        </p>
-      </Banner>
+    <div className="g-page">
+      <div className="g-play">
+      <div className="g-top">
+        <SceneFrame art={BANNER.trends}>
+          <SceneTitle kicker="за последние 30 дней и 12 недель" title="Тренды" />
+          <div className="g-xp8">
+            <span>работа <b>{Math.round(data.work30 / 60)} ч</b> · прочитано <b>{data.reads30}</b></span>
+            <span>потрачено в этом месяце <b>{fmt(data.monthSpent)} ₸</b></span>
+          </div>
+          <SceneNumber value={data.due30 ? Math.round((100 * data.done30) / data.due30) : "—"} unit={data.due30 ? "%" : undefined} label="привычек сделано" sub={`${data.done30} из ${data.due30} за 30 дней`} />
+        </SceneFrame>
+        <SideCard kicker="серии сейчас">
+          {data.streaks.filter((x) => x.cur > 0).length ? (
+            <div className="g-rules">{data.streaks.filter((x) => x.cur > 0).slice(0, 7).map(({ h, cur, best }) => <div key={h.rel}><span style={{ color: themeColor(h.theme) }}>{h.title}<small>лучшая {best}</small></span><b><FlameIcon /> {cur}</b></div>)}</div>
+          ) : <p className="g-rule">Серий пока нет — первая начнётся с отмеченного дня.</p>}
+          <Link className="g-link g-side-link" to="/habits">все привычки →</Link>
+        </SideCard>
+      </div>
 
-      <div className="grid cols-2" style={{ marginTop: 16 }}>
-        <div className="card">
+      <Block title="Графики" right="дни — 30 последних · недели — 12 последних">
+      <div className="g-charts g-recharts">
+        <div className="g-chart">
           <h3>Привычки по дням <Link to="/habits" className="n">открыть</Link></h3>
           <div className="chart" style={{ height: 200 }}>
             <ResponsiveContainer>
               <BarChart data={data.daily} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
+                <CartesianGrid vertical={false} stroke="rgba(237,231,218,.08)" />
                 <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} interval={4} />
                 <YAxis tick={axis} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
-                <Bar dataKey="сделано" stackId="a" fill="var(--success)" />
-                <Bar dataKey="сорвано" stackId="a" fill="var(--danger)" />
-                <Bar dataKey="не отмечено" stackId="a" fill="var(--hair-2)" radius={[3, 3, 0, 0]} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(237,231,218,.06)" }} />
+                <Bar dataKey="сделано" stackId="a" fill="#86C9A4" />
+                <Bar dataKey="сорвано" stackId="a" fill="#E26A61" />
+                <Bar dataKey="не отмечено" stackId="a" fill="rgba(237,231,218,.16)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="card">
+        <div className="g-chart">
           <h3>Деньги по неделям <Link to="/finance" className="n">открыть</Link></h3>
           <div className="chart" style={{ height: 200 }}>
             <ResponsiveContainer>
               <BarChart data={data.weekly} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
+                <CartesianGrid vertical={false} stroke="rgba(237,231,218,.08)" />
                 <XAxis dataKey="week" tick={axis} axisLine={false} tickLine={false} />
                 <YAxis tick={axis} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(237,231,218,.06)" }} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="потрачено" fill="var(--accent)" radius={[3, 3, 0, 0]} />
-                <Bar dataKey="получено" fill="var(--success)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="потрачено" fill="#E7C27A" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="получено" fill="#86C9A4" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="card">
+        <div className="g-chart">
           <h3>Настроение и стресс</h3>
           {moodData.length === 0 ? <div className="small muted">Пока нет оценок: настроение и стресс спрашивает вечерний опрос бота.</div> : (
             <div className="chart" style={{ height: 200 }}>
               <ResponsiveContainer>
                 <LineChart data={data.daily} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                  <CartesianGrid vertical={false} stroke="var(--hair)" />
+                  <CartesianGrid vertical={false} stroke="rgba(237,231,218,.08)" />
                   <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} interval={4} />
                   <YAxis domain={[0, 10]} tick={axis} axisLine={false} tickLine={false} />
                   <Tooltip content={<ChartTip />} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Line type="monotone" dataKey="настроение" stroke="var(--accent-2)" dot={false} connectNulls strokeWidth={2} />
-                  <Line type="monotone" dataKey="стресс" stroke="var(--danger)" dot={false} connectNulls strokeWidth={2} />
+                  <Line type="monotone" dataKey="настроение" stroke="#A89DFF" dot={false} connectNulls strokeWidth={2} />
+                  <Line type="monotone" dataKey="стресс" stroke="#E26A61" dot={false} connectNulls strokeWidth={2} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           )}
         </div>
-        <div className="card">
+        <div className="g-chart">
           <h3>Работа над квестами, минут в день <Link to="/quests" className="n">открыть</Link></h3>
           <div className="chart" style={{ height: 200 }}>
             <ResponsiveContainer>
               <BarChart data={data.daily} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
+                <CartesianGrid vertical={false} stroke="rgba(237,231,218,.08)" />
                 <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} interval={4} />
                 <YAxis tick={axis} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
-                <Bar dataKey="работа, мин" fill="var(--gold)" radius={[3, 3, 0, 0]} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(237,231,218,.06)" }} />
+                <Bar dataKey="работа, мин" fill="#E2AB5E" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="card">
+        <div className="g-chart">
           <h3>XP по темам в этом месяце</h3>
           <div className="cats">
             {data.xpRows.map((r) => (
@@ -157,53 +170,37 @@ export default function TrendsPage() {
             ))}
           </div>
         </div>
-        <div className="card">
+        <div className="g-chart">
           <h3>Доля выполненных привычек по неделям</h3>
           <div className="chart" style={{ height: 160 }}>
             <ResponsiveContainer>
               <BarChart data={data.weekly.filter((w) => w.due > 0)} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
+                <CartesianGrid vertical={false} stroke="rgba(237,231,218,.08)" />
                 <XAxis dataKey="week" tick={axis} axisLine={false} tickLine={false} />
                 <YAxis domain={[0, 100]} tick={axis} axisLine={false} tickLine={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
-                <Bar dataKey="привычки, %" fill="var(--success)" radius={[3, 3, 0, 0]} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(237,231,218,.06)" }} />
+                <Bar dataKey="привычки, %" fill="#86C9A4" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
-        <div className="card">
+        <div className="g-chart">
           <h3>Чтение по неделям</h3>
           <div className="chart" style={{ height: 160 }}>
             <ResponsiveContainer>
               <BarChart data={data.weekly} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
+                <CartesianGrid vertical={false} stroke="rgba(237,231,218,.08)" />
                 <XAxis dataKey="week" tick={axis} axisLine={false} tickLine={false} />
                 <YAxis tick={axis} axisLine={false} tickLine={false} allowDecimals={false} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
-                <Bar dataKey="прочитано" fill="var(--accent-2)" radius={[3, 3, 0, 0]} />
+                <Tooltip content={<ChartTip />} cursor={{ fill: "rgba(237,231,218,.06)" }} />
+                <Bar dataKey="прочитано" fill="#A89DFF" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>Стрики</h3>
-        {data.streaks.length === 0 ? <div className="small muted">Активных привычек нет.</div> : (
-          <table className="tbl">
-            <thead><tr><th>привычка</th><th>тема</th><th style={{ textAlign: "right" }}>сейчас</th><th style={{ textAlign: "right" }}>лучший</th></tr></thead>
-            <tbody>
-              {data.streaks.map(({ h, cur, best }) => (
-                <tr key={h.rel}>
-                  <td><Link to="/habits">{h.title}</Link></td>
-                  <td><span className="chip c" style={{ ["--c" as string]: themeColor(h.theme) }}>{h.theme ? themeLabel(h.theme) : "—"}</span></td>
-                  <td className="mono" style={{ textAlign: "right" }}>{cur}</td>
-                  <td className="mono muted" style={{ textAlign: "right" }}>{best}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+      </Block>
       </div>
     </div>
   );

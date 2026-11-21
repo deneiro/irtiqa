@@ -74,7 +74,8 @@ function Shell() {
         <Back />
         <Routes>
           <Route path="/" element={<MainPage />} />
-          <Route path="/day" element={<DayPage />} />
+          <Route path="/day" element={<Navigate to="/?tab=play" replace />} />
+          <Route path="/day-v1" element={<DayPage />} />
           <Route path="/vault" element={<Home />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/training" element={<TrainingPage />} />

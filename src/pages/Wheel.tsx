@@ -1,110 +1,113 @@
-import { useMemo, type ReactNode } from "react";
-import { BANNER } from "../assets/play";
-import { Banner } from "../components/GameBits";
-import GameAside from "../components/GameAside";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip } from "recharts";
+import { BANNER, THEME_ART } from "../assets/play";
+import { WeekBars } from "../components/GameBits";
 import { useStore, useVault } from "../store";
-import { ChartTip } from "../components/Bits";
-import { themeColor } from "../lib/themes";
+import { themeColor, themeRu } from "../lib/themes";
 import { useT } from "../lib/i18n";
 import { XP } from "../lib/life";
+import { rankOf } from "../lib/game";
 import { overallLevelProgress, themeXps } from "../lib/levels";
 import { useDayToday } from "../lib/useDayToday";
+import { themeUrl } from "../lib/vault";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
 
+/**
+ * «Колесо» (rebuilt 2026-11-21 the way «Сегодня» is): the balance of the eight themes. The scene carries the overall
+ * level; beside it where XP comes from. Below, the wheel itself — these thirty days over the thirty before — and the
+ * eight themes as pictures with their level, eight weeks of XP and what the month gave.
+ */
 export default function WheelPage() {
   const v = useVault();
   const { life } = useStore();
   const { themeLabel } = useT();
   const today = useDayToday();
-
   const xps = useMemo(() => (life ? themeXps(life, v.pages, today) : []), [life, v, today]);
+  if (!life) return null;
   const total = xps.reduce((s, x) => s + x.total, 0);
-  const last30 = xps.reduce((s, x) => s + x.last30, 0);
+  const last30 = xps.reduce((s, x) => s + x.last30, 0), prev30 = xps.reduce((s, x) => s + x.prev30, 0);
   const overall = overallLevelProgress(total);
-  const radar = xps.map((x) => ({ theme: themeLabel(x.theme), "эти 30 дней": x.last30, "прошлые 30": x.prev30 }));
-  const maxWeek = Math.max(1, ...xps.flatMap((x) => x.weeks.map((w) => w.xp)));
   const sorted = [...xps].sort((a, b) => b.last30 - a.last30 || b.total - a.total);
   const quiet = sorted.filter((x) => x.last30 === 0);
-
-  if (!life) return null;
+  // the wheel: the root of the share, so one loud theme does not flatten the rest
+  const max = Math.max(1, ...xps.flatMap((x) => [x.last30, x.prev30]));
+  const R = 150, C = 200;
+  const at = (i: number, r: number): [number, number] => { const a = (i / xps.length) * Math.PI * 2 - Math.PI / 2; return [C + Math.cos(a) * r, C + Math.sin(a) * r]; };
+  const shape = (key: "last30" | "prev30") => xps.map((x, i) => at(i, 10 + Math.sqrt(x[key] / max) * (R - 10)).join(",")).join(" ");
+  const rules: [string, string, string][] = [
+    ["привычка выполнена", `+${XP.habitDone}`, "в тему привычки"],
+    ["намаз с опозданием", `+${XP.prayerLate}`, "в Духовность"],
+    ["задача дня сделана", `+${XP.taskDone}`, "в тему её части дня"],
+    ["запись дня", `+${XP.log}`, "настроение · вес или еда · деньги"],
+    ["деятельность закрыта", `+${XP.questDone} и ${XP.questPerHour}/час`, `сессии от ${XP.questMinMinutes} мин`],
+    ["запись в журнале", `+${XP.journal}`, "в Рост и Духовность"],
+    ["страница прочитана", `+${XP.resourceRead}`, "в тему страницы"],
+  ];
   return (
-    <div>
-      <Banner art={BANNER.wheel} kicker="баланс по восьми темам" title="Колесо" aside={<GameAside />}>
-        <p className="gb-lede">
-          уровень <b>{overall.level}</b> · {overall.into} / {overall.need} XP до следующего · всего <b>{total}</b> XP · за 30 дней <b>{last30}</b>
-        </p>
-      </Banner>
-
-      <div className="wheel-grid">
-        <div className="card">
-          <h3>XP за 30 дней <span className="n">против прошлых 30</span></h3>
-          {last30 + xps.reduce((s, x) => s + x.prev30, 0) === 0 ? (
-            <div className="empty">Колесо пустое: отметь привычку, закрой квест или прочитай страницу, и оно начнёт крутиться.</div>
-          ) : (
-            <div className="chart" style={{ height: 360 }}>
-              <ResponsiveContainer>
-                <RadarChart data={radar} outerRadius="72%">
-                  <PolarGrid stroke="var(--hair-2)" />
-                  <PolarAngleAxis dataKey="theme" tick={{ fill: "var(--muted)", fontSize: 11 }} />
-                  <PolarRadiusAxis tick={false} axisLine={false} />
-                  <Tooltip content={<ChartTip />} />
-                  <Radar dataKey="прошлые 30" stroke="var(--faint)" fill="var(--faint)" fillOpacity={0.15} strokeDasharray="4 3" />
-                  <Radar dataKey="эти 30 дней" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.35} />
-                </RadarChart>
-              </ResponsiveContainer>
+    <div className="g-page">
+      <div className="g-play">
+        <div className="g-top">
+          <SceneFrame art={BANNER.wheel}>
+            <SceneTitle kicker="баланс по восьми темам" title="Колесо" />
+            <div className="g-xp8">
+              <span>за 30 дней <b>{last30}</b> XP · до того {prev30} · всего <b>{total}</b></span>
+              <span>{quiet.length ? <>тихие темы: {quiet.map((x) => themeLabel(x.theme)).join(", ")}</> : "все восемь тем получили XP за месяц"}</span>
             </div>
-          )}
-          {quiet.length > 0 && (
-            <div className="small muted" style={{ marginTop: 8 }}>
-              Тихие темы за месяц: {quiet.map((x) => <Link key={x.theme} to={`/theme/${encodeURIComponent(x.theme)}`} style={{ color: themeColor(x.theme) }}>{themeLabel(x.theme)}</Link>).reduce<ReactNode[]>((a, e, i) => (i ? [...a, ", ", e] : [e]), [])}.
-            </div>
-          )}
+            <SceneNumber value={overall.level} label={`уровень · ${rankOf(overall.level)}`} sub={`${overall.into} / ${overall.need} XP до следующего`} />
+          </SceneFrame>
+          <SideCard kicker="откуда берётся XP">
+            <div className="g-rules">{rules.map(([what, n, where]) => <div key={what}><span>{what}<small>{where}</small></span><b>{n}</b></div>)}</div>
+            <p className="g-cap">Уровень темы: 60 XP за первый, каждый следующий на 20 дороже. Общий: 100, потом на 25 дороже. Штрафов нет.</p>
+          </SideCard>
         </div>
 
-        <div className="card">
-          <h3>Откуда берётся XP</h3>
-          <table className="tbl small">
-            <tbody>
-              <tr><td>привычка выполнена</td><td className="mono" style={{ textAlign: "right" }}>+{XP.habitDone}</td><td className="muted">в тему привычки</td></tr>
-              <tr><td>намаз с опозданием</td><td className="mono" style={{ textAlign: "right" }}>+{XP.prayerLate}</td><td className="muted">в Духовность</td></tr>
-              <tr><td>задача дня сделана</td><td className="mono" style={{ textAlign: "right" }}>+{XP.taskDone}</td><td className="muted">в тему её части дня</td></tr>
-              <tr><td>запись дня</td><td className="mono" style={{ textAlign: "right" }}>+{XP.log}</td><td className="muted">настроение или стресс · вес или еда · деньги</td></tr>
-              <tr><td>квест закрыт</td><td className="mono" style={{ textAlign: "right" }}>+{XP.questDone} + {XP.questPerHour}/час</td><td className="muted">сессии короче {XP.questMinMinutes} мин не считаются</td></tr>
-              <tr><td>запись в журнале</td><td className="mono" style={{ textAlign: "right" }}>+{XP.journal}</td><td className="muted">в Личностный рост и Духовность</td></tr>
-              <tr><td>страница прочитана</td><td className="mono" style={{ textAlign: "right" }}>+{XP.resourceRead}</td><td className="muted">в тему страницы, один раз</td></tr>
-            </tbody>
-          </table>
-          <div className="small faint" style={{ marginTop: 8 }}>Уровень темы: 60 XP за первый, каждый следующий на 20 дороже. Общий уровень: 100, потом на 25 дороже. Нет HP, нет штрафов, пропуск виден в стрике.</div>
+        <div className="g-two">
+          <Block title="Колесо · 30 дней" right="сплошное — эти 30 дней · пунктир — прошлые 30">
+            {last30 + prev30 === 0 ? <p className="g-faint">Колесо пустое: отметь привычку, сделай задачу или прочитай страницу, и оно начнёт крутиться.</p> : (
+              <svg className="g-wheel" viewBox="0 0 400 400" role="img" aria-label="XP по восьми темам: эти 30 дней и прошлые 30">
+                {[0.33, 0.66, 1].map((k) => <polygon key={k} className="web" points={xps.map((_, i) => at(i, R * k).join(",")).join(" ")} />)}
+                {xps.map((_, i) => <line key={i} className="web" x1={C} y1={C} x2={at(i, R)[0]} y2={at(i, R)[1]} />)}
+                <polygon className="prev" points={shape("prev30")} />
+                <polygon className="now" points={shape("last30")} />
+                {xps.map((x, i) => {
+                  const [px, py] = at(i, 10 + Math.sqrt(x.last30 / max) * (R - 10));
+                  const [lx, ly] = at(i, R + 22);
+                  return <g key={x.theme}><circle cx={px} cy={py} r="5" fill={themeColor(x.theme)} /><text x={lx} y={ly + 4} textAnchor={Math.abs(lx - C) < 10 ? "middle" : lx > C ? "start" : "end"} className={x.last30 ? "" : "off"}>{themeRu(x.theme)}</text></g>;
+                })}
+              </svg>
+            )}
+          </Block>
+          <Block title="Месяц по темам" right="XP за 30 дней · к прошлым 30">
+            {sorted.map((x) => {
+              const delta = x.last30 - x.prev30;
+              return (
+                <Link key={x.theme} to={themeUrl(x.theme)} className="g-mv g-mv4">
+                  <span style={{ color: themeColor(x.theme) }}>{themeLabel(x.theme)}</span>
+                  <i><u style={{ width: `${(x.last30 / Math.max(1, sorted[0].last30)) * 100}%`, background: themeColor(x.theme) }} /></i>
+                  <b>{x.last30}</b>
+                  <em className={delta > 0 ? "up" : delta < 0 ? "down" : ""}>{delta > 0 ? `+${delta}` : delta === 0 ? "±0" : delta}</em>
+                </Link>
+              );
+            })}
+          </Block>
         </div>
-      </div>
 
-      <div className="theme-rows">
-        {sorted.map((x) => {
-          const delta = x.last30 - x.prev30;
-          const color = themeColor(x.theme);
-          return (
-            <Link key={x.theme} to={`/theme/${encodeURIComponent(x.theme)}`} className="card theme-row" style={{ ["--c" as string]: color }}>
-              <div className="trow-head">
-                <span className="bar" />
-                <b>{themeLabel(x.theme)}</b>
-                <span className="lvl">ур. {x.level.level}</span>
-                <span className="grow" />
-                <span className="mono">{x.last30} XP</span>
-                <span className={`mono small ${delta > 0 ? "up" : delta < 0 ? "down" : "faint"}`}>{delta > 0 ? `+${delta}` : delta === 0 ? "±0" : delta}</span>
-              </div>
-              <div className="lvlbar" title={`${x.level.into} / ${x.level.need} XP до уровня ${x.level.level + 1}`}>
-                <i style={{ width: `${(100 * x.level.into) / x.level.need}%` }} />
-              </div>
-              <div className="spark" title="XP по неделям, 8 недель">
-                {x.weeks.map((w) => <i key={w.week} style={{ height: `${Math.max(6, (100 * w.xp) / maxWeek)}%` }} title={`${w.week}: ${w.xp}`} />)}
-              </div>
-              <div className="small faint">{x.level.into} / {x.level.need} до следующего · всего {x.total}</div>
-            </Link>
-          );
-        })}
+        <Block title="Восемь тем" right={<><Link to="/trends">тренды по дням и неделям →</Link></>}>
+          <div className="g-spheres">
+            {sorted.map((x) => (
+              <Link key={x.theme} to={themeUrl(x.theme)} className="g-sphere" style={{ ["--c" as string]: themeColor(x.theme) }}>
+                <img src={THEME_ART[x.theme]} alt="" />
+                <div className="in">
+                  <div className="hd"><b>{themeLabel(x.theme)}</b><em title="Уровень темы">{x.level.level}</em></div>
+                  <span className="g-bar"><i style={{ width: `${(100 * x.level.into) / x.level.need}%`, background: themeColor(x.theme) }} /></span>
+                  <small>{x.level.into} / {x.level.need} до следующего · всего {x.total}</small>
+                  <WeekBars weeks={x.weeks} />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </Block>
       </div>
-      <div className="small faint" style={{ marginTop: 14 }}>Темы в порядке активности за месяц. <Link to="/charts">Тренды</Link> показывают то же по дням и неделям.</div>
     </div>
   );
 }
