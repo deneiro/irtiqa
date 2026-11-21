@@ -12,7 +12,20 @@ import { prayerTimes, type PrayerTimes } from "../../lib/maghrib";
 import { PERIODS, byPeriod, periodAt, withPeriod, type PeriodKey } from "../../lib/periods";
 import { THEMES } from "../../lib/themes";
 import { TaskLine, short } from "./parts";
+import sceneFajr from "../../assets/play/scene-fajr.webp";
+import sceneZuhr from "../../assets/play/scene-zuhr.webp";
+import sceneAsr from "../../assets/play/scene-asr.webp";
+import sceneMaghrib from "../../assets/play/scene-maghrib.webp";
+import sceneIsha from "../../assets/play/scene-isha.webp";
+import medalCamp from "../../assets/play/medal-camp.webp";
+import medalFive from "../../assets/play/medal-five.webp";
+import medalSummit from "../../assets/play/medal-summit.webp";
+import medalWeek from "../../assets/play/medal-week.webp";
+import medalWords from "../../assets/play/medal-words.webp";
+import medalTasks from "../../assets/play/medal-tasks.webp";
 import "./Play.css";
+
+const MEDAL_ART: Record<string, string> = { camp: medalCamp, five: medalFive, summit: medalSummit, week: medalWeek, words: medalWords, tasks: medalTasks };
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 const hm = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
@@ -134,7 +147,7 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
   return (
     <div className="g-play">
       <div className="g-top">
-        <Scene pct={score.pct} period={period} sun={isToday ? sunAt(now, times) : undefined} party={party}>
+        <Scene pct={score.pct} period={period} party={party}>
           <div className="g-date">
             <div className="g-kick">{WD[weekdayIndex(date)]} · неделя {Number(isoWeekKey(date).slice(-2))}{!isToday && " · не сегодня"}</div>
             <h1>{dayMonth(date)}</h1>
@@ -230,7 +243,7 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
         </Block>
         <Block title="Награды" right={`${won.filter((m) => m.got).length} из ${won.length}`}>
           <div className="g-medals">
-            {won.map((m) => <div key={m.id} className={`g-medal${m.got ? " got" : ""}`} title={m.how}><i><MedalIcon id={m.id} /></i><b>{m.title}</b><span>{m.got ? m.note : `${m.how} · ${m.note}`}</span></div>)}
+            {won.map((m) => <div key={m.id} className={`g-medal${m.got ? " got" : ""}`} title={m.how}><img src={MEDAL_ART[m.id]} alt="" width="52" height="52" /><b>{m.title}</b><span>{m.got ? m.note : `${m.how} · ${m.note}`}</span></div>)}
           </div>
         </Block>
       </div>
@@ -239,12 +252,6 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
 }
 
 const markLabel = (m: DayMark | undefined) => (m === "done" ? "вовремя" : m === "late" ? "поздно" : m === "failed" ? "пропустил" : "не отмечен");
-
-/** Where the sun stands between fajr and maghrib, 0…1; undefined at night. */
-function sunAt(now: Date, t: PrayerTimes): number | undefined {
-  const x = (now.getTime() - t.fajr.getTime()) / (t.maghrib.getTime() - t.fajr.getTime());
-  return x >= 0 && x <= 1 ? x : undefined;
-}
 
 /** The first prayer of today whose time has not come and that is not marked. */
 function nextPrayer(prayers: Habit[], day: Day, now: Date, times: PrayerTimes): { title: string; at: string } | undefined {
@@ -258,57 +265,40 @@ function Block({ title, right, children }: { title: string; right?: ReactNode; c
 
 // ---------- the scene ----------
 
-const TRAIL: [number, number][] = [[112, 287], [200, 253], [262, 263], [340, 203], [392, 215], [468, 136], [506, 150], [556, 70]];
-const SKY: Record<PeriodKey | "past", [string, string, string]> = {
-  "фаджр": ["#243A78", "#8C9FD6", "#FBCBA4"],
-  "зухр": ["#2462AE", "#6FB2E2", "#D6EEF4"],
-  "аср": ["#335C9C", "#D3A562", "#F8D88E"],
-  "магриб": ["#2A1B4D", "#A7476C", "#F28F4E"],
-  "иша": ["#05070F", "#0E1530", "#222E57"],
-  past: ["#141A2E", "#2B3552", "#5A6079"],
-};
-const STARS = Array.from({ length: 46 }, (_, i) => ({ x: (i * 173 + 31) % 800, y: (i * 97 + 13) % 170, r: i % 7 === 0 ? 1.5 : i % 3 === 0 ? 1.1 : 0.7, d: (i % 5) * 0.7 }));
-const SPARKS = Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2; return { dx: Math.cos(a) * (26 + (i % 3) * 12), dy: Math.sin(a) * (26 + (i % 3) * 12) - 10 }; });
+/** The paintings are 1536 × 1024; the trail follows the ridge that climbs from the lower left to the summit in all five. */
+const ART: Record<PeriodKey, string> = { "фаджр": sceneFajr, "зухр": sceneZuhr, "аср": sceneAsr, "магриб": sceneMaghrib, "иша": sceneIsha };
+const TRAIL: [number, number][] = [[92, 862], [222, 794], [384, 725], [512, 657], [657, 589], [802, 543], [922, 503], [1007, 461], [1062, 427]];
+const SPARKS = Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2; return { dx: Math.cos(a) * (50 + (i % 3) * 22), dy: Math.sin(a) * (50 + (i % 3) * 22) - 18 }; });
 
-/** The mountain of the day: the sky of the part of the day, the trail with its camps, and a lantern at the height taken. */
-function Scene({ pct, period, sun, party, children }: { pct: number; period: PeriodKey | undefined; sun: number | undefined; party: string | undefined; children: ReactNode }) {
-  const sky = SKY[period ?? "past"];
-  const night = period === "иша" || (period !== undefined && sun === undefined);
+/**
+ * The mountain of the day: one painted range in the light of the part of the day (a day that is over stands in the
+ * night), the trail with its camps drawn over the ridge, and a lantern at the height taken. The picture and the trail
+ * share one coordinate space, so they stay together at any size of the window.
+ */
+function Scene({ pct, period, party, children }: { pct: number; period: PeriodKey | undefined; party: string | undefined; children: ReactNode }) {
   const [lx, ly] = along(TRAIL, pct);
   const d = `M${TRAIL.map((p) => p.join(",")).join(" L")}`;
   const taken = campsTaken(pct);
   return (
-    <div className={`g-scene${night ? " night" : ""}`}>
-      <svg viewBox="0 0 800 320" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <div className="g-scene">
+      <svg viewBox="0 0 1536 1024" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
         <defs>
-          <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={sky[0]} /><stop offset=".62" stopColor={sky[1]} /><stop offset="1" stopColor={sky[2]} /></linearGradient>
-          <radialGradient id="g-glow"><stop offset="0" stopColor="#FFE9B8" stopOpacity=".85" /><stop offset=".35" stopColor="#F7C97A" stopOpacity=".35" /><stop offset="1" stopColor="#F7C97A" stopOpacity="0" /></radialGradient>
-          <linearGradient id="g-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B0D13" stopOpacity="0" /><stop offset="1" stopColor="#0B0D13" stopOpacity=".9" /></linearGradient>
+          <linearGradient id="g-mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B0D13" stopOpacity="0" /><stop offset="1" stopColor="#0B0D13" stopOpacity=".85" /></linearGradient>
         </defs>
-        <rect width="800" height="320" fill="url(#g-sky)" />
-        {(night || period === undefined) && STARS.map((s, i) => <circle key={i} className="star" cx={s.x} cy={s.y} r={s.r} style={{ animationDelay: `${s.d}s` }} />)}
-        {sun !== undefined ? (
-          <g transform={`translate(${70 + sun * 660} ${214 - Math.sin(Math.PI * sun) * 170})`}><circle r="70" fill="url(#g-glow)" /><circle r="13" fill="#FFF0CC" /></g>
-        ) : night ? (
-          <g transform="translate(676 62)"><circle r="46" fill="url(#g-glow)" opacity=".35" /><circle r="14" fill="#EDE7DA" /><circle cx="6" cy="-4" r="12" fill={sky[0]} /></g>
-        ) : null}
-        <path className="far" d="M0,320 L0,190 L70,170 L130,186 L210,140 L290,176 L360,150 L440,182 L520,128 L600,170 L680,138 L760,172 L800,160 L800,320 Z" />
-        <path className="mid" d="M0,320 L0,236 L80,214 L150,232 L240,190 L320,222 L400,196 L470,214 L560,170 L640,206 L720,180 L800,214 L800,320 Z" />
-        <path className="front" d="M0,320 L0,292 L110,280 L200,246 L262,256 L340,196 L392,208 L470,128 L506,142 L560,62 L612,136 L650,120 L716,206 L770,196 L800,216 L800,320 Z" />
-        <path className="snow" d="M560,62 L541,92 L551,87 L557,99 L566,86 L577,96 Z" />
+        <image key={period ?? "past"} className="art" href={ART[period ?? "иша"]} width="1536" height="1024" preserveAspectRatio="none" />
+        <rect y="820" width="1536" height="204" fill="url(#g-mist)" />
         <path className="trail" d={d} />
         <path className="walked" d={d} pathLength={100} strokeDasharray={`${pct} 100`} />
         {CAMPS.map((c, i) => {
           const [x, y] = along(TRAIL, c);
           return i < CAMPS.length - 1
-            ? <path key={c} className={`camp${i < taken ? " on" : ""}`} d={`M${x - 7},${y} L${x},${y - 11} L${x + 7},${y} Z`} />
-            : <g key={c} className={`flag${taken === CAMPS.length ? " on" : ""}`}><line x1={x} y1={y} x2={x} y2={y - 22} /><path d={`M${x},${y - 22} L${x + 15},${y - 17} L${x},${y - 12} Z`} /></g>;
+            ? <path key={c} className={`camp${i < taken ? " on" : ""}`} d={`M${x - 14},${y + 2} L${x},${y - 20} L${x + 14},${y + 2} Z`} />
+            : <g key={c} className={`flag${taken === CAMPS.length ? " on" : ""}`}><line x1={x} y1={y} x2={x} y2={y - 44} /><path d={`M${x},${y - 44} L${x + 30},${y - 34} L${x},${y - 24} Z`} /></g>;
         })}
         <g className="lantern" style={{ transform: `translate(${lx}px, ${ly}px)` }}>
-          <circle className="halo" r="20" /><circle className="core" r="5.5" />
-          {party && SPARKS.map((s, i) => <circle key={i} className="spark" r={i % 2 ? 2.2 : 1.6} style={{ "--dx": `${s.dx}px`, "--dy": `${s.dy}px` } as CSSProperties} />)}
+          <circle className="halo" r="38" /><circle className="core" r="10.5" />
+          {party && SPARKS.map((s, i) => <circle key={i} className="spark" r={i % 2 ? 4.2 : 3} style={{ "--dx": `${s.dx}px`, "--dy": `${s.dy}px` } as CSSProperties} />)}
         </g>
-        <rect y="230" width="800" height="90" fill="url(#g-mist)" />
       </svg>
       {children}
     </div>
@@ -505,17 +495,4 @@ function Radar({ life, vault, today }: { life: Life; vault: Vault; today: string
 
 function Flame() {
   return <svg className="g-flame" viewBox="0 0 16 20" aria-hidden="true"><path d="M8.2 0.8c.5 3.2-1.2 4.6-2.6 6.4C4.2 9 3 10.700 3 13a5 5 0 0 0 10 0c0-1.700-.6-3.200-1.500-4.400-.3 1.300-.9 2.100-1.700 2.500.5-3.700-.6-7.700-1.600-10.300Z" /></svg>;
-}
-
-function MedalIcon({ id }: { id: string }) {
-  const p: Record<string, string> = {
-    camp: "M3 17 10 5l7 12H3Zm7-6-2.5 6h5L10 11Z",
-    five: "M10 2.5 12 8h5.500l-4.400 3.400 1.600 5.600L10 13.700 5.300 17l1.600-5.600L2.500 8H8l2-5.500Z",
-    summit: "M2 17 8 6l3 5 2-3 5 9H2Zm6-11V2l4 1.500L8 5",
-    week: "M10.200 1.500c.5 3-1.100 4.300-2.400 6C6.500 9.200 5.500 10.700 5.500 12.800a4.500 4.500 0 0 0 9 0c0-1.600-.5-3-1.400-4.100-.2 1.200-.8 2-1.500 2.300.4-3.400-.5-7.100-1.400-9.500Z",
-    words: "M4 3h9l3 3v11H4V3Zm3 5h6M7 11h6M7 14h4",
-    tasks: "M3 10.500 8 15.500 17 5",
-  };
-  const line = id === "words" || id === "tasks";
-  return <svg viewBox="0 0 20 20" aria-hidden="true"><path d={p[id]} fill={line ? "none" : "currentColor"} stroke={line ? "currentColor" : "none"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
