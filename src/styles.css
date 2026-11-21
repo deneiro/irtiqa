@@ -875,3 +875,6 @@ table.tbl.lib .num { text-align: right; white-space: nowrap; width: 1%; }
 .num { background: var(--surface); border: 1px solid var(--hair); border-radius: var(--r-lg); padding: var(--s3) var(--s4); box-shadow: var(--shadow-1); min-width: 0; }
 .grid { display: grid; grid-template-columns: 92px repeat(7, 1fr); gap: 6px 6px; align-items: center; }
 .today { margin-top: var(--s6); }
+
+/* a theme's level in the menu (2026-11-21) */
+.nav .lvl { margin-left: auto; padding: 0 6px; border-radius: 99px; background: color-mix(in srgb, var(--c, var(--accent)) 16%, transparent); font: 500 10px/1.7 var(--font-mono); color: var(--c, var(--muted)); }

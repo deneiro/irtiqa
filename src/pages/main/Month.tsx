@@ -9,6 +9,10 @@ import { Link } from "react-router-dom";
 import { ROMAN } from "../../lib/bank";
 import { useBank } from "./Levels";
 import { PickSlots } from "./Pick";
+import { BANNER } from "../../assets/play";
+import { ClimbNumbers, LevelMark, MonthGrid } from "../../components/GameBits";
+import { climbSummary, heights, monthDates, rankOf } from "../../lib/game";
+import { useGame } from "../../lib/useGame";
 import type { Vault } from "../../lib/types";
 import { Card, ClaudeBlock, Columns, CoverageDots, Glance, HEX, Hero, MOOD_COLOR, MoodLines, STRESS_COLOR, Status, WeightLine, short, type Tone } from "./parts";
 
@@ -24,6 +28,9 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
   const yesterday = addDays(today, -1);
   const focus = focusFor(life, monthKey(today), monthKey(addDays(`${today.slice(0, 7)}-01`, -1)));
   const bank = useBank(life);
+  const game = useGame();
+  const cal = useMemo(() => monthDates(today.slice(0, 7)), [today]);
+  const climb = useMemo(() => (game ? heights(game.habits, life.days, cal.dates, today, game.xpOf) : []), [game, life, cal, today]);
   const pts = useMemo(() => series(life, addDays(yesterday, -29), yesterday), [life, yesterday]);
   const circle = useMemo(() => buildCircle(vault.pages.filter((p) => p.zone === "person"), life.events, today), [vault, life, today]);
   const goal = weightGoal(life, today);
@@ -40,7 +47,7 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
   const monthDays = new Date(Number(today.slice(0, 4)), Number(today.slice(5, 7)), 0).getDate();
   return (
     <>
-      <Hero top kicker={`месяц · ${Number(today.slice(8))}-й день из ${monthDays}`} title={<>{MONTH[Number(today.slice(5, 7)) - 1]} <span className="yr">{today.slice(0, 4)}</span></>}
+      <Hero top art={BANNER.month} kicker={`месяц · ${Number(today.slice(8))}-й день из ${monthDays}`} title={<>{MONTH[Number(today.slice(5, 7)) - 1]} <span className="yr">{today.slice(0, 4)}</span></>}
         side={<ClaudeBlock title="где ты и куда идёшь" focus={focus} period="month" note="Claude пишет 1-го в 06:00." />}>
         <Glance items={[
           { v: rec.length, of: `/ ${pts.length}`, label: "дней с записями" },
@@ -50,6 +57,17 @@ export default function Month({ life, vault, today }: { life: Life; vault: Vault
         ]} />
         <p className="d-foot">за 30 дней, {short(pts[0].date)} – {short(pts[pts.length - 1].date)}</p>
       </Hero>
+      {game && (
+        <Card title={`Высота месяца · ${MONTH[Number(today.slice(5, 7)) - 1].toLowerCase()}`} right="день открывается нажатием" className="d-full">
+          <div className="d-game">
+            <MonthGrid days={climb} lead={cal.lead} today={today} />
+            <div className="d-game-side">
+              <ClimbNumbers s={climbSummary(climb)} flame={game.flame} />
+              <LevelMark level={game.level} caption={`уровень · ${rankOf(game.level.level)}`} note={`всего ${game.total} XP`} />
+            </div>
+          </div>
+        </Card>
+      )}
       <Card title="Куда двигаюсь · цели месяца" right={<Link to="/?tab=levels">уровни I → IV · банк заданий →</Link>} className="d-full">
         <PickSlots life={life} today={today} bank={bank} mode="month" />
         <div className="d-stairs-cap">До трёх результатов уровня {ROMAN[3]} за раз: закрыл один — выбираешь следующий. Из них берутся задания недели (уровень {ROMAN[4]}).</div>

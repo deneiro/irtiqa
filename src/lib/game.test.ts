@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { along, askOf, asks, campsTaken, dayScore, fire, medals, prayerOpen, rankOf, standing } from "./game";
+import { along, askOf, asks, campsTaken, climbSummary, dayScore, fire, heights, medals, monthDates, prayerOpen, rankOf, standing } from "./game";
 import { buildLife, emptyDay, xpForDay, type Day } from "./life";
 import type { MdFile } from "./types";
 
@@ -77,4 +77,21 @@ test("ranks by level, and XP for late prayers, tasks by their part of the day an
   const d = day("2030-01-05", { habitsDone: ["Вода"], habitsLate: ["Утро"], mood: 5, weight: 90, tasks: [{ done: true, text: "звонок · @фаджр" }, { done: true, text: "без части" }, { done: false, text: "нет · @зухр" }] });
   const xp = xpForDay(d, { habits: HABITS, quests: [], days: new Map() });
   assert.deepEqual(Object.fromEntries(xp), { "Health & sport": 10 + 5 + 3, "Business & career": 8, "—": 8, "Personal growth": 3 });
+});
+
+test("a stretch of days: heights, what is still ahead, and the five numbers", () => {
+  const days = new Map<string, Day>([["2030-01-03", full("2030-01-03")], ["2030-01-04", day("2030-01-04", { habitsDone: ["Утро"] })]]);
+  const hs = heights(HABITS, days, ["2030-01-02", "2030-01-03", "2030-01-04", "2030-01-05"], "2030-01-04", (d) => (d === "2030-01-03" ? 40 : 0));
+  assert.deepEqual(hs.map((h) => [h.pct, h.future]), [[0, false], [100, false], [21, false], [0, true]]);
+  const s = climbSummary(hs);
+  assert.deepEqual([s.xp, s.avg, s.taken, s.summits, s.passed, s.best?.date], [40, 40, 1, 1, 3, "2030-01-03"]);
+  assert.equal(climbSummary([]).best, undefined);
+});
+
+test("the days of a month and the empty cells before its first Monday-week", () => {
+  const feb = monthDates("2030-02");
+  assert.equal(feb.dates.length, 28);
+  assert.equal(feb.dates[0], "2030-02-01");
+  assert.equal(feb.lead, 4); // 1 February 2030 is a Friday
+  assert.equal(monthDates("2030-09").lead, 6); // a Sunday
 });

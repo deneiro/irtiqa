@@ -382,3 +382,9 @@ a.t-fs-item:hover { border-left-color: var(--c, var(--accent-text)); background:
   .t-board { grid-template-columns: minmax(0, 1fr); }
   .t-s4 { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 }
+
+/* the painted header's own lines (2026-11-21) */
+.t-ban-more { margin: 14px 0 0; }
+.t-xp { display: grid; gap: 8px; }
+.t-xp span { font: 400 10.5px var(--t-mono); color: var(--t-ash); }
+.t-xp b { font-weight: 500; color: var(--t-moon); }

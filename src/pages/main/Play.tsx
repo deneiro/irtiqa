@@ -79,8 +79,11 @@ function useNow(): Date {
  * question at a time as the bot does, and below everything of the day is one tap away — prayers, habits, what he holds
  * out against, tasks, the records. Points, XP, the fire and the medals are counted from the day files, never stored.
  */
-export default function Play({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
-  const [date, setDate] = useState(today);
+export default function Play({ life, vault, today, open }: { life: Life; vault: Vault; today: string; open?: string }) {
+  // `?date=` opens a day from «Неделя» or «Месяц»; a day ahead or a broken date is today
+  const asked = open && /^\d{4}-\d{2}-\d{2}$/.test(open) && open <= today ? open : today;
+  const [date, setDate] = useState(asked);
+  useEffect(() => { setDate(asked); }, [asked]);
   const was = useRef(today);
   useEffect(() => { if (was.current !== today) { setDate((d) => (d === was.current ? today : d)); was.current = today; } }, [today]);
   return <PlayDay key={date} life={life} vault={vault} today={today} date={date} setDate={setDate} />;

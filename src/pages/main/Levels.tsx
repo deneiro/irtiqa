@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { BANNER } from "../../assets/play";
 import { useSearchParams } from "react-router-dom";
 import { BANK_THEME_ORDER, ROMAN, closeHeading, findItem, loadBank, moneyLeft, progress, type BankFile, type BankItem } from "../../lib/bank";
 import { fmt, plainLinks } from "../../lib/dashboard";
@@ -44,7 +45,7 @@ export default function Levels({ life, today }: { life: Life; today: string }) {
   if (!sorted.length) return <Card title="Уровни"><p className="d-faint">Банка заданий нет: файлы `life/goals/Банк/*.md` пишет Claude.</p></Card>;
   return (
     <>
-      <Hero top kicker="уровни · банк заданий" title="Уровни" side={<div className="l-rule">
+      <Hero top art={BANNER.levels} kicker="уровни · банк заданий" title="Уровни" side={<div className="l-rule">
         <div className="d-kick">как это работает</div>
         <p>Каждую неделю берёшь из IV уровня до пяти заданий. Закрыл три — добираешь до пяти. III, II и I закрываются только на 100 %.</p>
       </div>}>

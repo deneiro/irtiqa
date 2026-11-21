@@ -46,7 +46,7 @@ export default function MainPage() {
         </nav>
       </div>
       <div key={tab} className="dash-page">
-        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "play" ? <Play life={life} vault={vault} today={today} /> : tab === "day" ? <Today life={life} vault={vault} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : tab === "levels" ? <Levels life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
+        {!life || !vault ? <p className="d-faint">Загружаю vault…</p> : tab === "play" ? <Play life={life} vault={vault} today={today} open={params.get("date") ?? undefined} /> : tab === "day" ? <Today life={life} vault={vault} today={today} /> : tab === "week" ? <Week life={life} today={today} /> : tab === "levels" ? <Levels life={life} today={today} /> : <Month life={life} vault={vault} today={today} />}
       </div>
     </div>
   );

@@ -10,6 +10,7 @@ import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
 import { isoWeekKey } from "../../lib/goals";
 import { habitDue, markOf, type Life } from "../../lib/life";
+import { BANNER } from "../../assets/play";
 import { ActivityList, TaskLine, Card, DayArc, Dots, Hero, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
@@ -54,7 +55,7 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
   const wait = waiting(life);
   return (
     <>
-      <Hero kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} periods={arc} now={now} />}>
+      <Hero art={BANNER.overview} kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} periods={arc} now={now} />}>
         {ayah && (
           <div className="d-ayah">
             <div className="d-kick">Аят дня</div>

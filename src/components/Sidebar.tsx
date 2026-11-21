@@ -4,6 +4,8 @@ import { THEMES } from "../lib/themes";
 import { themeUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { anyRunning, useRuns } from "../lib/claudeRuns";
+import { PlayerBadge } from "./GameBits";
+import { useGame } from "../lib/useGame";
 
 /**
  * One thing in the menu (Eldar, 2026-11-02: «Главный», ex-«Утро»): the daily screen is the
@@ -17,6 +19,7 @@ export default function Sidebar() {
   const { t, themeLabel, themeBlurb } = useT();
   const nav = useNavigate();
   const claudeBusy = anyRunning(useRuns());
+  const game = useGame();
   const cls = ({ isActive }: { isActive: boolean }) => `nav ${isActive ? "active" : ""}`;
 
 
@@ -33,6 +36,8 @@ export default function Sidebar() {
         <kbd>⌘K</kbd>
       </button>
 
+      {game && <PlayerBadge level={game.level} flame={game.flame} />}
+
       <NavLink to="/" end className={cls}>Главный {timer && <span className="livedot" title={timer.quest} />}</NavLink>
 
       <details className="look">
@@ -41,6 +46,7 @@ export default function Sidebar() {
           <NavLink key={th.name} to={themeUrl(th.name)} className={cls} style={{ ["--c" as string]: th.color }} title={themeBlurb(th.name, th.blurb)}>
             <span className="bar" />
             {themeLabel(th.name)}
+            {game && <span className="lvl" title="Уровень темы">{game.themes.find((x) => x.theme === th.name)?.level.level}</span>}
           </NavLink>
         ))}
       </details>

@@ -155,3 +155,36 @@ export function along(points: [number, number][], pct: number): [number, number]
   }
   return points[points.length - 1];
 }
+
+// ---------- a stretch of days: the week and the month as a climb ----------
+
+export interface DayHeight { date: string; pct: number; xp: number; future: boolean }
+
+/** The height and the XP of every day of a stretch; a day after `today` is still ahead. */
+export function heights(habits: Habit[], days: Map<string, Day>, dates: string[], today: string, xpOf: (date: string) => number): DayHeight[] {
+  return dates.map((date) => (date > today ? { date, pct: 0, xp: 0, future: true } : { date, pct: dayScore(habits, days.get(date), date).pct, xp: xpOf(date), future: false }));
+}
+
+export interface ClimbSummary { xp: number; avg: number; taken: number; summits: number; passed: number; best: DayHeight | undefined }
+
+/** A stretch in five numbers: XP, the average height of the days that have come, days from 50 %, summits, and the best day. */
+export function climbSummary(hs: DayHeight[]): ClimbSummary {
+  const past = hs.filter((h) => !h.future);
+  const best = past.reduce<DayHeight | undefined>((b, h) => (h.pct > (b?.pct ?? 0) ? h : b), undefined);
+  return {
+    xp: past.reduce((s, h) => s + h.xp, 0),
+    avg: past.length ? Math.round(past.reduce((s, h) => s + h.pct, 0) / past.length) : 0,
+    taken: past.filter((h) => h.pct >= FIRE_MIN).length,
+    summits: past.filter((h) => h.pct >= 100).length,
+    passed: past.length,
+    best,
+  };
+}
+
+/** The days of a calendar month, and how many empty cells stand before the 1st in a week that starts on Monday. */
+export function monthDates(ym: string): { dates: string[]; lead: number } {
+  const [y, m] = ym.split("-").map(Number);
+  const n = new Date(y, m, 0).getDate();
+  const first = new Date(y, m - 1, 1).getDay(); // 0 = Sunday
+  return { dates: Array.from({ length: n }, (_, i) => `${ym}-${String(i + 1).padStart(2, "0")}`), lead: (first + 6) % 7 };
+}

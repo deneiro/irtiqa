@@ -34,15 +34,16 @@ export function Card({ title, right, className = "", children }: { title?: React
 }
 
 /** The top of a tab: a small kicker, the period in large serif, and what sits beside it. */
-export function Hero({ kicker, title, side, top = false, children }: { kicker: string; title: ReactNode; side: ReactNode; top?: boolean; children?: ReactNode }) {
+export function Hero({ kicker, title, side, top = false, art, children }: { kicker: string; title: ReactNode; side: ReactNode; top?: boolean; art?: string; children?: ReactNode }) {
   return (
-    <header className={`d-hero${top ? " top" : ""}`}>
+    <header className={`d-hero${top ? " top" : ""}${art ? " art" : ""}`}>
+      {art && <img className="d-hero-art" src={art} alt="" />}
       <div>
         <div className="d-kick">{kicker}</div>
         <h1>{title}</h1>
         {children}
       </div>
-      {side}
+      {art ? <div className="d-hero-side">{side}</div> : side}
     </header>
   );
 }
