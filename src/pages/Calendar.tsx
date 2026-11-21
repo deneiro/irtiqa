@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BANNER } from "../assets/play";
-import { Banner } from "../components/GameBits";
-import GameAside from "../components/GameAside";
+import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
 import { Link, useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
@@ -165,9 +164,25 @@ export default function CalendarPage() {
   };
 
   const shownDays = WEEK_ORDER;
+  const todayItems = itemsOn(today, blocks, factDay(today, life.days), life.quests, life.events).sort((a, b) => a.from - b.from);
+  const weekPlan = dates.reduce((sum, d) => sum + itemsOn(d, blocks, undefined, life.quests, []).filter((x) => x.kind === "plan").reduce((a, x) => a + (x.to - x.from), 0), 0);
+  const weekFact = dates.reduce((sum, d) => sum + (factDay(d, life.days)?.sessions.reduce((a, x) => a + x.minutes, 0) ?? 0), 0);
   return (
-    <div className="calpage">
-      <Banner art={BANNER.calendar} kicker="календарь · план по часам" title={monthRange(dates[0], dates[6])} aside={<GameAside />} />
+    <div className="calpage g-page">
+      <div className="g-play g-calhead">
+        <div className="g-top">
+          <SceneFrame art={BANNER.calendar}>
+            <SceneTitle kicker="календарь · план по часам" title={monthRange(dates[0], dates[6])} />
+            <div className="g-xp8"><span>рамка — план · заливка — что было по таймеру</span><span>протяни мышью по колонке — поставишь дело</span></div>
+            <SceneNumber value={Math.round(weekPlan / 6) / 10} unit=" ч" label="в плане недели" sub={`было по таймеру: ${Math.round(weekFact / 6) / 10} ч`} />
+          </SceneFrame>
+          <SideCard kicker={`сегодня · ${WEEKDAYS_RU[weekdayIndex(today)]}, ${Number(today.slice(8))}`}>
+            {todayItems.length ? (
+              <div className="g-agenda">{todayItems.map((it, k) => <div key={k} className={`${it.kind}${it.kind === "plan" && it.to <= nowMin ? " past" : ""}`}><span>{fromMin(it.from)}–{fromMin(it.to)}</span><b>{it.title}</b><small>{it.kind === "plan" ? "план" : it.kind === "fact" ? `было · ${it.minutes ?? it.to - it.from} мин` : "событие"}</small></div>)}</div>
+            ) : <p className="g-rule">На сегодня в плане пусто.</p>}
+          </SideCard>
+        </div>
+      </div>
       <div className="row" style={{ alignItems: "baseline" }}>
         <span className="grow" />
         <button className="btn small" onClick={() => setWeek(addDays(week, -7))} title="прошлая неделя">‹</button>

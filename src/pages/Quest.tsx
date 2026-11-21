@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BANNER, THEME_ART } from "../assets/play";
-import { Banner } from "../components/GameBits";
-import GameAside from "../components/GameAside";
+import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
@@ -152,33 +151,38 @@ export default function QuestPage() {
 
   return (
     <div className="q-page" style={{ ["--c" as string]: color }}>
-      <Banner art={(q.theme && THEME_ART[q.theme]) || BANNER.quests} color={color} title={q.title} aside={<GameAside theme={q.theme} />}
-        kicker={<>
-          <Link to="/quests">Деятельности</Link>
-          {q.theme && <> · <Link to={`/theme/${encodeURIComponent(q.theme)}`}>{themeLabel(q.theme)}</Link></>}
-          {q.project && <> · {projectPage ? <Link to={pageUrl(projectPage)}>{q.project}</Link> : q.project}</>}
-        </>} />
+      <div className="g-play g-theme">
+        <div className="g-top">
+          <SceneFrame art={(q.theme && THEME_ART[q.theme]) || BANNER.quests}>
+            <SceneTitle title={q.title}
+              kicker={<>
+                <Link to="/quests">Деятельности</Link>
+                {q.theme && <> · <Link to={`/theme/${encodeURIComponent(q.theme)}`}>{themeLabel(q.theme)}</Link></>}
+                {q.project && <> · {projectPage ? <Link to={pageUrl(projectPage)}>{q.project}</Link> : q.project}</>}
+              </>} />
+            <div className="g-xp8">
+              <span><b>{Math.floor(minutes / 60)} ч {minutes % 60} мин</b> всего · {sessions} сессий · +{questXp(minutes)} XP</span>
+              {q.cadence && <span>ритм: {q.cadence}{q.due ? ` · срок ${shortWhen(q.due, today)}` : ""}</span>}
+            </div>
+            <SceneNumber value={tally.total ? Math.round((tally.done / tally.total) * 100) : "—"} unit={tally.total ? "%" : undefined} label="шагов сделано" sub={tally.total ? `${tally.done} из ${tally.total}` : "шагов нет"} />
+          </SceneFrame>
+          <SideCard kicker={running ? "идёт сессия" : "сессия"}>
+            <div className="g-q">{running ? fmtElapsed(Date.now() - timer!.startedAt) : next ? <Inline md={next.text} /> : "Следующий шаг не записан."}</div>
+            {!running && next && <p className="g-faint">следующий открытый шаг</p>}
+            <div className="g-opts">
+              <button className={running ? "no" : "yes"} type="button" disabled={!!timer && !running} onClick={() => (running ? stopTimer() : startTimer(q.title))}>{running ? "■ Остановить и записать" : "▶ Начать сессию"}<kbd>таймер</kbd></button>
+            </div>
+            {!!timer && !running && <p className="g-cap">Сейчас идёт другой таймер: {timer.quest}.</p>}
+            {!timer && <p className="g-cap">В конце сессия спросит, что сделано, и запишет в журнал.</p>}
+          </SideCard>
+        </div>
+      </div>
       {parts.intro.length > 0 && (
         <div className={`q-lead${leadLong && !leadOpen ? " q-clamp" : ""}`}>
           <div className="q-lead-text">{parts.intro.map((p, i) => <p key={i}><Inline md={p} /></p>)}</div>
           {leadLong && <button className="q-link" type="button" onClick={() => setLeadOpen((o) => !o)}>{leadOpen ? "свернуть" : "полностью"}</button>}
         </div>
       )}
-
-      <div className="q-head">
-        <button
-          className={`btn ${running ? "" : "primary"} big`}
-          disabled={!!timer && !running}
-          onClick={() => (running ? stopTimer() : startTimer(q.title))}
-        >
-          {running ? `■ остановить · ${fmtElapsed(Date.now() - timer!.startedAt)}` : "▶ начать сессию"}
-        </button>
-        {!!timer && !running && <span className="small muted">Сейчас идёт другой таймер: {timer.quest}.</span>}
-        <span className="grow" />
-        <div className="kpi"><b>{Math.floor(minutes / 60)} ч {minutes % 60} мин</b><span>всего</span></div>
-        <div className="kpi"><b>{sessions}</b><span>сессий</span></div>
-        <div className="kpi"><b>+{questXp(minutes)}</b><span>XP</span></div>
-      </div>
       {err && <div className="notice err" style={{ marginTop: 12 }}>{err}</div>}
 
       <div className="q-cols">

@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { THEME_ART } from "../assets/play";
-import { Banner } from "../components/GameBits";
-import GameAside from "../components/GameAside";
+import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useStore } from "../store";
 import { ChartTip } from "../components/Bits";
@@ -164,12 +163,34 @@ export default function FinancePage() {
 
   if (!life) return null;
   return (
-    <div>
-      <Banner art={THEME_ART["Finance & money"]} color="#A9BF4F" kicker="финансы · счета, подписки, долги" title="Финансы" aside={<GameAside theme="Finance & money" />}>
-        <p className="gb-lede">
-          на счетах <b>{fmt(total)}</b> · подписки <b>{fmt(subsMonthly)}</b> в месяц · мне должны <b>{fmt(owedToMe)}</b> · я должен <b>{fmt(iOwe)}</b>
-        </p>
-      </Banner>
+    <div className="g-page g-fin">
+      <div className="g-play">
+        <div className="g-top">
+          <SceneFrame art={THEME_ART["Finance & money"]}>
+            <SceneTitle kicker="финансы · счета, подписки, долги" title="Финансы" />
+            <div className="g-xp8">
+              <span>на счетах <b>{fmt(total)} ₸</b></span>
+              <span>подписки <b>{fmt(subsMonthly)} ₸</b> в месяц</span>
+              <span>мне должны <b>{fmt(owedToMe)} ₸</b></span>
+            </div>
+            <SceneNumber value={iOwe >= 1e6 ? (iOwe / 1e6).toFixed(2).replace(".", ",") : fmt(iOwe)} unit={iOwe >= 1e6 ? " млн ₸" : " ₸"} label="я должен" sub={`${people_.filter((x) => x.direction === DEBT_I_OWE).length} кому · людям и банкам`} />
+          </SceneFrame>
+          <SideCard kicker="долги по людям">
+            {people_.length ? (
+              <div className="g-debts">
+                {[...people_].sort((a, b) => b.left - a.left).slice(0, 7).map((x) => (
+                  <div key={x.who + x.direction} className={x.direction === DEBT_I_OWE ? "owe" : "due"}>
+                    <span>{x.who}<small>{x.direction} · с {x.oldest}</small></span>
+                    <i><u style={{ width: `${(x.left / Math.max(1, ...people_.map((y) => y.left))) * 100}%` }} /></i>
+                    <b>{fmt(x.left)}</b>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="g-rule">Долгов нет.</p>}
+            <p className="g-cap">Внести платёж или закрыть долг — в блоке «Долги» ниже.</p>
+          </SideCard>
+        </div>
+      </div>
       {err && <div className="notice err">Не удалось записать: {err}</div>}
 
       <div className="card" style={{ marginTop: 16 }}>
@@ -341,7 +362,7 @@ export default function FinancePage() {
       </div>
 
       <datalist id="fin-accts">{accountNames.map((a) => <option key={a} value={a} />)}</datalist>
-      <datalist id="fin-people">{people.map((p) => <option key={p} value={p} />)}</datalist>
+      <datalist id="fin-people">{[...new Set(people)].map((p) => <option key={p} value={p} />)}</datalist>
       <div className="small faint" style={{ marginTop: 16 }}>Сегодня {today}; неделя назад {addDays(today, -7)}.</div>
     </div>
   );

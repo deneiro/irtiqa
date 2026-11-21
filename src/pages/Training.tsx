@@ -1,6 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { BANNER } from "../assets/play";
-import { Banner } from "../components/GameBits";
+import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { trainingFor } from "../lib/training";
 import GameAside from "../components/GameAside";
 import { useSearchParams } from "react-router-dom";
 import { useStore } from "../store";
@@ -21,10 +22,29 @@ const TABS: [Tab, string][] = [["p", "Программа"], ["m", "Мышцы"],
  * The state lives in the URL (`?tab=e&ex=…`), so the Main screen can link a day.
  */
 export default function TrainingPage() {
-  const { root } = useStore();
+  const { root, vault } = useStore();
+  const today = todayStr();
+  const t = useMemo(() => (vault ? trainingFor(vault, today) : undefined), [vault, today]);
   return (
-    <div className="tr">
-      <Banner art={BANNER.training} color="#45B6C6" kicker="тренировки · программа, мышцы, упражнения" title="Тренировки" aside={<GameAside theme="Health & sport" />} />
+    <div className="tr g-page">
+      <div className="g-play g-theme" style={{ ["--th" as string]: "#45B6C6" }}>
+        <div className="g-top">
+          <SceneFrame art={BANNER.training}>
+            <SceneTitle kicker="тренировки · программа, мышцы, упражнения" title="Тренировки" />
+            <div className="g-xp8"><span>красным — главная мышца, оранжевым — та, что помогает</span><span>вкладки ниже: программа · мышцы · упражнения</span></div>
+            <SceneNumber value={t ? (t.kind || "тренировка") : "отдых"} label="сегодня" sub={t?.what || (t ? "по плану тренировок" : "в плане на сегодня ничего")} />
+          </SceneFrame>
+          <SideCard kicker="сегодня по плану">
+            {t ? (
+              <>
+                <div className="g-q">{t.what || t.kind}</div>
+                {t.exercises.length > 0 ? <ul className="g-plain">{t.exercises.map((x, k) => <li key={k}>{x}</li>)}</ul> : <p className="g-faint">Упражнения дня — во вкладке «Программа».</p>}
+              </>
+            ) : <p className="g-rule">Сегодня без тренировки.</p>}
+            <GameAside theme="Health & sport" />
+          </SideCard>
+        </div>
+      </div>
       <TrainingAtlas root={root} />
     </div>
   );
