@@ -7,9 +7,9 @@ import { pageUrl } from "../../lib/vault";
 import { mediaUrl, openExternal } from "../../lib/native";
 import { rawPageText } from "../../lib/rawpage";
 import { contactEdits } from "../../lib/contact";
-import { buildCircle, coMet, eventsWith, tieWarmth, type HabitCount } from "../../lib/circle";
+import { atHome, buildCircle, coMet, eventsWith, tieWarmth, type HabitCount } from "../../lib/circle";
 import { BANNER, THEME_ART } from "../../assets/play";
-import { TieMeter } from "../../components/GameBits";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "../main/Scene";
 import type { Cell } from "../../lib/dashboard";
 import { fmt } from "../../lib/dashboard";
 import { eventUrl } from "../../lib/events";
@@ -20,7 +20,6 @@ import {
   type Half, type Influence, type PersonTile, type PersonView, type RadicalsView,
 } from "../../lib/person";
 import { peopleOf } from "../../lib/themeNumbers";
-import type { ColumnPart } from "../../lib/overview";
 import type { Page, Vault } from "../../lib/types";
 import PersonForm, { type PersonFormHandle } from "../../components/PersonForm";
 import { Inline, glowOf } from "../theme/parts";
@@ -95,20 +94,6 @@ function DebtTable({ page, life }: { page: Page; life: Life }) {
       </div>
       <div className="p-foot">Вносить оплату — на экране <Link to="/finance">Финансы</Link>: сумма ложится на самые старые долги.</div>
     </section>
-  );
-}
-
-function Step({ kind, title, part }: { kind: "past" | "now" | "next"; title: string; part: ColumnPart }) {
-  return (
-    <div className={`p-step p-${kind}`}>
-      <h3>{title}</h3>
-      <ul>
-        {part.items.length
-          ? part.items.map((it, j) => <li key={j}><Inline md={it.md} />{it.note && <span className="p-w">{it.note}</span>}</li>)
-          : <li className="p-dash">—</li>}
-      </ul>
-      {part.caption && <div className="p-src"><Inline md={part.caption} /></div>}
-    </div>
   );
 }
 
@@ -352,53 +337,66 @@ export default function PersonPage({ page }: { page: Page }) {
         <Link className="p-crumb" to="/people">← Люди</Link>
         <button className="p-btn" type="button" onClick={() => setAdding(true)}><span className="p-plus">+</span>Добавить человека</button>
       </div>
-      <header className="p-head p-art">
-        <img className="p-head-art" src={(page.theme && THEME_ART[page.theme]) || BANNER.people} alt="" />
-        <Ring n={close} letter={[...page.file][0]?.toUpperCase() ?? ""} />
-        <div>
-          <div className="p-kick">
-            {themeRu(page.theme)}{category && ` · ${category}`}{groupsOf(page).length > 0 && ` · ${groupsOf(page).join(", ")}`}
-            <span>{category ? "" : " · кем приходится — не отмечено"}{close ? ` · близость ${close}` : ""}</span>
-          </div>
-          <h1 className="p-h1">{page.title}</h1>
-          <div className="p-sub">
-            {connection && <span>{connection}</span>}
-            {how && how !== "—" && <span>{how}</span>}
-            {birthday && <span className="p-bd">ДР {birthday}</span>}
-          </div>
+      <div className="g-play g-theme">
+        <div className="g-top">
+          <SceneFrame art={(page.theme && THEME_ART[page.theme]) || BANNER.people}>
+            <SceneTitle title={page.title}
+              kicker={<>{themeRu(page.theme)}{category && ` · ${category}`}{groupsOf(page).length > 0 && ` · ${groupsOf(page).join(", ")}`}{!category && " · кем приходится — не отмечено"}</>} />
+            <div className="g-who">
+              <Ring n={close} letter={[...page.file][0]?.toUpperCase() ?? ""} />
+              <div>
+                {close !== undefined && <b>близость {close} из 10</b>}
+                {connection && <span>{connection}</span>}
+                {how && how !== "—" && <span>{how}</span>}
+                {birthday && <span>ДР {birthday}</span>}
+              </div>
+            </div>
+            {atHome(page)
+              ? <SceneNumber value="дома" label="живёте вместе" sub="ритм связи не считается" />
+              : tie
+              ? <SceneNumber value={tie.pct} unit="%" label={`связь · ${tie.state}`} sub={tie.since === undefined ? `ритм — раз в ${tie.cadence} дн` : `${tie.since} дн из ${tie.cadence} — ритм близости`} />
+              : <SceneNumber value="—" label="тепло связи" sub="близость не отмечена — поставь на «Кругах»" />}
+          </SceneFrame>
+          <SideCard kicker={metToday ? "сегодня виделись" : wroteToday ? "сегодня на связи" : "сегодня"}>
+            <div className="g-q">{metToday || wroteToday ? "Связь снова тёплая." : "Виделись или написал?"}</div>
+            <div className="g-opts">
+              <button className={metToday ? "yes" : ""} type="button" disabled={busy} onClick={() => void run(async () => { await wrote(); setMeeting(true); })}>{metToday ? "✓ Виделись сегодня" : "Виделись"}<kbd>встреча</kbd></button>
+              <button className={wroteToday ? "yes" : ""} type="button" disabled={busy} onClick={() => void run(wrote)}>{wroteToday ? "✓ Написал сегодня" : "Написал"}<kbd>связь</kbd></button>
+            </div>
+            <div className="g-chips wrap g-links">
+              {links.length
+                ? links.map((l) => <button key={l.key} type="button" title={l.url} onClick={() => void openExternal(l.url)}>{l.label}</button>)
+                : <span className="g-faint">Контактов нет — добавь в «изменить», и появятся кнопки чата.</span>}
+            </div>
+            <div className="g-side-row">
+              <button className="g-link" type="button" onClick={() => (editing ? void form.current?.cancel() : setEditing(true))}>{editing ? "закрыть" : "изменить"}</button>
+              <Link className="g-link" to={`${pageUrl(page)}?full=1`}>страница целиком{page.updated ? ` · ${shortWhen(page.updated, today)}` : ""} →</Link>
+            </div>
+          </SideCard>
         </div>
-        <div className="p-head-side">
-          {tie && <TieMeter w={tie} />}
-          <Link className="p-whole" to={`${pageUrl(page)}?full=1`}>страница целиком{page.updated ? ` · ${shortWhen(page.updated, today)}` : ""}</Link>
+        {err && <p className="g-error" role="alert">{err}</p>}
+        {editing && <div className="p-form"><PersonForm ref={form} page={page} onClose={() => setEditing(false)} /></div>}
+
+        <div className="p-ntiles">
+          <Tile t={numbers.contact} />
+          <Tile t={numbers.together} />
+          <Tile t={numbers.debt} onClick={hasDebts ? () => setDebtsOpen((o) => !o) : undefined} open={debtsOpen} />
+          <Tile t={numbers.birthday} />
         </div>
-      </header>
+        {debtsOpen && hasDebts && <DebtTable page={page} life={life} />}
 
-      <div className="p-acts">
-        <button className={`p-btn p-primary${metToday ? " p-done" : ""}`} type="button" disabled={busy}
-          onClick={() => void run(async () => { await wrote(); setMeeting(true); })}>{metToday ? "✓ Виделись сегодня" : "Виделись"}</button>
-        <button className={`p-btn${wroteToday ? " p-done" : ""}`} type="button" disabled={busy} onClick={() => void run(wrote)}>{wroteToday ? "✓ Написал сегодня" : "Написал"}</button>
-        <span className="p-sep" />
-        {links.length
-          ? links.map((l) => <button key={l.key} className="p-btn p-ghost" type="button" title={l.url} onClick={() => void openExternal(l.url)}>{l.label}</button>)
-          : <span className="p-none">контактов нет — добавь в «изменить», и появятся кнопки чата</span>}
-        <span className="p-grow" />
-        <button className="p-btn p-ghost" type="button" onClick={() => (editing ? void form.current?.cancel() : setEditing(true))}>{editing ? "закрыть" : "изменить"}</button>
-      </div>
-      {err && <p className="p-err">{err}</p>}
-      {editing && <div className="p-form"><PersonForm ref={form} page={page} onClose={() => setEditing(false)} /></div>}
-
-      <div className="p-ntiles">
-        <Tile t={numbers.contact} />
-        <Tile t={numbers.together} />
-        <Tile t={numbers.debt} onClick={hasDebts ? () => setDebtsOpen((o) => !o) : undefined} open={debtsOpen} />
-        <Tile t={numbers.birthday} />
-      </div>
-      {debtsOpen && hasDebts && <DebtTable page={page} life={life} />}
-
-      <div className="p-ascent">
-        <Step kind="past" title="Было" part={view.past} />
-        <Step kind="now" title="Сейчас" part={view.now} />
-        <Step kind="next" title="Дальше" part={view.next} />
+        <Block title="Было · Сейчас · Дальше" right="твоими словами со страницы человека">
+          <div className="g-path">
+            {([["past", "Было", view.past], ["now", "Сейчас", view.now], ["next", "Дальше", view.next]] as const).map(([kind, title, part]) => (
+              <div key={kind} className={`st ${kind}`}>
+                <i />
+                <h3>{title}</h3>
+                <ul>{part.items.length ? part.items.map((it, k) => <li key={k}><Inline md={it.md} />{it.note && <em>{it.note}</em>}</li>) : <li className="none">—</li>}</ul>
+                {part.caption && <p className="g-cap"><Inline md={part.caption} /></p>}
+              </div>
+            ))}
+          </div>
+        </Block>
       </div>
 
       <div className="p-organs">

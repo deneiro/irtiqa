@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { themeColor } from "../lib/themes";
@@ -14,8 +14,10 @@ import { rawPageText } from "../lib/rawpage";
 import type { Page } from "../lib/types";
 import AddPersonSheet from "./person/AddPersonSheet";
 import { BANNER } from "../assets/play";
-import { Banner, CircleMeter } from "../components/GameBits";
-import { buildCircle, circleWarmth } from "../lib/circle";
+import { BANDS, atHome, buildCircle, circleWarmth, tieWarmth, type CircleItem } from "../lib/circle";
+import { contactEdits } from "../lib/contact";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import "./person/Person.css";
 
 type Sort = "name" | "contact" | "birthday";
 
@@ -29,7 +31,9 @@ const LIST_CATEGORIES: Category[] = ["семья", "родня", "лучший �
  */
 export default function PeoplePage() {
   const v = useVault();
-  const { life } = useStore();
+  const { life, saveText, reload } = useStore();
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const { t, themeLabel } = useT();
   const today = todayStr();
   const [q, setQ] = useState("");
@@ -75,21 +79,71 @@ export default function PeoplePage() {
   );
   const groups = useMemo(() => allGroups(v.pages.filter((p) => p.zone === "person")), [v]);
   // the warmth of the whole circle, whatever the filters below show
-  const warmth = useMemo(() => circleWarmth(buildCircle(v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)), life?.events ?? [], today)), [v, life, today]);
+  const circle = useMemo(() => buildCircle(v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)), life?.events ?? [], today), [v, life, today]);
+  const warmth = useMemo(() => circleWarmth(circle), [circle]);
+  // the close ties that have gone coldest: the ones to write to first
+  const cold = useMemo(() => circle.filter((i) => (i.closeness ?? 0) >= 7 && !atHome(i.page) && (tieWarmth(i)?.pct ?? 0) === 0).slice(0, 5), [circle]);
+  /** «Написал»: `last_contact` is today, as the person page writes it. */
+  const wrote = async (i: CircleItem) => {
+    setBusy(i.page.rel);
+    try {
+      const raw = rawPageText(v, i.page.rel);
+      if (raw === null) throw new Error("не нашёл страницу человека");
+      for (const e of contactEdits({ rel: i.page.rel, file: i.page.file, raw }, life?.events ?? [], today, false)) await saveText(e.rel, e.content);
+      setErr(null);
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(null); }
+  };
   const soon = people.filter((x) => x.bday !== undefined && x.bday <= 30).sort((a, b) => a.bday! - b.bday!);
 
   return (
-    <div>
-      <Banner art={BANNER.people} color="#E8785F" kicker={`круг · ${warmth.total} с отмеченной близостью`} title={t("ent_title")} aside={<CircleMeter w={warmth} />}>
-        <p className="gb-lede">Связь тёплая, пока не вышел её ритм: чем ближе человек, тем чаще. Написал или виделись — и она снова полная.</p>
-      </Banner>
-
-      {soon.length > 0 && (
-        <div className="notice" style={{ marginTop: 12 }}>
-          🎂 Скоро: {soon.map((x) => <span key={x.p.rel}><Link to={pageUrl(x.p)}>{x.p.title}</Link> {x.bday === 0 ? "сегодня" : `через ${x.bday} дн.`}</span>).reduce<ReactNode[]>((acc, el, i) => (i ? [...acc, " · ", el] : [el]), [])}
+    <div className="p-page g-people">
+      <div className="g-play">
+        <div className="g-top">
+          <SceneFrame art={BANNER.people}>
+            <SceneTitle kicker={`круг · ${warmth.total} с отмеченной близостью`} title={t("ent_title")} />
+            <div className="g-bands">
+              {warmth.bands.filter((b) => b.total > 0).map((b) => <div key={b.title}><span>{b.title}</span><i><u style={{ width: `${(b.warm / b.total) * 100}%` }} /></i><em>{b.warm} / {b.total}</em></div>)}
+            </div>
+            <SceneNumber value={warmth.total ? warmth.pct : "—"} unit={warmth.total ? "%" : undefined} label="тепло круга" sub={`${warmth.warm} из ${warmth.total} связей в ритме`} />
+          </SceneFrame>
+          <SideCard kicker="кому написать · самые остывшие из близких">
+            {cold.length ? (
+              <div className="g-cold">
+                {cold.map((i) => (
+                  <div key={i.page.rel}>
+                    <Link to={pageUrl(i.page)}><b>{i.name}</b><span>{i.sinceContact === undefined ? "связи не было" : `${i.sinceContact} дн`} · ритм {i.cadence} дн</span></Link>
+                    <button type="button" disabled={busy !== null} onClick={() => void wrote(i)}>{busy === i.page.rel ? "…" : "Написал"}</button>
+                  </div>
+                ))}
+              </div>
+            ) : <div className="g-q">Все близкие на связи.</div>}
+            {err && <p className="g-error" role="alert">{err}</p>}
+            <p className="g-cap">Связь тёплая, пока не вышел её ритм: чем ближе человек, тем чаще. «Написал» ставит связь на сегодня.</p>
+          </SideCard>
         </div>
-      )}
 
+        {soon.length > 0 && (
+          <Block title="Скоро дни рождения" right="за 30 дней">
+            <div className="g-bdays">{soon.map((x) => <Link key={x.p.rel} to={pageUrl(x.p)}><b>{x.p.title}</b><span>{x.bday === 0 ? "сегодня" : `через ${x.bday} дн`}</span></Link>)}</div>
+          </Block>
+        )}
+
+        <Block title="Круг" right={<><Link to={`/theme/${encodeURIComponent("Social & friends")}/rings`}>изменить близость на «Кругах» →</Link></>}>
+          {BANDS.map((band) => {
+            const of = circle.filter((i) => i.closeness !== undefined && i.closeness >= band.min && i.closeness <= band.max);
+            if (!of.length) return null;
+            return (
+              <div key={band.title} className="g-ring">
+                <h3>{band.title}<small>близость {band.min}–{band.max} · {of.length}</small></h3>
+                <div className="g-pcards">{of.map((i) => <PersonCard key={i.page.rel} i={i} />)}</div>
+              </div>
+            );
+          })}
+          {!warmth.total && <p className="g-faint">Близость не отмечена ни у кого — её ставят на «Кругах».</p>}
+        </Block>
+
+        <Block title="Книга контактов" right={`${people.length} · ✎ меняет строку на месте`}>
       <div className="row wrap" style={{ margin: "16px 0 0", gap: 8 }}>
         <button className="btn primary" onClick={() => setAdding(true)}>+ Добавить человека</button>
         <Link className="btn" to={`/theme/${encodeURIComponent("Social & friends")}/rings`}>Круги</Link>
@@ -145,7 +199,31 @@ export default function PeoplePage() {
       </table>
       {!people.length && <div className="empty">{t("ent_none")}</div>}
       <div className="small faint" style={{ marginTop: 10 }}>✎ — поменять имя, «кто», группу и контакты прямо в строке; Enter — сохранить, Esc — отмена. Остальное — на странице человека. Долг со знаком минус означает «я должен».</div>
+        </Block>
+      </div>
     </div>
+  );
+}
+
+/** One person of the circle: the letter in a ring filled to the warmth of the tie, the name, and how long since a touch. */
+function PersonCard({ i }: { i: CircleItem }) {
+  const home = atHome(i.page);
+  const w = tieWarmth(i);
+  const pct = home ? 100 : w?.pct ?? 0;
+  const R = 17, C = 2 * Math.PI * R;
+  const state = home ? "home" : pct >= 50 ? "warm" : pct > 0 ? "cooling" : "cold";
+  return (
+    <Link to={pageUrl(i.page)} className={`g-pcard ${state}`} title={home ? "живёт с тобой" : w ? `связь · ${w.state}` : ""}>
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle className="rail" cx="20" cy="20" r={R} />
+        <circle className="arc" cx="20" cy="20" r={R} strokeDasharray={`${(pct / 100) * C} ${C}`} transform="rotate(-90 20 20)" />
+        <text x="20" y="25" textAnchor="middle">{[...i.page.file][0]?.toUpperCase() ?? ""}</text>
+      </svg>
+      <div>
+        <b>{i.name}</b>
+        <span>{home ? "дома" : i.sinceContact === undefined && i.sinceMeet === undefined ? "связи не было" : `${Math.min(i.sinceContact ?? 1e9, i.sinceMeet ?? 1e9)} дн из ${i.cadence}`}{i.category ? ` · ${i.category}` : ""}</span>
+      </div>
+    </Link>
   );
 }
 

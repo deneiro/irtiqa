@@ -484,3 +484,55 @@
   .g-path::before { left: 6px; right: auto; top: 6px; bottom: 6px; border-top: 0; border-left: 2px dashed rgba(237, 231, 218, .16); }
   .g-path .st > i { left: -26px; top: 8px; }
 }
+
+/* ================= the people pages built the same way (2026-11-21) ================= */
+.g-people { padding-top: 22px; }
+.g-who { left: 28px; bottom: 22px; display: flex; align-items: center; gap: 16px; max-width: 52%; }
+.g-who .p-ava { width: 64px; height: 64px; flex: none; }
+.g-who > div { display: grid; gap: 3px; font-size: 12.5px; color: var(--d-moon-2); text-shadow: 0 1px 14px rgba(11, 13, 19, .7); }
+.g-who b { font: 500 10px var(--d-mono); letter-spacing: .13em; text-transform: uppercase; color: var(--th, var(--d-sun)); }
+.g-links { margin: 14px 0 0; }
+.g-links .g-faint { font-size: 12px; }
+.g-side-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; margin-top: auto; padding-top: 16px; }
+.g-play .g-opts button.yes kbd { color: var(--d-sage); border-color: rgba(134, 201, 164, .4); }
+.g-bands { left: 28px; bottom: 22px; display: grid; gap: 7px; width: min(300px, 44%); }
+.g-bands > div { display: grid; grid-template-columns: 68px minmax(0, 1fr) 44px; align-items: center; gap: 10px; }
+.g-bands span { font: 500 10px var(--d-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--d-moon-2); }
+.g-bands i { display: block; height: 6px; border-radius: 99px; background: rgba(237, 231, 218, .16); overflow: hidden; }
+.g-bands u { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--d-ember), var(--d-honey)); }
+.g-bands em { text-align: right; font: 400 10.5px var(--d-mono); font-style: normal; color: var(--d-moon-2); }
+.g-cold { display: grid; margin-top: 10px; }
+.g-cold > div { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--d-hair); }
+.g-cold > div:first-child { border-top: 0; }
+.g-cold a { flex: 1; min-width: 0; display: grid; gap: 2px; color: inherit; text-decoration: none; }
+.g-cold a b { font: 500 14px var(--d-sans); color: var(--d-moon); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-cold a:hover b { color: var(--d-sun); }
+.g-cold a span { font: 400 10.5px var(--d-mono); color: var(--d-ember); }
+.g-play .g-cold button { padding: 7px 14px; border-radius: 99px; border: 1px solid rgba(134, 201, 164, .45); background: rgba(134, 201, 164, .12); font: 500 12px var(--d-sans); color: #C9EBD8; text-align: center; transition: background .15s, transform .12s; }
+.g-play .g-cold button:hover:not(:disabled) { background: rgba(134, 201, 164, .24); transform: translateY(-1px); }
+.g-play .g-cold button:disabled { opacity: .5; }
+.g-bdays { display: flex; flex-wrap: wrap; gap: 8px; }
+.g-bdays a { display: flex; align-items: baseline; gap: 8px; padding: 7px 14px; border: 1px solid var(--d-hair-2); border-radius: 99px; color: inherit; text-decoration: none; }
+.g-bdays a:hover { border-color: var(--d-sun); }
+.g-bdays b { font: 500 13px var(--d-sans); color: var(--d-moon); }
+.g-bdays span { font: 400 10.5px var(--d-mono); color: var(--d-honey); }
+.g-ring + .g-ring { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--d-hair); }
+.g-ring h3 { display: flex; align-items: baseline; gap: 12px; margin: 0 0 12px; font: 400 19px var(--d-serif); color: var(--d-moon); }
+.g-ring h3 small { font: 500 10px var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-smoke); }
+.g-pcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+a.g-pcard { display: flex; align-items: center; gap: 11px; min-width: 0; padding: 9px 12px; border: 1px solid var(--d-hair); border-radius: 14px; background: rgba(237, 231, 218, .022); color: inherit; text-decoration: none; transition: transform .12s, border-color .15s; }
+a.g-pcard:hover { transform: translateY(-1px); border-color: rgba(237, 231, 218, .3); text-decoration: none; }
+.g-pcard svg { flex: none; width: 40px; height: 40px; }
+.g-pcard .rail { fill: none; stroke: rgba(237, 231, 218, .1); stroke-width: 3; }
+.g-pcard .arc { fill: none; stroke: var(--d-honey); stroke-width: 3; stroke-linecap: round; }
+.g-pcard text { font: 500 13px var(--d-serif); fill: var(--d-moon-2); }
+.g-pcard > div { min-width: 0; display: grid; gap: 2px; }
+.g-pcard b { font: 500 13px var(--d-sans); color: var(--d-moon); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-pcard span { font: 400 10.5px var(--d-mono); color: var(--d-smoke); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-pcard.warm .arc { stroke: var(--d-sage); }
+.g-pcard.home .arc { stroke: var(--d-iris); }
+.g-pcard.cold span { color: var(--d-ember); }
+.g-pcard.cold text { fill: var(--d-smoke); }
+.g-people .g-block .tbl { width: 100%; }
+.g-play .p-form { margin: 0; }
+.g-play .p-ntiles { margin: 0; }
