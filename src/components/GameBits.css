@@ -16,9 +16,14 @@
 .gb-in { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px 32px; min-height: 228px; padding: 28px 30px 26px; }
 .gb-text { min-width: 0; }
 .gb-kick { font: 500 10.5px/1.3 var(--gb-mono); letter-spacing: .15em; text-transform: uppercase; color: var(--gb-c); }
-.gb h1 { margin: 10px 0 0; font: 300 54px/1.02 var(--gb-serif); font-variation-settings: "opsz" 72; letter-spacing: -.02em; color: var(--gb-moon); text-shadow: 0 2px 26px rgba(11, 13, 19, .6); }
+.gb .gb-text h1 { margin: 10px 0 0; font: 300 54px/1.02 var(--gb-serif); font-variation-settings: "opsz" 72; letter-spacing: -.02em; color: var(--gb-moon); text-shadow: 0 2px 26px rgba(11, 13, 19, .6); }
 .gb-aside { display: grid; gap: 14px; min-width: 250px; max-width: 340px; padding: 16px 18px; border: 1px solid rgba(237, 231, 218, .14); border-radius: 16px; background: rgba(11, 13, 19, .62); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .gb-lede { max-width: 420px; margin: 14px 0 0; font: 400 13.5px/1.5 var(--gb-sans); color: var(--gb-moon-2); }
+.gb-lede b { font-weight: 500; color: var(--gb-moon); }
+.gb-kick a { color: inherit; text-decoration: none; }
+.gb-kick a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.gb a.gb-fireline { display: flex; align-items: center; gap: 6px; font: 400 11px var(--gb-mono); letter-spacing: .03em; color: var(--gb-honey); text-decoration: none; }
+.gb a.gb-fireline:hover { color: var(--gb-moon); }
 .gb a.gb-more { font: 400 11px var(--gb-mono); letter-spacing: .04em; color: var(--gb-moon-2); text-decoration: none; }
 .gb a.gb-more:hover { color: var(--gb-moon); text-decoration: underline; text-underline-offset: 3px; }
 
@@ -113,7 +118,7 @@ a.gb-cell:hover:not(.future) { transform: scale(1.06); }
 .gb-circle .band em { text-align: right; font: 400 10.5px var(--gb-mono); font-style: normal; color: var(--gb-ash); }
 
 @media (max-width: 760px) {
-  .gb h1 { font-size: 38px; }
+  .gb .gb-text h1 { font-size: 38px; }
   .gb-in { min-height: 180px; padding: 22px 20px 20px; }
   .gb-aside { max-width: none; width: 100%; }
 }

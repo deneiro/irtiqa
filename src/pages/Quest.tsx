@@ -1,4 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { BANNER, THEME_ART } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEMES, themeColor } from "../lib/themes";
@@ -149,12 +152,12 @@ export default function QuestPage() {
 
   return (
     <div className="q-page" style={{ ["--c" as string]: color }}>
-      <div className="eyebrow">
-        <Link to="/quests" className="muted">Деятельности</Link>
-        {q.theme && <> · <Link to={`/theme/${encodeURIComponent(q.theme)}`} style={{ color }}>{themeLabel(q.theme)}</Link></>}
-        {q.project && <> · {projectPage ? <Link to={pageUrl(projectPage)}>{q.project}</Link> : q.project}</>}
-      </div>
-      <h1 className="title">{q.title}</h1>
+      <Banner art={(q.theme && THEME_ART[q.theme]) || BANNER.quests} color={color} title={q.title} aside={<GameAside theme={q.theme} />}
+        kicker={<>
+          <Link to="/quests">Деятельности</Link>
+          {q.theme && <> · <Link to={`/theme/${encodeURIComponent(q.theme)}`}>{themeLabel(q.theme)}</Link></>}
+          {q.project && <> · {projectPage ? <Link to={pageUrl(projectPage)}>{q.project}</Link> : q.project}</>}
+        </>} />
       {parts.intro.length > 0 && (
         <div className={`q-lead${leadLong && !leadOpen ? " q-clamp" : ""}`}>
           <div className="q-lead-text">{parts.intro.map((p, i) => <p key={i}><Inline md={p} /></p>)}</div>

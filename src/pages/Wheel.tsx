@@ -1,4 +1,7 @@
 import { useMemo, type ReactNode } from "react";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { Link } from "react-router-dom";
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart, ResponsiveContainer, Tooltip } from "recharts";
 import { useStore, useVault } from "../store";
@@ -27,11 +30,11 @@ export default function WheelPage() {
   if (!life) return null;
   return (
     <div>
-      <div className="eyebrow">Баланс по восьми темам</div>
-      <h1 className="title">Колесо</h1>
-      <p className="lede">
-        уровень <b>{overall.level}</b> · {overall.into} / {overall.need} XP до следующего · всего <b>{total}</b> XP · за 30 дней <b>{last30}</b>
-      </p>
+      <Banner art={BANNER.wheel} kicker="баланс по восьми темам" title="Колесо" aside={<GameAside />}>
+        <p className="gb-lede">
+          уровень <b>{overall.level}</b> · {overall.into} / {overall.need} XP до следующего · всего <b>{total}</b> XP · за 30 дней <b>{last30}</b>
+        </p>
+      </Banner>
 
       <div className="wheel-grid">
         <div className="card">

@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { useStore } from "../store";
 import { THEMES, groupByTheme, themeColor } from "../lib/themes";
 import { useT } from "../lib/i18n";
@@ -134,9 +137,9 @@ export default function HabitsPage() {
   if (!life) return null;
   return (
     <div>
-      <div className="eyebrow">life/habits</div>
-      <h1 className="title">Привычки</h1>
-      <p className="lede">{groups.active.length} активных · {groups.paused.length} на паузе · {groups.proposed.length} предложено из vault</p>
+      <Banner art={BANNER.habits} kicker="привычки · серии" title="Привычки" aside={<GameAside />}>
+        <p className="gb-lede">{groups.active.length} активных · {groups.paused.length} на паузе · {groups.proposed.length} предложено из vault. Отмечаются на «Сегодня» или в ответах боту.</p>
+      </Banner>
 
       <details className="card create" style={{ marginTop: 16 }} open={editing || err ? true : undefined}>
         <summary>{editing ? `Правка: ${form.title}` : "+ Новая привычка"}</summary>

@@ -1,4 +1,7 @@
 import { useMemo } from "react";
+import { BANNER } from "../assets/play";
+import { Banner } from "../components/GameBits";
+import GameAside from "../components/GameAside";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useStore, useVault } from "../store";
@@ -71,11 +74,11 @@ export default function TrendsPage() {
 
   return (
     <div>
-      <div className="eyebrow">За последние 30 дней</div>
-      <h1 className="title">Тренды</h1>
-      <p className="lede">
-        привычки <b>{data.due30 ? Math.round((100 * data.done30) / data.due30) : 0}%</b> · работа <b>{Math.round(data.work30 / 60)} ч</b> · прочитано <b>{data.reads30}</b> · потрачено в этом месяце <b>{fmt(data.monthSpent)}</b>
-      </p>
+      <Banner art={BANNER.trends} kicker="за последние 30 дней" title="Тренды" aside={<GameAside />}>
+        <p className="gb-lede">
+          привычки <b>{data.due30 ? Math.round((100 * data.done30) / data.due30) : 0}%</b> · работа <b>{Math.round(data.work30 / 60)} ч</b> · прочитано <b>{data.reads30}</b> · потрачено в этом месяце <b>{fmt(data.monthSpent)}</b>
+        </p>
+      </Banner>
 
       <div className="grid cols-2" style={{ marginTop: 16 }}>
         <div className="card">
