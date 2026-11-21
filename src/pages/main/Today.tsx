@@ -1,38 +1,34 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ayahOfDay } from "../../lib/ayah";
-import { PERIODS, byPeriod, periodAt, todayTimes, type PeriodKey } from "../../lib/periods";
+import type { Vault } from "../../lib/types";
+import { addDays, plural, weekdayIndex } from "../../lib/dates";
+import { actName, activities, dateRange, daysBetween, fmt, focusFor, plainLinks, plainStep, questUrl, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats } from "../../lib/dashboard";
+import { isoWeekKey } from "../../lib/goals";
+import type { Life } from "../../lib/life";
+import { themeColor, themeRu } from "../../lib/themes";
+import { Dots, actStatus, dayMonth, short, signed } from "./parts";
+import { BANNER } from "../../assets/play";
+import { FlameIcon, dayUrl } from "../../components/GameBits";
+import { dayScore, standing } from "../../lib/game";
+import { useGame } from "../../lib/useGame";
 import { trainingFor, type Training } from "../../lib/training";
 import { planOf, programWeek, setsNow, useTraining, type TrainingData } from "../../lib/trainingMap";
 import { useStore } from "../../store";
-import type { Vault } from "../../lib/types";
-import { addDays, plural, weekdayIndex } from "../../lib/dates";
-import { activities, dateRange, daysBetween, fmt, focusFor, habitRows, plainLinks, streaks, waiting, weightGoal, weightNow, windowStats, yesterdayView, type Stats, type Yesterday } from "../../lib/dashboard";
-import { isoWeekKey } from "../../lib/goals";
-import { habitDue, markOf, type Life } from "../../lib/life";
-import { BANNER } from "../../assets/play";
-import { ActivityList, TaskLine, Card, DayArc, Dots, Hero, Tile, dayMonth, short, signed, type PrayerMark, type Tone } from "./parts";
+import { Block, Gauge, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./Scene";
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
 const days = (n: number) => `${n} ${plural(n, "день", "дня", "дней")}`;
 const list = (xs: [string, number][]) => xs.map(([t, n]) => `${t} ${n}`).join(" · ");
-const streakTone = (d: number): Tone => (d >= 30 ? "sage" : d >= 7 ? "honey" : "ember");
-/** The windows of «Состояние», in days; the one before is as long. */
+/** The windows of the state, in days; the one before is as long. */
 const WINDOWS = [3, 7, 14] as const;
 type Win = (typeof WINDOWS)[number];
 
-/** The part of the day now, re-read every minute; none when the screen shows another date. */
-function useNowPeriod(today: string): PeriodKey | undefined {
-  const [t, setT] = useState(() => new Date());
-  useEffect(() => { const id = setInterval(() => setT(new Date()), 60_000); return () => clearInterval(id); }, []);
-  const cal = `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`;
-  return cal === today ? periodAt(t, todayTimes(today)) : undefined;
-}
-
 /**
- * «Сегодня» (2026-11-08): the date and an ayah of the day; today's prayers on the day's arc with a dot for every task
- * in its part of the day; the tasks by the five parts, today's training in the part of health; the activities and what
- * waits; the state of 3, 7 or 14 days and yesterday beside them.
+ * «Обзор» (rebuilt 2026-11-21 the way «Сегодня» is): the view from above. The scene carries the ayah of the day and
+ * how much of the window is recorded; beside it yesterday with the height it took. Below, the state of 3, 7 or 14
+ * days as gauges — each against the window before — the runs he holds, the activities, what waits, Claude's focus.
+ * Read only: the day is marked on «Сегодня».
  */
 export default function Today({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
   const [win, setWin] = useState<Win>(7);
@@ -42,63 +38,129 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
   const acts = useMemo(() => activities(life, today), [life, today]);
   const y = useMemo(() => yesterdayView(life, today), [life, today]);
   const ayah = useMemo(() => ayahOfDay(vault, today), [vault, today]);
+  const game = useGame();
   const training = useMemo(() => trainingFor(vault, today), [vault, today]);
   const plan = useTraining(useStore().root).data;
-  const now = useNowPeriod(today);
   const focus = focusFor(life, isoWeekKey(today), isoWeekKey(addDays(today, -7)));
-  const day = life.days.get(today);
-  const tasks = day?.tasks ?? [];
-  const groups = byPeriod(tasks);
-  const mark = (t: string): PrayerMark => { const m = day ? markOf(day, t) : undefined; return m === "done" ? "done" : m === "late" ? "late" : m === "failed" ? "failed" : "none"; };
-  const prayers = habitRows(life).filter((h) => h.kind === "prayer" && habitDue(h, today)).map((h) => ({ title: h.title, mark: mark(h.title) }));
-  const arc = groups.filter((g): g is { key: PeriodKey; tasks: typeof tasks } => !!g.key).map((g) => ({ key: g.key, total: g.tasks.length, done: g.tasks.filter((t) => t.done).length }));
   const wait = waiting(life);
+  const runs = streaks(life, yesterday);
+  const yScore = game ? dayScore(game.habits, life.days.get(yesterday), yesterday) : undefined;
+  const tScore = game ? dayScore(game.habits, life.days.get(today), today) : undefined;
+  const moving = acts.filter((a) => a.state === "moving").length;
   return (
-    <>
-      <Hero art={BANNER.overview} kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))}`} title={<>{dayMonth(today)} <span className="yr">{today.slice(0, 4)}</span></>} side={<DayArc prayers={prayers} periods={arc} now={now} />}>
-        {ayah && (
-          <div className="d-ayah">
-            <div className="d-kick">Аят дня</div>
-            <div className="t">{ayah.text}</div>
-            <div className="f"><Link to={`/page/${encodeURIComponent(ayah.rel)}`}>{ayah.name} · {ayah.sura}:{ayah.ayah}</Link> · перевод Кулиева</div>
-          </div>
-        )}
-      </Hero>
-      <div className="d-cols">
-        <div className="d-stack">
-          <Card title="Задачи на сегодня" right={`${tasks.filter((t) => t.done).length} / ${tasks.length} · из утреннего вопроса бота`}>
-            {!tasks.length && !training && <p className="d-faint">Задач нет — бот спросит утром.</p>}
-            {groups.map((g) => {
-              const p = PERIODS.find((x) => x.key === g.key);
-              const train = g.key === "магриб" ? training : undefined;
-              if (!g.tasks.length && !train && !(g.key === "магриб" && plan?.NUTRITION)) return null;
-              return (
-                <div key={g.key ?? "none"} className={`d-per${g.key && g.key === now ? " now" : ""}`}>
-                  <div className="d-per-h">{p ? <><b>{p.roman} · {p.from}–{p.to}</b><span>{p.what}</span></> : <b>без периода</b>}{g.tasks.length > 0 && <span className="n">{g.tasks.filter((t) => t.done).length} / {g.tasks.length}</span>}</div>
-                  {train && <TrainingLine t={train} plan={plan} today={today} />}
-                  {g.key === "магриб" && plan?.NUTRITION && <FoodLine plan={plan} />}
-                  {g.tasks.length > 0 && <ul className="d-tasks">{g.tasks.map((t, i) => <li key={i} className={t.done ? "done" : ""}><TaskLine text={t.text} today={today} /></li>)}</ul>}
+    <div className="g-play">
+      <div className="g-top">
+        <SceneFrame art={BANNER.overview}>
+          <SceneTitle kicker={`${WD[weekdayIndex(today)]} · неделя ${Number(isoWeekKey(today).slice(-2))} · вид сверху`} title={dayMonth(today)} />
+          {ayah && (
+            <div className="g-ayah">
+              <div className="g-kick">Аят дня</div>
+              <p>{ayah.text}</p>
+              <Link to={`/page/${encodeURIComponent(ayah.rel)}`}>{ayah.name} · {ayah.sura}:{ayah.ayah} · перевод Кулиева</Link>
+            </div>
+          )}
+          <SceneNumber value={tScore ? tScore.pct : "—"} unit={tScore ? "%" : undefined} label="сегодня" sub={<Link to="/?tab=play">{tScore ? standing(tScore.pct).at : "день"} · отметить день →</Link>} />
+        </SceneFrame>
+        <SideCard kicker={`вчера · ${WD[weekdayIndex(y.date)]}, ${dayMonth(y.date)}`}>
+          {!y.day ? <div className="g-q">Вчерашний день пуст.</div> : (
+            <>
+              <div className="g-yest"><b>{yScore?.pct ?? "—"}<small> %</small></b><span>{yScore ? standing(yScore.pct).at : ""}<br />высота вчера</span></div>
+              <dl className="g-kv">
+                <dt>Сделано</dt><dd>{y.day.done.map(plainLinks).join("; ") || "—"}</dd>
+                <dt>Срывы</dt><dd>{y.recorded ? y.falls.join(", ") || "нет" : "—"}</dd>
+                <dt>Полезные</dt><dd>{y.recorded ? (y.goodDone.length ? y.goodDone.join(", ") : "ни одной") : "—"}</dd>
+                <dt>Состояние</dt><dd>настроение {y.day.mood ?? "—"} · стресс {y.day.stress ?? "—"}{y.day.weight !== undefined && ` · ${y.day.weight} кг`}</dd>
+                {y.reflections.length > 0 && <><dt>О дне</dt><dd>{y.reflections.join(" · ")}</dd></>}
+              </dl>
+            </>
+          )}
+          <Link className="g-link g-side-link" to={dayUrl(y.date)}>{y.day ? "дополнить вчера →" : "заполнить вчера →"}</Link>
+        </SideCard>
+      </div>
+
+      <Block title="Состояние" right={<span className="g-chips">{WINDOWS.map((n) => <button key={n} className={n === win ? "on" : ""} aria-pressed={n === win} onClick={() => setWin(n)}>{days(n)}</button>)}</span>}>
+        <State life={life} today={today} s={s} prev={prev} win={win} />
+      </Block>
+
+      {runs.length > 0 && (
+        <Block title="Без срыва, дней подряд" right="по вчера">
+          <div className="g-runs">{runs.map((x) => <div key={x.habit} className={x.days >= 30 ? "long" : x.days >= 7 ? "mid" : ""}><FlameIcon /><b>{x.days}</b><span>{x.habit}</span></div>)}</div>
+        </Block>
+      )}
+
+      <div className="g-two">
+        <Block title="Деятельности" right={acts.length ? `${moving} движутся · ${acts.length - moving} стоят` : undefined}>
+          {!acts.length && <p className="g-faint">Деятельностей нет.</p>}
+          {acts.map((a) => {
+            const step = a.now ? plainStep(a.now) : "";
+            const { name, sub } = actName(a.quest);
+            return (
+              <Link key={a.quest.rel} to={questUrl(a.quest.rel)} className="g-act" style={{ ["--c" as string]: themeColor(a.quest.theme) }}>
+                <div>
+                  <b>{name}</b>{sub && <span className="sub"> · {sub}</span>}
+                  <small>{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</small>
+                  {step && <p>{step}</p>}
                 </div>
-              );
-            })}
-            {focus.lines[0] && (
-              <div className="d-claude-line">
-                <div className="d-kick who">Claude · фокус недели{focus.stale ? " · это прошлый период" : ""}</div>
-                <p>{focus.lines[0]}</p>
-                {focus.lines.length > 1 && <Link to="/?tab=week">ещё {focus.lines.length - 1} →</Link>}
-              </div>
-            )}
-          </Card>
-          <ActivityList acts={acts} />
-          <Card title="Ждёт тебя" right="из now.md">
-            {wait.length ? <ul className="d-plain">{wait.map((w, i) => <li key={i}>{w}</li>)}</ul> : <p className="d-faint">пока ничего</p>}
-          </Card>
-        </div>
-        <div className="d-stack">
-          <StateCard life={life} today={today} s={s} prev={prev} win={win} setWin={setWin} tasksToday={tasks.length} />
-          <YesterdayCard y={y} />
+                {actStatus(a)}
+              </Link>
+            );
+          })}
+        </Block>
+        <div className="g-stack">
+          {(training || plan?.NUTRITION) && (
+            <Block title="Тело сегодня" right="тренировка и еда по плану">
+              {training && <TrainingLine t={training} plan={plan} today={today} />}
+              {plan?.NUTRITION && <FoodLine plan={plan} />}
+            </Block>
+          )}
+          <Block title="Ждёт тебя" right="из now.md">
+            {wait.length ? <ul className="g-plain">{wait.map((w, i) => <li key={i}>{w}</li>)}</ul> : <p className="g-faint">Пока ничего.</p>}
+          </Block>
+          {focus.lines.length > 0 && (
+            <Block title={`Claude · фокус недели${focus.stale ? " · прошлый период" : ""}`} right={<Link to="/?tab=week">неделя →</Link>}>
+              <ol className="g-focus">{focus.lines.map((l) => <li key={l}>{l}</li>)}</ol>
+            </Block>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+/** The state of the window as eight gauges; an arrow only when both windows have records on half their days. */
+function State({ life, today, s, prev, win }: { life: Life; today: string; s: Stats; prev: Stats; win: Win }) {
+  const half = Math.ceil(win / 2);
+  const comparable = s.recorded >= half && prev.recorded >= half;
+  const arrow = (a: number | undefined, b: number | undefined, higherIsBetter: boolean) =>
+    comparable && a !== undefined && b !== undefined && a !== b ? ((a > b) === higherIsBetter ? "▲ лучше" : "▼ хуже") : undefined;
+  const p = s.prayer, marked = p.done + p.late + p.failed;
+  const share = (x: Stats) => { const m = x.prayer.done + x.prayer.late + x.prayer.failed; return m ? x.prayer.done / m : undefined; };
+  const goodShare = (x: Stats) => (x.good.total ? x.good.done / x.good.total : undefined);
+  const perDay = (x: Stats) => (x.recorded ? x.falls / x.recorded : undefined);
+  const taskShare = (x: Stats) => (x.tasks.total ? x.tasks.done / x.tasks.total : undefined);
+  const w = weightNow(life, today), goal = weightGoal(life, today);
+  const thin = (n: number) => n < half;
+  const noMarks = s.recorded === 0; // no day of the window carries a mark: «—», never a made-up 0
+  return (
+    <>
+      <div className="g-cover"><Dots flags={s.coverage} dates={dateRange(s.from, s.to)} />записи за {days(s.recorded)} из {s.length} · {short(s.from)} – {short(s.to)}</div>
+      <div className="g-gauges">
+        <Gauge label="Намаз вовремя" tone="sage" hint={arrow(share(s), share(prev), true)} value={noMarks || !marked ? "—" : p.done} of={marked ? ` / ${marked}` : undefined} share={noMarks ? undefined : share(s)} thin={noMarks || !marked}
+          sub={noMarks ? `нет записей за ${days(s.length)}` : marked ? `${p.late} поздно · ${p.failed} пропущено${p.unmarked ? ` · ${p.unmarked} без отметки` : ""}` : `${p.unmarked} без отметки из ${p.due}`} />
+        <Gauge label="Полезные" tone="sun" hint={arrow(goodShare(s), goodShare(prev), true)} value={noMarks || !s.good.total ? "—" : s.good.done} of={s.good.total ? ` / ${s.good.total}` : undefined} share={noMarks ? undefined : goodShare(s)} thin={noMarks || !s.good.total}
+          sub={noMarks ? `нет записей за ${days(s.length)}` : list(s.good.missedBy) || "все сделаны"} />
+        <Gauge label="Задачи" tone="iris" hint={arrow(taskShare(s), taskShare(prev), true)} value={s.tasks.total ? s.tasks.done : "—"} of={s.tasks.total ? ` / ${s.tasks.total}` : undefined} share={taskShare(s)} thin={thin(s.tasks.days)}
+          sub={s.tasks.total ? `были в ${s.tasks.days} из ${s.length} дней` : `нет задач за ${days(s.length)}`} />
+        <Gauge label="Настроение" tone="iris" hint={arrow(s.mood.avg, prev.mood.avg, true)} value={s.mood.avg ?? "—"} of={s.mood.avg !== undefined ? " / 10" : undefined} share={s.mood.avg !== undefined ? s.mood.avg / 10 : undefined} thin={thin(s.mood.n)} sub={`${days(s.mood.n)} из ${s.length} с ответом`} />
+        <Gauge label="Стресс" tone="honey" hint={arrow(s.stress.avg, prev.stress.avg, false)} value={s.stress.avg ?? "—"} of={s.stress.avg !== undefined ? " / 10" : undefined} share={s.stress.avg !== undefined ? s.stress.avg / 10 : undefined} thin={thin(s.stress.n)} sub={`${days(s.stress.n)} из ${s.length} с ответом`} />
+        <Gauge label="Срывы" tone="ember" hint={arrow(perDay(s), perDay(prev), false)} value={noMarks ? "—" : s.falls} thin={noMarks}
+          sub={noMarks ? `нет записей за ${days(s.length)}` : <>{list(s.fallsBy) || "ни одного"} · удержался {s.held} {plural(s.held, "раз", "раза", "раз")}</>} />
+        <Gauge label="Вес" hint={w ? short(w.last.date) : undefined} value={w ? w.last.value : "—"} of={w ? " кг" : undefined} thin={!w}
+          sub={w ? <>{w.before ? `${signed(w.last.value - w.before.value)} кг с ${short(w.before.date)}` : "первый замер"}{goal && ` · до ${goal.target} кг: ${signed(goal.target - w.last.value)} за ${days(daysBetween(today, goal.by))}`}</> : "замера ещё нет"} />
+        <Gauge label="Деньги" value={s.money.days ? fmt(s.money.spent) : "—"} of={s.money.days ? " ₸" : undefined} thin={!s.money.days}
+          sub={s.money.days ? `доход ${fmt(s.money.earned)} ₸ · ${days(s.money.days)} с записями` : `нет записей за ${days(s.length)}`} />
+      </div>
+      {!comparable && <p className="g-cap">Стрелок «лучше / хуже» нет: {[thin(s.recorded) && `в этих ${win} днях записи за ${days(s.recorded)}`, thin(prev.recorded) && `в прошлых ${win} днях записи за ${days(prev.recorded)}`].filter(Boolean).join("; ")}. Бледные числа — ответы меньше чем за половину дней.</p>}
     </>
   );
 }
@@ -129,63 +191,5 @@ function FoodLine({ plan }: { plan: TrainingData }) {
       Еда: {parts.join(" · ")}
       <div className="ex">{n.meals.map((m) => `${m.when} ${m.t.toLowerCase()}`).join(" · ")} · <Link to={`/theme/${encodeURIComponent("Health & sport")}/nutrition`}>план питания →</Link></div>
     </div>
-  );
-}
-
-function StateCard({ life, today, s, prev, win, setWin, tasksToday }: { life: Life; today: string; s: Stats; prev: Stats; win: Win; setWin: (w: Win) => void; tasksToday: number }) {
-  const half = Math.ceil(win / 2);
-  const comparable = s.recorded >= half && prev.recorded >= half;
-  /** ▲ / ▼ against the window before, only when both have records on half the days. */
-  const arrow = (a: number | undefined, b: number | undefined, higherIsBetter: boolean) =>
-    comparable && a !== undefined && b !== undefined && a !== b ? ((a > b) === higherIsBetter ? "▲ лучше" : "▼ хуже") : undefined;
-  const share = (x: Stats) => (x.prayer.due ? x.prayer.done / x.prayer.due : undefined);
-  const goodShare = (x: Stats) => (x.good.total ? x.good.done / x.good.total : undefined);
-  const perDay = (x: Stats) => (x.recorded ? x.falls / x.recorded : undefined);
-  const p = s.prayer, marked = p.done + p.late + p.failed;
-  const yesterday = addDays(today, -1);
-  const w = weightNow(life, today), goal = weightGoal(life, today), runs = streaks(life, yesterday); // the last weight through today; the counts and the runs through yesterday
-  const thin = (n: number) => n < half;
-  /** No day of the window carries a habit mark: nothing to count, so «—» and no tone — never a made-up 0. */
-  const noMarks = s.recorded === 0;
-  const blank = (k: string, foot: string) => <Tile k={k} v="—" foot={foot} thin />;
-  const noRecords = `нет записей за ${days(s.length)}`;
-  return (
-    <Card title="Состояние" right={<span className="d-seg">{WINDOWS.map((n) => <button key={n} className={n === win ? "on" : ""} aria-pressed={n === win} onClick={() => setWin(n)}>{days(n)}</button>)}</span>}>
-      <div className="d-cover"><Dots flags={s.coverage} dates={dateRange(s.from, s.to)} />записи за {days(s.recorded)} из {s.length} · {short(s.from)} – {short(s.to)}</div>
-      <div className="d-tiles">
-        {noMarks ? blank("Намаз", noRecords) : marked === 0 ? blank("Намаз", p.due ? `${p.unmarked} без отметки из ${p.due}` : "нет отметок") : <Tile k="Намаз" hint={arrow(share(s), share(prev), true)} tone={!p.due ? undefined : p.unmarked / p.due > 0.25 ? "honey" : "sage"} v={p.done} of={`/ ${marked}`} sub={`вовремя · ${p.late} поздно · ${p.failed} пропущено`} foot={p.unmarked ? `${p.unmarked} без отметки из ${p.due}` : undefined} />}
-        {noMarks ? blank("Срывы", noRecords) : <Tile k="Срывы" hint={arrow(perDay(s), perDay(prev), false)} tone={s.falls ? "ember" : "sage"} v={s.falls} sub={list(s.fallsBy) || "ни одного"} foot={`удержался ${s.held} ${plural(s.held, "раз", "раза", "раз")}`} />}
-        {noMarks ? blank("Полезные", noRecords) : !s.good.total ? blank("Полезные", "нет отметок") : <Tile k="Полезные" hint={arrow(goodShare(s), goodShare(prev), true)} tone={!s.good.total ? undefined : s.good.done / s.good.total < 0.3 ? "ember" : "sage"} v={s.good.done} of={`/ ${s.good.total}`} sub={list(s.good.missedBy)} />}
-        <Tile k="Вес" hint={w ? short(w.last.date) : undefined} v={w ? w.last.value : "—"} of={w ? "кг" : undefined} sub={w?.before ? `${signed(w.last.value - w.before.value)} кг с ${short(w.before.date)}` : undefined} foot={w && goal ? `до ${goal.target} кг: ${signed(goal.target - w.last.value)} за ${days(daysBetween(today, goal.by))}` : undefined} />
-        <Tile k="Настроение" hint={arrow(s.mood.avg, prev.mood.avg, true)} v={s.mood.avg ?? "—"} foot={`${days(s.mood.n)} из ${s.length}`} thin={thin(s.mood.n)} />
-        <Tile k="Стресс" hint={arrow(s.stress.avg, prev.stress.avg, false)} v={s.stress.avg ?? "—"} foot={`${days(s.stress.n)} из ${s.length}`} thin={thin(s.stress.n)} />
-        <Tile k="Деньги" v={s.money.days ? fmt(s.money.spent) : "—"} of={s.money.days ? "₸" : undefined} sub={s.money.days ? `доход ${fmt(s.money.earned)} ₸` : undefined} foot={s.money.days ? `${days(s.money.days)} с записями` : `нет записей за ${days(s.length)}`} thin={!s.money.days} />
-        {s.tasks.total ? <Tile k="Задачи" v={s.tasks.done} of={`/ ${s.tasks.total}`} sub={`сегодня ${tasksToday}`} foot={`были в ${s.tasks.days} из ${s.length} дней`} thin={thin(s.tasks.days)} /> : <Tile k="Задачи" v="—" sub={tasksToday ? `сегодня ${tasksToday}` : undefined} foot={`нет задач за ${days(s.length)}`} thin />}
-      </div>
-      {runs.length > 0 && (
-        <>
-          <div className="d-sub"><span className="d-kick">Без срыва, дней подряд</span></div>
-          <div className="d-streaks">{runs.map((x) => <span key={x.habit} className={`d-streak ${streakTone(x.days)}`}><b>{x.days}</b>{x.habit}</span>)}</div>
-        </>
-      )}
-      {!comparable && <p className="d-foot">Стрелок «лучше / хуже» нет: {[thin(s.recorded) && `в этих ${win} днях записи за ${days(s.recorded)}`, thin(prev.recorded) && `в прошлых ${win} днях записи за ${days(prev.recorded)}`].filter(Boolean).join("; ")}. Бледные числа — ответы меньше чем за половину дней.</p>}
-    </Card>
-  );
-}
-
-function YesterdayCard({ y }: { y: Yesterday }) {
-  const d = y.day;
-  return (
-    <Card title="Вчера" right={`${WD[weekdayIndex(y.date)]}, ${dayMonth(y.date)}`}>
-      {!d ? <p className="d-faint">Файла дня нет.</p> : (
-        <dl className="d-kv">
-          <dt>Сделано</dt><dd>{d.done.map(plainLinks).join("; ") || "—"}</dd>
-          <dt>Срывы</dt><dd>{y.recorded ? y.falls.join(", ") || "нет" : "—"}</dd>
-          <dt>Полезные</dt><dd>{y.recorded ? <>{y.goodDone.length ? y.goodDone.join(", ") : "ни одной"}{y.goodMissed.length > 0 && <span className="d-faint"> · не сделано: {y.goodMissed.join(", ")}</span>}</> : "—"}</dd>
-          <dt>Самочувствие</dt><dd>настроение {d.mood ?? "—"} · стресс {d.stress ?? "—"} · {d.weight !== undefined ? `${d.weight} кг` : "вес —"}</dd>
-          <dt>О дне</dt><dd className={y.reflections.length ? "d-refl" : "d-faint"}>{y.reflections.length ? y.reflections.map((r, i) => { const at = r.indexOf(":"); return <span key={i}><b>{at > 0 ? r.slice(0, at) : r}</b> {at > 0 ? r.slice(at + 1).trim() : ""}</span>; }) : "вечерние вопросы о дне без ответа"}</dd>
-        </dl>
-      )}
-    </Card>
   );
 }
