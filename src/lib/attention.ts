@@ -89,7 +89,7 @@ export function attention(life: Life, people: Page[], today: string, overviews: 
   // The circle: close people past their cadence, and close people with no contact recorded at all.
   const circle = buildCircle(people, life.events, today).filter((i) => (i.closeness ?? 0) >= CIRCLE_MIN);
   const late = circle.filter((i) => (i.overdue ?? 0) > 0).sort((a, b) => (b.overdue ?? 0) - (a.overdue ?? 0));
-  const never = circle.filter((i) => i.overdue === undefined && i.cadence !== undefined && !i.lastContact && !i.lastMeet)
+  const never = circle.filter((i) => i.overdue === undefined && i.cadence !== undefined && !i.own && !i.lastContact && !i.lastMeet)
     .sort((a, b) => (b.closeness ?? 0) - (a.closeness ?? 0));
   const peopleLine = (lead: string, xs: typeof circle, n: number, tail: (x: (typeof circle)[number]) => string, urgency: number): Attention => {
     const items = xs.slice(0, n).map((x) => ({ label: x.name, to: `/page/${encodeURIComponent(x.page.rel)}`, tail: tail(x) }));

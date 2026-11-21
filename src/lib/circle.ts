@@ -25,6 +25,45 @@ export function cadenceFor(closeness: number | undefined): number | undefined {
   return 180;
 }
 
+/**
+ * How often he actually sees a person, in his words, on the page as `rhythm:` (2026-11-22: an uncle he sees once a
+ * year or two kept coming up as «gone cold» because closeness 7 means a month). It overrides the closeness rhythm;
+ * «не считать» takes the tie out of every reminder. Empty means the closeness rhythm.
+ */
+export const RHYTHMS: { value: string; days: number | null }[] = [
+  { value: "раз в неделю", days: 7 },
+  { value: "раз в месяц", days: 30 },
+  { value: "раз в 3 месяца", days: 90 },
+  { value: "раз в полгода", days: 180 },
+  { value: "раз в год", days: 365 },
+  { value: "раз в 2 года", days: 730 },
+  { value: "не считать", days: null },
+];
+
+/** `rhythm:` in days; null for «не считать»; undefined when not set or not understood. Numbers are days. */
+export function rhythmDays(v: unknown): number | null | undefined {
+  const s = typeof v === "number" ? String(v) : typeof v === "string" ? v.trim().toLowerCase().replace(/ё/g, "е") : "";
+  if (!s) return undefined;
+  const known = RHYTHMS.find((r) => r.value === s);
+  if (known) return known.days;
+  if (/^не (считать|напоминать)$/.test(s)) return null;
+  if (/^\d+$/.test(s)) return Number(s) || undefined;
+  const m = s.match(/^раз в (\d+ )?(дн|день|дня|недел|месяц|месяца|месяцев|полгода|год|года|лет)/);
+  if (!m) return undefined;
+  const n = m[1] ? Number(m[1]) : 1;
+  const u = m[2];
+  const per = u.startsWith("д") ? 1 : u.startsWith("н") ? 7 : u.startsWith("м") ? 30 : u === "полгода" ? 182 : 365;
+  return n * per;
+}
+
+/** The rhythm of a tie: his own `rhythm:` when he set one, else the one his closeness gives. */
+export function cadenceOf(page: Page): { cadence: number | undefined; own: boolean } {
+  const r = rhythmDays(page.fm.rhythm);
+  if (r === null) return { cadence: undefined, own: true };
+  if (r !== undefined) return { cadence: r, own: true };
+  return { cadence: cadenceFor(closenessOf(page)), own: false };
+}
+
 export const BANDS: { title: string; min: number; max: number }[] = [
   { title: "Ядро", min: 9, max: 10 },
   { title: "Близкие", min: 7, max: 8 },
@@ -55,6 +94,8 @@ export interface CircleItem {
   closeness: number | undefined;
   category: string | undefined;
   cadence: number | undefined;
+  /** The rhythm is his own `rhythm:`, not the closeness one: a tie with no record yet is then not «cold». */
+  own: boolean;
   lastContact: string | undefined;
   sinceContact: number | undefined;
   lastMeet: string | undefined;
@@ -78,7 +119,7 @@ export function buildCircle(people: Page[], events: LifeEvent[], today: string):
   const own = new Set(people.flatMap((p) => [p.title, p.file].map((x) => x.toLowerCase())));
   const items = people.map((page) => {
     const closeness = closenessOf(page);
-    const cadence = cadenceFor(closeness);
+    const { cadence, own: mine } = cadenceOf(page);
     const last = typeof page.fm.last_contact === "string" ? page.fm.last_contact : undefined;
     const since = daysSinceContact(last, today);
     const self = [page.title, page.file].map((s) => s.toLowerCase());
@@ -88,7 +129,7 @@ export function buildCircle(people: Page[], events: LifeEvent[], today: string):
     const touch = [last, lastMeet].filter(Boolean).sort().pop();
     const sinceTouch = daysSinceContact(touch, today);
     return {
-      page, name: page.title, closeness, category: categoryOf(page), cadence,
+      page, name: page.title, closeness, category: categoryOf(page), cadence, own: mine,
       lastContact: last, sinceContact: since,
       lastMeet, sinceMeet: daysSinceContact(lastMeet, today),
       overdue: cadence !== undefined && sinceTouch !== undefined ? sinceTouch - cadence : undefined,
@@ -96,7 +137,7 @@ export function buildCircle(people: Page[], events: LifeEvent[], today: string):
     };
   });
   // No contact recorded at all is not "fine": it sorts above everyone still in time.
-  const key = (i: CircleItem) => i.overdue ?? (i.cadence !== undefined && !i.lastContact && !i.lastMeet ? 0 : -1e9);
+  const key = (i: CircleItem) => i.overdue ?? (i.cadence !== undefined && !i.own && !i.lastContact && !i.lastMeet ? 0 : -1e9);
   return items.sort((a, b) =>
     key(b) - key(a) ||
     (b.closeness ?? 0) - (a.closeness ?? 0) ||
@@ -307,7 +348,8 @@ export interface CircleWarmth { bands: { title: string; total: number; warm: num
 
 /** The circle by its four bands: how many ties are still within their rhythm. People he lives with and ties with no closeness are left out. */
 export function circleWarmth(items: CircleItem[]): CircleWarmth {
-  const counted = items.filter((i) => i.closeness !== undefined && !atHome(i.page));
+  // a tie he took out («не считать») or gave his own rhythm without a record yet is not counted
+  const counted = items.filter((i) => i.closeness !== undefined && !atHome(i.page) && i.cadence !== undefined && !(i.own && i.overdue === undefined));
   const isWarm = (i: CircleItem) => (tieWarmth(i)?.pct ?? 0) > 0;
   const bands = BANDS.map((b) => { const of = counted.filter((i) => i.closeness! >= b.min && i.closeness! <= b.max); return { title: b.title, total: of.length, warm: of.filter(isWarm).length }; });
   const total = bands.reduce((s, b) => s + b.total, 0), warm = bands.reduce((s, b) => s + b.warm, 0);

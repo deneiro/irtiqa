@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { buildCircle, circleWarmth, coMet, eventsWith, isMeetingRecord, meetWindow, ownNames, tieWarmth, triggerStats } from "./circle";
+import { buildCircle, cadenceOf, circleWarmth, coMet, rhythmDays, eventsWith, isMeetingRecord, meetWindow, ownNames, tieWarmth, triggerStats } from "./circle";
 import { buildLife } from "./life";
 import type { MdFile } from "./types";
 import { buildVault } from "./vault";
@@ -89,4 +89,37 @@ test("a tie cools from its last touch to the end of its rhythm, and the circle c
   const w = circleWarmth(buildCircle(v.pages, [], TODAY));
   assert.deepEqual(w.bands.map((b) => [b.title, b.warm, b.total]), [["Ядро", 1, 2], ["Близкие", 0, 0], ["Круг", 1, 1], ["Дальние", 0, 0]]);
   assert.deepEqual([w.warm, w.total, w.pct], [2, 3, 67]);
+});
+
+test("his own rhythm overrides the closeness one, and a tie with it and no record is not cold", () => {
+  assert.equal(rhythmDays("раз в год"), 365);
+  assert.equal(rhythmDays("раз в 2 года"), 730);
+  assert.equal(rhythmDays("Раз в полгода"), 180);
+  assert.equal(rhythmDays("раз в 3 месяца"), 90);
+  assert.equal(rhythmDays("45"), 45);
+  assert.equal(rhythmDays("не считать"), null);
+  assert.equal(rhythmDays(""), undefined);
+  assert.equal(rhythmDays("иногда"), undefined);
+  const v = buildVault({
+    root: "", life: [], raw: [], log: "", claude_md: "", media: [],
+    pages: [
+      person("Дядя", { closeness: "7", rhythm: "раз в год" }),
+      person("Дядя давно", { closeness: "7", rhythm: "раз в год", last_contact: "2028-12-01" }),
+      person("Тётя", { closeness: "7", rhythm: "не считать", last_contact: "2029-01-01" }),
+      person("Друг", { closeness: "7" }),
+    ],
+  });
+  const people = v.pages;
+  assert.deepEqual(cadenceOf(people.find((p) => p.file === "Друг")!), { cadence: 30, own: false });
+  const c = buildCircle(people, [], TODAY);
+  const by = (n: string) => c.find((i) => i.name === n)!;
+  assert.equal(by("Дядя").cadence, 365);
+  assert.equal(by("Дядя").overdue, undefined);
+  assert.ok(by("Дядя давно").overdue! > 0);
+  assert.equal(by("Тётя").cadence, undefined);
+  // past his own year comes first; the friend with no record next; the uncle with his own rhythm and no record after them
+  assert.deepEqual(c.map((i) => i.name).slice(0, 2), ["Дядя давно", "Друг"]);
+  assert.ok(c.findIndex((i) => i.name === "Дядя") > 1);
+  // warmth counts the friend and the overdue uncle only
+  assert.equal(circleWarmth(c).total, 2);
 });
