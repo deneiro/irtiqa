@@ -1,19 +1,16 @@
 import { useMemo, useState } from "react";
 import { THEME_ART } from "../assets/play";
-import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { Link } from "react-router-dom";
+import { dayUrl } from "../components/GameBits";
 import { useStore } from "../store";
-import { ChartTip } from "../components/Bits";
 import SourceLink from "../components/SourceLink";
 import { confirmAction } from "../lib/native";
-import { addDays } from "../lib/dates";
 import {
   ACCOUNTS_REL, DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, SUBS_REL, debtLeft, debtsByPerson, liveBalance, monthOf, payPersonDebts, serializeAccounts, serializeDebts, serializeSubscriptions, parseAccounts, parseAmount, parseDebts, parseSubscriptions, categoryName,
   txsInMonth, type AccountRow, type Day, type Debt, type Subscription,
 } from "../lib/life";
 import { useDayToday } from "../lib/useDayToday";
-
-const axis = { stroke: "var(--faint)", fontSize: 11, fontFamily: "var(--font-mono)" };
 
 function fmt(n: number): string {
   return Math.round(n).toLocaleString("ru-RU");
@@ -161,6 +158,21 @@ export default function FinancePage() {
 
   const accountNames = useMemo(() => [...new Set([...accounts.map((a) => a.name), ...subs.map((s) => s.account)].filter(Boolean))], [accounts, subs]);
 
+  /** A spend or an income of today, written into today's day file as «Сегодня» writes it. */
+  const [tx, setTx] = useState({ earn: false, amount: "", category: "", account: "", note: "" });
+  const addTx = async () => {
+    const n = Math.abs(parseAmount(tx.amount) ?? 0);
+    if (!n) { setErr("Сумма — числом: 1500."); return; }
+    try {
+      await updateToday((d) => ({ ...d, txs: [...d.txs, { amount: tx.earn ? n : -n, category: tx.category.trim(), account: tx.account.trim(), note: tx.note.trim() }] }));
+      setTx({ ...tx, amount: "", note: "" });
+      setErr(null);
+      await reload();
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); }
+  };
+  const maxDay = Math.max(1, ...month.perDay.map((d) => d["потрачено"]));
+  const maxDebt = Math.max(1, ...people_.map((x) => x.left));
+
   if (!life) return null;
   return (
     <div className="g-page g-fin">
@@ -190,180 +202,154 @@ export default function FinancePage() {
             <p className="g-cap">Внести платёж или закрыть долг — в блоке «Долги» ниже.</p>
           </SideCard>
         </div>
-      </div>
-      {err && <div className="notice err">Не удалось записать: {err}</div>}
+        {err && <p className="g-error" role="alert">Не удалось записать: {err}</p>}
 
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>
-          <button className="btn small ghost" onClick={() => setYm(shiftMonth(ym, -1))}>‹</button>
-          <span>{monthLabel(ym)}</span>
-          <button className="btn small ghost" onClick={() => setYm(shiftMonth(ym, 1))} disabled={ym >= monthOf(today)}>›</button>
-          <span className="n"><span className="amt neg">−{fmt(month.spent)}</span> · <span className="amt pos">+{fmt(month.earned)}</span></span>
-        </h3>
-        <div className="fin-grid">
-          <div className="chart" style={{ height: 200 }}>
-            <ResponsiveContainer>
-              <BarChart data={month.perDay} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--hair)" />
-                <XAxis dataKey="day" tick={axis} axisLine={false} tickLine={false} interval={4} />
-                <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v >= 1000 ? `${Math.round(v / 1000)}к` : String(v))} />
-                <Tooltip content={<ChartTip />} cursor={{ fill: "var(--raised)" }} />
-                <Bar dataKey="потрачено" fill="var(--accent)" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        <Block title={<span className="g-monthnav"><button type="button" onClick={() => setYm(shiftMonth(ym, -1))} aria-label="Месяц назад">‹</button>{monthLabel(ym)}<button type="button" onClick={() => setYm(shiftMonth(ym, 1))} disabled={ym >= monthOf(today)} aria-label="Месяц вперёд">›</button></span>}
+          right={<><b className="neg">−{fmt(month.spent)}</b> · <b className="pos">+{fmt(month.earned)}</b> ₸</>}>
+          <div className="g-fmonth">
+            <div>
+              <div className="g-daybars" role="img" aria-label={`Траты по дням: ${monthLabel(ym)}`}>
+                {month.perDay.map((d) => {
+                  const date = `${ym}-${d.day.padStart(2, "0")}`;
+                  const v = d["потрачено"];
+                  return (
+                    <Link key={d.day} to={dayUrl(date)} className={`${date === today ? "today" : ""}${date > today ? " future" : ""}`} title={`${d.day} — ${v ? `${fmt(v)} ₸` : "трат нет"}`} onClick={(e) => { if (date > today) e.preventDefault(); }}>
+                      <u style={{ height: `${v ? Math.max(4, (v / maxDay) * 100) : 0}%` }} />
+                      <span>{Number(d.day) === 1 || Number(d.day) % 5 === 0 ? d.day : ""}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+              {ym === monthOf(today) && (
+                <form className="g-quick" onSubmit={(e) => { e.preventDefault(); void addTx(); }}>
+                  <div className="g-chips"><button type="button" className={!tx.earn ? "on" : ""} aria-pressed={!tx.earn} onClick={() => setTx({ ...tx, earn: false })}>расход</button><button type="button" className={tx.earn ? "on" : ""} aria-pressed={tx.earn} onClick={() => setTx({ ...tx, earn: true })}>доход</button></div>
+                  <input className="text" autoCorrect="off" spellCheck={false} placeholder="сумма" value={tx.amount} onChange={(e) => setTx({ ...tx, amount: e.target.value })} aria-label="Сумма" />
+                  <input className="text" autoCorrect="off" spellCheck={false} placeholder="категория" list="fin-cats" value={tx.category} onChange={(e) => setTx({ ...tx, category: e.target.value })} aria-label="Категория" />
+                  <input className="text" autoCorrect="off" spellCheck={false} placeholder="счёт" list="fin-accts" value={tx.account} onChange={(e) => setTx({ ...tx, account: e.target.value })} aria-label="Счёт" />
+                  <input className="text" autoCorrect="off" spellCheck={false} placeholder="заметка" value={tx.note} onChange={(e) => setTx({ ...tx, note: e.target.value })} aria-label="Заметка" />
+                  <div className="g-line"><button type="submit" disabled={!tx.amount.trim()}>Записать сегодня</button></div>
+                </form>
+              )}
+            </div>
+            <div className="g-cats">
+              <span className="g-kick">на что ушло</span>
+              {month.cats.length === 0 && <p className="g-faint">Трат в этом месяце нет.</p>}
+              {month.cats.map(([c, n]) => <div className="g-mv" key={c}><span>{c}</span><i><u style={{ width: `${(100 * n) / month.cats[0][1]}%` }} /></i><b>{fmt(n)}</b></div>)}
+            </div>
           </div>
-          <div className="cats">
-            {month.cats.length === 0 && <div className="small muted">Трат в этом месяце нет.</div>}
-            {month.cats.map(([c, n]) => (
-              <div className="cat" key={c}>
-                <span className="cname">{c}</span>
-                <span className="cbar"><i style={{ width: `${(100 * n) / month.cats[0][1]}%` }} /></span>
-                <span className="cnum">{fmt(n)}</span>
+          {month.rows.length > 0 && (
+            <details className="g-ops">
+              <summary>Все операции месяца · {month.rows.length}</summary>
+              {[...month.rows].reverse().map((r, k) => (
+                <div key={k} className={r.tx.amount < 0 ? "neg" : "pos"}>
+                  <span>{Number(r.date.slice(8))}</span><b>{r.tx.amount > 0 ? "+" : "−"}{fmt(Math.abs(r.tx.amount))}</b><em>{r.tx.category || "—"}</em><span>{r.tx.account}</span><span>{r.tx.note}</span>
+                </div>
+              ))}
+            </details>
+          )}
+        </Block>
+
+        <div className="g-two">
+          <Block title="Счета" right={`${fmt(total)} ₸`}>
+            <div className="g-accts">
+              {accounts.map((a) => (
+                <div key={a.name} className={`g-acct${live(a) < 0 ? " neg" : ""}`}>
+                  <div className="hd"><b>{a.name}</b><span>{a.kind}</span><button type="button" title="убрать счёт" aria-label={`Убрать счёт ${a.name}`} onClick={() => void removeAccount(a)}>×</button></div>
+                  <strong>{fmt(live(a))}<small> ₸</small></strong>
+                  <small title={`сверено ${a.asOf}: ${fmt(a.balance)}`}>сверено {a.asOf}{live(a) !== a.balance ? ` · было ${fmt(a.balance)}` : ""}</small>
+                  <form onSubmit={(e) => { e.preventDefault(); setBalance(a); }}>
+                    <input className="text" autoCorrect="off" spellCheck={false} placeholder="сколько сейчас" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} aria-label={`Сверить ${a.name}`} />
+                    <button type="submit" disabled={!(editBal[a.name] ?? "").trim()}>сверить</button>
+                  </form>
+                </div>
+              ))}
+              {!accounts.length && <p className="g-faint">Счетов нет.</p>}
+            </div>
+            <form className="g-addrow" onSubmit={(e) => { e.preventDefault(); addAccount(); }}>
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="счёт (Kaspi, наличные…)" value={acc.name} onChange={(e) => setAcc({ ...acc, name: e.target.value })} />
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="тип" value={acc.kind} onChange={(e) => setAcc({ ...acc, kind: e.target.value })} />
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="баланс" value={acc.balance} onChange={(e) => setAcc({ ...acc, balance: e.target.value })} />
+              <button type="submit" disabled={!acc.name.trim()}>+ счёт</button>
+            </form>
+            <p className="g-cap">Баланс считается сам: сверенное число плюс все операции с того дня. «Сверить» ставит то, что на счёте прямо сейчас.</p>
+          </Block>
+
+          <Block title="Подписки" right={`${fmt(subsMonthly)} ₸ в месяц`}>
+            <div className="g-substrip" role="img" aria-label="Дни списаний в месяце">
+              {Array.from({ length: 31 }, (_, k) => k + 1).map((d) => {
+                const of = subs.filter((x) => x.day === d);
+                return <i key={d} className={`${of.length ? "on" : ""}${d === Number(today.slice(8)) ? " today" : ""}`} title={of.length ? `${d}-го: ${of.map((x) => `${x.name} ${fmt(x.amount)}`).join(", ")}` : `${d}-го`}>{of.length ? d : ""}</i>;
+              })}
+            </div>
+            {subs.map((x) => (
+              <div className="g-rowx" key={x.name}>
+                <div><b>{x.name}</b><small>{x.day}-го · {x.account || "без счёта"} · {x.category}</small></div>
+                <span className="amt">{fmt(x.amount)} ₸</span>
+                <span className="acts"><button type="button" onClick={() => void removeSub(x)}>убрать</button></span>
               </div>
             ))}
-          </div>
-        </div>
-        {month.rows.length > 0 && (
-          <details style={{ marginTop: 12 }}>
-            <summary className="small muted" style={{ cursor: "pointer" }}>Все операции месяца ({month.rows.length})</summary>
-            <table className="tbl" style={{ marginTop: 8 }}>
-              <thead><tr><th>дата</th><th style={{ textAlign: "right" }}>сумма</th><th>категория</th><th>счёт</th><th>заметка</th></tr></thead>
-              <tbody>
-                {month.rows.map((r, i) => (
-                  <tr key={i} className="txrow">
-                    <td className="mono">{r.date.slice(5)}</td>
-                    <td className={`amt ${r.tx.amount < 0 ? "neg" : "pos"}`}>{fmt(r.tx.amount)}</td>
-                    <td>{r.tx.category}</td><td>{r.tx.account}</td><td className="muted">{r.tx.note}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="small faint" style={{ marginTop: 6 }}>Операции живут в файлах дней. Сегодняшние правятся на экране «День».</div>
-          </details>
-        )}
-      </div>
-
-      <div className="fin-cols">
-        <div className="card">
-          <h3>Счета <span className="n">{fmt(total)}</span></h3>
-          {accounts.length > 0 && (
-            <table className="tbl">
-              <thead><tr><th>счёт</th><th>тип</th><th style={{ textAlign: "right" }}>баланс</th><th>на дату</th><th /></tr></thead>
-              <tbody>
-                {accounts.map((a) => (
-                  <tr key={a.name}>
-                    <td>{a.name}</td><td className="muted">{a.kind}</td>
-                    <td className="amt mono" style={{ textAlign: "right" }}>{fmt(live(a))}</td>
-                    <td className="mono muted" title={`сверено ${a.asOf}: ${fmt(a.balance)}`}>{a.asOf}{live(a) !== a.balance ? ` · было ${fmt(a.balance)}` : ""}</td>
-                    <td>
-                      <form className="row" onSubmit={(e) => { e.preventDefault(); setBalance(a); }} style={{ gap: 4 }}>
-                        <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} style={{ width: 90 }} placeholder="сверить" title="Сколько на счёте прямо сейчас" value={editBal[a.name] ?? ""} onChange={(e) => setEditBal({ ...editBal, [a.name]: e.target.value })} />
-                        <button className="btn small" type="submit">ок</button>
-                        <button className="btn small ghost" type="button" title="убрать счёт" onClick={() => void removeAccount(a)}>×</button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <form className="addrow acc" onSubmit={(e) => { e.preventDefault(); addAccount(); }}>
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="счёт (Kaspi, наличные…)" value={acc.name} onChange={(e) => setAcc({ ...acc, name: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="тип" value={acc.kind} onChange={(e) => setAcc({ ...acc, kind: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="баланс" value={acc.balance} onChange={(e) => setAcc({ ...acc, balance: e.target.value })} />
-            <button className="btn" type="submit">+</button>
-          </form>
-          <div className="small faint" style={{ marginTop: 6 }}>Баланс считается сам: сверенное число плюс все операции с этого дня. «Сверить» ставит то, что на счёте прямо сейчас: сегодняшние операции приложение учтёт само.</div>
+            {!subs.length && <p className="g-faint">Подписок нет.</p>}
+            <form className="g-addrow" onSubmit={(e) => { e.preventDefault(); addSub(); }}>
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="название" value={sub.name} onChange={(e) => setSub({ ...sub, name: e.target.value })} />
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="сумма" value={sub.amount} onChange={(e) => setSub({ ...sub, amount: e.target.value })} />
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="счёт" list="fin-accts" value={sub.account} onChange={(e) => setSub({ ...sub, account: e.target.value })} />
+              <input className="text short" autoCorrect="off" spellCheck={false} placeholder="день" value={sub.day} onChange={(e) => setSub({ ...sub, day: e.target.value })} />
+              <input className="text" autoCorrect="off" spellCheck={false} placeholder="категория" value={sub.category} onChange={(e) => setSub({ ...sub, category: e.target.value })} />
+              <button type="submit" disabled={!sub.name.trim() || !sub.amount.trim()}>+ подписка</button>
+            </form>
+            <p className="g-cap">В день списания приложение само добавит операцию в файл дня с заметкой «подписка: …».</p>
+          </Block>
         </div>
 
-        <div className="card">
-          <h3>Подписки <span className="n">{fmt(subsMonthly)} / мес</span></h3>
-          {subs.length > 0 && (
-            <table className="tbl">
-              <thead><tr><th>название</th><th style={{ textAlign: "right" }}>сумма</th><th>счёт</th><th>день</th><th>категория</th><th /></tr></thead>
-              <tbody>
-                {subs.map((s) => (
-                  <tr key={s.name}>
-                    <td>{s.name}</td><td className="amt mono" style={{ textAlign: "right" }}>{fmt(s.amount)}</td>
-                    <td className="muted">{s.account}</td><td className="mono">{s.day}</td><td className="muted">{s.category}</td>
-                    <td><button className="btn small ghost" title="убрать" onClick={() => void removeSub(s)}>×</button></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-          <form className="addrow subs" onSubmit={(e) => { e.preventDefault(); addSub(); }}>
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="название" value={sub.name} onChange={(e) => setSub({ ...sub, name: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="сумма" value={sub.amount} onChange={(e) => setSub({ ...sub, amount: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="счёт" list="fin-accts" value={sub.account} onChange={(e) => setSub({ ...sub, account: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="день" value={sub.day} onChange={(e) => setSub({ ...sub, day: e.target.value })} />
-            <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="категория" value={sub.category} onChange={(e) => setSub({ ...sub, category: e.target.value })} />
-            <button className="btn" type="submit">+</button>
-          </form>
-          <div className="small faint" style={{ marginTop: 6 }}>В день списания приложение само добавит операцию в файл дня с заметкой «подписка: …».</div>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginTop: 16 }}>
-        <h3>Долги <span className="n">мне {fmt(owedToMe)} · я {fmt(iOwe)}</span></h3>
-        {people_.length > 0 && (
-          <table className="tbl">
-            <thead><tr><th>кто</th><th>направление</th><th style={{ textAlign: "right" }}>остаток</th><th>долгов</th><th>с</th><th /></tr></thead>
-            <tbody>
-              {people_.map((p) => (
-                <tr key={p.who + p.direction}>
-                  <td><SourceLink source={`[[${p.who}]]`} /></td>
-                  <td className={p.direction === DEBT_I_OWE ? "muted" : ""}>{p.direction}</td>
-                  <td className="amt mono neg" style={{ textAlign: "right" }}>{fmt(p.left)} ₸</td>
-                  <td className="mono muted">{p.count}</td>
-                  <td className="mono muted">{p.oldest}</td>
-                  <td className="row" style={{ gap: 4 }}>
-                    <button className="btn small" onClick={() => setPay({ who: p.who, direction: p.direction, amount: "", account: accountNames[0] ?? "" })}>внести</button>
-                    <button className="btn small ghost" onClick={() => void closePerson(p.who, p.direction, p.left)}>закрыть всё</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        {pay && (
-          <form className="addrow paydebt" onSubmit={(e) => { e.preventDefault(); void doPay(); }}>
-            <span className="small muted" style={{ alignSelf: "center" }}>{pay.direction === DEBT_I_OWE ? "отдаю" : "возвращают"}: <b>{pay.who}</b></span>
-            <input className="text" autoFocus autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="сколько" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} />
-            <select className="text" value={pay.account} onChange={(e) => setPay({ ...pay, account: e.target.value })}>
-              <option value="">без операции</option>
-              {accountNames.map((a) => <option key={a} value={a}>{a}</option>)}
+        <Block title="Долги" right={<>мне <b className="pos">{fmt(owedToMe)}</b> · я <b className="neg">{fmt(iOwe)}</b> ₸</>}>
+          {people_.map((x) => {
+            const paying = pay && pay.who === x.who && pay.direction === x.direction;
+            return (
+              <div key={x.who + x.direction} className={`g-debt ${x.direction === DEBT_I_OWE ? "owe" : "due"}`}>
+                <div className="who"><SourceLink source={`[[${x.who}]]`} /><small>{x.direction} · {x.count} {x.count === 1 ? "долг" : "долгов"} · с {x.oldest}</small></div>
+                <i><u style={{ width: `${(x.left / maxDebt) * 100}%` }} /></i>
+                <b>{fmt(x.left)} ₸</b>
+                <span className="acts"><button type="button" onClick={() => setPay(paying ? null : { who: x.who, direction: x.direction, amount: "", account: accountNames[0] ?? "" })}>{paying ? "отмена" : "внести"}</button><button type="button" onClick={() => void closePerson(x.who, x.direction, x.left)}>закрыть всё</button></span>
+                {paying && pay && (
+                  <form className="g-addrow pay" onSubmit={(e) => { e.preventDefault(); void doPay(); }}>
+                    <span>{pay.direction === DEBT_I_OWE ? "отдаю" : "возвращают"}</span>
+                    <input className="text" autoFocus autoCorrect="off" spellCheck={false} placeholder="сколько" value={pay.amount} onChange={(e) => setPay({ ...pay, amount: e.target.value })} />
+                    <select className="text" value={pay.account} onChange={(e) => setPay({ ...pay, account: e.target.value })}>
+                      <option value="">без операции</option>
+                      {accountNames.map((a) => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    <button type="submit" disabled={!pay.amount.trim()}>записать</button>
+                    <small>Сумма пойдёт на самые старые долги; со счётом операция ляжет в сегодняшний день.</small>
+                  </form>
+                )}
+              </div>
+            );
+          })}
+          {!people_.length && <p className="g-faint">Открытых долгов нет.</p>}
+          <form className="g-addrow" onSubmit={(e) => { e.preventDefault(); addDebt(); }}>
+            <input className="text" autoCorrect="off" spellCheck={false} placeholder="кто (из людей или текст)" list="fin-people" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
+            <select className="text" value={debt.direction} onChange={(e) => setDebt({ ...debt, direction: e.target.value })}>
+              <option value={DEBT_THEY_OWE}>{DEBT_THEY_OWE}</option>
+              <option value={DEBT_I_OWE}>{DEBT_I_OWE}</option>
             </select>
-            <button className="btn primary" type="submit">записать</button>
-            <button className="btn ghost" type="button" onClick={() => setPay(null)}>отмена</button>
-            <div className="small faint" style={{ gridColumn: "1 / -1" }}>Сумма пойдёт на самые старые долги этого человека; закрытые уйдут в «Закрытые». Со счётом операция ляжет в сегодняшний день категорией «долг».</div>
+            <input className="text" autoCorrect="off" spellCheck={false} placeholder="сумма" value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
+            <input className="text short" autoCorrect="off" spellCheck={false} placeholder="валюта" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })} />
+            <input className="text" autoCorrect="off" spellCheck={false} placeholder="заметка" value={debt.note} onChange={(e) => setDebt({ ...debt, note: e.target.value })} />
+            <button type="submit" disabled={!debt.who.trim() || !debt.amount.trim()}>+ долг</button>
           </form>
-        )}
-        <form className="addrow debt" onSubmit={(e) => { e.preventDefault(); addDebt(); }}>
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="кто (из People или текст)" list="fin-people" value={debt.who} onChange={(e) => setDebt({ ...debt, who: e.target.value })} />
-          <select className="text" value={debt.direction} onChange={(e) => setDebt({ ...debt, direction: e.target.value })}>
-            <option value={DEBT_THEY_OWE}>{DEBT_THEY_OWE}</option>
-            <option value={DEBT_I_OWE}>{DEBT_I_OWE}</option>
-          </select>
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="сумма" value={debt.amount} onChange={(e) => setDebt({ ...debt, amount: e.target.value })} />
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="валюта" value={debt.currency} onChange={(e) => setDebt({ ...debt, currency: e.target.value })} style={{ width: 70 }} />
-          <input className="text" autoCorrect="off" autoCapitalize="off" spellCheck={false} placeholder="заметка" value={debt.note} onChange={(e) => setDebt({ ...debt, note: e.target.value })} />
-          <button className="btn" type="submit">+</button>
-        </form>
-        {debts.some((d) => d.closed) && (
-          <details style={{ marginTop: 10 }}>
-            <summary className="small muted" style={{ cursor: "pointer" }}>Закрытые ({debts.filter((d) => d.closed).length})</summary>
-            {debts.filter((d) => d.closed).map((d, i) => (
-              <div className="bul small" key={i}><SourceLink source={d.who} /><span className="muted"> · {d.direction} · {fmt(d.amount)} {d.currency}{d.note ? ` · ${d.note}` : ""} · закрыт {d.closed}</span></div>
-            ))}
-          </details>
-        )}
-        <div className="small faint" style={{ marginTop: 6 }}>За что именно и когда — на странице человека. Claude может дописывать строки в этот файл, когда узнаёт о долге из разговора.</div>
-      </div>
+          {debts.some((d) => d.closed) && (
+            <details className="g-ops">
+              <summary>Закрытые · {debts.filter((d) => d.closed).length}</summary>
+              {debts.filter((d) => d.closed).map((d, k) => <div key={k} className="closed"><span><SourceLink source={d.who} /></span><em>{d.direction}</em><b>{fmt(d.amount)} {d.currency}</b><span>{d.note}</span><span>закрыт {d.closed}</span></div>)}
+            </details>
+          )}
+          <p className="g-cap">За что именно и когда — на странице человека. Claude дописывает сюда строки, когда узнаёт о долге из разговора.</p>
+        </Block>
 
-      <datalist id="fin-accts">{accountNames.map((a) => <option key={a} value={a} />)}</datalist>
-      <datalist id="fin-people">{[...new Set(people)].map((p) => <option key={p} value={p} />)}</datalist>
-      <div className="small faint" style={{ marginTop: 16 }}>Сегодня {today}; неделя назад {addDays(today, -7)}.</div>
+        <datalist id="fin-accts">{accountNames.map((a) => <option key={a} value={a} />)}</datalist>
+        <datalist id="fin-people">{[...new Set(people)].map((x) => <option key={x} value={x} />)}</datalist>
+        <datalist id="fin-cats">{month.cats.map(([c]) => <option key={c} value={c} />)}</datalist>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { BANNER } from "../assets/play";
-import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
 import { trainingFor } from "../lib/training";
 import GameAside from "../components/GameAside";
 import { useSearchParams } from "react-router-dom";
@@ -58,6 +58,11 @@ export function TrainingAtlas({ root }: { root: string }) {
   return <div className="tr tr-embed"><Atlas d={data} root={root} /></div>;
 }
 
+/**
+ * The atlas (rebuilt 2026-11-21 the way «Сегодня» is): the week of the program as seven tiles, the body on the left —
+ * red the main muscle, orange the one that helps — and on the right one of three views: the picked day as exercise
+ * cards, a muscle with what trains it, an exercise with its animation and cues. The state lives in the URL.
+ */
 function Atlas({ d, root }: { d: TrainingData; root: string }) {
   const [q, setQ] = useSearchParams();
   const today = todayStr();
@@ -75,7 +80,10 @@ function Atlas({ d, root }: { d: TrainingData; root: string }) {
   const [progOnly, setProgOnly] = useState(false);
   const go = (p: Record<string, string>) => setQ({ tab, m: muscle, ex: exId, day: dayK, ...p }, { replace: true });
 
-  const day = d.PROGRAM.days.find((x) => x.k === dayK)!;
+  const P = d.PROGRAM;
+  const wk = programWeek(P, today);
+  const dow = (new Date(`${today}T12:00:00`).getDay() + 6) % 7;
+  const day = P.days.find((x) => x.k === dayK)!;
   const [hit, caption]: [Hit, string] =
     tab === "m" ? [{ [muscle]: "p" }, mu[muscle].name]
     : tab === "e" ? [hitExercise(ex[exId]), ex[exId].name]
@@ -83,15 +91,13 @@ function Atlas({ d, root }: { d: TrainingData; root: string }) {
 
   const tags = (id: string) => (
     <>
-      {(prog[id] ?? []).map((p) => <span key={p.k} className="tr-tag prog">Д{p.k}</span>)}
-      {ex[id].later && <span className="tr-tag later">позже</span>}
+      {(prog[id] ?? []).map((x) => <em key={x.k} className="prog">Д{x.k}</em>)}
+      {ex[id].later && <em className="later">позже</em>}
     </>
   );
   const row = (e: Exercise, color: string) => (
-    <button key={e.id} className="tr-row" onClick={() => go({ tab: "e", ex: e.id })}>
-      <span className="tr-dot" style={{ background: color }} />
-      <span>{e.name}{tags(e.id)}</span>
-      <small>{eqName[e.eq]}</small>
+    <button key={e.id} type="button" className="g-exrow" onClick={() => go({ tab: "e", ex: e.id })}>
+      <i style={{ background: color }} /><span>{e.name}{tags(e.id)}</span><small>{eqName[e.eq]}</small>
     </button>
   );
   const anim = (id: string, small = false) => <Anim root={root} d={d} id={id} small={small} alt={ex[id].name} />;
@@ -104,120 +110,103 @@ function Atlas({ d, root }: { d: TrainingData; root: string }) {
     const groups = [...new Set(d.MUSCLES.map((x) => x.group))];
     view = (
       <>
-        <div className="tr-groups">
+        <Block title="Мышцы" right="нажми на тело слева или на название">
           {groups.map((g) => (
-            <div key={g} className="tr-grp"><span>{g}</span><div className="tr-chips">
-              {d.MUSCLES.filter((x) => x.group === g).map((x) => <button key={x.id} className="tr-chip" aria-pressed={x.id === m.id} onClick={() => go({ m: x.id })}>{x.name}</button>)}
-            </div></div>
+            <div key={g} className="g-mgroup"><span>{g}</span><div className="g-chips wrap">{d.MUSCLES.filter((x) => x.group === g).map((x) => <button key={x.id} type="button" className={x.id === m.id ? "on" : ""} aria-pressed={x.id === m.id} onClick={() => go({ m: x.id })}>{x.name}</button>)}</div></div>
           ))}
-        </div>
-        <article className="tr-card">
-          <h2>{m.name}</h2><div className="tr-lat">{m.lat}</div>
-          <p>{m.does}</p>
-          <p className="tr-how">{m.how}</p>
-          <h3>Качает главным образом · {main.length}</h3>
-          <div className="tr-list">{main.length ? main.map((e) => row(e, "var(--tr-p)")) : <p className="tr-note">Нет упражнений.</p>}</div>
-          {help.length > 0 && <><h3>Помогает · {help.length}</h3><div className="tr-list">{help.map((e) => row(e, "var(--tr-s)"))}</div></>}
-        </article>
+        </Block>
+        <Block title={m.name} right={m.lat}>
+          <p className="g-lead">{m.does}</p>
+          <p className="g-cap">{m.how}</p>
+          <h3 className="g-h3"><i style={{ background: "var(--tr-p)" }} />Качает главным образом · {main.length}</h3>
+          {main.length ? main.map((e) => row(e, "var(--tr-p)")) : <p className="g-faint">Нет упражнений.</p>}
+          {help.length > 0 && <><h3 className="g-h3"><i style={{ background: "var(--tr-s)" }} />Помогает · {help.length}</h3>{help.map((e) => row(e, "var(--tr-s)"))}</>}
+        </Block>
       </>
     );
   } else if (tab === "e") {
     const e = ex[exId];
     const list = d.EX.filter((x) => (eq === "all" || x.eq === eq) && (!progOnly || prog[x.id]));
-    const use = (prog[e.id] ?? []).map((p) => `день ${p.k}: ${p.sets} × ${p.reps}`).join(" · ");
+    const use = (prog[e.id] ?? []).map((x) => `день ${x.k}: ${x.sets} × ${x.reps}`).join(" · ");
     view = (
       <>
-        <article className="tr-card">
-          <h2>{e.name}</h2><div className="tr-lat">{eqName[e.eq]}{tags(e.id)}</div>
-          <div className="tr-mchips">
-            {e.p.map((id) => <button key={id} className="tr-mchip" onClick={() => go({ tab: "m", m: id })}><i style={{ background: "var(--tr-p)" }} />{mu[id].name}</button>)}
-            {e.s.map((id) => <button key={id} className="tr-mchip" onClick={() => go({ tab: "m", m: id })}><i style={{ background: "var(--tr-s)" }} />{mu[id].name}</button>)}
-          </div>
-          {anim(e.id)}
-          <h3>Как делать</h3>
-          <ol className="tr-cues">{e.cues.map((c, i) => <li key={i}>{c}</li>)}</ol>
-          {use && <p className="tr-note">В программе — {use}.</p>}
-          {e.later && <p className="tr-note">Не в первые две недели.</p>}
-        </article>
-        <div className="tr-chips">
-          <button className="tr-chip" aria-pressed={eq === "all"} onClick={() => setEq("all")}>Всё · {d.EX.length}</button>
-          {d.EQUIP.map((x) => <button key={x.id} className="tr-chip" aria-pressed={eq === x.id} onClick={() => setEq(x.id)}>{x.name}</button>)}
-          <button className="tr-chip" aria-pressed={progOnly} onClick={() => setProgOnly(!progOnly)}>Только программа</button>
-        </div>
-        <div className="tr-list">
-          {d.EQUIP.map((x) => [x, list.filter((y) => y.eq === x.id)] as const).filter(([, l]) => l.length).map(([x, l]) => (
-            <div key={x.id}>
-              <div className="tr-eqhead">{x.name}{x.note ? ` · ${x.note}` : ""}</div>
-              {l.map((y) => row(y, y.id === e.id ? "var(--tr-p)" : "var(--tr-muscle)"))}
+        <Block title={e.name} right={<>{eqName[e.eq]}{tags(e.id)}</>}>
+          <div className="g-exdetail">
+            {anim(e.id)}
+            <div>
+              <div className="g-chips wrap">
+                {e.p.map((id) => <button key={id} type="button" onClick={() => go({ tab: "m", m: id })}><i className="g-dot" style={{ background: "var(--tr-p)" }} />{mu[id].name}</button>)}
+                {e.s.map((id) => <button key={id} type="button" onClick={() => go({ tab: "m", m: id })}><i className="g-dot" style={{ background: "var(--tr-s)" }} />{mu[id].name}</button>)}
+              </div>
+              <h3 className="g-h3">Как делать</h3>
+              <ol className="g-cues">{e.cues.map((c, k) => <li key={k}>{c}</li>)}</ol>
+              {use && <p className="g-cap">В программе — {use}.</p>}
+              {e.later && <p className="g-cap">Не в первые две недели.</p>}
             </div>
+          </div>
+        </Block>
+        <Block title={`Все упражнения · ${list.length}`} right="красная точка — выбранное">
+          <div className="g-chips wrap">
+            <button type="button" className={eq === "all" ? "on" : ""} aria-pressed={eq === "all"} onClick={() => setEq("all")}>всё · {d.EX.length}</button>
+            {d.EQUIP.map((x) => <button key={x.id} type="button" className={eq === x.id ? "on" : ""} aria-pressed={eq === x.id} onClick={() => setEq(x.id)}>{x.name}</button>)}
+            <button type="button" className={progOnly ? "on" : ""} aria-pressed={progOnly} onClick={() => setProgOnly(!progOnly)}>только программа</button>
+          </div>
+          {d.EQUIP.map((x) => [x, list.filter((y) => y.eq === x.id)] as const).filter(([, l]) => l.length).map(([x, l]) => (
+            <div key={x.id} className="g-mgroup col"><span>{x.name}{x.note ? ` · ${x.note}` : ""}</span>{l.map((y) => row(y, y.id === e.id ? "var(--tr-p)" : "var(--tr-muscle)"))}</div>
           ))}
-        </div>
+        </Block>
       </>
     );
   } else {
-    const P = d.PROGRAM;
-    const wk = programWeek(P, today);
-    const dow = (new Date(`${today}T12:00:00`).getDay() + 6) % 7;
     view = (
       <>
-        <article className="tr-card">
-          <p>{P.goal}</p>
-          <h3>Неделя {wk ?? "—"}{todayDay ? ` · сегодня ${todayDay.name.toLowerCase()}` : ""}</h3>
-          <div className="tr-week">
-            {P.week.map(([wd, v], i) => {
-              const w = P.days.find((x) => x.k === v);
-              const cls = `tr-day${i === dow ? " today" : ""}${w ? " w" : ""}${w && w.k === dayK ? " on" : ""}`;
-              return w
-                ? <button key={wd} className={cls} onClick={() => go({ day: w.k })}><b>{wd}</b><span>{v}</span></button>
-                : <div key={wd} className={cls}><b>{wd}</b><span>{v}</span></div>;
-            })}
-          </div>
-        </article>
-        <article className="tr-card">
-          <h2>{day.name}</h2><div className="tr-lat">{day.focus}</div>
-          <table className="tr-table"><tbody>
-            {day.items.map(([id, s, r]) => (
-              <tr key={id}>
-                <td className="t">{anim(id, true)}</td>
-                <td><button className="tr-link" onClick={() => go({ tab: "e", ex: id })}>{ex[id]?.name ?? id}</button><div className="tr-reps">{setsNow(s, wk)} × {r}{wk && wk <= 2 && setsNow(s, wk) !== s ? ` · с 3-й недели ${s}` : ""}</div></td>
-              </tr>
+        <Block title={day.name} right={day.focus}>
+          <div className="g-excards">
+            {day.items.map(([id, sets, reps]) => (
+              <button key={id} type="button" className="g-excard" onClick={() => go({ tab: "e", ex: id })}>
+                {anim(id, true)}
+                <span><b>{ex[id]?.name ?? id}</b><small>{setsNow(sets, wk)} × {reps}{wk && wk <= 2 && setsNow(sets, wk) !== sets ? ` · с 3-й недели ${sets}` : ""}</small></span>
+              </button>
             ))}
-          </tbody></table>
-        </article>
+          </div>
+        </Block>
         {P.ladders && P.ladders.length > 0 && (
-          <article className="tr-card">
-            <h2>Лестницы силы</h2>
-            <div className="tr-ladders">
-              {P.ladders.map((l) => (
-                <div key={l.name}><h3>{l.name}</h3><ol className="tr-cues">{l.steps.map((x, i) => <li key={i}>{x}</li>)}</ol></div>
-              ))}
-            </div>
-          </article>
+          <Block title="Лестницы силы" right="ступень за ступенью">
+            <div className="g-ladders">{P.ladders.map((l) => <div key={l.name}><h3 className="g-h3">{l.name}</h3><ol className="g-cues">{l.steps.map((x, k) => <li key={k}>{x}</li>)}</ol></div>)}</div>
+          </Block>
         )}
-        <article className="tr-card">
-          <h3>Правила</h3><ul className="tr-rules">{P.rules.map((r, i) => <li key={i}>{r}</li>)}</ul>
-          <h3>Почему так</h3><ul className="tr-rules">{P.research.map((r, i) => <li key={i}>{r}</li>)}</ul>
-          <h3>Замеры</h3><p>{P.track}</p>
-        </article>
+        <Block title="Правила программы" right="и почему так">
+          <ul className="g-plain">{P.rules.map((r, k) => <li key={k}>{r}</li>)}</ul>
+          <h3 className="g-h3">Почему так</h3><ul className="g-plain">{P.research.map((r, k) => <li key={k}>{r}</li>)}</ul>
+          <h3 className="g-h3">Замеры</h3><p className="g-cap">{P.track}</p>
+        </Block>
       </>
     );
   }
 
   return (
-    <>
-      <div className="tr-grid">
-        <aside className="tr-map" aria-label="Тело">
+    <div className="g-play g-atlas">
+      <Block title={`Неделя программы${wk ? ` · ${wk}-я` : ""}`} right={todayDay ? `сегодня ${todayDay.name.toLowerCase()}` : "сегодня без силовой"}>
+        <div className="g-trweek">
+          {P.week.map(([wd, v], k) => {
+            const w = P.days.find((x) => x.k === v);
+            const cls = `${k === dow ? "today" : ""}${w ? " w" : ""}${w && w.k === dayK && tab === "p" ? " on" : ""}`;
+            return w
+              ? <button key={wd} type="button" className={cls} onClick={() => go({ tab: "p", day: w.k })}><b>{wd}</b><span>{w.name}</span><small>{w.items.length} упр.</small></button>
+              : <div key={wd} className={cls}><b>{wd}</b><span>{v}</span></div>;
+          })}
+        </div>
+        <p className="g-cap">{P.goal}</p>
+      </Block>
+      <div className="g-atlas-grid">
+        <aside className="g-body" aria-label="Тело">
+          <div className="g-chips" role="tablist">{TABS.map(([k, t]) => <button key={k} type="button" role="tab" aria-selected={tab === k} className={tab === k ? "on" : ""} onClick={() => go({ tab: k })}>{t}</button>)}</div>
           <Body d={d} hit={hit} names={mu} onPick={(id) => go({ tab: "m", m: id })} />
-          <div className="tr-cap"><b>{caption}</b><span className="tr-legend"><span><i style={{ background: "var(--tr-p)" }} />главная</span><span><i style={{ background: "var(--tr-s)" }} />помогает</span></span></div>
+          <div className="cap"><b>{caption}</b><span><i style={{ background: "var(--tr-p)" }} />главная</span><span><i style={{ background: "var(--tr-s)" }} />помогает</span></div>
         </aside>
-        <section className="tr-panel">
-          <div className="tr-tabs" role="tablist">
-            {TABS.map(([k, t]) => <button key={k} role="tab" aria-selected={tab === k} onClick={() => go({ tab: k })}>{t}</button>)}
-          </div>
-          {view}
-        </section>
+        <div className="g-stack">{view}</div>
       </div>
-    </>
+    </div>
   );
 }
 

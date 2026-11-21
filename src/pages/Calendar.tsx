@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BANNER } from "../assets/play";
-import { SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./main/Scene";
+import { dayUrl } from "../components/GameBits";
 import { Link, useNavigate } from "react-router-dom";
 import { useStore } from "../store";
 import { useT } from "../lib/i18n";
@@ -167,183 +168,147 @@ export default function CalendarPage() {
   const todayItems = itemsOn(today, blocks, factDay(today, life.days), life.quests, life.events).sort((a, b) => a.from - b.from);
   const weekPlan = dates.reduce((sum, d) => sum + itemsOn(d, blocks, undefined, life.quests, []).filter((x) => x.kind === "plan").reduce((a, x) => a + (x.to - x.from), 0), 0);
   const weekFact = dates.reduce((sum, d) => sum + (factDay(d, life.days)?.sessions.reduce((a, x) => a + x.minutes, 0) ?? 0), 0);
+  const planOf = (d: string) => itemsOn(d, blocks, undefined, life.quests, []).filter((x) => x.kind === "plan").reduce((a, x) => a + (x.to - x.from), 0);
+  const factOf = (d: string) => factDay(d, life.days)?.sessions.reduce((a, x) => a + x.minutes, 0) ?? 0;
+  const hrs = (min: number) => (min ? `${Math.round(min / 6) / 10} ч` : "");
   return (
     <div className="calpage g-page">
-      <div className="g-play g-calhead">
+      <div className="g-play">
         <div className="g-top">
           <SceneFrame art={BANNER.calendar}>
-            <SceneTitle kicker="календарь · план по часам" title={monthRange(dates[0], dates[6])} />
-            <div className="g-xp8"><span>рамка — план · заливка — что было по таймеру</span><span>протяни мышью по колонке — поставишь дело</span></div>
+            <SceneTitle kicker={`календарь · ${week === weekStart(today) ? "эта неделя" : week < weekStart(today) ? "прошлая неделя" : "неделя впереди"}`} title={monthRange(dates[0], dates[6])} />
+            <div className="g-nav">
+              <button type="button" onClick={() => setWeek(addDays(week, -7))} aria-label="Неделя назад">←</button>
+              {week !== weekStart(today) && <button type="button" className="wide" onClick={() => setWeek(weekStart(today))}>сегодня</button>}
+              <button type="button" onClick={() => setWeek(addDays(week, 7))} aria-label="Неделя вперёд">→</button>
+            </div>
+            <div className="g-xp8"><span>рамка — план · заливка — что было по таймеру · пунктир — событие</span><span>протяни по колонке дня — поставишь дело</span></div>
             <SceneNumber value={Math.round(weekPlan / 6) / 10} unit=" ч" label="в плане недели" sub={`было по таймеру: ${Math.round(weekFact / 6) / 10} ч`} />
           </SceneFrame>
           <SideCard kicker={`сегодня · ${WEEKDAYS_RU[weekdayIndex(today)]}, ${Number(today.slice(8))}`}>
             {todayItems.length ? (
-              <div className="g-agenda">{todayItems.map((it, k) => <div key={k} className={`${it.kind}${it.kind === "plan" && it.to <= nowMin ? " past" : ""}`}><span>{fromMin(it.from)}–{fromMin(it.to)}</span><b>{it.title}</b><small>{it.kind === "plan" ? "план" : it.kind === "fact" ? `было · ${it.minutes ?? it.to - it.from} мин` : "событие"}</small></div>)}</div>
-            ) : <p className="g-rule">На сегодня в плане пусто.</p>}
+              <div className="g-agenda">{todayItems.map((it, k) => (
+                <div key={k} className={`${it.kind}${it.kind === "plan" && it.to <= nowMin ? " past" : ""}`}>
+                  <span>{fromMin(it.from)}–{fromMin(it.to)}</span><b>{it.title}</b>
+                  <small>{it.kind === "plan" ? "план" : it.kind === "fact" ? `было · ${it.minutes ?? it.to - it.from} мин` : "событие"}{it.kind === "plan" && it.quest && !timer && it.to > nowMin && <button type="button" className="g-link" onClick={() => start(it.quest)}> · ▶ начать</button>}</small>
+                </div>
+              ))}</div>
+            ) : <p className="g-rule">На сегодня в плане пусто. Протяни мышью по сегодняшней колонке ниже.</p>}
+            {timer && <p className="g-cap">Идёт таймер: {timer.quest}.</p>}
           </SideCard>
         </div>
-      </div>
-      <div className="row" style={{ alignItems: "baseline" }}>
-        <span className="grow" />
-        <button className="btn small" onClick={() => setWeek(addDays(week, -7))} title="прошлая неделя">‹</button>
-        <button className="btn small" onClick={() => setWeek(weekStart(today))} disabled={week === weekStart(today)}>сегодня</button>
-        <button className="btn small" onClick={() => setWeek(addDays(week, 7))} title="следующая неделя">›</button>
-      </div>
-      <div className="row wrap small muted" style={{ marginTop: 6 }}>
-        <span>Протяни мышью по колонке — поставишь дело со скольки до скольки.</span>
-        <span className="grow" />
-        <span><span className="cal-legend plan" />план</span>
-        <span><span className="cal-legend fact" />было на самом деле, по таймеру квеста</span>
-        <span><span className="cal-legend event" />событие: спорт, встреча</span>
-      </div>
 
-      <div className="cal">
-        <div className="cal-head">
-          <div className="cal-gutter" />
-          {dates.map((d) => {
-            const dt = new Date(d + "T12:00:00");
-            return (
-              <button
-                key={d}
-                className={`cal-dhead ${d === today ? "today" : ""} ${d < today ? "past" : ""}`}
-                onClick={() => d === today && nav("/")}
-                title={d === today ? "открыть день" : formatDayTitle(d)}
-              >
-                <span className="wd">{WEEKDAYS_RU[weekdayIndex(d)]}</span> <b>{dt.getDate()}</b>
-              </button>
-            );
-          })}
-        </div>
-        <div className="cal-body" ref={scroller}>
-          <div className="cal-grid" style={{ height: hours.length * HOUR }}>
-            <div className="cal-gutter">
-              {hours.map((h) => <div key={h} className="cal-hour" style={{ top: (h - startH) * HOUR }}>{String(h).padStart(2, "0")}:00</div>)}
+        <Block title="Неделя по часам" right={<span className="g-callegend"><i className="plan" />план<i className="fact" />было<i className="event" />событие</span>}>
+          <div className="g-cal">
+            <div className="g-cal-head">
+              <span />
+              {dates.map((d) => (
+                <Link key={d} to={dayUrl(d)} className={`${d === today ? "today" : ""}${d > today ? " future" : ""}`} title={d > today ? formatDayTitle(d) : `${formatDayTitle(d)} — открыть день`} onClick={(e) => { if (d > today) e.preventDefault(); }}>
+                  <span>{WEEKDAYS_RU[weekdayIndex(d)]}</span><b>{Number(d.slice(8))}</b>
+                  <small>{hrs(planOf(d)) || "—"}{factOf(d) ? ` · ${hrs(factOf(d))}` : ""}</small>
+                </Link>
+              ))}
             </div>
-            {cols.map(({ date, items }) => (
-              <div
-                key={date}
-                className={`cal-col ${date === today ? "today" : ""}`}
-                onMouseDown={(e) => {
-                  if (e.button !== 0 || e.target !== e.currentTarget) return;
-                  const m = minAt(e, e.currentTarget);
-                  setDrag({ date, a: m, b: m + SNAP });
-                }}
-                onMouseMove={(e) => {
-                  if (!drag || drag.date !== date) return;
-                  const m = minAt(e, e.currentTarget);
-                  setDrag({ ...drag, b: m >= drag.a ? m + SNAP : m });
-                }}
-              >
-                {hours.map((h) => <div key={h} className="cal-line" style={{ top: (h - startH) * HOUR }} />)}
-                {items.map(({ item, lane, lanes }, i) => {
-                  const top = y(item.from), h = Math.max(18, y(item.to) - top - 2);
-                  const w = 100 / lanes;
-                  const canStart = item.kind === "plan" && item.quest && date === today && !timer && item.to > nowMin;
-                  // An event is a plan until its time has passed, then it is what happened.
-                  const passed = date < today || (date === today && item.to <= nowMin);
-                  return (
-                    <div
-                      key={i}
-                      className={`cal-item ${item.kind} ${item.kind === "event" && passed ? "passed" : ""} ${h < 34 ? "short" : ""}`}
-                      style={{ top, height: h, left: `calc(${lane * w}% + 2px)`, width: `calc(${w}% - 4px)`, ["--c" as string]: themeColor(item.theme) }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={() => (item.block ? openBlock(item.block, date) : item.eventRel ? nav(`/event/${encodeURIComponent(item.eventRel)}`) : setFact(item))}
-                      title={`${fromMin(item.from)}–${fromMin(item.to)} ${item.title}`}
-                    >
-                      <div className="t">{fromMin(item.from)}{item.kind === "fact" ? ` · ${item.minutes} мин` : `–${fromMin(item.to)}`}</div>
-                      <div className="w">{item.title}</div>
-                      {canStart && (
-                        <button className="cal-go" title="запустить таймер квеста" onClick={(e) => { e.stopPropagation(); start(item.quest); }}>▶</button>
-                      )}
-                    </div>
-                  );
-                })}
-                {drag?.date === date && (
-                  <div className="cal-item ghost" style={{ top: y(Math.min(drag.a, drag.b)), height: Math.max(8, Math.abs(y(drag.b) - y(drag.a))) }}>
-                    <div className="t">{fromMin(Math.min(drag.a, drag.b))}–{fromMin(Math.max(drag.a, drag.b))}</div>
+            <div className="g-cal-body" ref={scroller}>
+              <div className="g-cal-grid" style={{ height: hours.length * HOUR }}>
+                <div className="gut">{hours.map((h) => <span key={h} style={{ top: (h - startH) * HOUR }}>{String(h).padStart(2, "0")}:00</span>)}</div>
+                {cols.map(({ date, items }) => (
+                  <div
+                    key={date}
+                    className={`col${date === today ? " today" : ""}${date < today ? " past" : ""}`}
+                    onMouseDown={(e) => {
+                      if (e.button !== 0 || e.target !== e.currentTarget) return;
+                      const m = minAt(e, e.currentTarget);
+                      setDrag({ date, a: m, b: m + SNAP });
+                    }}
+                    onMouseMove={(e) => {
+                      if (!drag || drag.date !== date) return;
+                      const m = minAt(e, e.currentTarget);
+                      setDrag({ ...drag, b: m >= drag.a ? m + SNAP : m });
+                    }}
+                  >
+                    {hours.map((h) => <i key={h} className="ln" style={{ top: (h - startH) * HOUR }} />)}
+                    {items.map(({ item, lane, lanes }, k) => {
+                      const top = y(item.from), h = Math.max(18, y(item.to) - top - 2);
+                      const w = 100 / lanes;
+                      const canStart = item.kind === "plan" && item.quest && date === today && !timer && item.to > nowMin;
+                      // An event is a plan until its time has passed, then it is what happened.
+                      const passed = date < today || (date === today && item.to <= nowMin);
+                      return (
+                        <div
+                          key={k}
+                          className={`it ${item.kind}${item.kind === "event" && passed ? " passed" : ""}${h < 34 ? " short" : ""}`}
+                          style={{ top, height: h, left: `calc(${lane * w}% + 2px)`, width: `calc(${w}% - 4px)`, ["--c" as string]: themeColor(item.theme) }}
+                          onMouseDown={(e) => e.stopPropagation()}
+                          onClick={() => (item.block ? openBlock(item.block, date) : item.eventRel ? nav(`/event/${encodeURIComponent(item.eventRel)}`) : setFact(item))}
+                          title={`${fromMin(item.from)}–${fromMin(item.to)} ${item.title}`}
+                        >
+                          <small>{fromMin(item.from)}{item.kind === "fact" ? ` · ${item.minutes} мин` : `–${fromMin(item.to)}`}</small>
+                          <b>{item.title}</b>
+                          {canStart && <button type="button" className="go" title="запустить таймер" onClick={(e) => { e.stopPropagation(); start(item.quest); }}>▶</button>}
+                        </div>
+                      );
+                    })}
+                    {drag?.date === date && (
+                      <div className="it ghost" style={{ top: y(Math.min(drag.a, drag.b)), height: Math.max(8, Math.abs(y(drag.b) - y(drag.a))) }}>
+                        <small>{fromMin(Math.min(drag.a, drag.b))}–{fromMin(Math.max(drag.a, drag.b))}</small>
+                      </div>
+                    )}
+                    {date === today && <div className="now" style={{ top: y(nowMin) }} />}
                   </div>
-                )}
-                {date === today && <div className="cal-now" style={{ top: y(nowMin) }} />}
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        </Block>
       </div>
 
       {draft && (
-        <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && setDraft(null)}>
-          <div className="card sheet cal-sheet cal-edit">
-            <div className="eyebrow">{draft.orig ? "дело в календаре" : "новое дело"} · {draft.weekly ? "каждую неделю" : formatDayTitle(draft.date)}</div>
-            <input
-              className="text" autoFocus placeholder={draft.quest || "что: урок с Гулназ, спортзал, Коран…"} autoCorrect="off" spellCheck={false}
-              value={draft.what} onChange={(e) => setDraft({ ...draft, what: e.target.value })}
-              onKeyDown={(e) => { if (e.key === "Enter") void save(); }}
-              style={{ width: "100%", marginTop: 8, fontSize: 15 }}
-            />
-            <div className="row" style={{ marginTop: 10 }}>
-              <span className="small muted">с</span>
-              <input className="text mono" style={{ width: 70 }} value={draft.from} onChange={(e) => setDraft({ ...draft, from: e.target.value })} onBlur={(e) => setDraft({ ...draft, from: normalizeTime(e.target.value) || draft.from })} />
-              <span className="small muted">до</span>
-              <input className="text mono" style={{ width: 70 }} value={draft.to} onChange={(e) => setDraft({ ...draft, to: e.target.value })} onBlur={(e) => setDraft({ ...draft, to: normEnd(e.target.value) || draft.to })} onKeyDown={(e) => { if (e.key === "Enter") void save(); }} />
-              <span className="grow" />
-              <select className="text" value={draft.quest} onChange={(e) => setDraft({ ...draft, quest: e.target.value })} style={{ maxWidth: 260 }}>
-                <option value="">без квеста</option>
+        <div className="g-overlay" onMouseDown={(e) => e.target === e.currentTarget && setDraft(null)}>
+          <div className="g-sheet g-play" role="dialog" aria-label={draft.orig ? "Дело в календаре" : "Новое дело"}>
+            <div className="g-kick">{draft.orig ? "дело в календаре" : "новое дело"} · {draft.weekly ? "каждую неделю" : formatDayTitle(draft.date)}</div>
+            <input className="text big" autoFocus placeholder={draft.quest || "что: урок, спортзал, Коран…"} autoCorrect="off" spellCheck={false}
+              value={draft.what} onChange={(e) => setDraft({ ...draft, what: e.target.value })} onKeyDown={(e) => { if (e.key === "Enter") void save(); }} aria-label="Что" />
+            <div className="row2">
+              <label>с<input className="text" value={draft.from} onChange={(e) => setDraft({ ...draft, from: e.target.value })} onBlur={(e) => setDraft({ ...draft, from: normalizeTime(e.target.value) || draft.from })} /></label>
+              <label>до<input className="text" value={draft.to} onChange={(e) => setDraft({ ...draft, to: e.target.value })} onBlur={(e) => setDraft({ ...draft, to: normEnd(e.target.value) || draft.to })} onKeyDown={(e) => { if (e.key === "Enter") void save(); }} /></label>
+              <select className="text" value={draft.quest} onChange={(e) => setDraft({ ...draft, quest: e.target.value })} aria-label="Деятельность">
+                <option value="">без деятельности</option>
                 {draft.quest && !activeQuests.some((q) => q.title === draft.quest) && <option value={draft.quest}>{draft.quest}</option>}
                 {activeQuests.map((q) => <option key={q.rel} value={q.title}>{q.title}</option>)}
               </select>
             </div>
             {!draft.quest && (
-              <div className="row wrap" style={{ marginTop: 10, gap: 6 }}>
-                <span className="small muted">тема</span>
-                {THEMES.map((t) => (
-                  <button
-                    key={t.name} className={`chip small c ${draft.theme === t.name ? "on" : ""}`} style={{ ["--c" as string]: t.color, opacity: draft.theme && draft.theme !== t.name ? 0.45 : 1 }}
-                    onClick={() => setDraft({ ...draft, theme: draft.theme === t.name ? "" : t.name })}
-                  >{themeLabel(t.name)}</button>
-                ))}
+              <div className="g-chips wrap">
+                {THEMES.map((t) => <button type="button" key={t.name} className={draft.theme === t.name ? "on" : ""} aria-pressed={draft.theme === t.name} style={{ ["--c" as string]: t.color }} onClick={() => setDraft({ ...draft, theme: draft.theme === t.name ? "" : t.name })}><i className="g-dot" style={{ background: t.color }} />{themeLabel(t.name)}</button>)}
               </div>
             )}
-            <div className="row wrap" style={{ marginTop: 12, gap: 6 }}>
-              <label className="row small" style={{ gap: 6, cursor: "pointer" }}>
-                <input type="checkbox" checked={draft.weekly} onChange={(e) => setDraft({ ...draft, weekly: e.target.checked })} />
-                каждую неделю
-              </label>
-              {draft.weekly && shownDays.map((d) => (
-                <button
-                  key={d} className={`chip small ${draft.days.includes(d) ? "on" : ""}`}
-                  onClick={() => setDraft({ ...draft, days: draft.days.includes(d) ? draft.days.filter((x) => x !== d) : [...draft.days, d] })}
-                >{WEEKDAYS_RU[d]}</button>
-              ))}
+            <div className="g-chips wrap">
+              <button type="button" className={draft.weekly ? "on" : ""} aria-pressed={draft.weekly} onClick={() => setDraft({ ...draft, weekly: !draft.weekly })}>каждую неделю</button>
+              {draft.weekly && shownDays.map((d) => <button type="button" key={d} className={draft.days.includes(d) ? "on" : ""} aria-pressed={draft.days.includes(d)} onClick={() => setDraft({ ...draft, days: draft.days.includes(d) ? draft.days.filter((x) => x !== d) : [...draft.days, d] })}>{WEEKDAYS_RU[d]}</button>)}
             </div>
-            {err && <div className="small err-text" style={{ marginTop: 8 }}>{err}</div>}
-            <div className="row" style={{ marginTop: 14 }}>
-              <button className="btn primary" disabled={busy} onClick={() => void save()}>сохранить</button>
-              {draft.orig && draft.quest && draft.date === today && !timer && (
-                <button className="btn" onClick={() => start(draft.quest)}>▶ старт</button>
-              )}
-              <span className="grow" />
-              {draft.orig && <button className="btn ghost" disabled={busy} onClick={() => void remove()}>{isWeekly(draft.orig) ? "удалить из всех недель" : "удалить"}</button>}
-              <button className="btn ghost" onClick={() => setDraft(null)}>отмена</button>
+            {err && <p className="g-error" role="alert">{err}</p>}
+            <div className="foot">
+              <div className="g-line"><button type="button" disabled={busy} onClick={() => void save()}>Сохранить</button></div>
+              {draft.orig && draft.quest && draft.date === today && !timer && <button type="button" className="g-link" onClick={() => start(draft.quest)}>▶ начать сейчас</button>}
+              <span />
+              {draft.orig && <button type="button" className="g-link del" disabled={busy} onClick={() => void remove()}>{isWeekly(draft.orig) ? "удалить из всех недель" : "удалить"}</button>}
+              <button type="button" className="g-link" onClick={() => setDraft(null)}>отмена</button>
             </div>
           </div>
         </div>
       )}
 
       {fact && (
-        <div className="overlay" onMouseDown={(e) => e.target === e.currentTarget && setFact(null)}>
-          <div className="card sheet cal-sheet">
-            <div className="eyebrow">было · {formatDayTitle(fact.date)}</div>
-            <h3 style={{ marginTop: 4 }}>{fact.title}</h3>
-            <p className="small muted">
-              {fromMin(fact.from)}–{fromMin(fact.from + (fact.minutes ?? 0))} · {fact.minutes} мин по таймеру.
-            </p>
-            <div className="row">
-              {(() => {
-                const q = life.quests.find((x) => x.title === fact.quest);
-                return q ? <Link className="btn" to={`/quest/${encodeURIComponent(q.rel)}`}>открыть квест</Link> : null;
-              })()}
-              <span className="grow" />
-              <button className="btn ghost" onClick={() => setFact(null)}>закрыть</button>
+        <div className="g-overlay" onMouseDown={(e) => e.target === e.currentTarget && setFact(null)}>
+          <div className="g-sheet g-play" role="dialog" aria-label="Что было">
+            <div className="g-kick">было · {formatDayTitle(fact.date)}</div>
+            <div className="g-q">{fact.title}</div>
+            <p className="g-faint">{fromMin(fact.from)}–{fromMin(fact.from + (fact.minutes ?? 0))} · {fact.minutes} мин по таймеру.</p>
+            <div className="foot">
+              {(() => { const q = life.quests.find((x) => x.title === fact.quest); return q ? <Link className="g-link" to={`/quest/${encodeURIComponent(q.rel)}`}>открыть деятельность →</Link> : <span />; })()}
+              <span />
+              <button type="button" className="g-link" onClick={() => setFact(null)}>закрыть</button>
             </div>
           </div>
         </div>
