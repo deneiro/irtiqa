@@ -19,7 +19,7 @@ export default function SetupPage() {
   const lede = t("setup_lede", { wiki: "§W§", log: "§L§" }).split(/§W§|§L§/);
 
   return (
-    <div style={{ maxWidth: 640 }}>
+    <div className="g-page g-setup">
       <div className="eyebrow">{t("setup_eyebrow")}</div>
       <h1 className="title">{t("setup_title")}</h1>
       <p className="lede">{lede[0]}<span className="mono">wiki/</span>{lede[1]}<span className="mono">log.md</span>{lede[2]}</p>

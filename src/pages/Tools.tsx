@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useVault } from "../store";
@@ -21,9 +23,9 @@ export default function ToolsPage() {
   const overview = v.pages.find((p) => p.segments[0] === "Personal growth" && p.segments[1] === "tools" && p.file === "_Overview");
 
   return (
-    <div>
-      <div className="eyebrow">Личностный рост · tools</div>
-      <h1 className="title">Инструменты</h1>
+    <div className="g-page">
+      <PageHead art={BANNER.tools} kicker="личностный рост · tools" title="Инструменты"
+        number={{ value: own.length, label: "своих программ", sub: `и ${guides.length} гайдов по чужим` }} />
       <p className="lede">
         Свои программы из <span className="mono">~/Desktop/Projects</span> — запускаются отсюда. Ниже гайды по чужим.
         {overview && <> <Link to={pageUrl(overview)}>Обзор</Link>.</>}

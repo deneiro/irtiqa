@@ -82,3 +82,18 @@ export function Gauge({ label, value, of, share, tone = "sun", hint, sub, thin =
     </div>
   );
 }
+
+/** A page that has no card beside its scene: the painting across, the page's name, a line under it and one number. */
+export function PageHead({ art, kicker, title, note, number }: { art: string; kicker: ReactNode; title: ReactNode; note?: ReactNode; number?: { value: ReactNode; unit?: string; label: string; sub?: ReactNode } }) {
+  return (
+    <div className="g-play g-head">
+      <div className="g-top g-solo">
+        <SceneFrame art={art}>
+          <SceneTitle kicker={kicker} title={title} />
+          {note && <div className="g-xp8"><span>{note}</span></div>}
+          {number && <SceneNumber value={number.value} unit={number.unit} label={number.label} sub={number.sub} />}
+        </SceneFrame>
+      </div>
+    </div>
+  );
+}

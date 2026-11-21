@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { Link, useNavigate } from "react-router-dom";
 import { useVault } from "../store";
 import { THEMES } from "../lib/themes";
@@ -51,9 +53,9 @@ export default function Home() {
   }).filter((x) => x.text);
 
   return (
-    <div>
-      <div className="eyebrow">{today}</div>
-      <h1 className="title">{t("home_title")}</h1>
+    <div className="g-page">
+      <PageHead art={BANNER.library} kicker={today} title={t("home_title")}
+        number={{ value: v.pages.length, label: "страниц", sub: `${v.raw.length} источников в raw/` }} />
       <p className="lede">
         {t("home_lede", { n: v.pages.length, m: v.raw.length })}{" "}
         {quietDays !== undefined && quietDays > 7 ? (

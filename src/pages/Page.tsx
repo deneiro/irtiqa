@@ -47,7 +47,7 @@ export default function PageView() {
   const cols = page.fm.layout === "columns" ? splitSections(body) : undefined;
 
   return (
-    <div>
+    <div className="g-page g-read">
       <div className="pagehead" style={{ ["--c" as string]: color }}>
         <div className="crumbs">
           {page.theme && <Link to={themeUrl(page.theme)} style={{ color }}>{themeLabel(page.theme)}</Link>}

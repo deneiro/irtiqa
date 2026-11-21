@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
@@ -42,9 +44,8 @@ export default function ClaudePage() {
   const finished = (r: Run) => r.status !== "running";
 
   return (
-    <div>
-      <div className="eyebrow">claude -p в папке vault</div>
-      <h1 className="title">Claude</h1>
+    <div className="g-page">
+      <PageHead art={BANNER.claude} kicker="claude -p в папке vault" title="Claude" />
       <p className="lede">Регламент живёт в CLAUDE.md, приложение только называет операцию. После завершения экраны обновляются сами.</p>
       {!inTauri && <div className="notice" style={{ marginTop: 12 }}>В браузере команды идут через dev-сервер Vite. В окне приложения их запускает Rust.</div>}
 

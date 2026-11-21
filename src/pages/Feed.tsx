@@ -1,3 +1,5 @@
+import { BANNER } from "../assets/play";
+import { PageHead } from "./main/Scene";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useStore, useVault } from "../store";
@@ -80,10 +82,9 @@ export default function FeedPage() {
   const nVault = events.length - nApp;
 
   return (
-    <div>
-      <div className="eyebrow">Что происходило</div>
-      <h1 className="title">Лента</h1>
-      <p className="lede">Действия в приложении и изменения vault одной хронологией, новые сверху.</p>
+    <div className="g-page">
+      <PageHead art={BANNER.feed} kicker="что происходило" title="Лента" note="Действия в приложении и изменения vault одной хронологией, новые сверху."
+        number={{ value: events.length, label: "событий", sub: `приложение ${nApp} · vault ${nVault}` }} />
       <div className="row wrap" style={{ margin: "16px 0 10px", gap: 8 }}>
         {([["all", "Всё", events.length], ["app", "Приложение", nApp], ["vault", "Vault", nVault]] as const).map(([k, label, n]) => (
           <button key={k} className={`chip link ${kind === k ? "on" : ""}`} onClick={() => setKind(k)}>{label} <span className="faint">{n}</span></button>

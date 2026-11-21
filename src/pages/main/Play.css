@@ -685,3 +685,15 @@ main > .g-page { max-width: 1260px; }
 .g-banner .g-height { max-width: 54%; }
 .g-height b span { white-space: nowrap; }
 .g-side .g-q { font-size: 21px; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ================= the utility screens (2026-11-21) ================= */
+.g-head { margin-bottom: 22px; }
+.g-top.g-solo { grid-template-columns: minmax(0, 1fr); }
+.g-solo .g-scene { min-height: 232px; }
+.g-solo .g-xp8 { max-width: min(460px, 46%); }
+.g-solo .g-xp8 span { font: 400 13px/1.5 var(--d-sans); color: var(--d-moon-2); text-shadow: 0 1px 14px rgba(11, 13, 19, .7); }
+main > .g-page.g-read { max-width: 1080px; }
+main > .g-page.g-setup { max-width: 720px; }
+.g-page h1.title { color: var(--d-moon); }
+.g-page .eyebrow { color: var(--d-sun); }
+.g-page .chip.on, .g-page .chip.link.on { border-color: var(--d-sun); color: var(--d-sun); }
