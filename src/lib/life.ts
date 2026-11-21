@@ -12,6 +12,7 @@ import { AUDIT_DIR, parseAudit, type Audit } from "./audit";
 import { SKILL_DIR, parseSkill, type Skill } from "./skills";
 import { parseFrontmatter } from "./vault";
 import { WEEKDAYS_EN, WEEKDAYS_RU, addDays, weekdayIndex } from "./dates";
+import { periodOf, type PeriodKey } from "./periods";
 
 // ---------- types ----------
 
@@ -1184,7 +1185,10 @@ export function streak(habit: Habit, days: Map<string, Day>, upTo: string): numb
 }
 
 /** Provisional XP numbers from the v1 spec. Edited in one place. */
-export const XP = { habitDone: 10, journal: 8, questDone: 20, questPerHour: 55, questMinMinutes: 15, resourceRead: 10 };
+export const XP = { habitDone: 10, prayerLate: 5, taskDone: 8, log: 3, journal: 8, questDone: 20, questPerHour: 55, questMinMinutes: 15, resourceRead: 10 };
+
+/** A day task earns XP for the theme of its part of the day (I work, II study, III for himself, IV health); part V and tasks with no part earn it for no theme. */
+export const PERIOD_THEME: Record<PeriodKey, string | undefined> = { "фаджр": "Business & career", "зухр": "Personal growth", "аср": "Memories & Fun", "магриб": "Health & sport", "иша": undefined };
 
 export interface XpContext {
   habits: Habit[];
@@ -1198,6 +1202,11 @@ export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
   const xp = new Map<string, number>();
   const add = (theme: string | undefined, n: number) => { const k = theme ?? "—"; xp.set(k, (xp.get(k) ?? 0) + n); };
   for (const name of d.habitsDone) add(ctx.habits.find((h) => h.title === name)?.theme, XP.habitDone);
+  for (const name of d.habitsLate) add(ctx.habits.find((h) => h.title === name)?.theme, XP.prayerLate);
+  for (const t of d.tasks) if (t.done) { const p = periodOf(t.text); add(p ? PERIOD_THEME[p] : undefined, XP.taskDone); }
+  if (d.mood !== undefined || d.stress !== undefined) add("Personal growth", XP.log);
+  if (d.weight !== undefined || d.meals.length) add("Health & sport", XP.log);
+  if (d.txs.length) add("Finance & money", XP.log);
   for (const name of d.questsClosed) {
     const q = ctx.quests.find((x) => x.title === name);
     add(q?.theme, questXp(questMinutes(name, ctx.days.values())));
