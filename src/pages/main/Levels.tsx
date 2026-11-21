@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
-import { BANNER } from "../../assets/play";
+import { BANNER, THEME_ART } from "../../assets/play";
+import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./Scene";
 import { useSearchParams } from "react-router-dom";
 import { BANK_THEME_ORDER, ROMAN, closeHeading, findItem, loadBank, moneyLeft, progress, type BankFile, type BankItem } from "../../lib/bank";
 import { fmt, plainLinks } from "../../lib/dashboard";
 import type { Life } from "../../lib/life";
 import { themeColor, themeRu } from "../../lib/themes";
 import { useStore } from "../../store";
-import { Card, Glance, Hero, Status, short } from "./parts";
+import { Card, Status, short } from "./parts";
 
 /** The day files' task lines, so a bank task ticked in a day counts. */
 export function dayTaskLines(life: Life): string[] {
@@ -43,30 +44,69 @@ export default function Levels({ life, today }: { life: Life; today: string }) {
     return c;
   }, [all]);
   if (!sorted.length) return <Card title="Уровни"><p className="d-faint">Банка заданий нет: файлы `life/goals/Банк/*.md` пишет Claude.</p></Card>;
+  // one theme at a time: the one the selection stands in
+  const selFile = sorted.find((f) => f.goals.some((g) => !!sel && (sel.id === g.id || sel.id.startsWith(g.id + ".")))) ?? sorted[0];
+  const tasksOf = (f: BankFile) => { let done = 0, total = 0; const walk = (x: BankItem) => { if (x.task) { total++; if (x.done) done++; } x.children.forEach(walk); }; f.goals.forEach(walk); return { done, total, pct: total ? Math.round((done / total) * 100) : 0 }; };
+  const all4 = counts.task[1] ? Math.round((counts.task[0] / counts.task[1]) * 100) : 0;
+  const rows: [string, string, [number, number]][] = [["I", "цели", counts[1]], ["II", "достижения", counts[2]], ["III", "результаты", counts[3]], ["IV", "задания", counts.task]];
   return (
-    <>
-      <Hero top art={BANNER.levels} kicker="уровни · банк заданий" title="Уровни" side={<div className="l-rule">
-        <div className="d-kick">как это работает</div>
-        <p>Каждую неделю берёшь из IV уровня до пяти заданий. Закрыл три — добираешь до пяти. III, II и I закрываются только на 100 %.</p>
-      </div>}>
-        <Glance items={[
-          { v: counts[1][0], of: `/ ${counts[1][1]}`, label: "целей I" },
-          { v: counts[2][0], of: `/ ${counts[2][1]}`, label: "достижений II" },
-          { v: counts.task[0], of: `/ ${counts.task[1]}`, label: "заданий сделано" },
-          { v: counts[3][0], of: `/ ${counts[3][1]}`, label: "результатов III" },
-        ]} />
-      </Hero>
+    <div className="g-play">
+      <div className="g-top">
+        <SceneFrame art={BANNER.levels} svg={<Steps rows={rows} />}>
+          <SceneTitle kicker="уровни · банк заданий" title="Уровни" />
+          <SceneNumber value={all4} unit="%" label="заданий сделано" sub={`${counts.task[0]} из ${counts.task[1]} · по всем темам`} />
+        </SceneFrame>
+        <SideCard kicker="как это работает">
+          <p className="g-rule">Каждую неделю берёшь из IV уровня до пяти заданий. Закрыл три — добираешь до пяти. III, II и I закрываются только на 100 %.</p>
+          <div className="g-steps">
+            {rows.map(([roman, name, [done, total]]) => (
+              <div key={roman}><b>{roman}</b><span>{name}</span><i><u style={{ width: `${total ? (done / total) * 100 : 0}%` }} /></i><em>{done} / {total}</em></div>
+            ))}
+          </div>
+        </SideCard>
+      </div>
+
+      <div className="g-themes">
+        {sorted.map((f) => {
+          const t = tasksOf(f);
+          return (
+            <button key={f.rel} className={f === selFile ? "on" : ""} aria-pressed={f === selFile} style={{ ["--c" as string]: themeColor(f.theme) }} onClick={() => f.goals[0] && pick(f.goals[0].id)}>
+              {f.theme && THEME_ART[f.theme] && <img src={THEME_ART[f.theme]} alt="" />}
+              <b>{themeRu(f.theme)}</b>
+              <i><u style={{ width: `${t.pct}%` }} /></i>
+              <span>{t.done} / {t.total} заданий · {f.goals.length} {f.goals.length === 1 ? "цель" : "целей"}</span>
+            </button>
+          );
+        })}
+      </div>
+
       <div className="l-cols">
-        <div className="d-stack">
-          {sorted.map((f) => (
-            <Card key={f.rel} title={<><span className="d-dot" style={{ background: themeColor(f.theme) }} />{themeRu(f.theme)}</>} right={f.goals.map((g) => g.id).join(" · ")}>
-              {f.goals.map((g) => <Branch key={g.id} it={g} sel={sel?.id} pick={pick} open={sel ? sel.id === g.id || sel.id.startsWith(g.id + ".") : false} />)}
-            </Card>
-          ))}
-        </div>
+        <Block title={<><span className="g-dot" style={{ background: themeColor(selFile.theme) }} />{themeRu(selFile.theme)}</>} right={selFile.goals.map((g) => g.id).join(" · ")}>
+          {selFile.goals.map((g) => <Branch key={g.id} it={g} sel={sel?.id} pick={pick} open={sel ? sel.id === g.id || sel.id.startsWith(g.id + ".") : false} />)}
+        </Block>
         <div className="l-side">{sel && <ItemCard it={sel} today={today} pick={pick} />}</div>
       </div>
-    </>
+    </div>
+  );
+}
+
+/** The four steps of the painted mountain, each with its level: IV at the foot, I in the cloud. */
+const STEP_AT: [number, number][] = [[1110, 175], [960, 265], [795, 360], [540, 453]];
+function Steps({ rows }: { rows: [string, string, [number, number]][] }) {
+  return (
+    <g className="g-stepmarks">
+      {rows.map(([roman, name, [done, total]], i) => {
+        const [x, y] = STEP_AT[i];
+        return (
+          <g key={roman} transform={`translate(${x} ${y})`} className={total > 0 && done === total ? "full" : ""}>
+            <rect x="-96" y="-30" width="192" height="60" rx="30" />
+            <text className="r" x="-66" y="9" textAnchor="middle">{roman}</text>
+            <text className="n" x="18" y="-2" textAnchor="middle">{done} / {total}</text>
+            <text className="l" x="18" y="18" textAnchor="middle">{name}</text>
+          </g>
+        );
+      })}
+    </g>
   );
 }
 
