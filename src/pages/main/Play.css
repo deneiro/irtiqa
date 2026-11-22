@@ -1389,8 +1389,8 @@ main > .g-page.g-setup { max-width: 720px; }
 .g-inf.down > h2 { color: var(--d-ember); }
 .g-infcard { display: grid; gap: 8px; padding: 12px 0; border-top: 1px solid var(--d-hair); }
 .g-inf > h2 + .g-infcard { border-top: 0; padding-top: 0; }
-.g-infcard > b { font: 500 14.5px/1.35 var(--d-sans); color: var(--d-moon); }
-.g-infcard > b small { margin-left: 9px; font: 500 9.5px var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-sun); }
+.g-infcard > b, .g-infcard > .hd > b { font: 500 14.5px/1.35 var(--d-sans); color: var(--d-moon); }
+.g-infcard > b small, .g-infcard > .hd > b small { margin-left: 9px; font: 500 9.5px var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-sun); }
 .g-infcard .who { display: flex; flex-wrap: wrap; gap: 6px; }
 .g-full .g-infcard .who a { padding: 3px 11px; border: 1px solid var(--d-hair-2); border-radius: 99px; font-size: 12.5px; color: var(--d-moon); }
 .g-full .g-infcard .who a:hover { border-color: var(--th, var(--d-sun)); text-decoration: none; }
@@ -1500,3 +1500,15 @@ main > .g-page.g-setup { max-width: 720px; }
 .g-projcard p { margin: 0; flex: 1; font-size: 13px; color: var(--d-moon-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .g-projcard .g-btn { align-self: flex-start; }
 .g-infcard > .note { margin: -4px 0 0; font-size: 12.5px; color: var(--d-ash); }
+
+/* removing an influence (2026-11-23): «убрать» on the card, × on a name */
+.g-infcard > .hd { display: flex; align-items: baseline; gap: 10px; }
+.g-infcard > .hd > b { flex: 1; min-width: 0; }
+.g-play .g-infcard .drop { padding: 2px 9px; border: 1px solid transparent; border-radius: 99px; font: 500 10.5px var(--d-mono); letter-spacing: .06em; color: var(--d-smoke); opacity: .55; transition: opacity .15s, color .15s, border-color .15s; }
+.g-infcard:hover .drop, .g-play .g-infcard .drop:focus-visible { opacity: 1; }
+.g-play .g-infcard .drop:hover:not(:disabled) { color: var(--d-ember); border-color: rgba(226, 106, 97, .45); }
+.g-infcard .who .chip { position: relative; display: inline-flex; align-items: center; }
+.g-play .g-infcard .who .x { margin-left: -8px; width: 20px; height: 20px; border-radius: 50%; font: 400 13px/1 var(--d-sans); color: var(--d-smoke); opacity: 0; transition: opacity .12s, color .12s, background .12s; }
+.g-infcard .who .chip:hover .x, .g-play .g-infcard .who .x:focus-visible { opacity: 1; }
+.g-play .g-infcard .who .x:hover:not(:disabled) { color: var(--d-ember); background: rgba(226, 106, 97, .14); }
+@media (hover: none) { .g-play .g-infcard .drop, .g-play .g-infcard .who .x { opacity: 1; } }

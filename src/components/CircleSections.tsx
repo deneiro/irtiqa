@@ -6,7 +6,9 @@ import { plural, todayStr } from "../lib/dates";
 import { rawPageText } from "../lib/rawpage";
 import { contactEdits } from "../lib/contact";
 import { BANDS, TRIGGERS, buildCircle, tieWarmth, type CircleItem } from "../lib/circle";
-import { DIRECTION_WORDS, influenceGroups, influenceItemCount, ownInfluencePage, type Direction } from "../lib/influence";
+import { DIRECTION_WORDS, influenceGroups, influenceItemCount, ownInfluencePage, removeInfluence, type Direction, type InfluenceItem } from "../lib/influence";
+import { confirmAction } from "../lib/native";
+import type { Page } from "../lib/types";
 import { countWords } from "../lib/person";
 import { isAuthor } from "../lib/people";
 import { peopleOf } from "../lib/themeNumbers";
@@ -110,6 +112,32 @@ export function InfluenceSection({ theme }: { theme: string }) {
   const mine = theme === "Personal growth";
   const ownPage = useMemo(() => (mine ? ownInfluencePage(v.pages) : undefined), [mine, v]);
   const groups = useMemo(() => influenceGroups(people, life?.habits ?? [], undefined, ownPage), [people, life, ownPage]);
+  const { saveText, reload } = useStore();
+  const [busy, setBusy] = useState<string>();
+  const [err, setErr] = useState<string>();
+  /**
+   * «убрать» (2026-11-23: «их слишком много и не к месту»): the influence off every page that holds it — his own and
+   * each person's — or, with `only`, off that one person. Asked first; each page notes it in its «Changes».
+   */
+  const drop = async (it: InfluenceItem, only?: Page) => {
+    const pages = only ? [only] : [...(it.own && ownPage ? [ownPage] : []), ...it.people.map((p) => p.page)];
+    const where = only ? `у ${only.title}` : [it.own ? "со страницы «Влияние»" : "", it.people.length ? `у ${it.people.length} ${plural(it.people.length, "человека", "людей", "людей")}` : ""].filter(Boolean).join(" и ");
+    if (!(await confirmAction(`Убрать «${it.label}» (${DIRECTION_WORDS[it.dir].toLowerCase()}) ${where}?`, "Убрать влияние"))) return;
+    setBusy(it.key + (only?.rel ?? ""));
+    let wrote = false;
+    try {
+      for (const p of pages) {
+        const raw = rawPageText(v, p.rel);
+        if (raw === null) continue;
+        const out = removeInfluence(raw, it, life?.habits ?? [], todayStr());
+        if (out !== raw) { await saveText(p.rel, out); wrote = true; }
+      }
+      setErr(wrote ? undefined : "На страницах этой строки не нашлось — обнови vault.");
+    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally {
+      if (wrote) await reload().catch((e: unknown) => setErr(e instanceof Error ? e.message : String(e)));
+      setBusy(undefined);
+    }
+  };
   const [sheet, setSheet] = useState<InfluenceSheetMode | null>(null);
   if (!life) return null;
 
@@ -123,11 +151,17 @@ export function InfluenceSection({ theme }: { theme: string }) {
           const w = c && c.beads.length ? countWords(c) : undefined;
           return (
             <div key={it.key} className="g-infcard">
-              <b>{it.label}{it.habit && <small>привычка</small>}{mine && it.own && !it.people.length && <small>без людей</small>}</b>
+              <div className="hd">
+                <b>{it.label}{it.habit && <small>привычка</small>}{mine && it.own && !it.people.length && <small>без людей</small>}</b>
+                <button type="button" className="drop" disabled={!!busy} title="убрать это влияние отовсюду" aria-label={`Убрать влияние: ${it.label}`} onClick={() => void drop(it)}>{busy === it.key ? "…" : "убрать"}</button>
+              </div>
               {it.note && <p className="note">{it.note}</p>}
               <div className="who">
                 {it.people.map((p) => (
-                  <Link key={p.page.rel} to={pageUrl(p.page)} className={p.page.theme === theme ? "" : "other"}>{p.page.title}{p.note && <small>{p.note}</small>}</Link>
+                  <span key={p.page.rel} className="chip">
+                    <Link to={pageUrl(p.page)} className={p.page.theme === theme ? "" : "other"}>{p.page.title}{p.note && <small>{p.note}</small>}</Link>
+                    <button type="button" className="x" disabled={!!busy} title={`убрать у ${p.page.title}`} aria-label={`Убрать «${it.label}» у ${p.page.title}`} onClick={() => void drop(it, p.page)}>×</button>
+                  </span>
                 ))}
                 <button type="button" className="plus" title="добавить человека" aria-label={`Добавить человека: ${it.label}`} onClick={() => setSheet({ kind: "person", item: it })}>+</button>
               </div>
@@ -147,7 +181,8 @@ export function InfluenceSection({ theme }: { theme: string }) {
           {group("up")}
           {group("down")}
         </div>
-        <p className="g-cap">{mine && "Свои пункты лежат на странице «Влияние» в «Личностном росте»; «+» у пункта пишет его на страницу человека. "}Привычка считается по дням встреч за 90 дней до вчера; встреча без файла дня не в счёте. Бледное имя — человек из другой темы.</p>
+        {err && <p className="g-error" role="alert">{err}</p>}
+        <p className="g-cap">«убрать» снимает влияние со всех страниц, где оно записано, × у имени — только у этого человека; на каждой странице это видно в «Changes». {mine && "Свои пункты лежат на странице «Влияние» в «Личностном росте»; «+» у пункта пишет его на страницу человека. "}Привычка считается по дням встреч за 90 дней до вчера; встреча без файла дня не в счёте. Бледное имя — человек из другой темы.</p>
       </div>
       <InfluenceSheet mode={sheet} people={people} habits={life.habits} onClose={() => setSheet(null)} toSelf={mine} />
     </>

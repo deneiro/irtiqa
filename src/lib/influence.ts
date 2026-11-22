@@ -259,3 +259,68 @@ export function addInfluence(raw: string, inf: NewInfluence, today: string): str
   }
   return setFrontmatterKeys(fm + lines.join(nl), { updated: today });
 }
+
+/**
+ * Take an influence off one page (2026-11-23, «добавь возможность удалять влияние, их слишком много и не к месту»):
+ * every bullet of `### Тянет вверх|вниз` under `## Влияние` that is this influence (with its indented lines), and the
+ * old tags that make it — a trigger tag for «вниз», `опора` for «вверх». `updated:` becomes `today` and `## Changes`
+ * gets its line. The page comes back unchanged when it does not hold the influence.
+ */
+export function removeInfluence(raw: string, item: Pick<InfluenceItem, "dir" | "key" | "label">, habits: Habit[], today: string, triggers = TRIGGERS): string {
+  const nl = raw.includes("\r\n") ? "\r\n" : "\n";
+  const fm = raw.match(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/)?.[0] ?? "";
+  const lines = raw.slice(fm.length).split(/\r?\n/);
+  let removed = false;
+  const si = lines.findIndex(heading(/^##\s+Влияние\s*$/i));
+  if (si >= 0) {
+    const end = nextH2(lines, si);
+    const subRe = new RegExp(`^###\\s+${DIRECTION_WORDS[item.dir]}\\s*$`, "i");
+    const hi = lines.slice(si + 1, end).findIndex(heading(subRe));
+    if (hi >= 0) {
+      let i = si + 1 + hi + 1;
+      let stop = i;
+      while (stop < end && !/^#{2,3}\s/.test(lines[stop])) stop++;
+      while (i < stop) {
+        const m = lines[i].match(BULLET);
+        if (m && keyOf(split(m[1]).name, habits).key === item.key) {
+          let n = 1;
+          while (i + n < stop && /^\s+\S/.test(lines[i + n])) n++;
+          lines.splice(i, n);
+          stop -= n;
+          removed = true;
+          continue;
+        }
+        i++;
+      }
+    }
+  }
+  // the old tags that make the same influence
+  const tagsOf = (fmText: string): string[] | undefined => {
+    const m = fmText.match(/^tags:\s*\[(.*)\]\s*$/m);
+    return m ? m[1].split(",").map((t) => t.trim().replace(/^["']|["']$/g, "")).filter(Boolean) : undefined;
+  };
+  const tags = tagsOf(fm);
+  let keep = tags;
+  if (tags) {
+    keep = tags.filter((tag) => {
+      if (item.dir === "up") return !(item.key === "t:опора" && /^(support|опора)$/i.test(tag));
+      const t = triggers.find((x) => x.tags.test(tag));
+      if (!t) return true;
+      const h = t.habit ? habitOf(habits, t.habit) : habits.find((x) => fold(x.title) === fold(t.label));
+      const key = h ? `h:${h.rel}` : `t:${fold(t.label)}`;
+      return key !== item.key;
+    });
+    if (keep.length !== tags.length) removed = true;
+  }
+  if (!removed) return raw;
+  const change = `- ${today} — влияние «${item.label}» (${DIRECTION_WORDS[item.dir].toLowerCase()}) убрано в приложении`;
+  const ci = lines.findIndex(heading(/^##\s+Changes\s*$/i));
+  if (ci >= 0) insert(lines, lastFilled(lines, ci + 1, nextH2(lines, ci)), [change], false);
+  else {
+    const at = lastFilled(lines, 0, lines.length);
+    lines.splice(at, lines.length - at, ...(at ? [""] : []), "## Changes", change, "");
+  }
+  const patch: Record<string, string | string[]> = { updated: today };
+  if (tags && keep && keep.length !== tags.length) patch.tags = keep;
+  return setFrontmatterKeys(fm + lines.join(nl), patch);
+}
