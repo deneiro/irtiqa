@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addInfluence, habitLink, influenceGroups, influenceItemCount } from "./influence";
+import { OWN_INFLUENCE_PAGE, OWN_INFLUENCE_REL, addInfluence, habitLink, influenceGroups, influenceItemCount, ownInfluencePage } from "./influence";
 import { buildLife } from "./life";
 import { personView } from "./person";
 import type { MdFile } from "./types";
@@ -173,4 +173,29 @@ test("influenceItemCount: the habit on the days any of its people were met, agai
   assert.deepEqual({ beads: c.beads.map((b) => [b.date, b.cell]), counted: c.counted, hits: c.hits, apart: c.apart, apartHits: c.apartHits },
     { beads: [["2030-01-10", "fall"], ["2030-01-12", "unmarked"]], counted: 2, hits: 1, apart: 1, apartHits: 1 });
   assert.equal(influenceItemCount(g.down[1], vault.pages, life, TODAY), undefined);
+});
+
+test("his own page joins the influences: items without people, merged with a person's same item", () => {
+  const ownRaw = addInfluence(addInfluence(OWN_INFLUENCE_PAGE.replace(/\{date\}/g, TODAY), { dir: "up", md: "Мечеть", note: "утром" }, TODAY), { dir: "down", md: "Телефон в кровати" }, TODAY);
+  assert.match(ownRaw, /## Влияние\n\n### Тянет вверх\n- Мечеть \*утром\*/);
+  const v = buildVault({
+    root: "", life: [], raw: [], log: "", claude_md: "", media: [],
+    pages: [
+      { rel: OWN_INFLUENCE_REL, mtime: 0, content: ownRaw },
+      person("Друг", {}, "# Друг\n\n## Влияние\n### Тянет вверх\n- мечеть\n"),
+    ],
+  });
+  const own = ownInfluencePage(v.pages);
+  assert.ok(own);
+  const people = v.pages.filter((p) => p.zone === "person");
+  const g = influenceGroups(people, [], undefined, own);
+  const up = g.up.find((x) => x.label.toLowerCase() === "мечеть")!;
+  assert.equal(up.own, true);
+  assert.equal(up.note, "утром");
+  assert.deepEqual(up.people.map((p) => p.page.file), ["Друг"]);
+  const down = g.down.find((x) => x.label === "Телефон в кровати")!;
+  assert.equal(down.own, true);
+  assert.equal(down.people.length, 0);
+  // without his page nothing of it shows
+  assert.equal(influenceGroups(people, []).down.length, 0);
 });

@@ -6,7 +6,7 @@ import { plural, todayStr } from "../lib/dates";
 import { rawPageText } from "../lib/rawpage";
 import { contactEdits } from "../lib/contact";
 import { BANDS, TRIGGERS, buildCircle, tieWarmth, type CircleItem } from "../lib/circle";
-import { DIRECTION_WORDS, influenceGroups, influenceItemCount, type Direction } from "../lib/influence";
+import { DIRECTION_WORDS, influenceGroups, influenceItemCount, ownInfluencePage, type Direction } from "../lib/influence";
 import { countWords } from "../lib/person";
 import { isAuthor } from "../lib/people";
 import { peopleOf } from "../lib/themeNumbers";
@@ -106,7 +106,10 @@ export function InfluenceSection({ theme }: { theme: string }) {
   const { life } = useStore();
   const today = todayStr();
   const people = useMemo(() => peopleOf(v), [v]);
-  const groups = useMemo(() => influenceGroups(people, life?.habits ?? []), [people, life]);
+  // «Личностный рост» shows his own page too, and writes a new influence there (2026-11-23)
+  const mine = theme === "Personal growth";
+  const ownPage = useMemo(() => (mine ? ownInfluencePage(v.pages) : undefined), [mine, v]);
+  const groups = useMemo(() => influenceGroups(people, life?.habits ?? [], undefined, ownPage), [people, life, ownPage]);
   const [sheet, setSheet] = useState<InfluenceSheetMode | null>(null);
   if (!life) return null;
 
@@ -120,7 +123,8 @@ export function InfluenceSection({ theme }: { theme: string }) {
           const w = c && c.beads.length ? countWords(c) : undefined;
           return (
             <div key={it.key} className="g-infcard">
-              <b>{it.label}{it.habit && <small>привычка</small>}</b>
+              <b>{it.label}{it.habit && <small>привычка</small>}{mine && it.own && !it.people.length && <small>без людей</small>}</b>
+              {it.note && <p className="note">{it.note}</p>}
               <div className="who">
                 {it.people.map((p) => (
                   <Link key={p.page.rel} to={pageUrl(p.page)} className={p.page.theme === theme ? "" : "other"}>{p.page.title}{p.note && <small>{p.note}</small>}</Link>
@@ -131,7 +135,7 @@ export function InfluenceSection({ theme }: { theme: string }) {
             </div>
           );
         })}
-        {!items.length && <p className="g-faint">Пока пусто: «+ влияние» запишет первое на страницу человека.</p>}
+        {!items.length && <p className="g-faint">{mine ? "Пока пусто: «+ влияние» — вещь, место, занятие или привычка; людей можно добавить сразу или потом." : "Пока пусто: «+ влияние» запишет первое на страницу человека."}</p>}
       </Block>
     );
   };
@@ -143,9 +147,9 @@ export function InfluenceSection({ theme }: { theme: string }) {
           {group("up")}
           {group("down")}
         </div>
-        <p className="g-cap">Привычка считается по дням встреч за 90 дней до вчера; встреча без файла дня не в счёте. Бледное имя — человек из другой темы.</p>
+        <p className="g-cap">{mine && "Свои пункты лежат на странице «Влияние» в «Личностном росте»; «+» у пункта пишет его на страницу человека. "}Привычка считается по дням встреч за 90 дней до вчера; встреча без файла дня не в счёте. Бледное имя — человек из другой темы.</p>
       </div>
-      <InfluenceSheet mode={sheet} people={people} habits={life.habits} onClose={() => setSheet(null)} />
+      <InfluenceSheet mode={sheet} people={people} habits={life.habits} onClose={() => setSheet(null)} toSelf={mine} />
     </>
   );
 }

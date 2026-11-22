@@ -26,6 +26,8 @@ import PersonForm, { type PersonFormHandle } from "../../components/PersonForm";
 import { Inline, glowOf } from "../theme/parts";
 import MetSheet from "./MetSheet";
 import AddPersonSheet from "./AddPersonSheet";
+import InfluenceSheet, { type InfluenceSheetMode } from "../../components/InfluenceSheet";
+import type { Direction } from "../../lib/influence";
 import "./Person.css";
 
 /** The person's theme colour and its glows, as the theme pages set --th and --glow. */
@@ -199,11 +201,21 @@ function HalfView({ kind, half, rows, today, none }: { kind: "up" | "down"; half
   );
 }
 
-function InfluenceCard({ inf, page, people, life, today }: { inf: Influence; page: Page; people: Page[]; life: Life; today: string }) {
+/** «+ вверх» · «+ вниз»: the sheet of «Влияние» opened for this person (2026-11-23). */
+function AddInfluence({ onAdd }: { onAdd: (dir: Direction) => void }) {
+  return (
+    <span className="p-inf-add">
+      <button type="button" className="p-btn" onClick={() => onAdd("up")}>+ тянет вверх</button>
+      <button type="button" className="p-btn" onClick={() => onAdd("down")}>+ тянет вниз</button>
+    </span>
+  );
+}
+
+function InfluenceCard({ inf, page, people, life, today, onAdd }: { inf: Influence; page: Page; people: Page[]; life: Life; today: string; onAdd: (dir: Direction) => void }) {
   const c = useMemo(() => influenceCount(inf, page, people, life, today), [inf, page, people, life, today]);
   const counted = c.up.length + c.down.length > 0;
   return (
-    <Card title="Влияние" right={inf.note && <Inline md={inf.note} />}>
+    <Card title="Влияние" right={<>{inf.note && <Inline md={inf.note} />}<AddInfluence onAdd={onAdd} /></>}>
       {inf.verdict && <p className="p-verdict"><Inline md={inf.verdict} /><small>твой ответ: тянет вверх или вниз</small></p>}
       <div className="p-infl">
         <HalfView kind="up" half={inf.up} rows={c.up} today={today} />
@@ -327,6 +339,7 @@ export default function PersonPage({ page }: { page: Page }) {
   const [debtsOpen, setDebtsOpen] = useState(false);
   const [meeting, setMeeting] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [influence, setInfluence] = useState<InfluenceSheetMode | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -353,7 +366,6 @@ export default function PersonPage({ page }: { page: Page }) {
   const hasDebts = debtsFor(page, life.debts).length > 0;
   const birthday = numbers.birthday.hint;
   const missing: [string, string][] = [
-    ...(view.influence ? [] : [["Влияние", "не записано"] as [string, string]]),
     ...(view.character ? [] : [["Характер", "не записан"] as [string, string]]),
     ...(hasRadicals ? [] : [["Радикалы", "твоего мнения нет"] as [string, string]]),
     ...(view.pros ? [] : [["Плюсы и минусы", "не записаны"] as [string, string]]),
@@ -466,7 +478,9 @@ export default function PersonPage({ page }: { page: Page }) {
       </div>
 
       <div className="p-organs">
-        {view.influence && <InfluenceCard inf={view.influence} page={page} people={people} life={life} today={today} />}
+        {view.influence
+          ? <InfluenceCard inf={view.influence} page={page} people={people} life={life} today={today} onAdd={(dir) => setInfluence({ kind: "new", dir })} />
+          : <Card title="Влияние" right={<AddInfluence onAdd={(dir) => setInfluence({ kind: "new", dir })} />}><p className="p-nothing">Куда он тебя тянет — не записано. Одна фраза или привычка: вверх или вниз.</p></Card>}
         {view.character && hasRadicals ? (
           <div className="p-two"><CharacterCard view={view.character} /><RadicalsCard r={radicals} formula={view.formula} /></div>
         ) : (
@@ -495,6 +509,7 @@ export default function PersonPage({ page }: { page: Page }) {
 
       <MetSheet open={meeting} page={page} people={people} today={today} onClose={() => setMeeting(false)} onSaved={setFresh} />
       <AddPersonSheet open={adding} onClose={() => setAdding(false)} />
+      <InfluenceSheet mode={influence} people={people} habits={life.habits} preset={[page.rel]} onClose={() => setInfluence(null)} />
     </div>
   );
 }
