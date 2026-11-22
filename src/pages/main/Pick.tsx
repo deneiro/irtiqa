@@ -33,7 +33,8 @@ export function PickSlots({ life, today, bank, mode }: { life: Life; today: stri
   const month = monthPicks(life, bank, today);
   const picks: Pick[] = mode === "month" ? month : weekPicks(life, bank, today);
   const max = mode === "month" ? MONTH_MAX : WEEK_MAX;
-  const openN = picks.filter((p) => !p.done).length;
+  // only a bank task takes one of the five places; a task he named in his own words is shown but does not (2026-11-23)
+  const openN = picks.filter((p) => !p.done && (mode === "month" || p.id)).length;
   const free = Math.max(0, max - openN);
   const blocked = mode === "week" && !month.some((p) => !p.done);
   const drop = (id: string) => w.remove(id).catch((e) => setErr(String(e)));

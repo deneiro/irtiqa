@@ -59,6 +59,29 @@ export function parseGoals(key: string, content: string): GoalsFile {
   return { key, period: fm(content, "period"), from: fm(content, "from"), to: fm(content, "to"), goals, tasks, focus, focusOn };
 }
 
+/**
+ * Tick or untick the `n`-th task of `## Задачи` as `parseGoals` counts them (a `[>]` line and a note line are not
+ * tasks). Ticking adds ` ✓ date` at the end, unticking takes it off; every other line stays as it was.
+ */
+export function toggleGoalTask(content: string, n: number, date: string): string {
+  const lines = content.split("\n");
+  let inTasks = false, k = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    if (/^## /.test(l)) { inTasks = /^## Задачи\s*$/.test(l); continue; }
+    if (!inTasks) continue;
+    const m = l.match(/^(\s*-\s*)(?:\[([ xX>])\]\s*)?(.+)$/);
+    if (!m || m[2] === ">") continue;
+    if (!m[2] && !/\[\[/.test(m[3])) continue;
+    if (++k !== n) continue;
+    const done = /[xX]/.test(m[2] ?? "");
+    const text = m[3].replace(/\s*✓\s*\d{4}-\d{2}-\d{2}\s*$/, "");
+    lines[i] = done ? `${m[1]}[ ] ${text}` : `${m[1]}[x] ${text} ✓ ${date}`;
+    return lines.join("\n");
+  }
+  return content;
+}
+
 /** One goal, read by its parts: `**цель** · мера: … · сейчас: … · срок: YYYY-MM-DD · → [[выше]]`; a reached goal ends with `✓ YYYY-MM-DD`. */
 export interface GoalLine {
   title: string;

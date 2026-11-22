@@ -83,6 +83,8 @@ export interface Quest {
    */
   stage?: QuestStage;
   stageNote?: string;
+  /** 2026-11-23: the project on disk (`folder:`, absolute); read only like `stage:`, it stays in `extraFm`. «Сегодня» opens Claude there. */
+  folder?: string;
   body: string;
   /** Frontmatter keys the app does not model, carried through a rewrite untouched. */
   extraFm?: string[];
@@ -514,6 +516,7 @@ export function parseQuest(f: MdFile): Quest {
     cadence: str(fm.cadence),
     stage: stageOf(str(fm.stage)),
     stageNote: str(fm.stage_note),
+    folder: str(fm.folder),
     body: body.trim(),
     extraFm: foreignFrontmatter(f.content, QUEST_KEYS),
   };

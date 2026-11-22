@@ -18,6 +18,33 @@ export const DIRECTION_WORDS: Record<Direction, string> = { up: "Тянет вв
 
 export interface InfluenceWho { page: Page; note?: string }
 
+/**
+ * His own list (2026-11-23, «добавь страницу вещей которые тянут меня вверх и тянут вниз в личностный рост»): the
+ * same `## Влияние` → `### Тянет вверх|вниз` as a person page, on a page of its own; things, places, habits.
+ */
+export const OWN_INFLUENCE_REL = "wiki/Personal growth/Wiki/Влияние.md";
+/** His own influence page among the vault's pages (a path read from disk may come back decomposed). */
+export function ownInfluencePage(pages: Page[]): Page | undefined {
+  return pages.find((p) => p.rel.normalize("NFC") === OWN_INFLUENCE_REL);
+}
+export const OWN_INFLUENCE_PAGE = `---
+title: Влияние
+type: wiki
+theme: Personal growth
+created: {date}
+updated: {date}
+tags: [влияние, привычки]
+---
+
+# Влияние
+
+Что тянет вверх и что тянет вниз — вещи, места, занятия, привычки; люди при пункте — те, с кем это связано.
+
+## Влияние
+
+## Changes
+`;
+
 /** One influence of a direction and everyone whose page holds it. */
 export interface InfluenceItem {
   dir: Direction;
@@ -28,6 +55,10 @@ export interface InfluenceItem {
   /** The habit a link names, when it is one of the habits given. */
   habit?: Habit;
   people: InfluenceWho[];
+  /** It stands on his own page (`OWN_INFLUENCE_REL`), not only on a person's. */
+  own?: boolean;
+  /** His note on his own page. */
+  note?: string;
 }
 export interface InfluenceGroups { up: InfluenceItem[]; down: InfluenceItem[] }
 
@@ -71,7 +102,7 @@ function keyOf(name: string, habits: Habit[]): { key: string; label: string; hab
  * `### Тянет вверх · вниз`, then the old tags (a trigger tag of `triggers` is «вниз», `опора` is «вверх»). The most
  * shared come first; inside, the closest people.
  */
-export function influenceGroups(people: Page[], habits: Habit[], triggers = TRIGGERS): InfluenceGroups {
+export function influenceGroups(people: Page[], habits: Habit[], triggers = TRIGGERS, own?: Page): InfluenceGroups {
   const maps: Record<Direction, Map<string, InfluenceItem>> = { up: new Map(), down: new Map() };
   const put = (dir: Direction, k: { key: string; label: string; habit?: Habit }, md: string, page: Page, note?: string) => {
     let it = maps[dir].get(k.key);
@@ -80,6 +111,20 @@ export function influenceGroups(people: Page[], habits: Habit[], triggers = TRIG
     if (!had) it.people.push(note ? { page, note } : { page });
     else if (!had.note && note) had.note = note;
   };
+  if (own) {
+    const inf = personView(own.body).influence;
+    for (const dir of ["up", "down"] as const) {
+      for (const pill of inf?.[dir]?.pills ?? []) {
+        const { name, note } = split(pill.md);
+        if (!name) continue;
+        const k = keyOf(name, habits);
+        let it = maps[dir].get(k.key);
+        if (!it) { it = { dir, key: k.key, md: name, label: k.label, ...(k.habit ? { habit: k.habit } : {}), people: [] }; maps[dir].set(k.key, it); }
+        it.own = true;
+        if (note ?? pill.note) it.note = note ?? pill.note;
+      }
+    }
+  }
   for (const page of people) {
     const inf = personView(page.body).influence;
     for (const dir of ["up", "down"] as const) {

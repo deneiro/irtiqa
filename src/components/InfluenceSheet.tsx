@@ -5,7 +5,7 @@ import { rawPageText } from "../lib/rawpage";
 import { closenessOf } from "../lib/people";
 import type { Habit } from "../lib/life";
 import type { Page } from "../lib/types";
-import { DIRECTION_WORDS, addInfluence, habitLink, type Direction, type InfluenceItem } from "../lib/influence";
+import { DIRECTION_WORDS, OWN_INFLUENCE_PAGE, OWN_INFLUENCE_REL, addInfluence, habitLink, type Direction, type InfluenceItem } from "../lib/influence";
 import "../pages/person/Person.css";
 import "./Influence.css";
 
@@ -23,7 +23,11 @@ const fold = (s: string) => s.toLowerCase().replace(/ё/g, "е");
  * the people and a short note; or, from an influence already written, only the people. Saving writes one bullet into
  * each chosen page (`addInfluence`); a page that already has it is left as it is.
  */
-export default function InfluenceSheet({ mode, people, habits, onClose }: { mode: InfluenceSheetMode | null; people: Page[]; habits: Habit[]; onClose: () => void }) {
+/**
+ * `toSelf` (2026-11-23): a new influence goes to his own page («Личностный рост» → «Влияние») too, and the people are
+ * optional. `preset`: the people already chosen when the sheet opens — the person page opens it for its person.
+ */
+export default function InfluenceSheet({ mode, people, habits, onClose, toSelf = false, preset = [] }: { mode: InfluenceSheetMode | null; people: Page[]; habits: Habit[]; onClose: () => void; toSelf?: boolean; preset?: string[] }) {
   const ref = useRef<HTMLDialogElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -42,13 +46,13 @@ export default function InfluenceSheet({ mode, people, habits, onClose }: { mode
     const d = ref.current;
     if (!d) return;
     if (mode && !d.open) {
-      setName(""); setHabit(null); setDir(mode.kind === "new" ? mode.dir : mode.item.dir); setChosen([]); setQ(""); setNote(""); setErr(null);
+      setName(""); setHabit(null); setDir(mode.kind === "new" ? mode.dir : mode.item.dir); setChosen(preset); setQ(""); setNote(""); setErr(null);
       d.showModal();
       // the dialog stays mounted, so autoFocus would fire once; the field is focused on every opening
       (mode.kind === "new" ? nameRef : searchRef).current?.focus();
     }
     if (!mode && d.open) d.close();
-  }, [mode]);
+  }, [mode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const item = mode?.kind === "person" ? mode.item : undefined;
   const already = useMemo(() => new Set(item?.people.map((p) => p.page.rel) ?? []), [item]);
@@ -68,7 +72,8 @@ export default function InfluenceSheet({ mode, people, habits, onClose }: { mode
   const toggle = (rel: string) => setChosen((c) => (c.includes(rel) ? c.filter((x) => x !== rel) : [...c, rel]));
 
   const save = async () => {
-    if (busy || !md || !chosen.length) return;
+    const toOwn = toSelf && !item;
+    if (busy || !md || (!chosen.length && !toOwn)) return;
     setBusy(true);
     let wrote = false;
     try {
@@ -79,7 +84,12 @@ export default function InfluenceSheet({ mode, people, habits, onClose }: { mode
         const content = addInfluence(raw, { dir, md, note: item ? undefined : note }, today);
         return content === raw ? [] : [{ rel, content }];
       });
-      if (!edits.length) { setErr("У выбранных это влияние уже записано."); return; }
+      if (toOwn) {
+        const raw = rawPageText(v, OWN_INFLUENCE_REL) ?? OWN_INFLUENCE_PAGE.replace(/\{date\}/g, today);
+        const content = addInfluence(raw, { dir, md, note }, today);
+        if (content !== raw) edits.push({ rel: OWN_INFLUENCE_REL, content });
+      }
+      if (!edits.length) { setErr(toOwn && !chosen.length ? "Это влияние уже записано." : "У выбранных это влияние уже записано."); return; }
       for (const e of edits) { await saveText(e.rel, e.content); wrote = true; }
       onClose();
     } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally {
@@ -128,7 +138,7 @@ export default function InfluenceSheet({ mode, people, habits, onClose }: { mode
           </>
         )}
         <div className="p-fld">
-          <span>Люди{chosen.length ? ` · ${chosen.length}` : ""}</span>
+          <span>Люди{chosen.length ? ` · ${chosen.length}` : toSelf && !item ? " · необязательно" : ""}</span>
           <div className="t-inf-stack">
             <input ref={searchRef} className="p-inp" type="search" autoComplete="off" spellCheck={false} placeholder="найти по имени" value={q} onChange={(e) => setQ(e.target.value)} />
             <div className="t-inf-pick t-inf-people">
@@ -141,11 +151,11 @@ export default function InfluenceSheet({ mode, people, habits, onClose }: { mode
           <label className="p-fld"><span>Заметка</span><input className="p-inp" autoComplete="off" spellCheck={false} placeholder="необязательно: когда, с чем" value={note} onChange={(e) => setNote(e.target.value)} /></label>
         )}
         <div className="p-sh-acts">
-          <button className="p-btn p-primary" type="submit" disabled={busy || !md || !chosen.length}>{busy ? "Записываю…" : "Записать"}</button>
+          <button className="p-btn p-primary" type="submit" disabled={busy || !md || (!chosen.length && !(toSelf && !item))}>{busy ? "Записываю…" : "Записать"}</button>
           <button className="p-btn p-ghost" type="button" onClick={onClose}>отмена</button>
         </div>
         {err && <p className="p-sh-err">{err}</p>}
-        <div className="p-sh-foot">→ <b>{label || "…"}</b> · строкой в «Влияние · {DIRECTION_WORDS[dir].toLowerCase()}» на странице каждого выбранного</div>
+        <div className="p-sh-foot">→ <b>{label || "…"}</b> · строкой в «Влияние · {DIRECTION_WORDS[dir].toLowerCase()}» {toSelf && !item ? <>на странице «Влияние» в «Личностном росте»{chosen.length ? " и у каждого выбранного" : " — людей можно не выбирать"}</> : "на странице каждого выбранного"}</div>
       </form>
     </dialog>
   );

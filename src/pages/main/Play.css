@@ -1484,3 +1484,19 @@ main > .g-page.g-setup { max-width: 720px; }
 .g-addrow.g-debtnew { margin: 0 0 14px; padding: 0 0 14px; border-top: 0; border-bottom: 1px solid var(--d-hair); }
 .g-debtnew .lbl { flex-basis: 100%; font: 500 10px/1.6 var(--d-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--d-smoke); }
 .g-debtnew .text.date { flex: 0 0 140px; color-scheme: dark; }
+
+/* «Сегодня»: the week's tasks, today's training, the projects (2026-11-23) */
+.g-wtasks { display: grid; gap: 2px; max-height: 420px; overflow: auto; }
+.g-train .what { font: 600 17px/1.3 var(--d-serif); margin-bottom: 8px; }
+.g-train ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--d-moon-2); font-size: 13.5px; }
+.g-train ol li::marker { color: var(--d-smoke); font-family: var(--d-mono); font-size: 11px; }
+.g-projgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.g-projcard { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; border: 1px solid var(--d-hair-2); background: rgba(237, 231, 218, .03); }
+.g-projcard.paused { opacity: .62; }
+.g-projcard .nm { display: flex; flex-direction: column; gap: 2px; color: var(--d-moon); text-decoration: none; }
+.g-projcard .nm b { font: 600 16px/1.25 var(--d-serif); }
+.g-projcard .nm small { font: 500 10px/1.5 var(--d-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--d-smoke); }
+.g-projcard .nm:hover b { color: var(--d-sun); }
+.g-projcard p { margin: 0; flex: 1; font-size: 13px; color: var(--d-moon-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.g-projcard .g-btn { align-self: flex-start; }
+.g-infcard > .note { margin: -4px 0 0; font-size: 12.5px; color: var(--d-ash); }

@@ -13,7 +13,7 @@ import { numberTile, shortDate } from "../lib/themeNumbers";
 import { boardCards } from "../lib/themeBoard";
 import { SECTION_LABELS, halalGroups, themePages, type ThemePages } from "../lib/themePages";
 import { staleMentions } from "../lib/stale";
-import { influenceGroups } from "../lib/influence";
+import { influenceGroups, ownInfluencePage } from "../lib/influence";
 import { measures } from "../lib/health";
 import { parseJobs } from "../lib/jobs";
 import { parseLibrary } from "../lib/library";
@@ -71,7 +71,7 @@ function pageButton(key: SectionKey, theme: string, p: ThemePages, life: Life, v
     }
     case "influence": {
       const people = vault.pages.filter((x) => x.zone === "person" && x.type !== "template" && !x.file.startsWith("_"));
-      const g = influenceGroups(people, life.habits);
+      const g = influenceGroups(people, life.habits, undefined, theme === "Personal growth" ? ownInfluencePage(vault.pages) : undefined);
       return { ...b, value: String(g.up.length + g.down.length), sub: `↑ ${g.up.length} · ↓ ${g.down.length}` };
     }
     case "career": return { ...b, value: String(parseJobs(life.jobs ?? "", today).length), sub: "работ" };

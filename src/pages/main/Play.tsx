@@ -5,7 +5,12 @@ import { useStore } from "../../store";
 import type { Vault } from "../../lib/types";
 import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { dayMonth, fmt, habitRows, weightNow } from "../../lib/dashboard";
-import { isoWeekKey } from "../../lib/goals";
+import { isoWeekKey, parseGoals, toggleGoalTask } from "../../lib/goals";
+import { trainingFor } from "../../lib/training";
+import { openInClaude, projectsOf } from "../../lib/projects";
+import { nowStep } from "../../lib/life";
+import { plainStep, questUrl } from "../../lib/dashboard";
+import { themeRu } from "../../lib/themes";
 import { CAMPS, CAMP_NAMES, POINTS, along, askOf, asks, campNeed, campsTaken, dayScore, fire, medals, prayerOpen, rankOf, standing, type Ask, type CampNeed, type Score } from "../../lib/game";
 import { overallLevelProgress, readsOf, themeXps, xpByDay } from "../../lib/levels";
 import { emptyDay, habitDue, isLateMeal, markOf, parseAmount, spentOf, earnedOf, streak, withMark, xpForDay, type Day, type DayMark, type Habit, type Life, type XpContext } from "../../lib/life";
@@ -239,6 +244,12 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
         </Block>
       </div>
 
+      <div className="g-two">
+        <WeekTasks life={life} date={date} />
+        <TrainingToday vault={vault} date={date} />
+      </div>
+      <Projects life={life} />
+
       <div className="g-three">
         <Block title="Путь · 5 недель" right="нажми на день — откроется">
           <Trail habits={habits} days={days} today={today} date={date} onPick={setDate} />
@@ -266,6 +277,90 @@ function nextPrayer(prayers: Habit[], day: Day, now: Date, times: PrayerTimes): 
 
 function Block({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
   return <section className="g-block"><h2>{title}{right && <span>{right}</span>}</h2>{children}</section>;
+}
+
+// ---------- the week, the training, the projects (2026-11-23) ----------
+
+/**
+ * The tasks of the week file — the bank's and the ones he named in his own words — ticked here as in the file:
+ * «я добавил задачи на неделю, но надо, чтобы они показывались и в главном экране».
+ */
+function WeekTasks({ life, date }: { life: Life; date: string }) {
+  const { saveText, reload } = useStore();
+  const key = isoWeekKey(date);
+  const file = life.goals.get(key);
+  const tasks = file ? parseGoals(key, file).tasks : [];
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string>();
+  const done = tasks.filter((t) => t.done).length;
+  const toggle = async (i: number) => {
+    if (!file || busy) return;
+    setBusy(true);
+    try { await saveText(`life/goals/${key}.md`, toggleGoalTask(file, i, date)); setErr(undefined); await reload(); }
+    catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+  };
+  return (
+    <Block title={`Неделя ${Number(key.slice(-2))} · задачи`} right={tasks.length ? `${done} / ${tasks.length}` : <Link to="/?tab=week">неделя →</Link>}>
+      {tasks.length ? (
+        <div className="g-wtasks">
+          {[...tasks.map((t, i) => ({ ...t, i }))].sort((a, b) => Number(a.done) - Number(b.done)).map((t) => (
+            <div key={t.i} className={`g-task${t.done ? " done" : ""}`} onClick={(e) => { if (!(e.target as HTMLElement).closest("a, button")) void toggle(t.i); }}>
+              <button className="box" disabled={busy} onClick={() => void toggle(t.i)} aria-pressed={t.done} aria-label={t.done ? "Снять отметку" : "Отметить сделанной"}>{t.done ? "✓" : ""}</button>
+              <TaskLine text={t.text.replace(/\s*✓\s*\d{4}-\d{2}-\d{2}\s*$/, "")} today={date} />
+            </div>
+          ))}
+        </div>
+      ) : <p className="g-faint">На эту неделю задач нет — выбери на вкладке «Неделя» или скажи Claude.</p>}
+      {err && <p className="g-error" role="alert">{err}</p>}
+    </Block>
+  );
+}
+
+/** Today's row of the training plan, always on «Сегодня»: what kind of day, what to train, the exercises. */
+function TrainingToday({ vault, date }: { vault: Vault; date: string }) {
+  const t = trainingFor(vault, date);
+  return (
+    <Block title={`Тренировка · ${t ? t.kind || "по плану" : "отдых"}`} right={<Link to="/training">программа →</Link>}>
+      {t ? (
+        <div className="g-train">
+          <div className="what">{t.what || t.kind}</div>
+          {t.exercises.length > 0
+            ? <ol>{t.exercises.map((x, k) => <li key={k}>{x}</li>)}</ol>
+            : <p className="g-faint">Упражнений в плане на этот день нет.</p>}
+        </div>
+      ) : <p className="g-faint">В плане тренировок на этот день ничего нет. План — «План тренировок» в «Здоровье и спорт».</p>}
+    </Block>
+  );
+}
+
+/** Every activity with a folder on disk: its step now, and «Claude» opens Terminal there with `claude` running. */
+function Projects({ life }: { life: Life }) {
+  const { root } = useStore();
+  const list = projectsOf(life);
+  const [err, setErr] = useState<string>();
+  const [opening, setOpening] = useState<string>();
+  if (!list.length) return null;
+  const open = async (rel: string, folder: string) => {
+    setOpening(rel);
+    try { await openInClaude(root, folder); setErr(undefined); } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setOpening(undefined); }
+  };
+  return (
+    <Block title="Проекты" right="«Claude» — Terminal в папке проекта, Claude уже запущен">
+      <div className="g-projgrid">
+        {list.map((q) => {
+          const step = nowStep(q.body);
+          return (
+            <div key={q.rel} className={`g-projcard${q.status === "paused" ? " paused" : ""}`}>
+              <Link to={questUrl(q.rel)} className="nm"><b>{q.title}</b><small>{themeRu(q.theme)}{q.status === "paused" ? " · на паузе" : ""}</small></Link>
+              <p>{step ? plainStep(step).replace(/\*\*/g, "") : "следующий шаг не записан"}</p>
+              <button type="button" className="g-btn sun" disabled={opening === q.rel} onClick={() => void open(q.rel, q.folder!)} title={q.folder}>{opening === q.rel ? "открываю…" : "▸ Claude"}</button>
+            </div>
+          );
+        })}
+      </div>
+      {err && <p className="g-error" role="alert">Не открыл: {err}</p>}
+    </Block>
+  );
 }
 
 // ---------- the scene ----------

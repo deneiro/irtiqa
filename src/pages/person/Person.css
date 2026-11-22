@@ -334,3 +334,7 @@ textarea.p-inp { min-height: 58px; resize: vertical; }
 .g-rhythm { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
 .g-rhythm > span { font: 500 10px/1.6 var(--d-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--d-smoke); white-space: nowrap; }
 .g-rhythm select { flex: 1; min-width: 0; height: 32px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--d-hair-2); background: rgba(11, 13, 19, .5); color: var(--d-moon); font: 13px var(--d-sans); color-scheme: dark; }
+
+/* «+ тянет вверх · вниз» on the person page (2026-11-23) */
+.p-inf-add { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
+.p-inf-add .p-btn { padding: 3px 10px; font-size: 11.5px; }
