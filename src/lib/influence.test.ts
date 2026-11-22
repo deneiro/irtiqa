@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { OWN_INFLUENCE_PAGE, OWN_INFLUENCE_REL, addInfluence, habitLink, influenceGroups, influenceItemCount, ownInfluencePage } from "./influence";
+import { OWN_INFLUENCE_PAGE, OWN_INFLUENCE_REL, addInfluence, removeInfluence, habitLink, influenceGroups, influenceItemCount, ownInfluencePage } from "./influence";
 import { buildLife } from "./life";
 import { personView } from "./person";
 import type { MdFile } from "./types";
@@ -198,4 +198,26 @@ test("his own page joins the influences: items without people, merged with a per
   assert.equal(down.people.length, 0);
   // without his page nothing of it shows
   assert.equal(influenceGroups(people, []).down.length, 0);
+});
+
+test("removing an influence takes its bullets (with their lines) and the tags that make it, and says so in Changes", () => {
+  const habits = buildLife([habit("Сигареты", "Сигареты")]).habits;
+  const raw = `---\ntitle: Б\ntype: person\nupdated: 2030-01-01\ntags: [friend, trigger-smoking, опора]\n---\n# Б\n\n## Влияние\n\n### Тянет вверх\n- идеи\n\n### Тянет вниз\n- [[Сигареты|курение]] *с ним*\n  ещё строка\n- лень\n\n## Changes\n- 2030-01-01 — было\n`;
+  const page = buildVault({ root: "", life: [], raw: [], log: "", claude_md: "", media: [], pages: [{ rel: "wiki/People/Б.md", mtime: 0, content: raw }] }).pages;
+  const g = influenceGroups(page, habits);
+  const smoke = g.down.find((x) => x.label === "курение")!;
+  const out = removeInfluence(raw, smoke, habits, TODAY);
+  assert.doesNotMatch(out, /Сигареты\|курение/);
+  assert.doesNotMatch(out, /ещё строка/);
+  assert.match(out, /### Тянет вниз\n- лень/);
+  assert.match(out, /^tags: \[friend, опора\]$/m);
+  assert.match(out, /^updated: 2030-02-01$/m);
+  assert.match(out, new RegExp(`- ${TODAY} — влияние «курение» \\(тянет вниз\\) убрано в приложении`));
+  // the same influence is gone from the groups
+  const after = buildVault({ root: "", life: [], raw: [], log: "", claude_md: "", media: [], pages: [{ rel: "wiki/People/Б.md", mtime: 0, content: out }] }).pages;
+  assert.equal(influenceGroups(after, habits).down.some((x) => x.label === "курение"), false);
+  // «опора» goes with its tag; a page without the influence comes back as it was
+  const support = influenceGroups(page, habits).up.find((x) => x.key === "t:опора")!;
+  assert.match(removeInfluence(raw, support, habits, TODAY), /^tags: \[friend, trigger-smoking\]$/m);
+  assert.equal(removeInfluence(raw, { dir: "up", key: "t:нечто", label: "нечто" }, habits, TODAY), raw);
 });
