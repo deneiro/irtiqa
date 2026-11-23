@@ -299,19 +299,22 @@ export function debtsByPerson(debts: Debt[]): PersonDebt[] {
 export function payPersonDebts(debts: Debt[], who: string, direction: string, amount: number, today: string): { rows: Debt[]; applied: number } {
   let rest = Math.max(0, Math.round(amount));
   const applied = rest;
-  const rows = debts
-    .map((d) => ({ d, key: debtWho(d) === who && d.direction === direction && !d.closed && debtLeft(d) > 0 }))
-    .sort((a, b) => (a.key === b.key ? (a.d.since || "").localeCompare(b.d.since || "") : a.key ? -1 : 1))
-    .map(({ d, key }) => {
-      if (!key || rest <= 0) return d;
-      const take = Math.min(rest, debtLeft(d));
-      rest -= take;
-      const paid = d.paid + take;
-      return { ...d, paid, closed: debtLeft({ ...d, paid }) === 0 ? today : d.closed };
-    });
-  // keep the original order of rows, not the sorted one
-  const byRef = new Map(rows.map((r, i) => [i, r]));
-  void byRef;
+  const match = (d: Debt) => debtWho(d) === who && d.direction === direction && !d.closed && debtLeft(d) > 0;
+  // the oldest first, but the rows come back in the order of the file (a payment used to reorder debts.md)
+  const order = debts.map((d, i) => ({ d, i })).filter(({ d }) => match(d)).sort((a, b) => (a.d.since || "").localeCompare(b.d.since || "") || a.i - b.i);
+  const pay = new Map<number, number>();
+  for (const { d, i } of order) {
+    if (rest <= 0) break;
+    const take = Math.min(rest, debtLeft(d));
+    rest -= take;
+    pay.set(i, take);
+  }
+  const rows = debts.map((d, i) => {
+    const take = pay.get(i);
+    if (!take) return d;
+    const paid = d.paid + take;
+    return { ...d, paid, closed: debtLeft({ ...d, paid }) === 0 ? today : d.closed };
+  });
   return { rows, applied: applied - rest };
 }
 

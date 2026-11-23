@@ -14,7 +14,8 @@ import { Block, SceneFrame, SceneNumber, SceneTitle, SideCard } from "../main/Sc
 import type { Cell } from "../../lib/dashboard";
 import { fmt } from "../../lib/dashboard";
 import { eventUrl } from "../../lib/events";
-import { DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, debtLeft, parseAmount, parseDebts, serializeDebts, type Life } from "../../lib/life";
+import { DEBTS_REL, DEBT_I_OWE, DEBT_THEY_OWE, debtLeft, debtWho, parseAmount, parseDebts, payPersonDebts, serializeDebts, type Debt, type Life } from "../../lib/life";
+import { confirmAction } from "../../lib/native";
 import { categoryOf, closenessOf, groupsOf, contactsOf, debtsFor, deepLinks, relatedFrom, relationsOf, textOf } from "../../lib/people";
 import {
   RADICALS, countWords, influenceCount, meetingsFoot, memoriesOf, personNumbers, personView, radicalsDiff, radicalsOf, shortWhen,
@@ -72,51 +73,96 @@ function Tile({ t, onClick, open }: { t: PersonTile; onClick?: () => void; open?
 }
 
 /**
- * The rows of `debts.md` that name the person, and a line to record a new one (2026-11-22: he could not find where a
- * debt is added). The row goes to `debts.md` under the person's link, as the Finance screen writes it.
+ * The rows of `debts.md` that name the person, and one line to record what happened with money between you: a new
+ * debt either way (2026-11-22), or a payment — «я отдал» lowers what you owe, «мне вернули» what is owed to you,
+ * oldest first, as «Финансы» does it (2026-11-24: «как мне погасить долг… я записал как мне должны, но это идёт как
+ * отдельный долг»). A row entered by mistake goes with its ×, after a confirm.
  */
+type DebtMode = "owe" | "owed" | "paid" | "returned";
+const DEBT_MODES: { m: DebtMode; label: string }[] = [
+  { m: "owe", label: "я должен" }, { m: "owed", label: "мне должны" }, { m: "paid", label: "я отдал" }, { m: "returned", label: "мне вернули" },
+];
 function DebtTable({ page, life, today }: { page: Page; life: Life; today: string }) {
-  const { saveLedger, reload } = useStore();
+  const { saveLedger, updateToday, reload } = useStore();
   const debts = debtsFor(page, life.debts);
   const open = debts.filter((d) => !d.closed && debtLeft(d) > 0), closed = debts.filter((d) => d.closed);
-  const [dir, setDir] = useState(DEBT_I_OWE);
+  const left = (dir: string) => open.filter((d) => d.direction === dir).reduce((a, d) => a + debtLeft(d), 0);
+  const iOwe = left(DEBT_I_OWE), owedMe = left(DEBT_THEY_OWE);
+  const modes = DEBT_MODES.filter((x) => (x.m === "paid" ? iOwe > 0 : x.m === "returned" ? owedMe > 0 : true));
+  const [mode, setMode] = useState<DebtMode>(iOwe > 0 ? "paid" : "owe");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [since, setSince] = useState(today);
+  const accounts = [...new Set([...(life.accounts ?? []).map((a) => a.name), ...life.subscriptions.map((x) => x.account)].filter(Boolean))];
+  const [account, setAccount] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const sum = Math.abs(parseAmount(amount) ?? 0);
-  const add = async () => {
-    if (!sum) { setErr("Сумма — число, например 15000."); return; }
+  const paying = mode === "paid" || mode === "returned";
+  const run = async (what: () => Promise<string>) => {
     setBusy(true);
-    try {
-      const row = { who: `[[${page.file}]]`, direction: dir, amount: sum, paid: 0, currency: "₸", since: since || today, note: note.trim(), closed: undefined };
-      await saveLedger(DEBTS_REL, serializeDebts([...life.debts, row], today), parseDebts);
-      setSaved(`Записал: ${dir === DEBT_I_OWE ? "ты должен" : "тебе должны"} ${fmt(sum)} ₸${note.trim() ? ` — ${note.trim()}` : ""}.`);
-      setAmount(""); setNote(""); setErr(null);
-      await reload();
-    } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+    try { const said = await what(); setSaved(said); setErr(null); await reload(); }
+    catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   };
+  const submit = () => {
+    if (!sum) { setErr("Сумма — число, например 15000."); return; }
+    void run(async () => {
+      if (!paying) {
+        const dir = mode === "owe" ? DEBT_I_OWE : DEBT_THEY_OWE;
+        const row = { who: `[[${page.file}]]`, direction: dir, amount: sum, paid: 0, currency: "₸", since: since || today, note: note.trim(), closed: undefined };
+        await saveLedger(DEBTS_REL, serializeDebts([...life.debts, row], today), parseDebts);
+        setAmount(""); setNote("");
+        return `Записал: ${dir === DEBT_I_OWE ? "ты должен" : "тебе должны"} ${fmt(sum)} ₸${note.trim() ? ` — ${note.trim()}` : ""}.`;
+      }
+      const dir = mode === "paid" ? DEBT_I_OWE : DEBT_THEY_OWE;
+      const who = debtWho(open.find((d) => d.direction === dir)!);
+      const r = payPersonDebts(life.debts, who, dir, sum, today);
+      await saveLedger(DEBTS_REL, serializeDebts(r.rows, today), parseDebts);
+      if (account) {
+        const sign = dir === DEBT_I_OWE ? -1 : 1;
+        await updateToday((d) => ({ ...d, txs: [...d.txs, { amount: sign * r.applied, category: "долг", account, note: `${dir === DEBT_I_OWE ? "отдал" : "вернули"}: ${who}` }] }));
+      }
+      setAmount("");
+      const rest = left(dir) - r.applied;
+      return `${mode === "paid" ? "Отдал" : "Вернули"} ${fmt(r.applied)} ₸ — на самые старые долги${account ? `, операция в сегодняшнем дне со счёта «${account}»` : ""}. ${rest > 0 ? `Осталось ${fmt(rest)} ₸.` : "Долг закрыт."}${r.applied < sum ? ` Лишние ${fmt(sum - r.applied)} ₸ не легли — долг меньше.` : ""}`;
+    });
+  };
+  const drop = (d: Debt) => void (async () => {
+    if (!(await confirmAction(`Удалить запись «${d.direction} ${fmt(d.amount)} ₸${d.note ? ` — ${d.note}` : ""}» от ${d.since}? Это для записи, внесённой по ошибке; вернуть деньги — «я отдал».`, "Удалить запись долга"))) return;
+    await run(async () => {
+      await saveLedger(DEBTS_REL, serializeDebts(life.debts.filter((x) => x !== d), today), parseDebts);
+      return `Удалил запись: ${d.direction} ${fmt(d.amount)} ₸${d.note ? ` — ${d.note}` : ""}.`;
+    });
+  })();
   return (
     <section className="p-card p-debts">
-      <h2><span>Долги</span><span className="p-r">{debts.length ? `открытых ${open.length}${closed.length ? ` · закрытых ${closed.length}` : ""}` : "записей нет"}</span></h2>
-      <form className="g-addrow p-debt-add" onSubmit={(e) => { e.preventDefault(); void add(); }}>
-        <span className="p-dirs" role="group" aria-label="Кто кому должен">
-          <button type="button" className={`g-btn${dir === DEBT_I_OWE ? " on" : ""}`} aria-pressed={dir === DEBT_I_OWE} onClick={() => setDir(DEBT_I_OWE)}>я должен</button>
-          <button type="button" className={`g-btn${dir === DEBT_THEY_OWE ? " on" : ""}`} aria-pressed={dir === DEBT_THEY_OWE} onClick={() => setDir(DEBT_THEY_OWE)}>мне должны</button>
+      <h2><span>Долги</span><span className="p-r">{debts.length ? `${iOwe ? `ты должен ${fmt(iOwe)} ₸` : ""}${iOwe && owedMe ? " · " : ""}${owedMe ? `тебе должны ${fmt(owedMe)} ₸` : ""}${!iOwe && !owedMe ? "открытых нет" : ""}${closed.length ? ` · закрытых ${closed.length}` : ""}` : "записей нет"}</span></h2>
+      <form className="g-addrow p-debt-add" onSubmit={(e) => { e.preventDefault(); submit(); }}>
+        <span className="p-dirs" role="group" aria-label="Что записать">
+          {modes.map((x) => <button key={x.m} type="button" className={`g-btn${mode === x.m ? " on" : ""}${x.m === "paid" || x.m === "returned" ? " pay" : ""}`} aria-pressed={mode === x.m} onClick={() => setMode(x.m)}>{x.label}</button>)}
         </span>
         <input className="text short" inputMode="numeric" autoCorrect="off" spellCheck={false} placeholder="сумма, ₸" aria-label="Сумма в тенге" value={amount} onChange={(e) => setAmount(e.target.value)} />
-        <input className="text" autoCorrect="off" placeholder="за что" aria-label="За что" value={note} onChange={(e) => setNote(e.target.value)} />
-        <input className="text short" type="date" aria-label="С какой даты" value={since} max={today} onChange={(e) => setSince(e.target.value)} />
-        <button type="submit" disabled={busy || !amount.trim()}>+ записать долг</button>
+        {paying ? (
+          <select className="text" aria-label="Со счёта" value={account} onChange={(e) => setAccount(e.target.value)}>
+            <option value="">без операции в дне</option>
+            {accounts.map((a) => <option key={a} value={a}>{mode === "paid" ? "со счёта" : "на счёт"} «{a}»</option>)}
+          </select>
+        ) : (
+          <>
+            <input className="text" autoCorrect="off" placeholder="за что" aria-label="За что" value={note} onChange={(e) => setNote(e.target.value)} />
+            <input className="text short" type="date" aria-label="С какой даты" value={since} max={today} onChange={(e) => setSince(e.target.value)} />
+          </>
+        )}
+        <button type="submit" disabled={busy || !amount.trim()}>{paying ? (mode === "paid" ? "отдал" : "вернули") : "+ записать долг"}</button>
       </form>
+      {paying && <p className="p-foot">{mode === "paid" ? `Ты должен ${fmt(iOwe)} ₸` : `Тебе должны ${fmt(owedMe)} ₸`}: сумма ляжет на самые старые записи, полностью покрытые закроются.</p>}
       {err && <p className="g-error" role="alert">{err}</p>}
       {saved && !err && <p className="p-foot p-saved" role="status">{saved}</p>}
       {debts.length > 0 && (
         <div className="p-scroll">
           <table className="p-tbl">
-            <thead><tr><th>с даты</th><th className="p-num">сумма</th><th className="p-num">внесено</th><th className="p-num">остаток</th><th>за что</th><th>статус</th></tr></thead>
+            <thead><tr><th>с даты</th><th className="p-num">сумма</th><th className="p-num">внесено</th><th className="p-num">остаток</th><th>за что</th><th>статус</th><th aria-label="Удалить" /></tr></thead>
             <tbody>
               {[...open, ...closed].map((d, i) => (
                 <tr key={i} className={d.closed ? "p-closed" : ""}>
@@ -126,13 +172,13 @@ function DebtTable({ page, life, today }: { page: Page; life: Life; today: strin
                   <td className="p-num">{d.closed ? "" : fmt(debtLeft(d))}</td>
                   <td>{d.note}</td>
                   <td>{d.closed ? `закрыт ${d.closed}` : d.direction}</td>
+                  <td><button type="button" className="p-drow" disabled={busy} title="удалить запись, внесённую по ошибке" aria-label={`Удалить запись ${fmt(d.amount)} от ${d.since}`} onClick={() => drop(d)}>×</button></td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
-      <div className="p-foot">Вернул часть или всё — на экране <Link to="/finance">Финансы</Link>, блок «Долги»: сумма ложится на самые старые долги и уходит со счёта.</div>
     </section>
   );
 }
