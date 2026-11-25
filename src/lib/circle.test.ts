@@ -123,3 +123,11 @@ test("his own rhythm overrides the closeness one, and a tie with it and no recor
   // warmth counts the friend and the overdue uncle only
   assert.equal(circleWarmth(c).total, 2);
 });
+
+test("someone no longer alive is not in the circle or the lists; the page stays a person page", async () => {
+  const { isGone, isListed } = await import("./people");
+  const v = buildVault({ root: "", life: [], raw: [], log: "", claude_md: "", media: [], pages: [person("Живой", { closeness: "9" }), person("Ушедший", { closeness: "9", deceased: "true" })] });
+  assert.deepEqual(buildCircle(v.pages, [], TODAY).map((i) => i.page.title), ["Живой"]);
+  assert.deepEqual(v.pages.filter(isListed).map((p) => p.title), ["Живой"]);
+  assert.deepEqual(v.pages.filter(isGone).map((p) => p.title), ["Ушедший"]);
+});

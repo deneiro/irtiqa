@@ -10,7 +10,7 @@ import { DIRECTION_WORDS, influenceGroups, influenceItemCount, ownInfluencePage,
 import { confirmAction } from "../lib/native";
 import type { Page } from "../lib/types";
 import { countWords } from "../lib/person";
-import { isAuthor } from "../lib/people";
+import { isListed } from "../lib/people";
 import { peopleOf } from "../lib/themeNumbers";
 import { Block } from "../pages/main/Scene";
 import InfluenceSheet, { type InfluenceSheetMode } from "./InfluenceSheet";
@@ -28,7 +28,7 @@ export function CircleSection({ theme }: { theme: string }) {
   const [err, setErr] = useState<string | null>(null);
   const today = todayStr();
   const people = useMemo(
-    () => v.pages.filter((p) => p.theme === theme && p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)),
+    () => v.pages.filter((p) => p.theme === theme && isListed(p)),
     [v, theme],
   );
   const items = useMemo(() => buildCircle(people, life?.events ?? [], today), [people, life, today]);

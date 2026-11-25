@@ -51,6 +51,13 @@ export function carryDays(earlier: Day[], today: Day): Day[] {
   return [...changed, { ...today, tasks: [...today.tasks, ...add.map((text) => ({ done: false, text }))] }];
 }
 
+/** The days whose open tasks should move into `today`: from CARRY_SINCE, before today, not closed. */
+export function daysToCarry(days: Iterable<Day>, today: string): string[] {
+  const out: string[] = [];
+  for (const d of days) if (d.date >= CARRY_SINCE && d.date < today && !d.closed && d.tasks.some((t) => !t.done)) out.push(d.date);
+  return out.sort();
+}
+
 const OPEN = /^(\s*-\s+)\[ \](\s+.*)$/;
 
 /** The body of `## Задачи`: [start, end) line indexes, or undefined. */

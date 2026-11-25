@@ -43,6 +43,11 @@ export function addZikr(d: Day, name: string, n: number): Day {
   return { ...d, zikr };
 }
 
+/** The day's count set to `n` — the number he typed after counting himself. */
+export function setZikr(d: Day, name: string, n: number): Day {
+  return addZikr(d, name, Math.max(0, Math.round(n)) - (d.zikr?.[name] ?? 0));
+}
+
 /** The count of the seven days ending on `date`. */
 export function zikrWeek(days: Map<string, Day>, name: string, date: string): number {
   let n = 0;

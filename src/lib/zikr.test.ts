@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { addZikr, parseZikrs, zikrWeek } from "./zikr";
+import { addZikr, parseZikrs, setZikr, zikrWeek } from "./zikr";
 import { emptyDay, mergeDay, parseDay, serializeDay, type Day } from "./life";
 
 const PAGE = `# Зикры
@@ -44,4 +44,13 @@ test("two writers adding dhikr at once keep both", () => {
   const ours = addZikr(base, "Истигфар", 33);
   const theirs = addZikr(addZikr(base, "Истигфар", 10), "Салауат", 5);
   assert.deepEqual(mergeDay(base, ours, theirs).zikr, { Истигфар: 143, Салауат: 5 });
+});
+
+test("setZikr writes the number he counted himself; zero takes the name off", () => {
+  let d = setZikr(emptyDay("2026-11-25"), "Истигфар", 200);
+  assert.deepEqual(d.zikr, { "Истигфар": 200 });
+  d = setZikr(d, "Истигфар", 150);
+  assert.deepEqual(d.zikr, { "Истигфар": 150 });
+  d = setZikr(d, "Истигфар", 0);
+  assert.deepEqual(d.zikr, {});
 });

@@ -7,7 +7,7 @@
 import { activityView } from "./dashboard";
 import type { Life, Quest } from "./life";
 import { bullets, maskQuotes, phraseOf, sectionTable, splitSections, type SectionKey } from "./overview";
-import { isAuthor } from "./people";
+import { isListed } from "./people";
 import { NAMES_PAGE } from "./quran";
 import type { Page, Vault } from "./types";
 
@@ -239,7 +239,7 @@ export function themePages(vault: Vault, life: Life | null, theme: string, today
     resources,
     wikiPages: wikiAll.filter((p) => p.file !== "_Overview"),
     wikiAll,
-    people: pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)),
+    people: pages.filter(isListed),
     projects: projectCards(vault, life, theme, today),
     tools: pages.filter((p) => p.segments[1] === "tools" && p.file !== "_Overview"),
     profile: pages.find((p) => p.type === "profile"),

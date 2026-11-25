@@ -4,7 +4,7 @@ import { useStore, useVault } from "../store";
 import { pageUrl } from "../lib/vault";
 import { plural, todayStr } from "../lib/dates";
 import { TALKS_REL, lastTalk, parseTalks, serializeTalks } from "../lib/talks";
-import { categoryOf, daysSinceContact, daysToBirthday, isAuthor } from "../lib/people";
+import { categoryOf, daysSinceContact, daysToBirthday, isListed } from "../lib/people";
 import { shortDate } from "../lib/themeNumbers";
 import type { Page } from "../lib/types";
 import { Block } from "../pages/main/Scene";
@@ -27,7 +27,7 @@ export default function TalksSection({ theme }: { theme: string }) {
   const today = todayStr();
 
   const people = useMemo(
-    () => v.pages.filter((p) => p.theme === theme && p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)),
+    () => v.pages.filter((p) => p.theme === theme && isListed(p)),
     [v, theme],
   );
   const talks = useMemo(() => parseTalks(life?.talks ?? ""), [life]);

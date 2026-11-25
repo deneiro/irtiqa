@@ -15,6 +15,8 @@ import { useGame } from "../../lib/useGame";
 import { trainingFor, type Training } from "../../lib/training";
 import { planOf, programWeek, setsNow, useTraining, type TrainingData } from "../../lib/trainingMap";
 import { useStore } from "../../store";
+import { openInClaude } from "../../lib/projects";
+import { Medals, Radar, WeekTasks } from "./Play";
 import { Block, Gauge, SceneFrame, SceneNumber, SceneTitle, SideCard } from "./Scene";
 
 const WD = ["воскресенье", "понедельник", "вторник", "среда", "четверг", "пятница", "суббота"];
@@ -28,7 +30,9 @@ type Win = (typeof WINDOWS)[number];
  * «Обзор» (rebuilt 2026-11-21 the way «Сегодня» is): the view from above. The scene carries the ayah of the day and
  * how much of the window is recorded; beside it yesterday with the height it took. Below, the state of 3, 7 or 14
  * days as gauges — each against the window before — the runs he holds, the activities, what waits, Claude's focus.
- * Read only: the day is marked on «Сегодня».
+ * Since 2026-11-25 everything that is not marked today lives here too (his words: «Сегодня — прям то, что можно
+ * отметить… деятельности, проекты там, колесо, награды тоже там, неделя, задачи тоже там»): the week's tasks, the
+ * wheel, the medals, and «▸ Claude» on an activity that has a folder. The day itself is marked on «Сегодня».
  */
 export default function Today({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
   const [win, setWin] = useState<Win>(7);
@@ -47,6 +51,13 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
   const yScore = game ? dayScore(game.habits, life.days.get(yesterday), yesterday) : undefined;
   const tScore = game ? dayScore(game.habits, life.days.get(today), today) : undefined;
   const moving = acts.filter((a) => a.state === "moving").length;
+  const { root } = useStore();
+  const [opening, setOpening] = useState<string>();
+  const [openErr, setOpenErr] = useState<string>();
+  const openClaude = async (rel: string, folder: string) => {
+    setOpening(rel);
+    try { await openInClaude(root, folder); setOpenErr(undefined); } catch (e) { setOpenErr(e instanceof Error ? e.message : String(e)); } finally { setOpening(undefined); }
+  };
   return (
     <div className="g-play">
       <div className="g-top">
@@ -95,18 +106,24 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
             const step = a.now ? plainStep(a.now) : "";
             const { name, sub } = actName(a.quest);
             return (
-              <Link key={a.quest.rel} to={questUrl(a.quest.rel)} className="g-act" style={{ ["--c" as string]: themeColor(a.quest.theme) }}>
-                <div>
-                  <b>{name}</b>{sub && <span className="sub"> · {sub}</span>}
-                  <small>{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</small>
-                  {step && <p>{step}</p>}
-                </div>
-                {actStatus(a)}
-              </Link>
+              <div key={a.quest.rel} className="g-actrow">
+                <Link to={questUrl(a.quest.rel)} className="g-act" style={{ ["--c" as string]: themeColor(a.quest.theme) }}>
+                  <div>
+                    <b>{name}</b>{sub && <span className="sub"> · {sub}</span>}
+                    <small>{themeRu(a.quest.theme)} · {a.quest.cadence ?? "—"}</small>
+                    {step && <p>{step}</p>}
+                  </div>
+                  {actStatus(a)}
+                </Link>
+                {a.quest.folder && <button type="button" className="g-btn sun" disabled={opening === a.quest.rel} onClick={() => void openClaude(a.quest.rel, a.quest.folder!)} title={`Terminal в папке ${a.quest.folder}, Claude уже запущен`}>{opening === a.quest.rel ? "открываю…" : "▸ Claude"}</button>}
+              </div>
             );
           })}
+          {acts.some((a) => a.quest.folder) && <p className="g-cap">«▸ Claude» открывает Terminal в папке проекта, Claude уже запущен.</p>}
+          {openErr && <p className="g-error" role="alert">Не открыл: {openErr}</p>}
         </Block>
         <div className="g-stack">
+          <WeekTasks life={life} date={today} />
           {(training || plan?.NUTRITION) && (
             <Block title="Тело сегодня" right="тренировка и еда по плану">
               {training && <TrainingLine t={training} plan={plan} today={today} />}
@@ -122,6 +139,13 @@ export default function Today({ life, vault, today }: { life: Life; vault: Vault
             </Block>
           )}
         </div>
+      </div>
+
+      <div className="g-two">
+        <Block title="Колесо · 30 дней" right={<Link to="/wheel">подробно →</Link>}>
+          <Radar life={life} vault={vault} today={today} />
+        </Block>
+        {game && <Medals habits={game.habits} days={life.days} today={today} />}
       </div>
     </div>
   );

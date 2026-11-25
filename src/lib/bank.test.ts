@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { applyTicks, closeHeading, findItem, moneyLeft, moneyValue, parseBank, progress, tickedIds } from "./bank";
-import { appendTasks, carriedFrom, carryDays, carryWeeks, markMoved, openWeekTasks, stripCarry } from "./carry";
+import { appendTasks, carriedFrom, carryDays, carryWeeks, daysToCarry, markMoved, openWeekTasks, stripCarry } from "./carry";
 import { parseGoals } from "./goals";
 import { emptyDay, parseDay, serializeDay } from "./life";
 
@@ -124,4 +124,14 @@ test("appendTasks adds to an existing section before Фокус and skips duplic
   const out = appendTasks(f, ["Две", "одна"]);
   assert.equal(out, "## Цели\n- a\n\n## Задачи\n- [ ] Одна\n- [ ] Две\n\n## Фокус\n1. x\n");
   assert.equal(appendTasks("## Цели\n- a\n\n## Фокус\n1. x\n", ["Т"]), "## Цели\n- a\n\n## Задачи\n- [ ] Т\n\n## Фокус\n1. x\n");
+});
+
+test("the days that give tasks: open ones, from the rule's start, before today, not closed", () => {
+  const day = (date: string, tasks: string, closed = false) => parseDay({ rel: `life/days/${date}.md`, mtime: 0, content: `---\ndate: ${date}\ntype: day\nclosed: ${closed}\n---\n## Задачи\n${tasks}\n` });
+  const days = [day("2026-11-07", "- [ ] старое"), day("2026-11-22", "- [x] сделано"), day("2026-11-23", "- [ ] открыто", true), day("2026-11-24", "- [ ] открыто\n- [x] сделано"), day("2026-11-25", "- [ ] сегодня")];
+  assert.deepEqual(daysToCarry(days, "2026-11-25"), ["2026-11-24"]);
+  // carried once, the day gives nothing more
+  const out = carryDays([days[3]], days[4]);
+  assert.deepEqual(out[1].tasks.map((t) => t.text), ["сегодня", "открыто · с 2026-11-24"]);
+  assert.deepEqual(daysToCarry([out[0], out[1]], "2026-11-25"), []);
 });

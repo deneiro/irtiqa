@@ -11,7 +11,7 @@ import { markOf, type Habit, type Life } from "./life";
 import type { Cell } from "./dashboard";
 import { addDays } from "./dates";
 import { personName, type LifeEvent } from "./events";
-import { categoryOf, closenessOf, daysSinceContact } from "./people";
+import { categoryOf, closenessOf, daysSinceContact, isGone } from "./people";
 
 /** How often a tie at that closeness should be touched, in days. */
 export function cadenceFor(closeness: number | undefined): number | undefined {
@@ -106,7 +106,8 @@ export interface CircleItem {
   support: boolean;
 }
 
-export function buildCircle(people: Page[], events: LifeEvent[], today: string): CircleItem[] {
+export function buildCircle(all: Page[], events: LifeEvent[], today: string): CircleItem[] {
+  const people = all.filter((p) => !isGone(p)); // the dead are in the family tree only
   const met = new Map<string, string>(); // lowercased name -> latest date
   for (const e of events) {
     for (const p of e.people) {

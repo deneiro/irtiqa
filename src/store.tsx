@@ -8,6 +8,7 @@ import { inTauri } from "./lib/native";
 import { buildIndex, toSearchDoc, type SearchDoc } from "./lib/search";
 import { buildLife, dayRel, emptyDay, mergeDay, parseDay, serializeDay, serializeQuest, withQuestEntry, type Day, type Life } from "./lib/life";
 import { LedgerConflict, ledgerLosses } from "./lib/guard";
+import { carryDays } from "./lib/carry";
 import { dayOf, dayToday } from "./lib/maghrib";
 import { treeChanged, writeText } from "./lib/fs";
 import { parseLog } from "./lib/log";
@@ -38,6 +39,11 @@ interface Store {
    * (the bot, Obsidian, Claude). Returns the day as written.
    */
   saveDayMerged: (base: Day, ours: Day) => Promise<Day>;
+  /**
+   * The open tasks of the days `from` move into `date` (lib/carry.ts), read from the disk and written at once: the
+   * old lines stay as `- [>]`. What the bot does each morning, done here too. Returns how many days gave tasks.
+   */
+  carryInto: (date: string, from: string[]) => Promise<number>;
   /**
    * Rewrite a whole ledger (debts, accounts, subscriptions, calendar). Refused
    * when the file changed since the last scan, or when the new text would drop
@@ -280,6 +286,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [readDayFresh, saveText],
   );
 
+  const carryInto = useCallback(
+    async (date: string, from: string[]): Promise<number> => {
+      const earlier = await Promise.all(from.map(readDayFresh));
+      const out = carryDays(earlier, await readDayFresh(date));
+      // the day that receives is written first: a write that fails half-way never loses a task
+      for (const d of [...out.slice(-1), ...out.slice(0, -1)]) await saveText(dayRel(d.date), serializeDay(d));
+      return Math.max(0, out.length - 1);
+    },
+    [readDayFresh, saveText],
+  );
+
   const saveLedger = useCallback(
     async (rel: string, content: string, parse: (content: string) => unknown[]) => {
       const disk = await readFresh(rel);
@@ -343,8 +360,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [pending, updateToday, life, saveText]);
 
   const value = useMemo<Store>(
-    () => ({ root, setRoot, vault, index, needIndex, life, saveText, updateToday, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
-    [root, vault, index, needIndex, life, saveText, updateToday, saveDayMerged, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
+    () => ({ root, setRoot, vault, index, needIndex, life, saveText, updateToday, saveDayMerged, carryInto, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, setPaletteOpen, lang, setLang }),
+    [root, vault, index, needIndex, life, saveText, updateToday, saveDayMerged, carryInto, saveLedger, timer, startTimer, stopTimer, pending, commitSession, discardSession, loading, error, reload, paletteOpen, lang],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
