@@ -147,6 +147,8 @@ export interface Day {
   weight: number | undefined;
   pushups: number | undefined;
   pullups: number | undefined;
+  /** 2026-11-25: dhikr said that day, by name — `zikr: [Истигфар: 100, Салауат: 33]`; written only when not empty. */
+  zikr?: Record<string, number>;
   closed: boolean;
   /** 4.1: `## Задачи` — the day's checklist, first in the body. Claude and the bot's morning question write it from Eldar's words; the bot's evening survey ticks it. */
   tasks: DayTask[];
@@ -794,7 +796,7 @@ function sections(body: string): { tasks: DayTask[]; done: string[]; txs: Tx[]; 
 }
 
 /** Frontmatter keys the app writes itself; anything else in a day file is carried through. */
-const DAY_KEYS = new Set(["date", "type", "habits_done", "habits_failed", "habits_skipped", "habits_late", "quests_closed", "sessions", "work_minutes", "spent", "earned", "mood", "stress", "weight", "pushups", "pullups", "closed"]);
+const DAY_KEYS = new Set(["date", "type", "habits_done", "habits_failed", "habits_skipped", "habits_late", "quests_closed", "sessions", "work_minutes", "spent", "earned", "mood", "stress", "weight", "pushups", "pullups", "zikr", "closed"]);
 
 function foreignFrontmatter(content: string, known: Set<string> = DAY_KEYS): string[] {
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---(\r?\n|$)/);
@@ -833,6 +835,7 @@ export function parseDay(f: MdFile): Day {
     weight: num(fm.weight),
     pushups: num(fm.pushups),
     pullups: num(fm.pullups),
+    zikr: zikrOf(list(fm.zikr)),
     closed: fm.closed === true || String(fm.closed).toLowerCase() === "true",
     tasks: s.tasks,
     done: s.done,
@@ -841,6 +844,16 @@ export function parseDay(f: MdFile): Day {
     journal: s.journal,
     extra: { fm: foreignFrontmatter(f.content), ...s.extra },
   };
+}
+
+/** `Истигфар: 100` items → `{ Истигфар: 100 }`; an item without a number is dropped, a repeated name adds up. */
+function zikrOf(items: string[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const x of items) {
+    const m = x.match(/^(.*?):\s*(\d+)\s*$/);
+    if (m && m[1].trim()) out[m[1].trim()] = (out[m[1].trim()] ?? 0) + Number(m[2]);
+  }
+  return out;
 }
 
 export function emptyDay(date: string): Day {
@@ -885,6 +898,8 @@ export function serializeDay(d: Day): string {
   if (d.weight !== undefined) fm.push(`weight: ${d.weight}`);
   if (d.pushups !== undefined) fm.push(`pushups: ${d.pushups}`);
   if (d.pullups !== undefined) fm.push(`pullups: ${d.pullups}`);
+  const zikr = Object.entries(d.zikr ?? {}).filter(([, n]) => n > 0);
+  if (zikr.length) fm.push(`zikr: ${yamlList(zikr.map(([k, n]) => `${k}: ${n}`))}`);
   fm.push(`closed: ${d.closed}`);
   const x = d.extra;
   if (x) fm.push(...x.fm);
@@ -955,6 +970,16 @@ export function withMark(d: Day, habit: string, mark: DayMark | undefined): Day 
  * disk, so neither side's work is lost. Lists merge as multisets: rows added
  * here are added, rows removed here are removed, the rest is theirs.
  */
+/** Counts merged by name: what changed here is added to what the disk has now, so two writers do not lose each other's. */
+function mergeCounts(base: Record<string, number>, ours: Record<string, number>, theirs: Record<string, number>): Record<string, number> {
+  const out = { ...theirs };
+  for (const k of new Set([...Object.keys(base), ...Object.keys(ours)])) {
+    const delta = (ours[k] ?? 0) - (base[k] ?? 0);
+    if (delta) out[k] = Math.max(0, (out[k] ?? 0) + delta);
+  }
+  return out;
+}
+
 export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
   const pick = <T,>(b: T, o: T, t: T): T => (JSON.stringify(o) !== JSON.stringify(b) ? o : t);
   function rows<T>(b: T[], o: T[], t: T[]): T[] {
@@ -984,6 +1009,7 @@ export function mergeDay(base: Day, ours: Day, theirs: Day): Day {
     weight: pick(base.weight, ours.weight, theirs.weight),
     pushups: pick(base.pushups, ours.pushups, theirs.pushups),
     pullups: pick(base.pullups, ours.pullups, theirs.pullups),
+    zikr: mergeCounts(base.zikr ?? {}, ours.zikr ?? {}, theirs.zikr ?? {}),
     closed: pick(base.closed, ours.closed, theirs.closed),
     tasks: rows(base.tasks, ours.tasks, theirs.tasks),
     done: rows(base.done, ours.done, theirs.done),

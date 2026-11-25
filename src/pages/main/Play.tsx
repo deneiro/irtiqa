@@ -8,6 +8,8 @@ import { dayMonth, fmt, habitRows, weightNow } from "../../lib/dashboard";
 import { isoWeekKey, parseGoals, toggleGoalTask } from "../../lib/goals";
 import { trainingFor } from "../../lib/training";
 import { openInClaude, projectsOf } from "../../lib/projects";
+import { addZikr, parseZikrs, zikrPage, zikrWeek } from "../../lib/zikr";
+import { pageUrl } from "../../lib/vault";
 import { nowStep } from "../../lib/life";
 import { plainStep, questUrl } from "../../lib/dashboard";
 import { themeRu } from "../../lib/themes";
@@ -244,6 +246,8 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
         </Block>
       </div>
 
+      <Zikrs vault={vault} day={day} days={days} date={date} edit={edit} />
+
       <div className="g-two">
         <WeekTasks life={life} date={date} />
         <TrainingToday vault={vault} date={date} />
@@ -277,6 +281,46 @@ function nextPrayer(prayers: Habit[], day: Day, now: Date, times: PrayerTimes): 
 
 function Block({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
   return <section className="g-block"><h2>{title}{right && <span>{right}</span>}</h2>{children}</section>;
+}
+
+// ---------- dhikr (2026-11-25) ----------
+
+/** Each dhikr of «Зикры»: today's count, a field for how many times, quick +33 and +100, and the last seven days. */
+function Zikrs({ vault, day, days, date, edit }: { vault: Vault; day: Day; days: Map<string, Day>; date: string; edit: (fn: (d: Day) => Day) => void }) {
+  const page = zikrPage(vault.pages);
+  const list = page ? parseZikrs(page.body) : [];
+  const [typed, setTyped] = useState<Record<string, string>>({});
+  if (!list.length) return null;
+  const add = (name: string, n: number) => { if (n) edit((d) => addZikr(d, name, n)); };
+  return (
+    <Block title="Зикры" right={<Link to={pageUrl(page!)}>список →</Link>}>
+      <div className="g-zikrs">
+        {list.map((z) => {
+          const n = day.zikr?.[z.name] ?? 0;
+          const t = typed[z.name] ?? "";
+          const v = Math.trunc(Number(t.replace(/\s/g, "").replace("−", "-")));
+          return (
+            <div key={z.name} className={`g-zikr${z.goal && n >= z.goal ? " full" : ""}`}>
+              <div className="top">
+                <b>{z.name}</b>
+                <span className="n">{n}{z.goal ? <small> / {z.goal}</small> : null}</span>
+              </div>
+              {z.words && <p className="w">{z.words}</p>}
+              {z.goal ? <i className="bar"><u style={{ width: `${Math.min(100, (n / z.goal) * 100)}%` }} /></i> : null}
+              <form className="row" onSubmit={(e) => { e.preventDefault(); if (Number.isFinite(v) && v) { add(z.name, v); setTyped((x) => ({ ...x, [z.name]: "" })); } }}>
+                <input inputMode="numeric" value={t} placeholder="сколько раз" aria-label={`${z.name}: сколько раз повторил`} onChange={(e) => setTyped((x) => ({ ...x, [z.name]: e.target.value }))} />
+                <button type="submit" className="g-btn sun" disabled={!Number.isFinite(v) || !v}>+ записать</button>
+                <button type="button" className="g-btn" onClick={() => add(z.name, 33)}>+33</button>
+                <button type="button" className="g-btn" onClick={() => add(z.name, 100)}>+100</button>
+              </form>
+              <small className="wk">за 7 дней — {zikrWeek(days, z.name, date)}</small>
+            </div>
+          );
+        })}
+      </div>
+      <p className="g-cap">Число прибавляется к сегодняшнему счёту; ошибся — запиши с минусом, например −33. Новый зикр — строка в таблице страницы «Зикры».</p>
+    </Block>
+  );
 }
 
 // ---------- the week, the training, the projects (2026-11-23) ----------
