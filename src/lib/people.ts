@@ -320,3 +320,12 @@ export function newPersonPage(p: NewPerson, today: string, rels: string[]): { re
   const closeness = p.closeness !== undefined && Number.isInteger(p.closeness) && p.closeness >= 1 && p.closeness <= 10 ? p.closeness : undefined;
   return { rel, content: personPage({ title, theme: p.theme, connection: category ?? "знакомый", howWeMet: p.how, date: today, app: { category, closeness } }) };
 }
+
+/**
+ * `deceased: true` — someone no longer with him. The family tree keeps them; the lists of people, the rings, the
+ * circle and its numbers do not (Eldar, 2026-11-25: «они только показываются в родственниках»).
+ */
+export const isGone = (p: Page) => p.fm.deceased === true || String(p.fm.deceased) === "true";
+
+/** A person as the lists show them: a page of a living person — no template, no author of a source. */
+export const isListed = (p: Page) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p) && !isGone(p);

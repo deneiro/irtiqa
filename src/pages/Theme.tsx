@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { buildFamily } from "../lib/family";
-import { closenessOf, isAuthor } from "../lib/people";
+import { closenessOf, isListed } from "../lib/people";
+import AddPersonSheet from "./person/AddPersonSheet";
 import { Link, useParams } from "react-router-dom";
 import { useStore, useVault } from "../store";
 import { THEME_BY_NAME } from "../lib/themes";
@@ -78,7 +79,7 @@ function pageButton(key: SectionKey, theme: string, p: ThemePages, life: Life, v
     case "library": return { ...b, value: String(parseLibrary(life.library ?? "").length) };
     case "finance": return { ...b, to: "/finance" };
     case "rings": {
-      const ps = vault.pages.filter((x) => x.zone === "person" && x.type !== "template" && !x.file.startsWith("_") && !isAuthor(x));
+      const ps = vault.pages.filter(isListed);
       const rated = ps.filter((x) => closenessOf(x) !== undefined).length;
       return { ...b, value: String(rated), of: `/ ${ps.length}`, sub: "на кругах" };
     }
@@ -101,6 +102,7 @@ export default function ThemePage() {
   const { t, themeLabel } = useT();
   const today = useDayToday();
   const game = useGame();
+  const [adding, setAdding] = useState(false);
 
   const overview = useMemo(() => vault.pages.find((p) => p.theme === theme && p.file === "_Overview" && p.segments.length === 1), [vault, theme]);
   const view = useMemo(() => themeView(overview), [overview]);
@@ -131,6 +133,7 @@ export default function ThemePage() {
         <div className="g-top">
           <SceneFrame art={THEME_ART[theme]}>
             <SceneTitle kicker="тема" title={themeLabel(theme)} />
+            {theme === "Social & friends" && <button type="button" className="g-btn sun g-scene-add" onClick={() => setAdding(true)}>+ Добавить человека</button>}
             {xp && (
               <div className="g-xp8">
                 <WeekBars weeks={xp.weeks} />
@@ -155,6 +158,7 @@ export default function ThemePage() {
         <Radar cards={view.radar} />
         <PagesRow buttons={buttons} />
       </div>
+      {theme === "Social & friends" && <AddPersonSheet open={adding} onClose={() => setAdding(false)} />}
     </div>
   );
 }

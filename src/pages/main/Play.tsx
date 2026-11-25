@@ -7,12 +7,9 @@ import { addDays, plural, weekdayIndex } from "../../lib/dates";
 import { dayMonth, fmt, habitRows, weightNow } from "../../lib/dashboard";
 import { isoWeekKey, parseGoals, toggleGoalTask } from "../../lib/goals";
 import { trainingFor } from "../../lib/training";
-import { openInClaude, projectsOf } from "../../lib/projects";
-import { addZikr, parseZikrs, zikrPage, zikrWeek } from "../../lib/zikr";
+import { daysToCarry } from "../../lib/carry";
+import { addZikr, parseZikrs, setZikr, zikrPage, type Zikr } from "../../lib/zikr";
 import { pageUrl } from "../../lib/vault";
-import { nowStep } from "../../lib/life";
-import { plainStep, questUrl } from "../../lib/dashboard";
-import { themeRu } from "../../lib/themes";
 import { CAMPS, CAMP_NAMES, POINTS, along, askOf, asks, campNeed, campsTaken, dayScore, fire, medals, prayerOpen, rankOf, standing, type Ask, type CampNeed, type Score } from "../../lib/game";
 import { overallLevelProgress, readsOf, themeXps, xpByDay } from "../../lib/levels";
 import { emptyDay, habitDue, isLateMeal, markOf, parseAmount, spentOf, earnedOf, streak, withMark, xpForDay, type Day, type DayMark, type Habit, type Life, type XpContext } from "../../lib/life";
@@ -75,6 +72,27 @@ export function useDayEdit(life: Life, date: string) {
   return { day: draft, edit, error };
 }
 
+/** The day the open tasks were last moved into, for this run of the app: once a day, so a task he adds to yesterday stays there. */
+let carriedFor: string | undefined;
+
+/**
+ * Yesterday's open tasks move into today when «Сегодня» opens (Eldar, 2026-11-25: «ни один из них не перешёл на 25»).
+ * The bot does the same each morning but holds a day back while its evening survey is open — and he marks the day
+ * here now, so the survey stays open and the tasks stayed behind.
+ */
+function useCarry(life: Life, today: string): string | undefined {
+  const { carryInto } = useStore();
+  const [error, setError] = useState<string>();
+  useEffect(() => {
+    if (carriedFor === today || life.days.get(today)?.closed) return;
+    carriedFor = today;
+    const from = daysToCarry(life.days.values(), today);
+    if (!from.length) return;
+    carryInto(today, from).then(() => setError(undefined), (e: unknown) => setError(e instanceof Error ? e.message : String(e)));
+  }, [life, today, carryInto]);
+  return error;
+}
+
 /** The clock, re-read every minute. */
 function useNow(): Date {
   const [t, setT] = useState(() => new Date());
@@ -94,6 +112,8 @@ export default function Play({ life, vault, today, open }: { life: Life; vault: 
   useEffect(() => { setDate(asked); }, [asked]);
   const was = useRef(today);
   useEffect(() => { if (was.current !== today) { setDate((d) => (d === was.current ? today : d)); was.current = today; } }, [today]);
+  const carryError = useCarry(life, today);
+  if (carryError) return <><p className="g-error" role="alert">Вчерашние задачи не перенеслись: {carryError}</p><PlayDay key={date} life={life} vault={vault} today={today} date={date} setDate={setDate} /></>;
   return <PlayDay key={date} life={life} vault={vault} today={today} date={date} setDate={setDate} />;
 }
 
@@ -155,7 +175,6 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
   const good = habits.filter((h) => h.kind === "good" && habitDue(h, date));
   const bad = habits.filter((h) => h.kind === "bad" && habitDue(h, date));
   const st = standing(score.pct);
-  const won = useMemo(() => medals(habits, days, today), [habits, days, today]);
   return (
     <div className="g-play">
       <div className="g-top">
@@ -209,63 +228,48 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
         </div>
       </Block>
 
+      {/* two columns, each its own stack: a short block never leaves a hole beside a tall one */}
       <div className="g-two">
-        <Block title="Привычки" right={`${good.filter((h) => markOf(day, h.title) === "done").length} / ${good.length}`}>
-          <div className="g-tiles">
-            {good.map((h) => <HabitTile key={h.title} h={h} mark={markOf(day, h.title)} run={streak(h, days, date)} onClick={() => cycle(h.title, [undefined, "done", "failed"])} />)}
-            {!good.length && <p className="g-faint">На этот день привычек нет.</p>}
-          </div>
-        </Block>
-        <Block title="Держусь" right={bad.some((h) => !markOf(day, h.title)) ? <button className="g-link" onClick={() => edit((d) => bad.reduce((x, h) => (markOf(x, h.title) ? x : withMark(x, h.title, "done")), d))}>всё чисто за день</button> : `${bad.filter((h) => markOf(day, h.title) === "done").length} / ${bad.length} чисто`}>
-          <div className="g-tiles">
-            {bad.map((h) => <HabitTile key={h.title} h={h} bad mark={markOf(day, h.title)} run={streak(h, days, date)} onClick={() => cycle(h.title, [undefined, "done", "failed"])} />)}
-          </div>
-        </Block>
-      </div>
-
-      <div className="g-two">
-        <Block title="Задачи дня" right={`${day.tasks.filter((t) => t.done).length} / ${day.tasks.length}`}>
-          {byPeriod(day.tasks.map((t, i) => ({ ...t, i }))).map((g) => {
-            const p = PERIODS.find((x) => x.key === g.key);
-            if (!g.tasks.length) return null;
-            return (
-              <div key={g.key ?? "none"} className={`g-per${g.key && g.key === period ? " now" : ""}`}>
-                <div className="g-per-h">{p ? <><b>{p.what}</b><span>{p.from} – {p.to}</span></> : <b>без части дня</b>}</div>
-                {g.tasks.map((t) => (
-                  <div key={t.i} className={`g-task${t.done ? " done" : ""}`} onClick={(e) => { if (!(e.target as HTMLElement).closest("a, button")) toggleTask(t.i); }}>
-                    <button className="box" onClick={() => toggleTask(t.i)} aria-pressed={t.done} aria-label={t.done ? "Снять отметку" : "Отметить сделанной"}>{t.done ? "✓" : ""}</button><TaskLine text={t.text} today={date} />
-                  </div>
-                ))}
-              </div>
-            );
-          })}
-          <AddTask period={period} onAdd={(text, key) => edit((d) => ({ ...d, tasks: [...d.tasks, { done: false, text: key ? withPeriod(text, key) : text }] }))} />
-        </Block>
-        <Block title="Записи дня" right="вес · состояние · еда · деньги · слова">
-          <Logs day={day} life={life} date={date} edit={edit} addMeal={addMeal} addWords={addWords} />
-        </Block>
-      </div>
-
-      <Zikrs vault={vault} day={day} days={days} date={date} edit={edit} />
-
-      <div className="g-two">
-        <WeekTasks life={life} date={date} />
-        <TrainingToday vault={vault} date={date} />
-      </div>
-      <Projects life={life} />
-
-      <div className="g-three">
-        <Block title="Путь · 5 недель" right="нажми на день — откроется">
-          <Trail habits={habits} days={days} today={today} date={date} onPick={setDate} />
-        </Block>
-        <Block title="Колесо · 30 дней" right={<Link to="/wheel">подробно →</Link>}>
-          <Radar life={life} vault={vault} today={today} />
-        </Block>
-        <Block title="Награды" right={`${won.filter((m) => m.got).length} из ${won.length}`}>
-          <div className="g-medals">
-            {won.map((m) => <div key={m.id} className={`g-medal${m.got ? " got" : ""}`} title={m.how}><img src={MEDAL_ART[m.id]} alt="" width="52" height="52" /><b>{m.title}</b><span>{m.got ? m.note : `${m.how} · ${m.note}`}</span></div>)}
-          </div>
-        </Block>
+        <div className="g-stack">
+          <Block title="Привычки" right={`${good.filter((h) => markOf(day, h.title) === "done").length} / ${good.length}`}>
+            <div className="g-tiles">
+              {good.map((h) => <HabitTile key={h.title} h={h} mark={markOf(day, h.title)} run={streak(h, days, date)} onClick={() => cycle(h.title, [undefined, "done", "failed"])} />)}
+              {!good.length && <p className="g-faint">На этот день привычек нет.</p>}
+            </div>
+          </Block>
+          <Block title="Задачи дня" right={`${day.tasks.filter((t) => t.done).length} / ${day.tasks.length}`}>
+            {byPeriod(day.tasks.map((t, i) => ({ ...t, i }))).map((g) => {
+              const p = PERIODS.find((x) => x.key === g.key);
+              if (!g.tasks.length) return null;
+              return (
+                <div key={g.key ?? "none"} className={`g-per${g.key && g.key === period ? " now" : ""}`}>
+                  <div className="g-per-h">{p ? <><b>{p.what}</b><span>{p.from} – {p.to}</span></> : <b>без части дня</b>}</div>
+                  {g.tasks.map((t) => (
+                    <div key={t.i} className={`g-task${t.done ? " done" : ""}`} onClick={(e) => { if (!(e.target as HTMLElement).closest("a, button")) toggleTask(t.i); }}>
+                      <button className="box" onClick={() => toggleTask(t.i)} aria-pressed={t.done} aria-label={t.done ? "Снять отметку" : "Отметить сделанной"}>{t.done ? "✓" : ""}</button><TaskLine text={t.text} today={date} />
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+            <AddTask period={period} onAdd={(text, key) => edit((d) => ({ ...d, tasks: [...d.tasks, { done: false, text: key ? withPeriod(text, key) : text }] }))} />
+          </Block>
+          <TrainingToday vault={vault} date={date} />
+        </div>
+        <div className="g-stack">
+          <Block title="Держусь" right={bad.some((h) => !markOf(day, h.title)) ? <button className="g-link" onClick={() => edit((d) => bad.reduce((x, h) => (markOf(x, h.title) ? x : withMark(x, h.title, "done")), d))}>всё чисто за день</button> : `${bad.filter((h) => markOf(day, h.title) === "done").length} / ${bad.length} чисто`}>
+            <div className="g-tiles">
+              {bad.map((h) => <HabitTile key={h.title} h={h} bad mark={markOf(day, h.title)} run={streak(h, days, date)} onClick={() => cycle(h.title, [undefined, "done", "failed"])} />)}
+            </div>
+          </Block>
+          <Zikrs vault={vault} day={day} edit={edit} />
+          <Block title="Записи дня" right="вес · состояние · еда · деньги · слова">
+            <Logs day={day} life={life} date={date} edit={edit} addMeal={addMeal} addWords={addWords} />
+          </Block>
+          <Block title="Путь · 5 недель" right="нажми на день — откроется">
+            <Trail habits={habits} days={days} today={today} date={date} onPick={setDate} />
+          </Block>
+        </div>
       </div>
     </div>
   );
@@ -285,51 +289,65 @@ function Block({ title, right, children }: { title: string; right?: ReactNode; c
 
 // ---------- dhikr (2026-11-25) ----------
 
-/** Each dhikr of «Зикры»: today's count, a field for how many times, quick +33 and +100, and the last seven days. */
-function Zikrs({ vault, day, days, date, edit }: { vault: Vault; day: Day; days: Map<string, Day>; date: string; edit: (fn: (d: Day) => Day) => void }) {
+/** Each dhikr of «Зикры» in one line: a button for one more, the day's count as a field he may overwrite, the goal. */
+function Zikrs({ vault, day, edit }: { vault: Vault; day: Day; edit: (fn: (d: Day) => Day) => void }) {
   const page = zikrPage(vault.pages);
   const list = page ? parseZikrs(page.body) : [];
-  const [typed, setTyped] = useState<Record<string, string>>({});
   if (!list.length) return null;
-  const add = (name: string, n: number) => { if (n) edit((d) => addZikr(d, name, n)); };
   return (
     <Block title="Зикры" right={<Link to={pageUrl(page!)}>список →</Link>}>
-      <div className="g-zikrs">
-        {list.map((z) => {
-          const n = day.zikr?.[z.name] ?? 0;
-          const t = typed[z.name] ?? "";
-          const v = Math.trunc(Number(t.replace(/\s/g, "").replace("−", "-")));
-          return (
-            <div key={z.name} className={`g-zikr${z.goal && n >= z.goal ? " full" : ""}`}>
-              <div className="top">
-                <b>{z.name}</b>
-                <span className="n">{n}{z.goal ? <small> / {z.goal}</small> : null}</span>
-              </div>
-              {z.words && <p className="w">{z.words}</p>}
-              {z.goal ? <i className="bar"><u style={{ width: `${Math.min(100, (n / z.goal) * 100)}%` }} /></i> : null}
-              <form className="row" onSubmit={(e) => { e.preventDefault(); if (Number.isFinite(v) && v) { add(z.name, v); setTyped((x) => ({ ...x, [z.name]: "" })); } }}>
-                <input inputMode="numeric" value={t} placeholder="сколько раз" aria-label={`${z.name}: сколько раз повторил`} onChange={(e) => setTyped((x) => ({ ...x, [z.name]: e.target.value }))} />
-                <button type="submit" className="g-btn sun" disabled={!Number.isFinite(v) || !v}>+ записать</button>
-                <button type="button" className="g-btn" onClick={() => add(z.name, 33)}>+33</button>
-                <button type="button" className="g-btn" onClick={() => add(z.name, 100)}>+100</button>
-              </form>
-              <small className="wk">за 7 дней — {zikrWeek(days, z.name, date)}</small>
-            </div>
-          );
-        })}
+      <div className="g-zrows">
+        {list.map((z) => <ZikrRow key={z.name} z={z} n={day.zikr?.[z.name] ?? 0} onAdd={(k) => edit((d) => addZikr(d, z.name, k))} onSet={(v) => edit((d) => setZikr(d, z.name, v))} />)}
       </div>
-      <p className="g-cap">Число прибавляется к сегодняшнему счёту; ошибся — запиши с минусом, например −33. Новый зикр — строка в таблице страницы «Зикры».</p>
+      <p className="g-cap">«+1» — ещё один раз. В поле — сколько за день: посчитал сам — впиши число и нажми Enter.</p>
     </Block>
   );
 }
 
-// ---------- the week, the training, the projects (2026-11-23) ----------
+/** Taps are gathered and written once he pauses: two hundred taps are not two hundred writes of the day file. */
+function ZikrRow({ z, n, onAdd, onSet }: { z: Zikr; n: number; onAdd: (k: number) => void; onSet: (v: number) => void }) {
+  const [text, setText] = useState<string>();
+  const [taps, setTaps] = useState(0);
+  const waiting = useRef(0);
+  const timer = useRef<number | undefined>(undefined);
+  const add = useRef(onAdd);
+  add.current = onAdd;
+  const flush = useCallback(() => {
+    window.clearTimeout(timer.current);
+    const k = waiting.current;
+    waiting.current = 0;
+    setTaps(0);
+    if (k) add.current(k);
+  }, []);
+  useEffect(() => flush, [flush]);
+  const tap = () => { waiting.current++; setTaps(waiting.current); window.clearTimeout(timer.current); timer.current = window.setTimeout(flush, 700); };
+  const shown = n + taps;
+  const commit = () => {
+    if (text === undefined) return;
+    const v = Math.trunc(Number(text.replace(/\s/g, "")));
+    setText(undefined);
+    if (!text.trim() || !Number.isFinite(v) || v < 0 || v === shown) return;
+    flush();
+    onSet(v);
+  };
+  return (
+    <form className={`g-zrow${z.goal && shown >= z.goal ? " full" : ""}`} onSubmit={(e) => { e.preventDefault(); commit(); }}>
+      <b title={[z.words, z.meaning].filter(Boolean).join(" — ") || undefined}>{z.name}</b>
+      <button type="button" className="g-btn sun" onClick={tap} aria-label={`${z.name}: ещё один раз`}>+1</button>
+      <input inputMode="numeric" value={text ?? String(shown)} aria-label={`${z.name}: сколько раз за день`} onFocus={(e) => e.currentTarget.select()} onChange={(e) => setText(e.target.value)} onBlur={commit} />
+      <span className="of">{z.goal ? `/ ${z.goal}` : "раз"}</span>
+      {z.goal ? <i className="bar"><u style={{ width: `${Math.min(100, (shown / z.goal) * 100)}%` }} /></i> : null}
+    </form>
+  );
+}
+
+// ---------- the week and the training (2026-11-23; the week, the wheel and the medals show on «Обзор» since 2026-11-25) ----------
 
 /**
  * The tasks of the week file — the bank's and the ones he named in his own words — ticked here as in the file:
  * «я добавил задачи на неделю, но надо, чтобы они показывались и в главном экране».
  */
-function WeekTasks({ life, date }: { life: Life; date: string }) {
+export function WeekTasks({ life, date }: { life: Life; date: string }) {
   const { saveText, reload } = useStore();
   const key = isoWeekKey(date);
   const file = life.goals.get(key);
@@ -373,36 +391,6 @@ function TrainingToday({ vault, date }: { vault: Vault; date: string }) {
             : <p className="g-faint">Упражнений в плане на этот день нет.</p>}
         </div>
       ) : <p className="g-faint">В плане тренировок на этот день ничего нет. План — «План тренировок» в «Здоровье и спорт».</p>}
-    </Block>
-  );
-}
-
-/** Every activity with a folder on disk: its step now, and «Claude» opens Terminal there with `claude` running. */
-function Projects({ life }: { life: Life }) {
-  const { root } = useStore();
-  const list = projectsOf(life);
-  const [err, setErr] = useState<string>();
-  const [opening, setOpening] = useState<string>();
-  if (!list.length) return null;
-  const open = async (rel: string, folder: string) => {
-    setOpening(rel);
-    try { await openInClaude(root, folder); setErr(undefined); } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setOpening(undefined); }
-  };
-  return (
-    <Block title="Проекты" right="«Claude» — Terminal в папке проекта, Claude уже запущен">
-      <div className="g-projgrid">
-        {list.map((q) => {
-          const step = nowStep(q.body);
-          return (
-            <div key={q.rel} className={`g-projcard${q.status === "paused" ? " paused" : ""}`}>
-              <Link to={questUrl(q.rel)} className="nm"><b>{q.title}</b><small>{themeRu(q.theme)}{q.status === "paused" ? " · на паузе" : ""}</small></Link>
-              <p>{step ? plainStep(step).replace(/\*\*/g, "") : "следующий шаг не записан"}</p>
-              <button type="button" className="g-btn sun" disabled={opening === q.rel} onClick={() => void open(q.rel, q.folder!)} title={q.folder}>{opening === q.rel ? "открываю…" : "▸ Claude"}</button>
-            </div>
-          );
-        })}
-      </div>
-      {err && <p className="g-error" role="alert">Не открыл: {err}</p>}
     </Block>
   );
 }
@@ -679,7 +667,7 @@ function Trail({ habits, days, today, date, onPick }: { habits: Habit[]; days: M
 }
 
 /** XP of the last thirty days over the eight themes: where the month went and what it left out. */
-function Radar({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
+export function Radar({ life, vault, today }: { life: Life; vault: Vault; today: string }) {
   const xs = useMemo(() => themeXps(life, vault.pages, today), [life, vault.pages, today]);
   const max = Math.max(1, ...xs.map((x) => x.last30));
   const R = 78, C = 110;
@@ -700,6 +688,18 @@ function Radar({ life, vault, today }: { life: Life; vault: Vault; today: string
       </svg>
       <p className="g-faint">{quiet.length ? `Без XP за месяц: ${quiet.join(", ")}.` : "Все восемь тем получили XP за месяц."}</p>
     </div>
+  );
+}
+
+/** The medals: what is won and what each one takes. */
+export function Medals({ habits, days, today }: { habits: Habit[]; days: Map<string, Day>; today: string }) {
+  const won = useMemo(() => medals(habits, days, today), [habits, days, today]);
+  return (
+    <Block title="Награды" right={`${won.filter((m) => m.got).length} из ${won.length}`}>
+      <div className="g-medals">
+        {won.map((m) => <div key={m.id} className={`g-medal${m.got ? " got" : ""}`} title={m.how}><img src={MEDAL_ART[m.id]} alt="" width="52" height="52" /><b>{m.title}</b><span>{m.got ? m.note : `${m.how} · ${m.note}`}</span></div>)}
+      </div>
+    </Block>
   );
 }
 

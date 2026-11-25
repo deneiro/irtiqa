@@ -6,7 +6,7 @@ import { pageUrl } from "../lib/vault";
 import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/native";
 import { todayStr } from "../lib/dates";
-import { allGroups, groupsOf, categoryOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, type Category } from "../lib/people";
+import { allGroups, groupsOf, categoryOf, contactsOf, daysSinceContact, daysToBirthday, debtsFor, deepLinks, isAuthor, isListed, type Category } from "../lib/people";
 import { setFrontmatterKeys } from "../lib/frontmatter";
 import { planRename } from "../lib/renamePerson";
 import { renameFile } from "../lib/fs";
@@ -50,7 +50,7 @@ export default function PeoplePage() {
   const people = useMemo(
     () =>
       v.pages
-        .filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p))
+        .filter(isListed)
         .map((p) => {
           const c = contactsOf(p);
           const open = debtsFor(p, life?.debts ?? []).filter((d) => !d.closed);
@@ -77,7 +77,7 @@ export default function PeoplePage() {
         }),
     [v, life, q, sort, today, cats, grp],
   );
-  const groups = useMemo(() => allGroups(v.pages.filter((p) => p.zone === "person")), [v]);
+  const groups = useMemo(() => allGroups(v.pages.filter(isListed)), [v]);
   // the warmth of the whole circle, whatever the filters below show
   const circle = useMemo(() => buildCircle(v.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p)), life?.events ?? [], today), [v, life, today]);
   const warmth = useMemo(() => circleWarmth(circle), [circle]);

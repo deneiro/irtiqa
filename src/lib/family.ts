@@ -5,7 +5,7 @@
  * words: a relative whose place the words do not give stays in the list under the tree.
  */
 import type { Page } from "./types";
-import { categoryOf, isAuthor, relationsOf } from "./people";
+import { categoryOf, isAuthor, isGone, relationsOf } from "./people";
 
 export const ME = "__me";
 
@@ -42,8 +42,7 @@ export interface Family {
   sibs: [string, string][];
 }
 
-/** `deceased: true` — someone no longer with him; the tree keeps them, the rings do not. */
-export const isGone = (p: Page) => p.fm.deceased === true || String(p.fm.deceased) === "true";
+export { isGone };
 
 const isPerson = (p: Page) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p);
 

@@ -14,7 +14,7 @@ import { lastOf, measures } from "./health";
 import { horizonOf } from "./horizon";
 import { DEBT_I_OWE, habitDue, markOf, streak, type Habit, type Life } from "./life";
 import type { NumberLine } from "./overview";
-import { isAuthor } from "./people";
+import { isListed } from "./people";
 import { suras } from "./quran";
 import { lastTalk, parseTalks } from "./talks";
 import { attentionShares, dayFiles, eventTheme, themeDays } from "./themeDays";
@@ -315,7 +315,7 @@ function movesTile(line: NumberLine, ctx: TileCtx): Tile {
 
 /** Person pages as the circle counts them: no authors, no templates. */
 export function peopleOf(vault: Vault, theme?: string): Page[] {
-  return vault.pages.filter((p) => p.zone === "person" && p.type !== "template" && !p.file.startsWith("_") && !isAuthor(p) && (!theme || p.theme === theme));
+  return vault.pages.filter((p) => isListed(p) && (!theme || p.theme === theme));
 }
 
 /** The latest touch with a person through today: `last_contact`, a talk in `life/talks.md` or an event with them. */
