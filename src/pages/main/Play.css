@@ -1512,3 +1512,21 @@ main > .g-page.g-setup { max-width: 720px; }
 .g-infcard .who .chip:hover .x, .g-play .g-infcard .who .x:focus-visible { opacity: 1; }
 .g-play .g-infcard .who .x:hover:not(:disabled) { color: var(--d-ember); background: rgba(226, 106, 97, .14); }
 @media (hover: none) { .g-play .g-infcard .drop, .g-play .g-infcard .who .x { opacity: 1; } }
+
+/* dhikr on «Сегодня» (2026-11-25) */
+.g-zikrs { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.g-zikr { display: grid; gap: 8px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--d-hair-2); background: rgba(237, 231, 218, .03); }
+.g-zikr.full { border-color: rgba(134, 201, 164, .45); }
+.g-zikr .top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.g-zikr .top b { font: 600 17px/1.2 var(--d-serif); }
+.g-zikr .top .n { font: 600 34px/1 var(--d-serif); color: var(--d-sun); font-variant-numeric: tabular-nums; }
+.g-zikr.full .top .n { color: var(--d-sage); }
+.g-zikr .top .n small { font-size: 14px; color: var(--d-smoke); }
+.g-zikr .w { margin: 0; font-size: 13px; color: var(--d-moon-2); }
+.g-zikr .bar { display: block; height: 4px; border-radius: 4px; background: rgba(237, 231, 218, .08); overflow: hidden; }
+.g-zikr .bar u { display: block; height: 100%; background: var(--d-sun); }
+.g-zikr.full .bar u { background: var(--d-sage); }
+.g-zikr .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.g-zikr .row input { flex: 1 1 110px; min-width: 0; height: 32px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--d-hair-2); background: rgba(11, 13, 19, .5); color: var(--d-moon); font-size: 13.5px; outline: none; }
+.g-zikr .row input:focus { border-color: var(--d-sun); box-shadow: 0 0 0 3px rgba(231, 194, 122, .14); }
+.g-zikr .wk { font: 500 10.5px var(--d-mono); letter-spacing: .06em; color: var(--d-smoke); }
