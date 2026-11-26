@@ -11,7 +11,7 @@ import { daysToCarry } from "../../lib/carry";
 import { addZikr, parseZikrs, setZikr, zikrPage, type Zikr } from "../../lib/zikr";
 import { pageUrl } from "../../lib/vault";
 import { CAMPS, CAMP_NAMES, POINTS, along, askOf, asks, campNeed, campsTaken, dayScore, fire, medals, prayerOpen, rankOf, standing, type Ask, type CampNeed, type Score } from "../../lib/game";
-import { overallLevelProgress, readsOf, themeXps, xpByDay } from "../../lib/levels";
+import { meetsOf, overallLevelProgress, readsOf, themeXps, xpByDay } from "../../lib/levels";
 import { emptyDay, habitDue, isLateMeal, markOf, parseAmount, spentOf, earnedOf, streak, withMark, xpForDay, type Day, type DayMark, type Habit, type Life, type XpContext } from "../../lib/life";
 import { prayerTimes, type PrayerTimes } from "../../lib/maghrib";
 import { PERIODS, byPeriod, periodAt, withPeriod, type PeriodKey } from "../../lib/periods";
@@ -128,7 +128,7 @@ function PlayDay({ life, vault, today, date, setDate }: { life: Life; vault: Vau
   const score = useMemo(() => dayScore(habits, day, date), [habits, day, date]);
   const camps = useMemo(() => CAMPS.map((c) => campNeed(habits, day, date, c)), [habits, day, date]);
   const flame = useMemo(() => fire(habits, days, today), [habits, days, today]);
-  const ctx: XpContext = useMemo(() => ({ habits: life.habits, quests: life.quests, days, reads: readsOf(vault.pages) }), [life.habits, life.quests, days, vault.pages]);
+  const ctx: XpContext = useMemo(() => ({ habits: life.habits, quests: life.quests, days, reads: readsOf(vault.pages), meets: meetsOf(life.events, vault.pages) }), [life.habits, life.quests, life.events, days, vault.pages]);
   const dayXp = useMemo(() => sum(xpForDay(day, ctx)), [day, ctx]);
   const restXp = useMemo(() => { let n = 0; for (const [d, m] of xpByDay(life, vault.pages)) if (d !== date) n += sum(m); return n; }, [life, vault.pages, date]);
   const level = overallLevelProgress(restXp + dayXp);

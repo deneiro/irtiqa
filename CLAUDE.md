@@ -67,6 +67,7 @@ running programs (`claude`; `open` for a tool's launch file). All parsing in the
 - IrtiQa (`~/Desktop/Projects/IrtiQa`) is a reference for the game screens,
   not a dependency. Port ideas and CSS, not the Zustand store.
 - Numbers derived from days (streaks, XP, spending) are computed, never stored.
+- Theme XP also comes from events (2026-11-26: the themes of friends and family could not leave level one, there was nothing to mark): an event earns `XP.event` for its theme and every person seen that day `XP.personSeen` for the theme of their page, a theme at most `XP.peopleCap` a day (`meetsOf` in `lib/levels.ts`, passed as `meets` in `XpContext`). A level counts what was recorded in the theme, not how the theme stands.
 - `npx tsc --noEmit && npm test && npx vite build` must pass before a commit.
 
 ## Schema 4.1 of the vault (2026-11-02)
