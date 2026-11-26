@@ -1217,7 +1217,7 @@ export function streak(habit: Habit, days: Map<string, Day>, upTo: string): numb
 }
 
 /** Provisional XP numbers from the v1 spec. Edited in one place. */
-export const XP = { habitDone: 10, prayerLate: 5, taskDone: 8, log: 3, journal: 8, questDone: 20, questPerHour: 55, questMinMinutes: 15, resourceRead: 10 };
+export const XP = { habitDone: 10, prayerLate: 5, taskDone: 8, log: 3, journal: 8, questDone: 20, questPerHour: 55, questMinMinutes: 15, resourceRead: 10, event: 15, personSeen: 5, peopleCap: 20 };
 
 /** A day task earns XP for the theme of its part of the day (I work, II study, III for himself, IV health); part V and tasks with no part earn it for no theme. */
 export const PERIOD_THEME: Record<PeriodKey, string | undefined> = { "фаджр": "Business & career", "зухр": "Personal growth", "аср": "Memories & Fun", "магриб": "Health & sport", "иша": undefined };
@@ -1228,6 +1228,8 @@ export interface XpContext {
   days: Map<string, Day>;
   /** Resource pages marked `read: <date>` — one entry per page. */
   reads?: { date: string; theme: string | undefined }[];
+  /** What the day earns outside its own file: an event for its theme, the people seen for theirs (`meetsOf`). */
+  meets?: { date: string; theme: string | undefined; xp: number }[];
 }
 
 export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
@@ -1245,6 +1247,7 @@ export function xpForDay(d: Day, ctx: XpContext): Map<string, number> {
   }
   if (d.journal.trim()) { add("Personal growth", XP.journal); add("Spirituality & Religion", XP.journal); }
   for (const r of ctx.reads ?? []) if (r.date === d.date) add(r.theme, XP.resourceRead);
+  for (const m of ctx.meets ?? []) if (m.date === d.date) add(m.theme, m.xp);
   return xp;
 }
 

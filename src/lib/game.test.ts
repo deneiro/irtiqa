@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { along, askOf, asks, campNeed, campsTaken, climbSummary, dayScore, fire, heights, medals, monthDates, prayerOpen, rankOf, standing } from "./game";
 import { buildLife, emptyDay, xpForDay, type Day } from "./life";
-import type { MdFile } from "./types";
+import type { MdFile, Page } from "./types";
+import { meetsOf } from "./levels";
+import type { LifeEvent } from "./events";
 
 const habit = (title: string, kind: string, extra = ""): MdFile => ({ rel: `life/habits/${title}.md`, mtime: 0, content: `---\ntitle: ${title}\ntype: habit\ntheme: Health & sport\nkind: ${kind}\nfreq: daily\nstatus: active\n${extra}created: 2030-01-01\n---\n` });
 const HABITS = buildLife([habit("Утро", "prayer"), habit("Вечер", "prayer"), habit("Вода", "good", 'ask: "💧 Выпил воду?"\n'), habit("Сладкое", "bad")]).habits;
@@ -111,4 +113,14 @@ test("a camp names the points it still needs and what of the day has not given i
     ["записать настроение", 1, false], ["записать стресс", 1, false], ["записать что ел", 1, false], ["записать слово о дне", 1, false],
     ["Вечер — прочитан поздно", 1, true], ["Сладкое — без срыва", 2, true],
   ]);
+});
+
+test("an event earns for its theme and each person seen for theirs, a theme capped a day", () => {
+  const person = (file: string, theme: string) => ({ zone: "person", file, title: file, aliases: [], theme, fm: {} }) as unknown as Page;
+  const pages = [person("А", "Social & friends"), person("Б", "Social & friends"), person("В", "Family & relationship"), ...["Г", "Д", "Е", "Ж"].map((n) => person(n, "Social & friends"))];
+  const ev = (date: string, theme: string, people: string[]) => ({ date, theme, people }) as unknown as LifeEvent;
+  const meets = meetsOf([ev("2030-01-05", "Memories & Fun", ["[[А]]", "[[В]]", "Нет такого"]), ev("2030-01-05", "Social & friends", ["[[А]]", "[[Б]]"]), ev("2030-01-06", "Memories & Fun", ["А", "Б", "Г", "Д", "Е", "Ж"])], pages);
+  const xp = xpForDay(day("2030-01-05", {}), { habits: [], quests: [], days: new Map(), meets });
+  assert.deepEqual(Object.fromEntries(xp), { "Memories & Fun": 15, "Social & friends": 15 + 10, "Family & relationship": 5 });
+  assert.equal(xpForDay(day("2030-01-06", {}), { habits: [], quests: [], days: new Map(), meets }).get("Social & friends"), 20);
 });

@@ -11,6 +11,7 @@ import { useT } from "../lib/i18n";
 import { addDays, monthOfToday } from "../lib/dates";
 import { bestStreak, habitDue, streak, workMinutesOf, xpForDay, type Day, type XpContext } from "../lib/life";
 import { useDayToday } from "../lib/useDayToday";
+import { meetsOf } from "../lib/levels";
 
 const axis = { stroke: "#6F6D6A", fontSize: 11, fontFamily: "IBM Plex Mono, monospace" };
 const fmt = (n: number) => Math.round(n).toLocaleString("ru-RU");
@@ -56,7 +57,7 @@ export default function TrendsPage() {
     for (const w of weeks.values()) w["привычки, %"] = w.due ? Math.round((100 * w.done) / w.due) : 0;
     const reads = v.pages.filter((p) => p.zone === "resource" && p.fm.read).map((p) => ({ date: String(p.fm.read instanceof Date ? p.fm.read.toISOString() : p.fm.read).slice(0, 10), theme: p.theme }));
     for (const r of reads) { const w = weeks.get(weekKey(r.date)); if (w && r.date >= from) w["прочитано"]++; }
-    const ctx: XpContext = { habits: life?.habits ?? [], quests: life?.quests ?? [], days, reads };
+    const ctx: XpContext = { habits: life?.habits ?? [], quests: life?.quests ?? [], days, reads, meets: meetsOf(life?.events ?? [], v.pages) };
     const ym = monthOfToday(today);
     const xp = new Map<string, number>();
     for (const [date, d] of days) if (date.startsWith(ym)) for (const [th, n] of xpForDay(d, ctx)) xp.set(th, (xp.get(th) ?? 0) + n);
